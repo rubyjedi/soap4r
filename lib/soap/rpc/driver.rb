@@ -34,6 +34,7 @@ public
   class EmptyResponseError < Error; end
 
   attr_accessor :mapping_registry
+  attr_accessor :soapaction
   attr_reader :endpoint_url
   attr_reader :wiredump_dev
   attr_reader :wiredump_file_base
@@ -44,12 +45,13 @@ public
     @endpoint_url = endpoint_url
     @namespace = namespace
     @mapping_registry = nil      # for unmarshal
+    @soapaction = soapaction
     @wiredump_dev = nil
     @wiredump_file_base = nil
     @httpproxy = ENV['httpproxy'] || ENV['HTTP_PROXY']
     @handler = HTTPPostStreamHandler.new(@endpoint_url, @httpproxy,
       Charset.encoding_label)
-    @proxy = Proxy.new(@handler, soapaction)
+    @proxy = Proxy.new(@handler, @soapaction)
     @proxy.allow_unqualified_element = true
   end
 
@@ -93,11 +95,11 @@ public
   # param_def: See proxy.rb.  Sorry.
 
   def add_method(name, *params)
-    add_method_with_soapaction_as(name, name, nil, *params)
+    add_method_with_soapaction_as(name, name, @soapaction, *params)
   end
 
   def add_method_as(name, name_as, *params)
-    add_method_with_soapaction_as(name, name_as, nil, *params)
+    add_method_with_soapaction_as(name, name_as, @soapaction, *params)
   end
 
   def add_method_with_soapaction(name, soapaction, *params)
