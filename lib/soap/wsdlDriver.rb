@@ -112,11 +112,10 @@ public
 
     create_handler
     @operations = {}
-    # Convert Map which key is QName, to a Hash which key is String.
-    @port.inputoperation_map.each do |op_name, value|
-      @operations[op_name.name] = value.dup.unshift(op_name)
-      operation, param_names, = value
-      add_method_interface(op_name.name, param_names)
+    # Convert a map which key is QName, to a Hash which key is String.
+    @port.inputoperation_map.each do |op_name, op_info|
+      @operations[op_name.name] = op_info
+      add_method_interface(op_info.op_name.name, op_info.param_names)
     end
   end
 
@@ -179,10 +178,10 @@ private
     log(SEV_INFO) { "call: calling method '#{ method_name }'." }
     log(SEV_DEBUG) { "call: parameters '#{ params.inspect }'." }
 
-    op_name, msg_name, param_names, soapaction = @operations[method_name]
-    obj = create_method_obj(param_names, params)
-    method = Mapping.obj2soap(obj, @wsdl_mapping_registry, msg_name)
-    method.elename = op_name
+    op_info = @operations[method_name]
+    obj = create_method_obj(op_info.param_names, params)
+    method = Mapping.obj2soap(obj, @wsdl_mapping_registry, op_info.msg_name)
+    method.elename = op_info.op_name
     method.type = XSD::QName.new	# Request should not be typed.
 
     if @wiredump_file_base
@@ -190,7 +189,7 @@ private
     end
 
     begin
-      header, body = invoke(nil, method, soapaction)
+      header, body = invoke(nil, method, op_info.soapaction)
       unless body
 	raise EmptyResponseError.new("Empty response.")
       end
