@@ -34,6 +34,10 @@ class NetHttpClient
     @session_manager = SessionManager.new
     @no_proxy = nil
   end
+
+  def test_loopback_response
+    raise NotImplementedError.new("not supported for now")
+  end
   
   def proxy=(proxy_str)
     if proxy_str.nil?
@@ -70,8 +74,8 @@ class NetHttpClient
     extra = header.dup
     extra['User-Agent'] = @agent if @agent
     res = start(url) { |http|
-	http.post(url.request_uri, req_body, extra)
-      }
+      http.post(url.request_uri, req_body, extra)
+    }
     Response.new(res)
   end
 
