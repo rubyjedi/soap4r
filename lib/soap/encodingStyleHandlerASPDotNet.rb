@@ -48,6 +48,9 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
     end
 
     case data
+    when SOAPRawString
+      SOAPGenerator.encodeTag( buf, name, attrs, false )
+      buf << data.to_s
     when SOAPString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))

@@ -180,12 +180,20 @@ private
   end
 end
 
-class SOAPBoolean < XSDBoolean
+# SOAPRawString is for sending raw string.  In contrast to SOAPString,
+# SOAP4R does not do XML encoding and does not covert its CES.  The string it
+# holds is embedded to XML instance directly as 'xsd:string'.
+class SOAPRawString < XSDString
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
 class SOAPString < XSDString
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPBoolean < XSDBoolean
   include SOAPBasetype
   extend SOAPModuleUtils
 end
