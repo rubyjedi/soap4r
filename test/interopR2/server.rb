@@ -32,6 +32,29 @@ class InteropApp < SOAP::StandaloneServer
       return obj
     end
   end
+
+  def cloneStruct( struct )
+    result = clone( struct )
+    result.varFloat = SOAPFloat.new( struct.varFloat ) if struct.varFloat
+    result
+  end
+  
+  def cloneStructArray( structArray )
+    result = clone( structArray )
+    result.map { | ele |
+      ele.varFloat = SOAPFloat.new( ele.varFloat ) if ele.varFloat
+    }
+    result
+  end
+  
+  def cloneStructStruct( structStruct )
+    result = clone( structStruct )
+    result.varFloat = SOAPFloat.new( structStruct.varFloat ) if structStruct.varFloat
+    if struct = result.varStruct
+      struct.varFloat = SOAPFloat.new( struct.varFloat ) if struct.varFloat
+    end
+    result
+  end
   
   # In echoVoid, 'retval' is not defined.  So nothing will be returned.
   def echoVoid
@@ -77,11 +100,11 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echoStruct( inputStruct )
-    clone( inputStruct )
+    cloneStruct( inputStruct )
   end
 
   def echoStructArray( inputStructArray )
-    clone( inputStructArray )
+    cloneStructArray( inputStructArray )
   end
 
   def echoDate( inputDate )
@@ -98,12 +121,15 @@ class InteropApp < SOAP::StandaloneServer
     SOAP::SOAPHexBinary.new( clone( inputHexBinary ))
   end
 
+  def echoDouble( inputDouble )
+    SOAP::SOAPDouble.new( inputDouble )
+  end
 
   # for Round 2 group B
   def echoStructAsSimpleTypes( inputStruct )
     outputString = inputStruct.varString
     outputInteger = inputStruct.varInt
-    outputFloat = inputStruct.varFloat
+    outputFloat = inputStruct.varFloat ? SOAPFloat.new( inputStruct.varFloat ) : nil
     # retVal is not returned to SOAP client because retVal of this method is
     #   not defined in method definition.
     # retVal, out, out, out
@@ -124,11 +150,11 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echoNestedStruct( inputStruct )
-    clone( inputStruct )
+    cloneStructStruct( inputStruct )
   end
 
   def echoNestedArray( inputStruct )
-    clone( inputStruct )
+    cloneStruct( inputStruct )
   end
 
   def echoMap( inputMap )
@@ -232,6 +258,17 @@ class InteropApp < SOAP::StandaloneServer
   def echoXSDInt( inputInt )
     SOAP::SOAPInt.new( clone( inputInteger ))
   end
+
+  def echoXSDTime( inputXSDTime )
+    SOAP::SOAPTime.new( clone( inputXSDTime ))
+  end
+
+  def echoPolyMorph( anObject )
+    clone( anObject )
+  end
+
+  alias echoPolyMorphStruct echoPolyMorph
+  alias echoPolyMorphArray echoPolyMorph
 end
 
 InteropApp.new( 'InteropApp', InterfaceNS, '0.0.0.0', 10080 ).start

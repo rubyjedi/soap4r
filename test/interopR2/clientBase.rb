@@ -1,6 +1,7 @@
 $KCODE = 'EUC'
 
 require 'soap/driver'
+include SOAP
 
 require 'soap/rpcUtils'
 include SOAP::RPCUtils
@@ -566,7 +567,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = 3.14159265358979
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -576,7 +577,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = 12.34e36
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -586,7 +587,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = FakeFloat.new( "12.34e36" )
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, 12.34e36, var )
   rescue Exception
     dumpException( title )
@@ -596,7 +597,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = FakeFloat.new( "12.34E+36" )
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, 12.34e36, var )
   rescue Exception
     dumpException( title )
@@ -606,7 +607,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = FakeFloat.new( "-1.4E" )
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, 1.4, var )
   rescue Exception
     dumpException( title )
@@ -616,7 +617,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = 1.4e-45
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -626,7 +627,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = -1.4e-45
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -636,7 +637,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = 0.0
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -646,7 +647,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = -0.0
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -656,7 +657,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = 0.0/0.0
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -666,7 +667,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = 1.0/0.0
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -676,7 +677,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = -1.0/0.0
-    var = drv.echoFloat( arg )
+    var = drv.echoFloat( SOAPFloat.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -741,9 +742,10 @@ def doTestBase( drv )
   title = 'echoFloatArray'
   dumpTitle( title )
   begin
-    arg = FloatArray[ 0.0001, 1000.0, 0.0 ]
+    arg = FloatArray[ SOAPFloat.new( 0.0001 ), SOAPFloat.new( 1000.0 ),
+      SOAPFloat.new( 0.0 ) ]
     var = drv.echoFloatArray( arg )
-    dumpNormal( title, arg, var )
+    dumpNormal( title, arg.collect { |ele| ele.data }, var )
   rescue Exception
     dumpException( title )
   end
@@ -751,12 +753,12 @@ def doTestBase( drv )
   title = 'echoFloatArray (special values: NaN, INF, -INF)'
   dumpTitle( title )
   begin
-    nan = 0.0/0.0
-    inf = 1.0/0.0
-    inf_ = -1.0/0.0
+    nan = SOAPFloat.new( 0.0/0.0 )
+    inf = SOAPFloat.new( 1.0/0.0 )
+    inf_ = SOAPFloat.new( -1.0/0.0 )
     arg = FloatArray[ nan, inf, inf_ ]
     var = drv.echoFloatArray( arg )
-    dumpNormal( title, arg, var )
+    dumpNormal( title, arg.collect { |ele| ele.data }, var )
   rescue Exception
     dumpException( title )
   end

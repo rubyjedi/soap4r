@@ -76,21 +76,30 @@ MethodsPolyMorph = [
 ]
 
 
+module FloatSupport
+  def floatEquals( lhs, rhs )
+    lhsVar = lhs.is_a?( SOAP::SOAPFloat )? lhs.data : lhs
+    rhsVar = rhs.is_a?( SOAP::SOAPFloat )? rhs.data : rhs
+    lhsVar == rhsVar
+  end
+end
+
 class SOAPStruct
   include SOAP::Marshallable
+  include FloatSupport
 
-  attr_reader :varInt, :varFloat, :varString
+  attr_accessor :varInt, :varFloat, :varString
 
   def initialize( varInt, varFloat, varString )
     @varInt = varInt
-    @varFloat = varFloat
+    @varFloat = varFloat ? SOAP::SOAPFloat.new( varFloat ) : nil
     @varString = varString
   end
 
   def ==( rhs )
-    r = if rhs.is_a?( self.type )
+    r = if rhs.is_a?( self.class )
 	( self.varInt == rhs.varInt &&
-	self.varFloat == rhs.varFloat &&
+	floatEquals( self.varFloat, rhs.varFloat ) &&
 	self.varString == rhs.varString )
       else
 	false
@@ -106,20 +115,21 @@ end
 
 class SOAPStructStruct
   include SOAP::Marshallable
+  include FloatSupport
 
-  attr_reader :varInt, :varFloat, :varString, :varStruct
+  attr_accessor :varInt, :varFloat, :varString, :varStruct
 
   def initialize( varInt, varFloat, varString, varStruct = nil )
     @varInt = varInt
-    @varFloat = varFloat
+    @varFloat = varFloat ? SOAP::SOAPFloat.new( varFloat ) : nil
     @varString = varString
     @varStruct = varStruct
   end
 
   def ==( rhs )
-    r = if rhs.is_a?( self.type )
+    r = if rhs.is_a?( self.class )
 	( self.varInt == rhs.varInt &&
-	self.varFloat == rhs.varFloat &&
+	floatEquals( self.varFloat, rhs.varFloat ) &&
 	self.varString == rhs.varString &&
 	self.varStruct == rhs.varStruct )
       else
@@ -146,7 +156,7 @@ class PolyMorphStruct
   end
 
   def ==( rhs )
-    r = if rhs.is_a?( self.type )
+    r = if rhs.is_a?( self.class )
 	( self.varA == rhs.varA &&
 	self.varB == rhs.varB &&
 	self.varC == rhs.varC )
@@ -164,20 +174,21 @@ end
 
 class SOAPArrayStruct
   include SOAP::Marshallable
+  include FloatSupport
 
-  attr_reader :varInt, :varFloat, :varString, :varArray
+  attr_accessor :varInt, :varFloat, :varString, :varArray
 
   def initialize( varInt, varFloat, varString, varArray = nil )
     @varInt = varInt
-    @varFloat = varFloat
+    @varFloat = varFloat ? SOAP::SOAPFloat.new( varFloat ) : nil
     @varString = varString
     @varArray = varArray
   end
 
   def ==( rhs )
-    r = if rhs.is_a?( self.type )
+    r = if rhs.is_a?( self.class )
 	( self.varInt == rhs.varInt &&
-	self.varFloat == rhs.varFloat &&
+	floatEquals( self.varFloat, rhs.varFloat ) &&
 	self.varString == rhs.varString &&
 	self.varArray == rhs.varArray )
       else
