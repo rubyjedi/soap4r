@@ -25,23 +25,27 @@ module WSDL
 
 
 class Body < Info
-  attr_reader :use
+  attr_reader :parts
+  attr_reader :use	# required
   attr_reader :encodingstyle
   attr_reader :namespace
 
   def initialize
     super
+    @parts = nil
     @use = nil
     @encodingstyle = nil
     @namespace = nil
   end
 
   def parse_element(element)
-    raise WSDLParser::UnknownElementError.new("Unknown element #{ element }.")
+    nil
   end
 
   def parse_attr(attr, value)
     case attr
+    when PartsAttrName
+      @parts = value
     when UseAttrName
       @use = value
     when EncodingStyleAttrName

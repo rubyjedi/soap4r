@@ -1,5 +1,5 @@
 =begin
-WSDL4R - WSDL param definition.
+WSDL4R - WSDL SOAP body definition.
 Copyright (C) 2002, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -21,60 +21,37 @@ require 'wsdl/info'
 
 
 module WSDL
+  module SOAP
 
 
-class Param < Info
-  attr_reader :message	# required
-  attr_reader :name	# optional but required for fault.
-  attr_reader :soapbody
-  attr_reader :soapheader
-  attr_reader :soapfault
+class Fault < Info
+  attr_reader :name	# required
+  attr_reader :use	# required
+  attr_reader :encodingstyle
+  attr_reader :namespace
 
   def initialize
     super
-    @message = nil
     @name = nil
-    @soapbody = nil
-    @soapheader = nil
-    @soapfault = nil
-  end
-
-  def targetnamespace
-    parent.targetnamespace
-  end
-
-  def find_message
-    root.message(@message)
+    @use = nil
+    @encodingstyle = nil
+    @namespace = nil
   end
 
   def parse_element(element)
-    case element
-    when SOAPBodyName
-      o = WSDL::SOAP::Body.new
-      @soap_body = o
-      o
-    when SOAPHeaderName
-      o = WSDL::SOAP::Header.new
-      @soap_header = o
-      o
-    when SOAPFaultName
-      o = WSDL::SOAP::Fault.new
-      @soap_fault = o
-      o
-    when DocumentationName
-      o = Documentation.new
-      o
-    else
-      nil
-    end
+    nil
   end
 
   def parse_attr(attr, value)
     case attr
-    when MessageAttrName
-      @message = value
     when NameAttrName
-      @name = XSD::QName.new(targetnamespace, value)
+      @name = value
+    when UseAttrName
+      @use = value
+    when EncodingStyleAttrName
+      @encodingstyle = value
+    when NamespaceAttrName
+      @namespace = value
     else
       raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
@@ -82,4 +59,5 @@ class Param < Info
 end
 
 
+  end
 end
