@@ -58,7 +58,9 @@ module Marshal
 
     def unmarshal(stream, mapping_registry = MarshalMappingRegistry)
       header, body = SOAP::Processor.unmarshal(stream)
-      #Mapping.soap2obj(body.root_node, mapping_registry)
+      if body.nil?
+	raise ArgumentError.new("Illegal SOAP marshal format.")
+      end
       Mapping.soap2obj(body.root_node, mapping_registry)
     end
   end
