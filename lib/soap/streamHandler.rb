@@ -16,14 +16,9 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-# Ruby bundled library
-require 'urb'
-require 'socket'
-require 'timeout'
-
-# Extra library
 require 'soap/soap'
 require 'soap/charset'
+require 'http-access2'
 
 
 module SOAP
@@ -33,7 +28,7 @@ class StreamHandler
   public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.11 2001/07/18 13:28:56 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.12 2001/07/26 01:58:18 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   attr_reader :endPoint
@@ -65,14 +60,15 @@ public
     @charset = charset
     @dumpDev = nil	# Set an IO to get wiredump.
     @dumpFileBase = nil
+    @client = HTTPAccess2::Client.new( proxy, "SOAP4R/#{ Version }" )
   end
 
   def send( soapString, soapAction = nil, charset = @charset )
     begin
-      s = sendPOST( soapString, soapAction, charset )
+      sendPOST( soapString, soapAction, charset )
     rescue PostUnavailableError
       begin
-        s = sendMPOST( soapString, soapAction, charset )
+        sendMPOST( soapString, soapAction, charset )
       rescue MPostUnavailableError
         raise HTTPStreamError.new( $! )
       end
@@ -82,15 +78,12 @@ public
   private
 
   def sendPOST( soapString, soapAction, charset )
-    server = URb.parse( @server )
     dumpDev = if @dumpDev && @dumpDev.respond_to?( "<<" )
 	@dumpDev
       else
 	nil
       end
-
-    receiveString = ''
-    receiveCharset = nil
+    @client.debugDev = dumpDev
 
     if @dumpFileBase
       fileName = @dumpFileBase + '_request.xml'
@@ -99,127 +92,15 @@ public
       f.close
     end
 
-    retryNo = NofRetry
-    begin
-      if @proxy
-	proxy = URb.parse( @proxy )
-	s = TCPSocket.new( proxy.host, proxy.port )
-      else
-	s = TCPSocket.new( server.host, server.port )
-      end
-    rescue
-      retryNo -= 1
-      if retryNo > 0
-        puts 'Retrying connection ...' if $DEBUG
-        retry
-      end
-      raise HTTPStreamError.new( 'Connection failed.' )
-    end
+    extra = {}
+    extra[ 'Content-Type' ] = "#{ MediaType }; charset=#{ Charset.getCharsetLabel( charset ) }"
+    extra[ 'SOAPAction' ] = "\"#{ soapAction }\""
 
-    if @proxy
-      absPath = @server if @proxy
-    else
-      absPath = server.path.dup
-      absPath = '/' if absPath.empty?
-      absPath << '?' << server.query if server.query
-    end
-    action = "\"#{ soapAction }\""
+    dumpDev << "Wire dump:\n\n" if dumpDev
+    res = @client.request( 'POST', @server, soapString, extra )
+    dumpDev << "\n\n" if dumpDev
 
-    header = {}
-    delayedError = nil
-    begin
-      timeout( CallTimeout ) do
-          postData =<<EOS
-POST #{ absPath } HTTP/1.0
-Host: #{ server.host }
-Connection: close
-Content-Length: #{ soapString.size }
-Content-Type: #{ MediaType }; charset=#{ Charset.getCharsetLabel( charset ) }
-User-Agent: SOAP4R/#{ Version }
-SOAPAction: #{ action }
-
-EOS
-        postData.gsub!( "\n", CRLF )
-
-        postData << soapString
-        s.write postData
-
-	if dumpDev
-	  @dumpDev << "= Wire dump\n"
-	  @dumpDev << "\n"
-	  @dumpDev << "== Request from SOAP4R.\n"
-	  @dumpDev << "\n"
-	  @dumpDev << postData
-	  @dumpDev << "\n\n"
-
-	  @dumpDev << "== Response from server.\n"
-	  @dumpDev << "\n"
-	end
-
-	if s.eof
-	  raise HTTPStreamError.new( 'Unexpected EOF...' )
-	end
-
-        # Parse HTTP header
-        version = nil
-        status = nil
-        reason = nil
-        begin
-          line = s.gets.chop
-          dumpDev << line << "\n" if dumpDev
-          Regexp.new( '^HTTP/(1.\d)\s+(\d+)(?:\s+(.*))?$' ) =~ line
-          version = $1
-          status = $2
-          reason = $3
-
-          lastKey = nil
-          lastValue = nil
-          while !s.eof
-            line = s.gets.chop
-	    dumpDev << line << "\n" if dumpDev
-            if ( /^$/ =~ line )
-              header[ lastKey ] = lastValue if lastKey
-              break
-            elsif ( /^([^:]+)\s*:\s*(.*)$/ =~ line )
-              header[ lastKey ] = lastValue if lastKey
-              lastKey = $1.downcase
-              lastValue = $2
-            else
-              lastValue << "\n" << line
-            end
-          end
-        end while ( !s.eof and version == '1.1' and status == '100' )
-
-        if ( status == '405' )
-          # 405: Method Not Allowed
-          delayedError = PostUnavailableError.new( "#{ status }: #{ reason }" )
-        elsif ( status != '200' and status != '500' )
-          delayedError = HTTPStreamError.new( "#{ status }: #{ reason }" )
-        elsif ( !header.has_key?( 'content-type' ))
-          delayedError = HTTPStreamError.new( 'Content-type not found.' )
-	end
-
-	unless /^#{ MediaType }(?:;\s*charset=(.*))?/i =~ header[ 'content-type' ]
-          delayedError = HTTPStreamError.new( "Illegal content-type: #{ header[ 'content-type' ] }" )
-        end
-	receiveCharset = $1
-      end
-    rescue TimeoutError
-      raise HTTPStreamError.new( 'Call timeout' )
-    end
-
-    begin
-      timeout( ReadTimeout ) do
-	while !s.eof
-	  line = s.gets
-	  receiveString << line
-	end
-      end
-    rescue TimeoutError
-      raise HTTPStreamError.new( 'Read timeout' )
-    end
-
-    dumpDev << receiveString << "\n\n" if dumpDev
+    receiveString = res.body.content
 
     if @dumpFileBase
       fileName = @dumpFileBase + '_response.xml'
@@ -228,9 +109,19 @@ EOS
       f.close
     end
 
-    if delayedError
-      raise delayedError
+    case res.status
+    when 405
+      raise PostUnavailableError.new( "#{ res.status }: #{ res.reason }" )
+    when 200, 500
+      # Nothing to do.
+    else
+      raise HTTPStreamError.new( "#{ res.status }: #{ res.reason }" )
     end
+
+    unless /^#{ MediaType }(?:;\s*charset=(.*))?/i =~ res.header[ 'content-type' ][ 0 ]
+      raise HTTPStreamError.new( "Illegal content-type: #{ res.header[ 'content-type' ][ 0 ] }" )
+    end
+    receiveCharset = $1
 
     return receiveString, receiveCharset
   end

@@ -16,7 +16,9 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'soap/server'
+require 'http-access2/http'
 
 
 module SOAP
@@ -34,7 +36,7 @@ class CGIStub < Server
 
   class CGIError < Error; end
 
-  class CGIRequest
+  class SOAPRequest
     ALLOWED_LENGTH = 1024 * 1024
 
     def initialize( sourceStream = $stdin )
@@ -76,145 +78,6 @@ class CGIStub < Server
     end
   end
 
-  class CGIResponse
-    class Header
-      attr_accessor :status, :bodyType, :bodyCharset, :bodySize, :bodyDate
-
-      CRLF = "\r\n"
-
-      StatusMap = {
-	200 => 'OK',
-	302 => 'Object moved',
-	400 => 'Bad Request',
-	500 => 'Internal Server Error',
-      }
-
-      CharsetMap = {
-	'NONE' => 'us-ascii',
-	'EUC' => 'euc-jp',
-	'SJIS' => 'shift_jis',
-	'UTF8' => 'utf-8',
-      }
-
-      def initialize( status = 200 )
-	@status = status
-	@bodyType = nil
-	@bodyCharset = nil
-	@bodySize = nil
-	@bodyDate = nil
-	@extra = []
-      end
-
-      def add( key, value )
-	@extra.push( [ key, value ] )
-      end
-
-      def dump
-	str = ''
-	if defined?( Apache )
-	  if !StatusMap.include?( @status )
-	    @status = 400
-	  end
-	  str << dumpItem( "HTTP/1.0 #{ @status } #{ StatusMap[ @status ] }" )
-	  str << dumpItem( "Date: #{ httpDate( Time.now ) }" )
-	else
-	  str << dumpItem( "Status: #{ @status } #{ StatusMap[ @status ] }" )
-	end
-
-	if @bodySize
-	  str << dumpItem( "Content-Length: #{ @bodySize }" )
-	else
-	  str << dumpItem( "Connection: close" )
-	end
-	str << dumpItem( "Last-Modified: #{ httpDate( @bodyDate ) }" ) if @bodyDate
-	str << dumpItem( "Content-Type: #{ @bodyType || 'text/html' }; charset=#{ CharsetMap[ @bodyCharset || $KCODE ]}" )
-	@extra.each do | key, value |
-	  str << dumpItem( "#{ key }: #{ value }" )
-	end
-	str << CRLF
-	str
-      end
-
-    private
-
-      def dumpItem( str )
-	str + CRLF
-      end
-
-      def httpDate( aTime )
-	aTime.gmtime.strftime( "%a, %d %b %Y %H:%M:%S GMT" )
-      end
-    end
-
-    class Body
-      attr_accessor :type, :charset, :date
-
-      def initialize( body = nil, date = nil, type = nil, charset = nil )
-	@body = body
-	@type = type
-	@charset = charset
-	@date = date
-      end
-
-      def size
-	if @body
-	  @body.size
-	else
-	  nil
-	end
-      end
-
-      def dump
-	@body
-      end
-    end
-
-    def initialize( response )
-      self.header = Header.new
-      header.add( 'Cache-Control', 'private' )
-      self.body = Body.new( response )
-    end
-
-    def dump
-      unless header
-	raise RuntimeError.new( "Response header not set." )
-      end
-      sync
-      str = header.dump
-      str << body.dump if body and body.dump
-      str
-    end
-
-    def header
-      @header
-    end
-
-    def header=( header )
-      @header = header
-      sync
-    end
-
-    def body
-      @body
-    end
-
-    def body=( body )
-      @body = body
-      sync
-    end
-
-  private
-
-    def sync
-      if @header and @body
-	@header.bodyType = @body.type
-	@header.bodyCharset = @body.charset
-	@header.bodySize = @body.size
-	@header.bodyDate = @body.date
-      end
-    end
-  end
-
   def initialize( appName, namespace )
     super( appName, namespace )
     @remote_user = ENV[ 'REMOTE_USER' ] || 'anonymous'
@@ -237,8 +100,8 @@ private
       log( SEV_INFO, "Received a request from '#{ @remote_user }@#{ @remote_host }'." )
     
       # SOAP request parsing.
-      @request = CGIRequest.new.init
-      log( SEV_INFO, "CGI Request: #{@request}" )
+      @request = SOAPRequest.new.init
+      log( SEV_INFO, "SOAP CGI Request: #{@request}" )
 
       requestString = @request.dump
       log( SEV_DEBUG, "XML Request: #{requestString}" )
@@ -246,25 +109,27 @@ private
       responseString, isFault = route( requestString )
       log( SEV_DEBUG, "XML Response: #{responseString}" )
 
-      @response = CGIResponse.new( responseString )
+      @response = HTTP::Message.newResponse( responseString )
+      @response.header.bodyType = 'text/xml'
       unless isFault
-	@response.header.status = 200
+	@response.status = 200
       else
-	@response.header.status = 500
+	@response.status = 500
       end
       @response.body.type = 'text/xml'
       @response.body.charset = Charset.getXMLInstanceEncoding
       str = @response.dump
-      log( SEV_DEBUG, "CGI Response:\n#{ str }" )
+      log( SEV_DEBUG, "SOAP CGI Response:\n#{ str }" )
       print str
 
     rescue Exception
       responseString = createFaultResponseString( $! )
-      @response = CGIResponse.new( responseString )
-      @response.header.status = 500
+      @response = HTTP::Message.newResponse( responseString )
+      @response.header.bodyType = 'text/xml'
+      @response.status = 500
       @response.body.type = 'text/xml'
       str = @response.dump
-      log( SEV_DEBUG, "CGI Response:\n#{ str }" )
+      log( SEV_DEBUG, "SOAP CGI Response:\n#{ str }" )
       print str
       raise
 
