@@ -11,7 +11,7 @@ class Echo_version_port_type
     Version_struct,
     ::SOAP::SOAPStruct,
     ::SOAP::Mapping::Registry::TypedStructFactory,
-    { :type => ::XSD::QName.new("urn:example.com:simpletype-rpc-type", "version_struct") }
+    { :type => XSD::QName.new("urn:example.com:simpletype-rpc-type", "version_struct") }
   )
 
   Methods = [

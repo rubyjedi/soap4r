@@ -49,7 +49,7 @@ private
     return '' unless binding.soapbinding        # not a SOAP binding
     addresses = @definitions.porttype(name).locations
 
-    c = ::XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
+    c = XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
     c.def_require("soap/rpc/driver")
     c.def_const("MappingRegistry", "::SOAP::Mapping::Registry.new")
     c.def_const("DefaultEndpointUrl", addresses[0].dump)
@@ -70,7 +70,7 @@ Methods = [
     c.def_privatemethod("init_methods") do
       <<-EOD
         Methods.each do |name_as, name, params, soapaction, namespace, style|
-          qname = ::XSD::QName.new(namespace, name_as)
+          qname = XSD::QName.new(namespace, name_as)
           if style == :document
             @proxy.add_document_method(soapaction, name, params)
             add_document_method_interface(name, params)

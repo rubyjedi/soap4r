@@ -10,7 +10,7 @@ class Echo_port_type < ::SOAP::RPC::Driver
     FooBar,
     ::SOAP::SOAPStruct,
     ::SOAP::Mapping::Registry::TypedStructFactory,
-    { :type => ::XSD::QName.new("urn:example.com:echo-type", "foo.bar") }
+    { :type => XSD::QName.new("urn:example.com:echo-type", "foo.bar") }
   )
 
   Methods = [
@@ -34,7 +34,7 @@ private
 
   def init_methods
     Methods.each do |name_as, name, params, soapaction, namespace, style|
-      qname = ::XSD::QName.new(namespace, name_as)
+      qname = XSD::QName.new(namespace, name_as)
       if style == :document
         @proxy.add_document_method(soapaction, name, params)
         add_document_method_interface(name, params)

@@ -55,7 +55,7 @@ private
 
   def check(value)
     unless content.valid?(value)
-      raise ::XSD::ValueSpaceError.new("#{@name}: cannot accept '#{value}'")
+      raise XSD::ValueSpaceError.new("#{@name}: cannot accept '#{value}'")
     end
   end
 end

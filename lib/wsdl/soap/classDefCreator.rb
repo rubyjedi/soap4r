@@ -153,7 +153,8 @@ private
       else
         params << "#{varname} = nil"
       end
-      schema_element << [name, type]
+      qname = (varname == name) ? nil : element.name
+      schema_element << [varname, qname, type]
     end
     unless typedef.attributes.empty?
       define_attribute(c, typedef.attributes)
@@ -161,8 +162,12 @@ private
     end
     c.def_classvar('schema_element',
       '{' +
-        schema_element.collect { |name, type|
-          name.dump + ' => ' + ndq(type)
+        schema_element.collect { |varname, name, type|
+          if name
+            varname.dump + ' => [' + ndq(type) + ', ' + dqname(name) + ']'
+          else
+            varname.dump + ' => ' + ndq(type)
+          end
         }.join(', ') +
       '}'
     )

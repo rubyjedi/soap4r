@@ -71,6 +71,10 @@ __EOD__
     ':' + ele
   end
 
+  def dqname(qname)
+    "XSD::QName.new(#{ndq(qname.namespace)}, #{ndq(qname.name)})"
+  end
+
 private
 
   def dump_inout_type(param)
