@@ -33,6 +33,7 @@ class Schema < Info
     @attributes = XSD::NamedElements.new
     @imports = []
     @elementformdefault = "qualified"
+    @root = self
   end
 
   def parse_element(element)
@@ -72,6 +73,12 @@ class Schema < Info
     else
       nil
     end
+  end
+
+  def collect_attributes
+    result = XSD::NamedElements.new
+    result.concat(@attributes)
+    result
   end
 
   def collect_elements
