@@ -11,7 +11,12 @@ module SOAP
 class WEBrickSOAPlet < WEBrick::HTTPServlet::AbstractServlet
   include WEBrick
 
-  def get_instance( server, *options )
+  def get_instance( config, *options )
+    @config = config
+    @options = options[0]
+    if @options && @options.has_key?( 'mappingRegistry' )
+      @router.mappingRegistry = @options[ 'mappingRegistry' ]
+    end
     self
   end
 
@@ -19,13 +24,9 @@ class WEBrickSOAPlet < WEBrick::HTTPServlet::AbstractServlet
     false
   end
 
-  def initialize( *options )
-    super( @config, *options )
-    @options = options
+  def initialize
+    super( {} )
     @router = SOAP::RPCRouter.new( self.type.to_s )
-    if @opations && @options.has_key?( 'mappingRegistry' )
-      @router.mappingRegistry = @options[ 'mappingRegistry' ]
-    end
   end
 
   def addServant( namespace, obj, mappingRegistry = nil )
