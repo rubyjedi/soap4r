@@ -352,7 +352,7 @@ def doTestBase( drv )
 #  dumpTitle( title )
 #  begin
 #    arg = [ nil, "SOAP4R\n", nil, " Interoperability ", nil, "\tTest\t", nil ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    soapAry = SOAP::Mapping.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
 #    soapAry.sparse = true
 #    var = drv.echoStringArray( soapAry )
 #    dumpNormal( title, arg, var )
@@ -401,7 +401,7 @@ def doTestBase( drv )
 #  begin
 #    str = "SOAP4R"
 #    arg = StringArray[ nil, nil, nil, nil, nil, str, nil, str ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    soapAry = SOAP::Mapping.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
 #    soapAry.sparse = true
 #    var = drv.echoStringArray( soapAry )
 #    dumpNormal( title, arg, var )
@@ -557,7 +557,7 @@ def doTestBase( drv )
 #  dumpTitle( title )
 #  begin
 #    arg = [ nil, 1, nil, 2, nil, 3, nil ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::XSDInt::Type, SOAPBuildersInterop::MappingRegistry )
+#    soapAry = SOAP::Mapping.ary2soap( arg, XSD::Namespace, XSD::XSDInt::Type, SOAPBuildersInterop::MappingRegistry )
 #    soapAry.sparse = true
 #    var = drv.echoIntegerArray( soapAry )
 #    dumpNormal( title, arg, var )
@@ -769,7 +769,7 @@ def doTestBase( drv )
 #  dumpTitle( title )
 #  begin
 #    arg = [ nil, nil, 0.0001, 1000.0, 0.0, nil, nil ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::FloatLiteral, SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry = SOAP::Mapping.ary2soap( arg, XSD::Namespace, XSD::FloatLiteral, SOAPBuildersInterop::MappingRegistry ) 
 #    soapAry.sparse = true
 #    var = drv.echoFloatArray( soapAry )
 #    dumpNormal( title, arg, var )
@@ -830,7 +830,7 @@ def doTestBase( drv )
 #    s2 = SOAPStruct.new( 2, 2.2, "b" )
 #    s3 = SOAPStruct.new( 3, 3.3, "c" )
 #    arg = [ nil, s1, s2, s3 ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry = SOAP::Mapping.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
 #    soapAry.sparse = true
 #    var = drv.echoStructArray( soapAry )
 #    dumpNormal( title, arg, var ) 
@@ -880,7 +880,7 @@ def doTestBase( drv )
 #    s1 = SOAPStruct.new( 1, 1.1, "a" )
 #    s2 = SOAPStruct.new( 2, 2.2, "b" )
 #    arg = [ nil, s1, nil, nil, s2, nil, s2 ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry = SOAP::Mapping.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
 #    soapAry.sparse = true
 #    var = drv.echoStructArray( soapAry )
 #    dumpNormal( title, arg, var ) 
@@ -894,7 +894,7 @@ def doTestBase( drv )
 #    s1 = SOAPStruct.new( 1, 1.1, "a" )
 #    s2 = SOAPStruct.new( 2, 2.2, "b" )
 #    arg = [ nil, s1, nil, nil, s2, nil, s2 ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry = SOAP::Mapping.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
 #    soapAry.sparse = true
 #    var = drv.echoStructArray( soapAry )
 #    dumpNormal( title, getIdObj( var[4] ), getIdObj( var[6] )) 
@@ -941,7 +941,7 @@ def doTestBase( drv )
 #    s2 = SOAPStruct.new( 2, 2.2, str1 )
 #    s3 = SOAPStruct.new( 3, 3.3, str1 )
 #    arg = [ nil, s1, nil, nil, s2, nil, s3 ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry = SOAP::Mapping.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
 #    soapAry.sparse = true
 #    var = drv.echoStructArray( soapAry )
 #    dumpNormal( title, getIdObj( var[4].varString ), getIdObj( var[6].varString )) 
@@ -959,7 +959,7 @@ def doTestBase( drv )
 #      [ s1, nil, s2 ],
 #      [ nil, s2, s3 ],
 #    ]
-#    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
+#    md = SOAP::Mapping.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
 #
 #    var = drv.echoStructArray( md )
 #    dumpNormal( title, arg, var ) 
@@ -977,7 +977,7 @@ def doTestBase( drv )
 #      [ s1, nil, s2 ],
 #      [ nil, s2, s3 ],
 #    ]
-#    md = SOAP::RPCUtils.ary2md( arg, 2, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry )
+#    md = SOAP::Mapping.ary2md( arg, 2, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry )
 ##    md.sparse = true
 #
 #    var = drv.echoStructArray( md )
@@ -996,7 +996,7 @@ def doTestBase( drv )
 #      [ s1, nil, s2 ],
 #      [ nil, s2, s3 ],
 #    ]
-#    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
+#    md = SOAP::Mapping.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
 #    md.sparse = true
 #
 #    var = drv.echoStructArray( md )
@@ -1627,7 +1627,7 @@ unless $noEchoMap
 #    map2 = { "a" => 1, "b" => 2 }
 #    map3 = { "a" => 1, "b" => 2 }
 #    arg = [ nil, nil, map1, nil, map2, nil, map3, nil, nil ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry = SOAP::Mapping.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
 #    soapAry.sparse = true
 #    var = drv.echoMapArray( soapAry )
 #    dumpNormal( title, arg, var )
@@ -1654,7 +1654,7 @@ unless $noEchoMap
 #    map1 = { "a" => 1, "b" => 2 }
 #    map2 = { "a" => 1, "b" => 2 }
 #    arg = [ nil, nil, map1, nil, map2, nil, map1, nil, nil ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry = SOAP::Mapping.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
 #    soapAry.sparse = true
 #    var = drv.echoMapArray( soapAry )
 #    dumpNormal( title, arg, var )
@@ -1748,15 +1748,15 @@ def doTestGroupB( drv )
     arg = SOAP::SOAPArray.new( XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' ), 2, XSD::XSDString::Type )
     arg.size = [ 3, 3 ]
     arg.size_fixed = true
-    arg.add( SOAP::RPCUtils.obj2soap( 'r0c0', SOAPBuildersInterop::MappingRegistry ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r1c0', SOAPBuildersInterop::MappingRegistry ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r2c0', SOAPBuildersInterop::MappingRegistry ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r0c1', SOAPBuildersInterop::MappingRegistry ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r1c1', SOAPBuildersInterop::MappingRegistry ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r2c1', SOAPBuildersInterop::MappingRegistry ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r0c2', SOAPBuildersInterop::MappingRegistry ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r1c2', SOAPBuildersInterop::MappingRegistry ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r2c2', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r0c0', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r1c0', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r2c0', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r0c1', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r1c1', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r2c1', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r0c2', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r1c2', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::Mapping.obj2soap( 'r2c2', SOAPBuildersInterop::MappingRegistry ))
     argNormalized = [
       [ 'r0c0', 'r1c0', 'r2c0' ],
       [ 'r0c1', 'r1c1', 'r2c1' ],
@@ -1779,7 +1779,7 @@ def doTestGroupB( drv )
       [ 'r2c0', 'r0c1', 'r2c2' ],
     ]
 
-    paramArg = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
+    paramArg = SOAP::Mapping.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
     paramArg.type = XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' )
     var = drv.echo2DStringArray( paramArg )
     dumpNormal( title, arg, var )
@@ -1795,7 +1795,7 @@ def doTestGroupB( drv )
 #      [ 'r0c0', nil,    'r0c2' ],
 #      [ nil,    'r1c1', 'r1c2' ],
 #    ]
-#    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    md = SOAP::Mapping.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
 #    md.sparse = true
 #
 #    var = drv.echo2DStringArray( md )
@@ -1812,7 +1812,7 @@ def doTestGroupB( drv )
 #      [ 'r0c0', nil,    'r0c2' ],
 #      [ nil,    'r1c1', 'r1c2' ],
 #    ]
-#    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    md = SOAP::Mapping.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
 #    md.sparse = true
 #
 #    var = drv.echo2DStringArray( md )
@@ -1883,7 +1883,7 @@ def doTestGroupB( drv )
 #      [ 'r0c0', nil, str    ],
 #      [ nil,    str, 'r1c2' ],
 #    ]
-#    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    md = SOAP::Mapping.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
 #    md.sparse = true
 #
 #    var = drv.echo2DStringArray( md )
@@ -1976,7 +1976,7 @@ def doTestGroupB( drv )
 #  begin
 #    str = "!"
 #    subAry = [ nil, nil, str, nil, str, nil ]
-#    ary = SOAP::RPCUtils.ary2soap( subAry, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry ) 
+#    ary = SOAP::Mapping.ary2soap( subAry, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry ) 
 #    ary.sparse = true
 #    arg = SOAPArrayStruct.new( 1, 1.1, str, ary )
 #    argNormalized = SOAPArrayStruct.new( 1, 1.1, str, subAry )
