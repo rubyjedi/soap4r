@@ -27,8 +27,8 @@ require 'soap/mapping'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/rpc/driver'
+require 'soap/rpc/cgistub'
 require 'soap/rpc/router'
-require 'soap/rpc/server'
 require 'soap/rpc/standaloneServer'
 
 
@@ -66,16 +66,6 @@ RPCServerException = RPC::ServerException
 RPCRouter = RPC::Router
 
 
-class Server < RPC::Server
-  def initialize(*arg)
-    super
-  end
-
-  alias addServant add_servant
-  alias addMethod add_method
-end
-
-
 class StandaloneServer < RPC::StandaloneServer
   def initialize(*arg)
     super
@@ -86,6 +76,32 @@ class StandaloneServer < RPC::StandaloneServer
   alias addServant add_servant
   alias addMethod add_method
   alias addMethodAs add_method_as
+end
+
+
+class CGIStub < RPC::CGIStub
+  def initialize(*arg)
+    super
+    methodDef if respond_to?('methodDef')
+  end
+
+  alias addServant add_servant
+
+  def addMethod(receiver, methodName, *paramArg)
+    addMethodWithNSAs(@default_namespace, receiver, methodName, methodName, *paramArg)
+  end
+
+  def addMethodAs(receiver, methodName, methodNameAs, *paramArg)
+    addMethodWithNSAs(@default_namespace, receiver, methodName, methodNameAs, *paramArg)
+  end
+
+  def addMethodWithNS(namespace, receiver, methodName, *paramArg)
+    addMethodWithNSAs(namespace, receiver, methodName, methodName, *paramArg)
+  end
+
+  def addMethodWithNSAs(namespace, receiver, methodName, methodNameAs, *paramArg)
+    add_method_with_namespace_as(namespace, receiver, methodName, methodNameAs, *paramArg)
+  end
 end
 
 

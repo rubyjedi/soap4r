@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
+=begin
 require 'soap/rpc/router'
 require 'devel/logger'
 
@@ -99,3 +100,4 @@ end
 
 end
 end
+=end

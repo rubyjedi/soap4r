@@ -51,7 +51,7 @@ class StandaloneServer < Devel::Application
   def initialize(app_name, namespace, host = "0.0.0.0", port = 8080)
     super(app_name)
     @logdev = Devel::Logger.new(STDERR)
-    @logdev.sev_threshold = SEV_WARN
+    @logdev.sev_threshold = SEV_INFO
     def @logdev.<<(msg)
       log(SEV_INFO, msg)
     end
