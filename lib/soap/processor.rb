@@ -22,9 +22,9 @@ require 'soap/soap'
 require 'soap/element'
 require 'soap/parser'
 require 'soap/generator'
-require 'soap/encodingStyleHandlerDynamic'
-require 'soap/encodingStyleHandlerLiteral'
-require 'soap/encodingStyleHandlerASPDotNet'
+require 'soap/encodingstyle/soapHandler'
+require 'soap/encodingstyle/literalHandler'
+require 'soap/encodingstyle/aspDotNetHandler'
 
 
 module SOAP

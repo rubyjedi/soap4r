@@ -20,7 +20,7 @@ Ave, Cambridge, MA 02139, USA.
 require 'xsd/ns'
 require 'soap/soap'
 require 'soap/baseData'
-require 'soap/encodingStyleHandler'
+require 'soap/encodingstyle/handler'
 
 
 module SOAP
@@ -185,7 +185,7 @@ private
 
   def find_handler(encodingstyle)
     unless @handlers.key?(encodingstyle)
-      handler = SOAP::EncodingStyleHandler.handler(encodingstyle).new(@charset)
+      handler = SOAP::EncodingStyle::Handler.handler(encodingstyle).new(@charset)
       handler.generate_explicit_type = @generate_explicit_type
       handler.encode_prologue
       @handlers[encodingstyle] = handler

@@ -21,7 +21,7 @@ require 'xsd/ns'
 require 'xsd/xmlparser'
 require 'soap/soap'
 require 'soap/baseData'
-require 'soap/encodingStyleHandler'
+require 'soap/encodingstyle/handler'
 
 
 module SOAP
@@ -237,8 +237,8 @@ private
 
   def find_handler(encodingstyle)
     unless @handlers.key?(encodingstyle)
-      handler_factory = SOAP::EncodingStyleHandler.handler(encodingstyle) ||
-	SOAP::EncodingStyleHandler.handler(EncodingNamespace)
+      handler_factory = SOAP::EncodingStyle::Handler.handler(encodingstyle) ||
+	SOAP::EncodingStyle::Handler.handler(EncodingNamespace)
       handler = handler_factory.new(@parser.charset)
       handler.decode_typemap = @decode_typemap
       handler.decode_prologue
