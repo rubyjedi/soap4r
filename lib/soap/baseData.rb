@@ -607,6 +607,10 @@ public
     end
   end
 
+  def to_a
+    @data.dup
+  end
+
   def replace
     @data = doDeepMap( @data ) do | ele |
       yield( ele )
