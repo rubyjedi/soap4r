@@ -20,20 +20,5 @@ require 'soap/rpc/standaloneServer'
 
 
 module SOAP
-
-
-###
-# SYNOPSIS
-#   StandaloneServer.new(appName, namespace, listening_i/f, listening_port)
-#
-# DESCRIPTION
-#   appName is ignored.
-#
-class StandaloneServer < RPC::StandaloneServer
-  def initialize(appName, namespace, host = "127.0.0.1", port = 8080)
-    super(namespace, host, port)
-  end
-end
-
-
+  StandaloneServer = RPC::StandaloneServer
 end
