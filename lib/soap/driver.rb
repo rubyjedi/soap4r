@@ -19,7 +19,6 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/proxy'
 require 'soap/rpcUtils'
 require 'soap/streamHandler'
-#require 'soap/streamHandler_http-access'
 require 'soap/charset'
 
 require 'application'
