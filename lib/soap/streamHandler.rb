@@ -42,6 +42,7 @@ class HTTPPostStreamHandler < StreamHandler
 public
   
   attr_accessor :dumpDev
+  attr_accessor :dumpFileBase
   
   MediaType = 'text/xml'
 
@@ -54,6 +55,7 @@ public
     @server = endPointUri
     @proxy = proxy
     @dumpDev = nil	# Set an IO to get wiredump.
+    @dumpFileBase = nil
   end
 
   def send( soapString, soapAction = nil )
@@ -77,6 +79,13 @@ public
       else
 	nil
       end
+
+    if @dumpFileBase
+      fileName = @dumpFileBase + '_request.xml'
+      f = File.open( fileName, "w" )
+      f << soapString
+      f.close
+    end
 
     retryNo = NofRetry
     begin
@@ -167,7 +176,7 @@ EOS
         if ( status == '405' )
           # 405: Method Not Allowed
           raise PostUnavailableError.new( "#{ status }: #{ reason }" )
-        elsif ( status != '200' )
+        elsif ( status != '200' and status != '500' )
           raise HTTPStreamError.new( "#{ status }: #{ reason }" )
         elsif ( !header.has_key?( 'content-type' ))
           raise HTTPStreamError.new( 'Content-type not found.' )
@@ -185,14 +194,20 @@ EOS
 	while !s.eof
 	  line = s.gets
 	  receiveString << line
-	  dumpDev << line << "\n" if dumpDev
 	end
       end
     rescue TimeoutError
       raise HTTPStreamError.new( 'Read timeout' )
     end
 
-    dumpDev << "\n\n" if dumpDev
+    dumpDev << receiveString << "\n\n" if dumpDev
+
+    if @dumpFileBase
+      fileName = @dumpFileBase + '_response.xml'
+      f = File.open( fileName, "w" )
+      f << receiveString
+      f.close
+    end
 
     receiveString
   end
