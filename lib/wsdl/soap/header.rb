@@ -33,7 +33,7 @@ class Header < Info
   end
 
   def find_message
-    root.message(@message)
+    root.message(@message) or raise RuntimeError.new("#{@message} not found")
   end
 
   def find_part
@@ -42,7 +42,7 @@ class Header < Info
 	return part
       end
     end
-    nil
+    raise RuntimeError.new("#{@part} not found")
   end
 
   def parse_element(element)
