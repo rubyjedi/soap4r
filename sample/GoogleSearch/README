@@ -1,0 +1,4 @@
+Original file is GoogleSearch.wsdl.  Whole files in this directory is
+created by wsdl2ruby.rb with options;
+
+% wsdl2ruby.rb --wsdl GoogleSearch.wsdl --classDef --clientSkelton --servantSkelton --cgiStub --webrickStub --standaloneServerStub --driver
