@@ -40,11 +40,15 @@ class HandlerSet
 
   # headers: SOAPHeaderItem enumerable object
   def on_inbound(headers)
-    @store.each do |handler|
-      name, item = headers.find { |name, item|
-	handler.name == item.element.elename
+    headers.each do |name, item|
+      handler = @store.find { |handler|
+        handler.elename == item.element.elename
       }
-      handler.on_inbound_headeritem(item)
+      if handler
+        handler.on_inbound_headeritem(item)
+      elsif item.mustunderstand
+        raise UnhandledMustUnderstandHeaderError.new(item.element.elename.to_s)
+      end
     end
   end
 end
