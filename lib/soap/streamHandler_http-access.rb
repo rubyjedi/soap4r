@@ -1,6 +1,6 @@
 =begin
 SOAP4R - Stream handler.
-Copyright (C) 2000 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
