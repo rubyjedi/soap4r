@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:mstns="http://www.winfessor.com/SoapBoxWebService/ExceptionDataSet.xsd" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns="http://www.winfessor.com/SoapBoxWebService/ExceptionDataSet.xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://www.winfessor.com/SoapBoxWebService/ExceptionDataSet.xsd" id="ExceptionDataSet" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element msdata:IsDataSet="true" name="ExceptionDataSet">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element name="exception">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element msdata:Ordinal="3" name="message" type="xs:string" />
+              <xs:element msdata:Ordinal="4" name="type" type="xs:string" />
+              <xs:element msdata:Ordinal="5" name="innerex" type="xs:string" />
+              <xs:element msdata:Ordinal="6" name="stacktrace" type="xs:string" />
+              <xs:element msdata:Ordinal="7" name="data" type="xs:string" />
+            </xs:sequence>
+            <xs:attribute form="unqualified" name="source" type="xs:string" />
+            <xs:attribute form="unqualified" name="targetsite" type="xs:string" />
+            <xs:attribute form="unqualified" name="helplink" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
