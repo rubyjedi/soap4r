@@ -1,5 +1,5 @@
 # WSDL4R - Creating driver code from WSDL.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -46,6 +46,7 @@ private
     methoddef, types = MethodDefCreator.new(@definitions).dump(name)
     mr_creator = MappingRegistryCreator.new(@definitions)
     binding = @definitions.bindings.find { |item| item.type == name }
+    return '' unless binding.soapbinding        # not a SOAP binding
     addresses = @definitions.porttype(name).locations
 
     c = ::XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
@@ -55,7 +56,7 @@ private
     c.def_code(mr_creator.dump(types))
     c.def_code <<-EOD
 Methods = [
-#{ methoddef.gsub(/^/, "  ") }
+#{methoddef.gsub(/^/, "  ")}
 ]
     EOD
     c.def_method("initialize", "endpoint_url = nil") do
@@ -76,6 +77,12 @@ Methods = [
           else
             @proxy.add_rpc_method(qname, soapaction, name, params)
             add_rpc_method_interface(name, params)
+          end
+          if name_as != name and name_as.capitalize == name.capitalize
+            sclass = class << self; self; end
+            sclass.__send__(:define_method, name_as, proc { |*arg|
+              __send__(name, *arg)
+            })
           end
         end
       EOD
