@@ -19,7 +19,7 @@ Ave, Cambridge, MA 02139, USA.
 module SOAP
   public
 
-  Version = '1.3.7'
+  Version = '1.3.8'
 
   EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
   EncodingNamespace = 'http://schemas.xmlsoap.org/soap/encoding/'
@@ -62,7 +62,8 @@ module SOAP
     end
 
     def to_s
-      @faultString ? @faultString.data : ''
+      return @faultString.data if @faultString && @faultString.respond_to?( 'data' )
+      '(No faultString)'
     end
   end
 
