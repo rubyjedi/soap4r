@@ -122,7 +122,7 @@ private
 	base = capitalize( getParentComplexType.name.name ) + base
       end
     end while getParentComplexType.isAnonymousType
-    base << 'Type'
+    base + 'Type'
   end
 
   def capitalize( target )
