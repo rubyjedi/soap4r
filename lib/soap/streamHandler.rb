@@ -28,7 +28,7 @@ class StreamHandler
   public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.12 2001/07/26 01:58:18 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.13 2001/07/27 11:23:25 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   attr_reader :endPoint
@@ -49,9 +49,10 @@ public
   
   MediaType = 'text/xml'
 
-  NofRetry = 10       # [times]
-  CallTimeout = 300   # [sec]
-  ReadTimeout = 300   # [sec]
+  NofRetry = 10       	# [times]
+  ConnectTimeout = 60   # [sec]
+  SendTimeout = 60	# [sec]
+  ReceiveTimeout = 60   # [sec]
 
   def initialize( endPointUri, proxy = nil, charset = $KCODE )
     super( endPointUri )
@@ -61,6 +62,9 @@ public
     @dumpDev = nil	# Set an IO to get wiredump.
     @dumpFileBase = nil
     @client = HTTPAccess2::Client.new( proxy, "SOAP4R/#{ Version }" )
+    @client.sessionManager.connectTimeout = ConnectTimeout
+    @client.sessionManager.sendTimeout = SendTimeout
+    @client.sessionManager.receiveTimeout = ReceiveTimeout
   end
 
   def send( soapString, soapAction = nil, charset = @charset )
@@ -97,7 +101,12 @@ public
     extra[ 'SOAPAction' ] = "\"#{ soapAction }\""
 
     dumpDev << "Wire dump:\n\n" if dumpDev
-    res = @client.request( 'POST', @server, soapString, extra )
+    begin
+      res = @client.request( 'POST', @server, soapString, extra )
+    rescue TimeoutError
+      @client.reset( @server )
+      raise PostUnavailableError.new( "Timeout." )
+    end
     dumpDev << "\n\n" if dumpDev
 
     receiveString = res.body.content
