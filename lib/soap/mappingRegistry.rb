@@ -112,26 +112,29 @@ module RPCUtils
       end
     end
 
-    def createEmptyObject( klass )
-      klass.module_eval <<-EOS
-	begin
-	  alias __initialize initialize
-	rescue NameError
-	end
-	def initialize; end
-      EOS
-
-      obj = klass.new
-
-      klass.module_eval <<-EOS
-	undef initialize
-	begin
-	  alias initialize __initialize
-	rescue NameError
-	end
-      EOS
-
-      obj
+    if Object.respond_to?( :allocate )
+      def createEmptyObject( klass )
+	klass.allocate
+      end
+    else
+      def createEmptyObject( klass )
+	klass.module_eval <<-EOS
+	  begin
+	    alias __initialize initialize
+	  rescue NameError
+	  end
+	  def initialize; end
+	EOS
+   	obj = klass.new
+   	klass.module_eval <<-EOS
+  	  undef initialize
+  	  begin
+  	    alias initialize __initialize
+  	  rescue NameError
+  	  end
+   	EOS
+   	obj
+      end
     end
 
     # It breaks Thread.current[ :SOAPDataKey ].
@@ -364,6 +367,7 @@ module RPCUtils
     TYPE_CLASS = 'Class'
     TYPE_MODULE = 'Module'
     TYPE_SYMBOL = 'Symbol'
+    TYPE_STRUCT = 'Struct'
     TYPE_HASH = 'Map'
 
     def initialize( config = {} )
@@ -448,19 +452,20 @@ module RPCUtils
 	end
 	param
       when Struct
-	typeName = RPCUtils.getElementNameFromName( obj.type.name )
+	typeName = TYPE_STRUCT
 	param = SOAPStruct.new( typeName )
 	markMarshalledObj( obj, param )
-	param.typeNamespace = getNamespace( obj.type ) ||
-	  RubyCustomTypeNamespace
+	param.typeNamespace = RubyTypeNamespace
+	param.add( 'type', typeElem = SOAPString.new( obj.type.to_s ))
+	memberElem = SOAPStruct.new
 	obj.members.each do |member|
-	  param.add( RPCUtils.getElementNameFromName( member ),
+	  memberElem.add( RPCUtils.getElementNameFromName( member ),
 	    RPCUtils._obj2soap( obj[ member ], map ))
 	end
+	param.add( 'member', memberElem )
 	param
       when IO, Binding, Continuation, Data, Dir, File::Stat, MatchData, Method,
   	  Proc, Thread, ThreadGroup 
-	# raise FactoryError.new( "can't dump #{ obj.type }." )
 	return nil
       when ::SOAP::RPCUtils::Object
 	typeNamespace = XSD::Namespace
@@ -535,6 +540,28 @@ module RPCUtils
 	RPCUtils.getClassFromName( node[ 'name' ].data )
       when TYPE_SYMBOL
 	node[ 'id' ].data.intern
+      when TYPE_STRUCT
+	obj = nil
+	typeName = RPCUtils.getNameFromElementName( node[ 'type' ] )
+	begin
+	  klass = begin
+	      RPCUtils.getClassFromName( typeName )
+	    rescue NameError
+	      self.instance_eval( toType( typeName ))
+	    end
+	  if !klass.ancestors.include?( ::Struct )
+	    raise NameError.new()
+	  end
+	  obj = klass.new
+	  markUnmarshalledObj( node, obj )
+	  node[ 'member'].each do | name, value |
+	    obj[ RPCUtils.getNameFromElementName( name ) ] =
+	      RPCUtils._soap2obj( value, map )
+	  end
+	  obj
+	rescue NameError
+  	  raise FactoryError.new( "Unknown struct #{ node.typeName }." )
+	end
       else
 	exception2obj( node, map )
       end
@@ -580,38 +607,9 @@ module RPCUtils
     def unknownType2obj( node, map )
       obj = struct2obj( node, map )
       return obj if obj
-
       if !@allowUntypedStruct
 	raise FactoryError.new( "Unknown object #{ node.typeName }." )
       end
-
-=begin
-      typeName = RPCUtils.getNameFromElementName( node.typeName || node.name )
-      klass = nil
-      structName = toType( typeName )
-      members = node.members.collect { |member|
-	RPCUtils.getNameFromElementName( member )
-      }
-      if ( Struct.constants - Struct.superclass.constants ).member?(
-	  structName )
-	klass = Struct.const_get( structName )
-	if klass.members.length != members.length
-	  klass = Struct.new( structName, *members )
-	end
-      else
-	klass = Struct.new( structName, *members )
-      end
-      obj = klass.new
-      markUnmarshalledObj( node, obj )
-      node.each do | name, value |
-	obj.send( RPCUtils.getNameFromElementName( name ) + '=',
-	  RPCUtils._soap2obj( value, map ))
-      end
-      # Should this object bear typeName and typeNamespace in her mind?
-      # But, I don't know safe way to do this...
-      obj
-=end
-
       anyType2obj( node, map )
     end
 
