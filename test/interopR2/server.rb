@@ -1,8 +1,10 @@
 #!/usr/bin/env ruby
 
-$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
+$:.unshift(".")
+
+#$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
 #$KCODE = "EUC"
-#$KCODE = "SJIS"
+$KCODE = "SJIS"
 
 require 'soap/standaloneServer'
 require 'base'
@@ -10,8 +12,10 @@ require 'base'
 #require 'soap/xmlscanner'
 #require 'soap/xmlparser'
 #require 'soap/nqxmlparser'
+GC.start
 
 class InteropApp < SOAP::StandaloneServer
+  include SOAP
 
   def initialize( *arg )
     super( *arg )
@@ -257,10 +261,6 @@ class InteropApp < SOAP::StandaloneServer
 
   def echoXSDInt( inputInt )
     SOAP::SOAPInt.new( clone( inputInteger ))
-  end
-
-  def echoXSDTime( inputXSDTime )
-    SOAP::SOAPTime.new( clone( inputXSDTime ))
   end
 
   def echoPolyMorph( anObject )
