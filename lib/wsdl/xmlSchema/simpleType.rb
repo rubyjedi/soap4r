@@ -19,13 +19,24 @@ class SimpleType < Info
   attr_reader :derivetype
   attr_reader :restriction
 
+  def check_lexical_format(value)
+    if @restriction
+      check_restriction(value)
+    elsif @extension
+      raise NotImplementedError
+      # ToDo
+    else
+      raise ArgumentError.new("incomplete simpleType")
+    end
+  end
+
   def base
     if @restriction
       @restriction.base
     elsif @extension
       @extension.base
     else
-      nil
+      raise ArgumentError.new("incomplete simpleType")
     end
   end
 
@@ -53,6 +64,14 @@ class SimpleType < Info
     case attr
     when NameAttrName
       @name = XSD::QName.new(targetnamespace, value)
+    end
+  end
+
+private
+
+  def check_restriction(value)
+    unless @restriction.valid?(value)
+      raise ::XSD::ValueSpaceError.new("#{@name}: cannot accept '#{value}'.")
     end
   end
 end
