@@ -105,6 +105,13 @@ __EOX__
   end
 
   def parse_req_header(str)
+    if ::SOAP::StreamHandler::Client.to_s == 'SOAP::NetHttpClient'
+      str = eval(str.split(/\r?\n/)[4][3..-1])
+    end
+    parse_req_header_http_access2(str)
+  end
+
+  def parse_req_header_http_access2(str)
     headerp = false
     headers = {}
     req = nil
@@ -135,6 +142,10 @@ __EOX__
   end
 
   def test_basic_auth
+    unless Object.const_defined?('HTTPAccess2')
+      STDERR.puts("basic_auth is not supported")
+      return
+    end
     str = ""
     @client.wiredump_dev = str
     @client.options["protocol.http.basic_auth"] << [@url, "foo", "bar"]
@@ -147,6 +158,9 @@ __EOX__
     if Object.const_defined?('HTTPAccess2')
       backup = HTTPAccess2::Client::NO_PROXY_HOSTS.dup
       HTTPAccess2::Client::NO_PROXY_HOSTS.clear
+    else
+      backup = SOAP::NetHttpClient::NO_PROXY_HOSTS.dup
+      SOAP::NetHttpClient::NO_PROXY_HOSTS.clear
     end
     setup_proxyserver
     str = ""
@@ -158,6 +172,8 @@ __EOX__
   ensure
     if Object.const_defined?('HTTPAccess2')
       HTTPAccess2::Client::NO_PROXY_HOSTS.replace(backup)
+    else
+      SOAP::NetHttpClient::NO_PROXY_HOSTS.replace(backup)
     end
   end
 
