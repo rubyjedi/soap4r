@@ -103,6 +103,26 @@ class TestProperty < Test::Unit::TestCase
     assert_equal(tag, @prop["foo.bar.baz.qux"])
     assert_equal(3, tested)
   end
+
+  def test_keys
+    assert(@prop.keys.empty?)
+    @prop["foo"] = 1
+    @prop["bar"]
+    @prop["BAz"] = 2
+    assert_equal(2, @prop.keys.size)
+    assert(@prop.keys.member?(:foo))
+    assert(@prop.keys.member?(:baz))
+    #
+    assert_nil(@prop["a"])
+    @prop["a.a"] = 1
+    assert_instance_of(::SOAP::Property, @prop["a"])
+    @prop["a.b"] = 1
+    @prop["a.c"] = 1
+    assert_equal(3, @prop["a"].keys.size)
+    assert(@prop["a"].keys.member?(:a))
+    assert(@prop["a"].keys.member?(:b))
+    assert(@prop["a"].keys.member?(:c))
+  end
 end
 
 

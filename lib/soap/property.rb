@@ -37,6 +37,11 @@ class Property
     assign_hook(name_to_a(name), &hook)
   end
 
+  # keys: downcased symbol
+  def keys
+    @store.keys
+  end
+
 protected
 
   def referent(ary)
