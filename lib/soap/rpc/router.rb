@@ -38,6 +38,9 @@ class Router
     @headerhandlerfactory = []
   end
 
+  ###
+  ## header handler interface
+  #
   def add_request_headerhandler(factory)
     unless factory.respond_to?(:create)
       raise TypeError.new("factory must respond to 'create'")
@@ -49,11 +52,45 @@ class Router
     @headerhandler.add(handler)
   end
 
+  ###
+  ## servant definition interface
+  #
+  def add_rpc_request_servant(factory, namespace)
+    unless factory.respond_to?(:create)
+      raise TypeError.new("factory must respond to 'create'")
+    end
+    obj = factory.create        # a dummy instance for introspection
+    ::SOAP::RPC.defined_methods(obj).each do |name|
+      begin
+        qname = XSD::QName.new(namespace, name)
+        param_def = ::SOAP::RPC::SOAPMethod.derive_param_def(obj, name)
+        opt = create_styleuse_option(:rpc, :encoded)
+        add_rpc_request_operation(factory, qname, nil, name, param_def, opt)
+      rescue SOAP::RPC::MethodDefinitionError => e
+        p e if $DEBUG
+      end
+    end
+  end
+
+  def add_rpc_servant(obj, namespace)
+    ::SOAP::RPC.defined_methods(obj).each do |name|
+      begin
+        qname = XSD::QName.new(namespace, name)
+        param_def = ::SOAP::RPC::SOAPMethod.derive_param_def(obj, name)
+        opt = create_styleuse_option(:rpc, :encoded)
+        add_rpc_operation(obj, qname, nil, name, param_def, opt)
+      rescue SOAP::RPC::MethodDefinitionError => e
+        p e if $DEBUG
+      end
+    end
+  end
+  alias add_servant add_rpc_servant
+
+  ###
+  ## operation definition interface
+  #
   def add_rpc_operation(receiver, qname, soapaction, name, param_def, opt = {})
-    opt[:request_style] ||= :rpc
-    opt[:response_style] ||= :rpc
-    opt[:request_use] ||= :encoded
-    opt[:response_use] ||= :encoded
+    ensure_styleuse_option(opt, :rpc, :encoded)
     opt[:request_qname] = qname
     op = ApplicationScopeOperation.new(soapaction, receiver, name, param_def,
       opt)
@@ -67,10 +104,7 @@ class Router
 
   def add_rpc_request_operation(factory, qname, soapaction, name, param_def,
       opt = {})
-    opt[:request_style] ||= :rpc
-    opt[:response_style] ||= :rpc
-    opt[:request_use] ||= :encoded
-    opt[:response_use] ||= :encoded
+    ensure_styleuse_option(opt, :rpc, :encoded)
     opt[:request_qname] = qname
     op = RequestScopeOperation.new(soapaction, factory, name, param_def, opt)
     if opt[:request_style] != :rpc
@@ -83,10 +117,7 @@ class Router
     unless soapaction
       raise RPCRoutingError.new("soapaction is a must for document method")
     end
-    opt[:request_style] ||= :document
-    opt[:response_style] ||= :document
-    opt[:request_use] ||= :encoded
-    opt[:response_use] ||= :encoded
+    ensure_styleuse_option(opt, :document, :encoded)
     op = ApplicationScopeOperation.new(soapaction, receiver, name, param_def,
       opt)
     if opt[:request_style] != :document
@@ -101,10 +132,7 @@ class Router
     unless soapaction
       raise RPCRoutingError.new("soapaction is a must for document method")
     end
-    opt[:request_style] ||= :document
-    opt[:response_style] ||= :document
-    opt[:request_use] ||= :encoded
-    opt[:response_use] ||= :encoded
+    ensure_styleuse_option(opt, :document, :encoded)
     op = RequestScopeOperation.new(soapaction, receiver, name, param_def, opt)
     if opt[:request_style] != :document
       raise RPCRoutingError.new("illegal request_style given")
@@ -113,18 +141,18 @@ class Router
   end
 
   def route(conn_data)
+    env = unmarshal(conn_data)
+    if env.nil?
+      raise ArgumentError.new("illegal SOAP marshal format")
+    end
+    op = lookup_operation(conn_data.soapaction, env.body)
+    headerhandler = @headerhandler.dup
+    @headerhandlerfactory.each do |f|
+      headerhandler.add(f.create)
+    end
+    receive_headers(headerhandler, env.header)
     soap_response = default_encodingstyle = nil
     begin
-      env = unmarshal(conn_data)
-      if env.nil?
-	raise ArgumentError.new("illegal SOAP marshal format")
-      end
-      op = lookup_operation(conn_data.soapaction, env.body)
-      headerhandler = @headerhandler.dup
-      @headerhandlerfactory.each do |f|
-        headerhandler.add(f.create)
-      end
-      receive_headers(headerhandler, env.header)
       soap_response =
         op.call(env.body, @mapping_registry, @literal_mapping_registry)
       if op.response_use == :document
@@ -143,9 +171,7 @@ class Router
 
   # Create fault response string.
   def create_fault_response(e)
-    header = SOAPHeader.new
-    body = SOAPBody.new(fault(e))
-    env = SOAPEnvelope.new(header, body)
+    env = SOAPEnvelope.new(SOAPHeader.new, SOAPBody.new(fault(e)))
     opt = {}
     opt[:external_content] = nil
     response_string = Processor.marshal(env, opt)
@@ -158,6 +184,20 @@ class Router
   end
 
 private
+
+  def create_styleuse_option(style, use)
+    opt = {}
+    opt[:request_style] = opt[:response_style] = style
+    opt[:request_use] = opt[:response_use] = use
+    opt
+  end
+
+  def ensure_styleuse_option(opt, style, use)
+    opt[:request_style] ||= style
+    opt[:response_style] ||= style
+    opt[:request_use] ||= use
+    opt[:response_use] ||= use
+  end
 
   def assign_operation(soapaction, qname, op)
     assigned = false

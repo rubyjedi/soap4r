@@ -24,8 +24,7 @@ class DatetimePortTypeApp < SOAP::RPC::StandaloneServer
     servant = DatetimePortType.new
     DatetimePortType::Methods.each do |name_as, name, params, soapaction, namespace|
       qname = XSD::QName.new(namespace, name_as)
-      @soaplet.app_scope_router.add_method(servant, qname, soapaction,
-	name, params)
+      @router.add_method(servant, qname, soapaction, name, params)
     end
 
     self.mapping_registry = DatetimePortType::MappingRegistry

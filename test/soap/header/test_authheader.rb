@@ -33,7 +33,7 @@ class TestAuthHeader < Test::Unit::TestCase
       super
       add_rpc_servant(AuthHeaderService.new, PortName)
       ServerAuthHeaderHandler.init
-      add_rpc_request_headerhandler(ServerAuthHeaderHandler)
+      add_request_headerhandler(ServerAuthHeaderHandler)
     end
 
     class ServerAuthHeaderHandler < SOAP::Header::SimpleHandler
