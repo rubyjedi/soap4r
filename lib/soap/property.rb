@@ -12,6 +12,43 @@ module SOAP
 class Property
   include Enumerable
 
+  # comment: line which begins with '#' and empty line.
+  # line separator: \r?\n.
+  # key/value separator: ':', '=', or \s.
+  # '\' as escape character.  line separator cannot be escaped (1 line 1 prop).
+  # \s at the head/tail of key/value are trimmed.
+  def self.load(stream)
+    prop = new
+    stream.each do |line|
+      line.sub!(/\r?\n\z/, '')
+      next if /^(#.*|)$/ =~ line
+      if /^\s*([^=:\s\\]+(?:\\.[^=:\s\\]*)*)\s*[=:\s]\s*(.*)$/ =~ line
+	key, value = $1, $2
+	key = eval("\"#{key}\"")
+	value = eval("\"#{value.strip}\"")
+	prop[key] = value
+      else
+	raise TypeError.new("property format error: #{line}")
+      end
+    end
+    prop
+  end
+
+  def self.open(filename)
+    File.open(filename) do |f|
+      load(f)
+    end
+  end
+
+  def self.loadproperty(propname)
+    $:.each do |path|
+      if File.file?(File.join(path, propname))
+	return open(File.join(path, propname))
+      end
+    end
+    raise ArgumentError.new("property `#{propname}' not found")
+  end
+
   def initialize
     @store = Hash.new
     @hook = Hash.new
@@ -193,7 +230,7 @@ private
     when Symbol
       [name]
     when String
-      name.split(/\./)
+      name.scan(/[^.\\]+(?:\\.[^.\\])*/)	# split with unescaped '.'
     when Array
       name
     else
@@ -212,7 +249,7 @@ private
   end
 
   def to_key(name)
-    name.to_s.downcase.intern
+    name.to_s.downcase
   end
 
   def generate_new_key

@@ -14,6 +14,35 @@ class TestProperty < Test::Unit::TestCase
     # Nothing to do.
   end
 
+  def test_s_load
+    propstr = <<__EOP__
+
+# comment1
+
+# comment2
+# comment2
+
+
+a.b.0 = 1
+a.b.1 = 2
+a.b.2 = 3
+client.protocol.http.proxy=http://myproxy:8080   
+client.protocol.http.no_proxy:  intranet.example.com,local.example.com
+client.protocol.http.protocol_version = 1.0
+foo\\:bar\\=baz = qux
+foo\\\\.bar.baz=\tq\\\\ux\ttab
+  a\\ b                            =                          1   
+__EOP__
+    prop = Property.load(propstr)
+    assert_equal(["1", "2", "3"], prop["a.b"].values.sort)
+    assert_equal("intranet.example.com,local.example.com",
+      prop["client.protocol.http.no_proxy"])
+    assert_equal("http://myproxy:8080", prop["client.protocol.http.proxy"])
+    assert_equal("1.0", prop["client.protocol.http.protocol_version"])
+    assert_equal("q\\ux\ttab", prop['foo\.bar.baz'])
+    assert_equal("1", prop['a b'])
+  end
+
   def test_initialize
     prop = ::SOAP::Property.new
     # store is empty
@@ -115,8 +144,8 @@ class TestProperty < Test::Unit::TestCase
     @prop["bar"]
     @prop["BAz"] = 2
     assert_equal(2, @prop.keys.size)
-    assert(@prop.keys.member?(:foo))
-    assert(@prop.keys.member?(:baz))
+    assert(@prop.keys.member?("foo"))
+    assert(@prop.keys.member?("baz"))
     #
     assert_nil(@prop["a"])
     @prop["a.a"] = 1
@@ -124,9 +153,9 @@ class TestProperty < Test::Unit::TestCase
     @prop["a.b"] = 1
     @prop["a.c"] = 1
     assert_equal(3, @prop["a"].keys.size)
-    assert(@prop["a"].keys.member?(:a))
-    assert(@prop["a"].keys.member?(:b))
-    assert(@prop["a"].keys.member?(:c))
+    assert(@prop["a"].keys.member?("a"))
+    assert(@prop["a"].keys.member?("b"))
+    assert(@prop["a"].keys.member?("c"))
   end
 
   def test_lshift
