@@ -2,53 +2,53 @@ require 'GoogleSearch.rb'
 
 class GoogleSearchPort
   # SYNOPSIS
-  #   doGetCachedPage( key, url )
+  #   doGetCachedPage(key, url)
   #
   # ARGS
-  #   key		String - {http://www.w3.org/2001/XMLSchema}string
-  #   url		String - {http://www.w3.org/2001/XMLSchema}string
+  #   key		 - {http://www.w3.org/2001/XMLSchema}string
+  #   url		 - {http://www.w3.org/2001/XMLSchema}string
   #
   # RETURNS
-  #   return		String - {http://www.w3.org/2001/XMLSchema}base64Binary
+  #   return		 - {http://www.w3.org/2001/XMLSchema}base64Binary
   #
   # RAISES
   #    N/A
   #
-  def doGetCachedPage( key, url )
+  def doGetCachedPage(key, url)
     raise NotImplementedError.new
   end
   
   # SYNOPSIS
-  #   doSpellingSuggestion( key, phrase )
+  #   doSpellingSuggestion(key, phrase)
   #
   # ARGS
-  #   key		String - {http://www.w3.org/2001/XMLSchema}string
-  #   phrase		String - {http://www.w3.org/2001/XMLSchema}string
+  #   key		 - {http://www.w3.org/2001/XMLSchema}string
+  #   phrase		 - {http://www.w3.org/2001/XMLSchema}string
   #
   # RETURNS
-  #   return		String - {http://www.w3.org/2001/XMLSchema}string
+  #   return		 - {http://www.w3.org/2001/XMLSchema}string
   #
   # RAISES
   #    N/A
   #
-  def doSpellingSuggestion( key, phrase )
+  def doSpellingSuggestion(key, phrase)
     raise NotImplementedError.new
   end
   
   # SYNOPSIS
-  #   doGoogleSearch( key, q, start, maxResults, filter, restrict, safeSearch, lr, ie, oe )
+  #   doGoogleSearch(key, q, start, maxResults, filter, restrict, safeSearch, lr, ie, oe)
   #
   # ARGS
-  #   key		String - {http://www.w3.org/2001/XMLSchema}string
-  #   q		String - {http://www.w3.org/2001/XMLSchema}string
-  #   start		Integer - {http://www.w3.org/2001/XMLSchema}int
-  #   maxResults		Integer - {http://www.w3.org/2001/XMLSchema}int
-  #   filter		TrueClass - {http://www.w3.org/2001/XMLSchema}boolean
-  #   restrict		String - {http://www.w3.org/2001/XMLSchema}string
-  #   safeSearch		TrueClass - {http://www.w3.org/2001/XMLSchema}boolean
-  #   lr		String - {http://www.w3.org/2001/XMLSchema}string
-  #   ie		String - {http://www.w3.org/2001/XMLSchema}string
-  #   oe		String - {http://www.w3.org/2001/XMLSchema}string
+  #   key		 - {http://www.w3.org/2001/XMLSchema}string
+  #   q		 - {http://www.w3.org/2001/XMLSchema}string
+  #   start		 - {http://www.w3.org/2001/XMLSchema}int
+  #   maxResults		 - {http://www.w3.org/2001/XMLSchema}int
+  #   filter		 - {http://www.w3.org/2001/XMLSchema}boolean
+  #   restrict		 - {http://www.w3.org/2001/XMLSchema}string
+  #   safeSearch		 - {http://www.w3.org/2001/XMLSchema}boolean
+  #   lr		 - {http://www.w3.org/2001/XMLSchema}string
+  #   ie		 - {http://www.w3.org/2001/XMLSchema}string
+  #   oe		 - {http://www.w3.org/2001/XMLSchema}string
   #
   # RETURNS
   #   return		GoogleSearchResult - {urn:GoogleSearch}GoogleSearchResult
@@ -56,7 +56,7 @@ class GoogleSearchPort
   # RAISES
   #    N/A
   #
-  def doGoogleSearch( key, q, start, maxResults, filter, restrict, safeSearch, lr, ie, oe )
+  def doGoogleSearch(key, q, start, maxResults, filter, restrict, safeSearch, lr, ie, oe)
     raise NotImplementedError.new
   end
   
