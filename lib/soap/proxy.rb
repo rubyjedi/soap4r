@@ -63,7 +63,7 @@ class SOAPProxy
 	params = values[ 0 ]
       else
 	i = 0
-	@method.eachParamName( 'in', 'inout' ) do | paramName |
+	@method.eachParamName( SOAPMethod::IN, SOAPMethod::INOUT ) do | paramName |
 	  params[ paramName ] = values[ i ] || SOAPNil.new
 	  i += 1
 	end
