@@ -42,9 +42,7 @@ end
 
 
 class TestWSDLMarshal < Test::Unit::TestCase
-  def pathname(filename)
-    File.join(File.dirname(File.expand_path(__FILE__)), filename)
-  end
+  DIR = File.dirname(File.expand_path(__FILE__))
 
   def test_marshal
     marshaller = WSDLMarshaller.new(pathname('person.wsdl'))
@@ -56,11 +54,20 @@ class TestWSDLMarshal < Test::Unit::TestCase
   end
 
   def test_classdef
-    raise if File.exist?("Person.rb")
-    system("ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("person.wsdl")} --force")
-    person_org = File.open(pathname("person_org.rb")) { |f| f.read }
-    person_new = File.open("Person.rb") { |f| f.read }
-    assert_equal(person_org, person_new)
-    File.unlink('Person.rb') if File.exist?('Person.rb')
+    system("cd #{DIR} && ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("person.wsdl")} --force --quiet")
+    compare("person_org.rb", "Person.rb")
+    File.unlink(pathname('Person.rb'))
+  end
+
+  def compare(expected, actual)
+    assert_equal(loadfile(expected), loadfile(actual))
+  end
+
+  def loadfile(file)
+    File.open(pathname(file)) { |f| f.read }
+  end
+
+  def pathname(filename)
+    File.join(DIR, filename)
   end
 end

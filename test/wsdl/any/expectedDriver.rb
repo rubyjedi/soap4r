@@ -2,15 +2,17 @@ require 'echo.rb'
 
 require 'soap/rpc/driver'
 
-class Echo_port_type < SOAP::RPC::Driver
+class Echo_port_type < ::SOAP::RPC::Driver
+  DefaultEndpointUrl = "http://localhost:10080"
   MappingRegistry = ::SOAP::Mapping::Registry.new
 
   MappingRegistry.set(
-    Foo_bar,
+    FooBar,
     ::SOAP::SOAPStruct,
     ::SOAP::Mapping::Registry::TypedStructFactory,
     { :type => XSD::QName.new("urn:example.com:echo-type", "foo.bar") }
   )
+  
   Methods = [
     ["echo", "echo",
       [
@@ -21,8 +23,6 @@ class Echo_port_type < SOAP::RPC::Driver
     ]
   ]
 
-  DefaultEndpointUrl = "http://localhost"
-
   def initialize(endpoint_url = nil)
     endpoint_url ||= DefaultEndpointUrl
     super(endpoint_url, nil)
@@ -30,7 +30,7 @@ class Echo_port_type < SOAP::RPC::Driver
     init_methods
   end
 
-private 
+private
 
   def init_methods
     Methods.each do |name_as, name, params, soapaction, namespace|
