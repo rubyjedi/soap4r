@@ -3,7 +3,7 @@ require 'test/unit/testcase'
 
 $KCODE = 'UTF8'
 
-rcsid = %w$Id: 16runner.rb,v 1.1 2004/07/03 04:37:02 nahi Exp $
+rcsid = %w$Id$
 Version = rcsid[2].scan(/\d+/).collect!(&method(:Integer)).freeze
 Release = rcsid[3].freeze
 

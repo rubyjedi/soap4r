@@ -1,5 +1,5 @@
 # SOAP4R - SOAP elements library
-# Copyright (C) 2000, 2001, 2003, 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003-2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -239,8 +239,7 @@ class SOAPEnvelope < XSD::NSDBase
   end
 
   def encode(generator, ns, attrs = {})
-    SOAPGenerator.assign_ns(attrs, ns, EnvelopeNamespace,
-      SOAPNamespaceTag)
+    SOAPGenerator.assign_ns(attrs, ns, EnvelopeNamespace, SOAPNamespaceTag)
     name = ns.name(@elename)
     generator.encode_tag(name, attrs)
 

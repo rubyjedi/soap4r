@@ -1,5 +1,5 @@
 # WSDL4R - Creating class definition from WSDL
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -86,7 +86,7 @@ private
       return ''
     end
     c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
-    c.comment = "#{ qname.namespace }"
+    c.comment = "#{qname.namespace}"
     simpletype.restriction.enumeration.each do |value|
       c.def_const(safeconstname(value), value.dump)
     end
@@ -101,7 +101,7 @@ private
     else
       c = XSD::CodeGen::ClassDef.new(create_class_name(qname))
     end
-    c.comment = "#{ qname.namespace }"
+    c.comment = "#{qname.namespace}"
     c.def_classvar('schema_type', qname.name.dump)
     c.def_classvar('schema_ns', qname.namespace.dump)
     schema_attribute = []
@@ -121,12 +121,12 @@ private
       attrname = safemethodname?(name) ? name : safemethodname(name)
       varname = safevarname(name)
       c.def_attr(attrname, true, varname)
-      init_lines << "@#{ varname } = #{ varname }\n"
+      init_lines << "@#{varname} = #{varname}\n"
       if element.map_as_array?
-        params << "#{ varname } = []"
+        params << "#{varname} = []"
         type << '[]'
       else
-        params << "#{ varname } = nil"
+        params << "#{varname} = nil"
       end
       schema_element << [name, type]
     end
@@ -182,7 +182,7 @@ private
   def dump_arraydef(complextype)
     qname = complextype.name
     c = XSD::CodeGen::ClassDef.new(create_class_name(qname), '::Array')
-    c.comment = "#{ qname.namespace }"
+    c.comment = "#{qname.namespace}"
     type = complextype.child_type
     c.def_classvar('schema_type', type.name.dump)
     c.def_classvar('schema_ns', type.namespace.dump)
