@@ -31,10 +31,10 @@ require 'soap/encodingStyleHandlerASPDotNet'
 # Try to load XML processor.
 loaded = false
 [
-  'soap/xmlparser',
-  'soap/nqxmlparser',
-  'soap/rexmlparser',
   'soap/xmlscanner',
+  'soap/xmlparser',
+  'soap/rexmlparser',
+  'soap/nqxmlparser',
 ].each do | lib |
   begin
     require lib
