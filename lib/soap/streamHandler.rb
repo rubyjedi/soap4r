@@ -8,7 +8,6 @@
 
 require 'soap/soap'
 require 'soap/property'
-require 'soap/mimemessage'
 
 
 module SOAP
