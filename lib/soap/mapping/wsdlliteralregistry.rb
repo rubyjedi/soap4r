@@ -24,9 +24,6 @@ class WSDLLiteralRegistry < Factory
   def initialize(definedelements = nil, definedtypes = nil)
     @definedelements = definedelements
     @definedtypes = definedtypes
-    @rubytype_factory = RubytypeFactory.new(
-      :allow_original_mapping => false
-    )
   end
 
   def obj2soap(obj, qname)
@@ -51,9 +48,6 @@ class WSDLLiteralRegistry < Factory
   def soap2obj(node)
     typestr = Mapping.elename2name(node.type.name)
     klass = Mapping.class_from_name(typestr)
-    unless klass
-      return @rubytype_factory.soap2obj(nil, node, nil, self)
-    end
     begin
       return unknownsoap2obj(node, klass)
     rescue MappingError
@@ -189,12 +183,12 @@ private
   def add_elements2obj(node, obj)
     vars = {}
     elements = obj.class.class_eval("@@schema_element")
-    elements.each do |elename, type|
+    elements.each do |elename, class_name|
       if node[elename]
-        if type
-          child = unknownsoap2obj(node[elename], Mapping.class_from_name(type))
+        if class_name
+          child = unknownsoap2obj(node[elename], Mapping.class_from_name(class_name))
         else
-          child = @rubytype_factory.soap2obj(nil, node[elename], nil, self)
+          child = Mapping.soap2obj(node[elename])
         end
         vars[elename] = child
       end
