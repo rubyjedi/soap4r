@@ -21,7 +21,9 @@ class MethodDefCreator
 
   def initialize(definitions)
     @definitions = definitions
+    @simpletypes = @definitions.collect_simpletypes
     @complextypes = @definitions.collect_complextypes
+    @elements = @definitions.collect_elements
     @types = nil
   end
 
@@ -60,32 +62,32 @@ __EOD__
   def collect_parameter(operation)
     result = operation.inputparts.collect { |part|
       collect_type(part.type)
-      param_set('in', definedtype(part.type), part.name)
+      param_set('in', definedtype(part), part.name)
     }
     outparts = operation.outputparts
     if outparts.size > 0
       retval = outparts[0]
       collect_type(retval.type)
-      result << param_set('retval', definedtype(retval.type), retval.name)
+      result << param_set('retval', definedtype(retval), retval.name)
       cdr(outparts).each { |part|
 	collect_type(part.type)
-	result << param_set('out', definedtype(part.type), part.name)
+	result << param_set('out', definedtype(part), part.name)
       }
     end
     result
   end
 
-  def definedtype(type)
-    if mapped = basetype_mapped_class(type)
+  def definedtype(part)
+    if mapped = basetype_mapped_class(part.type)
       [mapped]
-    else
-      definedtype = @complextypes[type]
-      if definedtype.nil?
-	raise RuntimeError.new("Type: #{type} not found.")
-      end
+    elsif definedelement = @elements[part.element]
+      raise RuntimeError.new("Part: #{part.name} should be typed for RPC service for now.")
+    elsif definedtype = @simpletypes[part.type]
+      [basetype_mapped_class(definedtype.base)]
+    elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
       when :TYPE_STRUCT
-	['::SOAP::SOAPStruct', type.namespace, type.name]
+	['::SOAP::SOAPStruct', part.type.namespace, part.type.name]
       when :TYPE_ARRAY
 	arytype = definedtype.find_arytype || XSD::AnyTypeName
 	ns = arytype.namespace
@@ -94,6 +96,8 @@ __EOD__
       else
 	raise NotImplementedError.new("Must not reach here.")
       end
+    else
+      raise RuntimeError.new("Part: #{part.name} cannot be resolved.")
     end
   end
 
