@@ -53,6 +53,7 @@ module SOAPBasetype
   attr_accessor :id
   attr_accessor :root
   attr_accessor :parent
+  attr_accessor :position
 
 public
 
@@ -62,16 +63,21 @@ public
     @name = nil
     @id = nil
     @parent = nil
+    @position = nil
   end
 
   def encode( ns, name, parentArray = nil )
     attrs = []
     createNS( attrs, ns )
-    if parentArray and parentArray.typeNamespace == @typeNamespace and
+    if parentArray && parentArray.typeNamespace == @typeNamespace &&
 	parentArray.baseTypeName == @typeName
       # No need to add.
     else
       attrs.push( datatypeAttr( ns ))
+    end
+
+    if parentArray && parentArray.position
+      attrs.push( positionAttr( parentArray.position, ns ))
     end
 
     if ( self.to_s.empty? )
@@ -87,6 +93,10 @@ private
 
   def datatypeAttr( ns )
     Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @typeNamespace, @typeName ))
+  end
+
+  def positionAttr( position, ns )
+    Attr.new( ns.name( EncodingNamespace, AttrPosition ), '[' << position.join( ',' ) << ']' )
   end
 
   def createNS( attrs, ns )
@@ -110,6 +120,7 @@ module SOAPCompoundtype
   attr_accessor :id
   attr_accessor :root
   attr_accessor :parent
+  attr_accessor :position
 
   attr_reader :extraAttributes
 
@@ -121,7 +132,14 @@ public
     @name = nil
     @id = nil
     @parent = nil
+    @position = nil
     @extraAttributes = []
+  end
+
+private
+
+  def positionAttr( position, ns )
+    Attr.new( ns.name( EncodingNamespace, AttrPosition ), '[' << position.join( ',' ) << ']' )
   end
 end
 
@@ -244,7 +262,17 @@ class SOAPFloat < XSDFloat
   extend SOAPModuleUtils
 end
 
+class SOAPDecimal < XSDDecimal
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
 class SOAPInteger < XSDInteger
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPLong < XSDLong
   include SOAPBasetype
   extend SOAPModuleUtils
 end
@@ -270,6 +298,11 @@ public
     super( *vars )
     @typeNamespace = EncodingNamespace
     @typeName = Base64Literal
+  end
+
+  def asXSD
+    @typeNamespace = XSD::Namespace
+    @typeName = XSD::Base64BinaryLiteral
   end
 
   def createNS( attrs, ns )
@@ -349,20 +382,18 @@ public
     end
   end
 
-  def map!
-    @data.map! do | ele |
-      yield( ele )
-    end
-  end
-
   def encode( ns, name, parentArray = nil )
     attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
     createNS( attrs, ns )
-    if parentArray and parentArray.typeNamespace == @typeNamespace and
+    if parentArray && parentArray.typeNamespace == @typeNamespace &&
 	parentArray.baseTypeName == @typeName
       # No need to add.
     else
       attrs.push( datatypeAttr( ns ))
+    end
+
+    if parentArray && parentArray.position
+      attrs.push( positionAttr( parentArray.position, ns ))
     end
 
     children = []
@@ -431,10 +462,17 @@ public
 
   ArrayEncodePostfix = 'Ary'
 
-  def initialize( typeName = nil )
+  attr_accessor :sparse, :offset, :size, :sizeFixed
+
+  def initialize( typeName = nil, rank = 1 )
     super( typeName )
-    @data = [ [] ]
-    @rank = 1
+    @rank = rank
+    @data = Array.new
+    @sparse = false
+    @offset = Array.new( rank, 0 )
+    @size = Array.new( rank, 0 )
+    @sizeFixed = false
+    @position = nil
   end
 
   def set( newArray )
@@ -442,45 +480,82 @@ public
   end
 
   def add( newMember )
-    if ( @rank != 1 )
-      raise NotImplementError.new( 'Rank must be 1' )
-    end
-    if ( @data[ 0 ].empty? and !@typeName )
-      @typeName = SOAPArray.getAtype( newMember.typeName, @rank )
-      @typeNamespace = newMember.typeNamespace
-    end
-    if @typeName
-      if !newMember.typeName
-	newMember.typeName = @typeName
-	newMember.typeNamespace = @typeNamespace
-      end
-    end
-    @data[ 0 ] << newMember
+    self[ *( @offset ) ] = newMember
+    offsetNext
   end
 
-  def []( idx )
-    if ( @rank != 1 )
-      raise NotImplementError.new( 'Rank must be 1' )
+  def []( *idxAry )
+    if idxAry.size != @rank
+      raise ArgumentError.new( "Given #{ idxAry.size } params does not match rank: #{ @rank }" )
     end
-    if ( idx > @data[ 0 ].size )
-      raise ArrayIndexOutOfBoundsError.new( 'In ' << @typeName )
+
+    retrieve( idxAry )
+  end
+
+  def []=( *idxAry )
+    value = idxAry.slice!( -1 )
+
+    if idxAry.size != @rank
+      raise ArgumentError.new( "Given #{ idxAry.size } params does not match rank: #{ @rank }" )
     end
-    @data[ 0 ][ idx ]
+
+    0.upto( idxAry.size - 1 ) do | i |
+      if idxAry[ i ] + 1 > @size[ i ]
+	@size[ i ] = idxAry[ i ] + 1
+      end
+    end
+
+    data = retrieve( idxAry[ 0..-2 ] )
+    data[ idxAry.last ] = value
+
+    # Sync type
+    unless @typeName
+      @typeName = SOAPArray.getAtype( value.typeName, @rank )
+      @typeNamespace = value.typeNamespace
+    end
+
+    unless value.typeName
+      value.typeName = @typeName
+      value.typeNamespace = @typeNamespace
+    end
   end
 
   def each
-    if ( @rank != 1 )
-      raise NotImplementError.new( 'Rank must be 1' )
-    end
-    @data[ 0 ].each do | datum |
-      yield( datum )
+    @data.each do | data |
+      yield( data )
     end
   end
 
-  def map!
-    @data.map! do | ele |
-      yield( ele )
+  def traverse
+    traverseData( @data ) do | v, *rank |
+      unless @sparse
+	yield( v )
+      else
+	yield( v, *rank )
+      end
     end
+  end
+
+  def soap2array
+    ary = []
+    traverseData( @data ) do | v, *position |
+      iteAry = ary
+      1.upto( position.size - 1 ) do | rank |
+	idx = position[ rank - 1 ]
+	if iteAry[ idx ].nil?
+	  iteAry = iteAry[ idx ] = Array.new
+	else
+	  iteAry = iteAry[ idx ]
+	end
+      end
+      if block_given?
+	iteAry[ position.last ] = yield( v )
+      else
+	iteAry[ position.last ] = v
+      end
+    end
+
+    ary
   end
 
   def encode( ns, name, parentArray = nil )
@@ -489,11 +564,21 @@ public
     attrs.push( arrayTypeAttr( ns ))
     attrs.push( datatypeAttr( ns ))
 
+    if parentArray && parentArray.position
+      attrs.push( positionAttr( parentArray.position, ns ))
+    end
+
     childTypeName = contentTypeName().gsub( /\[,*\]/, ArrayEncodePostfix ) << ArrayEncodePostfix
 
-    children = @data[ 0 ].collect { | child |
-      child.encode( ns.clone, childTypeName, self )
-    }
+    children = []
+    traverse do | child, *rank |
+      unless @sparse
+	@position = nil
+      else
+	@position = rank
+      end
+      children << child.encode( ns.clone, childTypeName, self )
+    end
 
     # Element.new( name, attrs, children )
     Node.initializeWithChildren( name, attrs, children )
@@ -507,7 +592,59 @@ public
     @typeName?  @typeName.sub( /(?:\[,*\])+$/, '' ) : ''
   end
 
+  def position
+    @position
+  end
+
 private
+
+  def retrieve( idxAry )
+    data = @data
+    1.upto( idxAry.size ) do | rank |
+      idx = idxAry[ rank - 1 ]
+      if data[ idx ].nil?
+	data = data[ idx ] = Array.new
+      else
+	data = data[ idx ]
+      end
+    end
+    data
+  end
+
+  def traverseData( data, rank = 1 )
+    0.upto( rankSize( rank ) - 1 ) do | idx |
+      if rank < @rank
+	traverseData( data[ idx ], rank + 1 ) do | *v |
+	  v[ 1, 0 ] = idx
+       	  yield( *v )
+	end
+      else
+	yield( data[ idx ], idx )
+      end
+    end
+  end
+
+  def rankSize( rank )
+    @size[ rank - 1 ]
+  end
+
+  def offsetNext
+    move = false
+    idx = @offset.size - 1
+    while !move && idx >= 0
+      @offset[ idx ] += 1
+      if @sizeFixed
+	if @offset[ idx ] < @size[ idx ]
+	  move = true
+	else
+	  @offset[ idx ] = 0
+	  idx -= 1
+	end
+      else
+	move = true
+      end
+    end
+  end
 
   def datatypeAttr( ns )
     Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( EncodingNamespace, 'Array' ))
@@ -533,7 +670,7 @@ private
   end
 
   def arrayTypeValue()
-    contentTypeName() << '[' << @data.collect { |i| i.size }.join( ',' ) << ']'
+    contentTypeName() << '[' << @size.join( ',' ) << ']'
   end
 
   # Module function
@@ -543,10 +680,26 @@ public
   # DEBT: Check if getArrayType returns non-nil before invoking this method.
   def self.decode( ns, entity, typeNamespace, typeNameString )
     typeName, nofArray = parseType( typeNameString )
-    s = SOAPArray.new( typeName )
-    s.typeNamespace = typeNamespace
-    s.namespace, s.name = ns.parse( entity.name )
-    s
+    o = SOAPArray.new( typeName, nofArray.count( ',' ) + 1 )
+
+    size = []
+    nofArray.split( ',' ).each do | s |
+      if s.empty?
+	size.clear
+	break
+      else
+	size << s.to_i
+      end
+    end
+
+    unless size.empty?
+      o.size = size
+      o.sizeFixed = true
+    end
+
+    o.typeNamespace = typeNamespace
+    o.namespace, o.name = ns.parse( entity.name )
+    o
   end
 
 private
@@ -555,7 +708,7 @@ private
     "#{ typeName }[" << ',' * ( rank - 1 ) << ']'
   end
 
-  TypeParseRegexp = Regexp.new( '^(.+)\[(\d*)\]$' )
+  TypeParseRegexp = Regexp.new( '^(.+)\[([\d,]*)\]$' )
 
   def self.parseType( string )
     TypeParseRegexp =~ string
