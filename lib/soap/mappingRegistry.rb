@@ -1,6 +1,6 @@
 =begin
 SOAP4R - RPC utility -- Mapping registry.
-Copyright (C) 2000, 2001 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001, 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -549,7 +549,7 @@ module RPCUtils
     def soap2obj( objKlass, node, info, map )
       if node.type.namespace == RubyTypeNamespace
 	rubyType2obj( node, map )
-      elsif node.type == XSD::AnyTypeName
+      elsif node.type == XSD::AnyTypeName or node.type == XSD::AnySimpleTypeName
 	anyType2obj( node, map )
       else
 	unknownType2obj( node, map )
