@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: December 5, 2001<br />
+Last modified: December 7, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.4
+Target SOAP4R version: SOAP4R/1.4.1
 </p>
 
 <ol>
@@ -50,38 +50,18 @@ Target SOAP4R version: SOAP4R/1.4
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<ul>
-<li>Datatypes:
-<ul>
-<li>XSDFloat: Bug in rounding double float to single float.  Fixed.</li>
-<li>SOAPElement: Added for literal encoding.</li>
-<li>Removed SOAP encoding functions from baseData.  EncondingStyleHandler should decide how to encode SOAP data model. (ie. ASP.NET seems to have its own encoding style.)</li>
-<li>SOAPHeaderItem: Changed interface for easy use.</li>
-</ul></li>
+<p>
+SOAP4R/1.4 contained many bugs (as usual...)
+1.4.1 is a maintenance release.  Some bugs are fixed.
+Thanks to Michael Neumann.
+</p>
 
-<li>SOAP Encoding:
 <ul>
-<li>Encoding by itself, not using NQXML's tree object model.</li>
-<li>At last, supported multi-ref encoding!</li>
-<li>marshal.rb: Marshalling with Envelope and Body.  To marshal multi-ref'd object, Body is needed. CAUTION: Not compatible between former implementation.</li>
-<li>Add EncodingStyleHandlerLiteral and set it to default.</li>
-<li>Renamed encoding.rb to encodingStyleHandler.rb.</li>
-<li>Added ASP.NET encoding handler.  ASP.NET seems to use literal encoding (by default) but it is easier with this encodingStyleHandler to access the service which is built with ASP.NET.</li>
-<li>Changed element name escape.
-<ul>
-<li>:: &lt;=&gt; \.\.</li>
-<li>[^a-zA-Z0-9_-] &lt;=&gt; \.[0-F][0-F]
-</ul>
-Limitation: Using SOAP4R's RPC function, you cannot use the name which contains '.' for method name, class/struct name, and accessor name. In Ruby world, it should not be a problem I believe.</li>
-</ul></li>
-
-<li>RPC related functions:
-<ul>
-<li>Driver: Added 'invoke' method for messaging.</li>
-<li>Driver: Content of SOAPFault detail element is set in the exception which is thrown from SOAP Node to client application.</li>
-<li>Processor: Changed Processor.(un|)marshal interface.  An instance of NS for parsing/generating XML instance is prepared in parser/generator.</li>
-<li>mappingRegistry.rb is devided from rpcUtils.rb.</li>
-</ul></li>
+<li>instance_eval in SOAPStruct#add for adding accessor illegaly overrode important methods for SOAP4R such as name, name= and so on.  Removed this instance_eval and rewrote other codes which did depend the code.  Thanks to MNeumann for reporting it and giving a suggestion to fix it.</li>
+<li>Fixed charset handling.  Illegal charset was set when automatic XML processor detecting.</li>
+<li>Removed unused code(self.decode) in element.rb.</li>
+<li>Illegal constant access when SOAP format error.  Fixed.</li>
+<li>LiteralEncodingNamespace moved to SOAP module.</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -257,6 +237,20 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.4.1 - December 7, 2001</dt>
+<dd>SOAP4R/1.4 contained many bugs (as usual...)
+1.4.1 is a maintenance release.  Some bugs are fixed.
+Thanks to Michael Neumann.
+
+<ul>
+<li>instance_eval in SOAPStruct#add for adding accessor illegaly overrode important methods for SOAP4R such as name, name= and so on.  Removed this instance_eval and rewrote other codes which did depend the code.  Thanks to MNeumann for reporting it and giving a suggestion to fix it.</li>
+<li>Fixed charset handling.  Illegal charset was set when automatic XML processor detecting.</li>
+<li>Removed unused code(self.decode) in element.rb.</li>
+<li>Illegal constant access when SOAP format error.  Fixed.</li>
+<li>LiteralEncodingNamespace moved to SOAP module.</li>
+</ul></dd>
+
+
 <dt>1.4 - December 5, 2001</dt>
 <dd><ul>
 <li>Datatypes:

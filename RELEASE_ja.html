@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: December 5, 2001<br />
+Last modified: December 7, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 本文書が対象としているSOAP4Rのバージョンは，
-SOAP4R/1.4
+SOAP4R/1.4.1
 です．
 </p>
 
@@ -53,40 +53,18 @@ SOAP4R/1.4
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<ul>
-<li>データ型:
-<ul>
-<li>XSDFloat: double floatをsingle floatに丸める際にバグがありました．修正されました．</li>
-<li>SOAPElement: literal encoding（encodingせずにXMLを埋め込む）のために追加されました．</li>
-<li>SOAP data model(baseData.rb)からencoding関連機能を取り除きました．EncondingStyleHandlerが適宜判断すべきです．</li>
-<li>SOAPHeaderItem: より使い易くインタフェイスを変更しました．</li>
-</ul></li>
+<p>
+SOAP4R/1.4は（いつも通り．．．）たくさんのバグを含んでいました．
+1.4.1はメンテナンスリリースです．いくつかのバグが修正されています．
+Michael Neumannさん，どうもありがとう．
+</p>
 
-<li>SOAP Encoding:
 <ul>
-<li>NQXMLの木構造モデルに頼らず，自前でencodingします．</li>
-<li>ついに多重参照のencodingを実装しました!</li>
-<li>marshal.rb: EnvelopeとBodyを伴なってmarshalするようになりました．
-SOAP Encodingでは，多重参照のencodingのためにBodyが必要です．
-注意: 従来の実装との互換性がありません．</li>
-<li>literal encodingのハンドラを追加し，これをdefaultとしました．</li>
-<li>encoding.rbをencodingStyleHandler.rbに名前を変えました．</li>
-<li>ASP.NETのencoding handlerを追加しました．ASP.NETはデフォルトではliteral encodingを使用しますが，元はといえばやっぱり関数と配列であるため，受け側でもそれっぽくdecodeしたほうが便利です（DOMプログラミングなんかしたくない）．</li>
-<li>要素名のescape方法を変更しました．
-<ul>
-<li>:: &lt;=&gt; \.\.</li>
-<li>[^a-zA-Z0-9_-] &lt;=&gt; \.[0-F][0-F]
-</ul>
-制限: SOAP4RのRPC関連機能を使う場合，メソッド名，クラス名，メンバ名に'.'を含むobjectの転送を行なうことはできません．Rubyの文法的にはこれで問題ないはずです．</li>
-</ul></li>
-
-<li>RPC関連機能:
-<ul>
-<li>Driver: メッセージングを行なうためのメソッド，'invoke'を追加しました．</li>
-<li>Driver: SOAP Faultのdetail要素の中身を，Driverからユーザアプリケーションに返す例外の中にセットするようにしました．</li>
-<li>Processor: marshal/unmarshalのインタフェイスを変更しました．</li>
-<li>mappingRegistry.rbがrpcUtils.rbから分離しました．</li>
-</ul></li>
+<li>SOAPStruct#addの中で，accessorを定義するために用いているinstance_evalが，name，name=などの重要なメソッドを不正に上書きしていました．これを取り除き，このコードに依存していた部分を書き直しました．報告し，有用なアドバイスをくれたMNeumannさん，ありがとう．</li>
+<li>charsetの扱いにバグがありました．利用するXMLプロセッサを明示的に指定しなかった場合，HTTPヘッダのcharsetが正しく指定されませんでした．</li>
+<li>element.rbの中の不要なコードを取り除きました．</li>
+<li>SOAPメッセージにフォーマットエラーがあったときに参照する定数が不正でした．修正しました．</li>
+<li>LiteralEncodingNamespaceがSOAPモジュール直下に移動しました．</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -270,6 +248,20 @@ SOAP Encoding本体に埋め込まれたxsi:typeのみを利用します．</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.4.1 - December 7, 2001</dt>
+<dd>SOAP4R/1.4は（いつも通り．．．）たくさんのバグを含んでいました．
+1.4.1はメンテナンスリリースです．いくつかのバグが修正されています．
+Michael Neumannさん，どうもありがとう．
+
+<ul>
+<li>SOAPStruct#addの中で，accessorを定義するために用いているinstance_evalが，name，name=などの重要なメソッドを不正に上書きしていました．これを取り除き，このコードに依存していた部分を書き直しました．報告し，有用なアドバイスをくれたMNeumannさん，ありがとう．</li>
+<li>charsetの扱いにバグがありました．利用するXMLプロセッサを明示的に指定しなかった場合，HTTPヘッダのcharsetが正しく指定されませんでした．</li>
+<li>element.rbの中の不要なコードを取り除きました．</li>
+<li>SOAPメッセージにフォーマットエラーがあったときに参照する定数が不正でした．修正しました．</li>
+<li>LiteralEncodingNamespaceがSOAPモジュール直下に移動しました．</li>
+</ul></dd>
+
+
 <dt>1.4 - December 5, 2001</dt>
 <dd>
 <ul>
