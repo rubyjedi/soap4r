@@ -13,66 +13,66 @@ extend SOAP
 MethodsBase = [
   ['echoVoid'],
   ['echoString',
-    ['in', 'inputString'], ['retval', 'return']],
+    ['in', 'inputString', nil], ['retval', 'return', nil]],
   ['echoStringArray',
-    ['in', 'inputStringArray'], ['retval', 'return']],
+    ['in', 'inputStringArray', nil], ['retval', 'return', nil]],
   ['echoInteger',
-    ['in', 'inputInteger'], ['retval', 'return']],
+    ['in', 'inputInteger', nil], ['retval', 'return', nil]],
   ['echoIntegerArray',
-    ['in', 'inputIntegerArray'], ['retval', 'return']],
+    ['in', 'inputIntegerArray', nil], ['retval', 'return', nil]],
   ['echoFloat',
-    ['in', 'inputFloat'], ['retval', 'return']],
+    ['in', 'inputFloat', nil], ['retval', 'return', nil]],
   ['echoFloatArray',
-    ['in', 'inputFloatArray'], ['retval', 'return']],
+    ['in', 'inputFloatArray', nil], ['retval', 'return', nil]],
   ['echoStruct',
-    ['in', 'inputStruct'], ['retval', 'return']],
+    ['in', 'inputStruct', nil], ['retval', 'return', nil]],
   ['echoStructArray',
-    ['in', 'inputStructArray'], ['retval', 'return']],
+    ['in', 'inputStructArray', nil], ['retval', 'return', nil]],
   ['echoDate',
-    ['in', 'inputDate'], ['retval', 'return']],
+    ['in', 'inputDate', nil], ['retval', 'return', nil]],
   ['echoBase64',
-    ['in', 'inputBase64'], ['retval', 'return']],
+    ['in', 'inputBase64', nil], ['retval', 'return', nil]],
   ['echoHexBinary',
-    ['in', 'inputHexBinary'], ['retval', 'return']],
+    ['in', 'inputHexBinary', nil], ['retval', 'return', nil]],
   ['echoBoolean',
-    ['in', 'inputBoolean'], ['retval', 'return']],
+    ['in', 'inputBoolean', nil], ['retval', 'return', nil]],
   ['echoDecimal',
-    ['in', 'inputDecimal'], ['retval', 'return']],
+    ['in', 'inputDecimal', nil], ['retval', 'return', nil]],
   ['echoMap',
-    ['in', 'inputMap'], ['retval', 'return']],
+    ['in', 'inputMap', nil], ['retval', 'return', nil]],
   ['echoMapArray',
-    ['in', 'inputMapArray'], ['retval', 'return']],
+    ['in', 'inputMapArray', nil], ['retval', 'return', nil]],
 
   ['echoDouble',
-    ['in', 'inputDouble'], ['retval', 'return']],
+    ['in', 'inputDouble', nil], ['retval', 'return', nil]],
   ['echoXSDDateTime',
-    ['in', 'inputXSDDateTime'], ['retval', 'return']],
+    ['in', 'inputXSDDateTime', nil], ['retval', 'return', nil]],
   ['echoXSDDate',
-    ['in', 'inputXSDDate'], ['retval', 'return']],
+    ['in', 'inputXSDDate', nil], ['retval', 'return', nil]],
   ['echoXSDTime',
-    ['in', 'inputXSDTime'], ['retval', 'return']],
+    ['in', 'inputXSDTime', nil], ['retval', 'return', nil]],
 ]
 
 MethodsGroupB = [
   ['echoStructAsSimpleTypes',
-    ['in', 'inputStruct'], ['out', 'outputString'], ['out', 'outputInteger'], ['out', 'outputFloat']],
+    ['in', 'inputStruct', nil], ['out', 'outputString', nil], ['out', 'outputInteger', nil], ['out', 'outputFloat', nil]],
   ['echoSimpleTypesAsStruct',
-    ['in', 'inputString'], ['in', 'inputInteger'], ['in', 'inputFloat'], ['retval', 'return']],
+    ['in', 'inputString', nil], ['in', 'inputInteger', nil], ['in', 'inputFloat', nil], ['retval', 'return', nil]],
   ['echo2DStringArray',
-    ['in', 'input2DStringArray'], ['retval', 'return']],
+    ['in', 'input2DStringArray', nil], ['retval', 'return', nil]],
   ['echoNestedStruct',
-    ['in', 'inputStruct'], ['retval', 'return']],
+    ['in', 'inputStruct', nil], ['retval', 'return', nil]],
   ['echoNestedArray',
-    ['in', 'inputStruct'], ['retval', 'return']],
+    ['in', 'inputStruct', nil], ['retval', 'return', nil]],
 ]
 
 MethodsPolyMorph = [
   ['echoPolyMorph',
-    ['in', 'inputPolyMorph'], ['retval', 'return']],
+    ['in', 'inputPolyMorph', nil], ['retval', 'return', nil]],
   ['echoPolyMorphStruct',
-    ['in', 'inputPolyMorphStruct'], ['retval', 'return']],
+    ['in', 'inputPolyMorphStruct', nil], ['retval', 'return', nil]],
   ['echoPolyMorphArray',
-    ['in', 'inputPolyMorphArray'], ['retval', 'return']],
+    ['in', 'inputPolyMorphArray', nil], ['retval', 'return', nil]],
 ]
 
 
@@ -206,70 +206,70 @@ MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPStruct,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ TypeNS, "SOAPStruct" ]
+  [ XSD::QName.new( TypeNS, "SOAPStruct" ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPStructStruct,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ TypeNS, "SOAPStructStruct" ]
+  [ XSD::QName.new( TypeNS, "SOAPStructStruct" ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::PolyMorphStruct,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ TypeNS, "PolyMorphStruct" ]
+  [ XSD::QName.new( TypeNS, "PolyMorphStruct" ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPArrayStruct,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ TypeNS, "SOAPArrayStruct" ]
+  [ XSD::QName.new( TypeNS, "SOAPArrayStruct" ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::StringArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::Namespace, XSD::StringLiteral ]
+  [ XSD::QName.new( XSD::Namespace, XSD::StringLiteral ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::IntArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::Namespace, XSD::IntLiteral ]
+  [ XSD::QName.new( XSD::Namespace, XSD::IntLiteral ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::FloatArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::Namespace, XSD::FloatLiteral ]
+  [ XSD::QName.new( XSD::Namespace, XSD::FloatLiteral ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPStructArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ TypeNS, 'SOAPStruct' ]
+  [ XSD::QName.new( TypeNS, 'SOAPStruct' ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPMapArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ ApacheNS, 'Map' ]
+  [ XSD::QName.new( ApacheNS, 'Map' ) ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::ArrayOfanyType,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::Namespace, XSD::AnyTypeLiteral ]
+  [ XSD::AnyTypeName ]
 )
 
 
