@@ -65,8 +65,10 @@ class SOAPProxy
       if (( values.size == 1 ) and ( values[ 0 ].is_a?( Hash )))
 	params = values[ 0 ]
       else
-	0.upto( values.size - 1 ) do | i |
-	  params[ @method.paramNames[ i ]] = values[ i ] || SOAPNil.new()
+	i = 0
+	@method.eachParamName( 'in', 'inout' ) do | paramName |
+	  params[ paramName ] = values[ i ] || SOAPNil.new
+	  i += 1
 	end
       end
       @method.setParams( params )
