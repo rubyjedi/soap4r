@@ -107,7 +107,9 @@ private
     params = []
     type_or_element.each_element do |element|
       name = element.name.name
-      if basetype = basetype_class(element.type)
+      if element.type == XSD::AnyTypeName
+        type = nil
+      elsif basetype = basetype_class(element.type)
         type = basetype.name
       else
         type = create_class_name(element.type)
@@ -143,14 +145,14 @@ private
     c.def_classvar('schema_attribute',
       '{' +
         schema_attribute.collect { |name, type|
-          name.dump + ' => ' + type.dump
+          name.dump + ' => ' + ndq(type)
         }.join(', ') +
       '}'
     )
     c.def_classvar('schema_element',
       '{' +
         schema_element.collect { |name, type|
-          name.dump + ' => ' + type.dump
+          name.dump + ' => ' + ndq(type)
         }.join(', ') +
       '}'
     )
