@@ -1,17 +1,16 @@
 #!/usr/bin/env ruby
 
 $serverName = 'Apache Axis'
-$serverBase = 'http://nagoya.apache.org:5049/axis/servlet/AxisServlet'
-$serverGroupB = 'None'
+$server = 'http://nagoya.apache.org:5049/axis/services/echo'
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
+drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
 methodDefBase( drvBase )
 
-#drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
+#drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
 #methodDefGroupB( drvGroupB )
 
 doTestBase( drvBase )
-#doTestGroupB( drvGroupB )
+doTestGroupB( drvGroupB )
 submitTestResult
