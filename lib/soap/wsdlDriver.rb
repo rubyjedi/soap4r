@@ -266,7 +266,7 @@ class WSDLDriver
       op_info = @operation[name]
       req_header = header_from_obj(header_obj, op_info)
       req_body = body_from_obj(body_obj, op_info)
-      env = @proxy.invoke(req_header, req_body, op_info.soapaction || @soapaction, nil)
+      env = @proxy.invoke(req_header, req_body, op_info.soapaction || @soapaction, @wsdl_types)
       raise EmptyResponseError.new("Empty response.") unless env
       if env.body.fault
 	raise ::SOAP::FaultError.new(env.body.fault)
@@ -363,7 +363,7 @@ class WSDLDriver
       elsif obj.is_a?(SOAPHeaderItem)
 	obj
       else
-	@doc_mapper.obj2soap(nil, obj, name)
+	@doc_mapper.obj2soap(obj, name)
       end
     end
 
@@ -397,7 +397,7 @@ class WSDLDriver
       elsif obj.is_a?(SOAPElement)
 	obj
       else
-	@doc_mapper.obj2soap(nil, obj, name)
+	@doc_mapper.obj2soap(obj, name)
       end
     end
 
