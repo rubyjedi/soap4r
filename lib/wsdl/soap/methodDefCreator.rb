@@ -32,6 +32,7 @@ class MethodDefCreator
 
   def initialize( definitions )
     @definitions = definitions
+    @complexTypes = @definitions.complexTypes
     @types = nil
   end
 
@@ -62,15 +63,15 @@ class MethodDefCreator
     inParam = @definitions.getMessage( operation.input.message )
     outParam = @definitions.getMessage( operation.output.message )
     result = inParam.parts.collect { | part |
-      @types << part.type
+      collectTypes( part.type )
       [ 'in', part.name ]
     }
     if outParam.parts.size > 0
       retval = outParam.parts[ 0 ]
-      @types << retval.type
+      collectTypes( retval.type )
       result << [ 'retval', retval.name ]
       cdr( outParam.parts ).each { | part |
-	@types << part.type
+	collectTypes( part.type )
 	result << [ 'out', part.name ]
       }
     end
@@ -87,6 +88,16 @@ class MethodDefCreator
       result << paramDef
     end
     result
+  end
+
+  def collectTypes( type )
+    @types << type
+    return unless @complexTypes[ type ]
+    content = @complexTypes[ type ].content
+    return unless content
+    content.elements.each do | element |
+      collectTypes( element.type )
+    end
   end
 
   def ary2str( ary )
