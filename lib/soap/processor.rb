@@ -50,11 +50,11 @@ module SOAPProcessor
 
     # XML tree parsing.
     builder = XML::SimpleTreeBuilder.new()
-    tree = builder.parse( stream )
-    tree.documentElement.normalize
+    elem = builder.parse( stream ).documentElement
+    elem.normalize
 
     # Parse SOAP envelope.
-    env = SOAPEnvelope.decode( ns, tree, opt.has_key?( 'allowUnqualifiedElement' ))
+    env = SOAPEnvelope.decode( ns, elem, opt.has_key?( 'allowUnqualifiedElement' ))
 
     return ns, env.header, env.body
   end
