@@ -55,9 +55,8 @@ class HTTPServer < Logger::Application
 
   # servant entry interface
 
-  def add_rpc_request_servant(factory, namespace = @default_namespace,
-      mapping_registry = nil)
-    @soaplet.add_rpc_request_servant(factory, namespace, mapping_registry)
+  def add_rpc_request_servant(factory, namespace = @default_namespace)
+    @soaplet.add_rpc_request_servant(factory, namespace)
   end
 
   def add_rpc_servant(obj, namespace = @default_namespace)
@@ -79,36 +78,24 @@ class HTTPServer < Logger::Application
   end
   alias add_method add_rpc_method
 
-  def add_document_method(obj, name, req_qname, res_qname)
-    opt = {}
-    opt[:request_style] = opt[:response_style] = :document
-    opt[:request_use] = opt[:response_use] = :literal
-    param_def = [
-      ['input', req_qname.name, [nil, req_qname.namespace, req_qname.name]],
-      ['output', req_qname.name, [nil, res_qname.namespace, res_qname.name]]
-    ]
-    @soaplet.app_scope_router.add_operation(req_qname, nil, obj, name,
-      param_def, opt)
-  end
-
   def add_rpc_method_as(obj, name, name_as, *param)
     qname = XSD::QName.new(@default_namespace, name_as)
     soapaction = nil
-    param_def = create_param_def(obj, name, param)
-    add_operation(qname, soapaction, obj, name, param_def)
+    param_def = create_rpc_param_def(obj, name, param)
+    @soaplet.app_scope_router.add_rpc_operation(obj, qname, soapaction, name,
+      param_def)
   end
   alias add_method_as add_rpc_method_as
 
-  def add_operation(qname, soapaction, obj, name, param_def, opt = {})
-    opt[:request_style] ||= :rpc
-    opt[:response_style] ||= :rpc
-    opt[:request_use] ||= :encoded
-    opt[:response_use] ||= :encoded
-    @soaplet.app_scope_router.add_operation(qname, soapaction, obj, name,
+  def add_document_method(obj, name, soapaction, req_qnames, res_qnames)
+    param_def = create_doc_param_def(req_qnames, res_qnames)
+    @soaplet.app_scope_router.add_document_operation(obj, soapaction, name,
       param_def, opt)
   end
 
-  def create_param_def(obj, name, param = nil)
+private
+
+  def create_rpc_param_def(obj, name, param = nil)
     if param.nil? or param.empty?
       method = obj.method(name)
       ::SOAP::RPC::SOAPMethod.create_param_def(
@@ -119,8 +106,20 @@ class HTTPServer < Logger::Application
       ::SOAP::RPC::SOAPMethod.create_param_def(param)
     end
   end
+  alias create_param_def create_rpc_param_def
 
-private
+  def create_doc_param_def(req_qnames, res_qnames)
+    req_qnames = [req_qnames] if req_qnames.is_a?(XSD::QName)
+    res_qnames = [res_qnames] if res_qnames.is_a?(XSD::QName)
+    param_def = []
+    req_qnames.each do |qname|
+      param_def << ['in', qname.name, [nil, qname.namespace, qname.name]]
+    end
+    res_qnames.each do |qname|
+      param_def << ['out', qname.name, [nil, qname.namespace, qname.name]]
+    end
+    param_def
+  end
 
   def run
     @server.start

@@ -200,10 +200,10 @@ class SOAPMethodRequest < SOAPMethod
     req
   end
 
-  def create_method_response
-    SOAPMethodResponse.new(
-      XSD::QName.new(@elename.namespace, @elename.name + 'Response'),
-      @param_def)
+  def create_method_response(response_name = nil)
+    response_name ||=
+      XSD::QName.new(@elename.namespace, @elename.name + 'Response')
+    SOAPMethodResponse.new(response_name, @param_def)
   end
 
 private
