@@ -13,7 +13,7 @@ class Echo_port_type
     ::SOAP::Mapping::Registry::TypedStructFactory,
     { :type => ::XSD::QName.new("urn:example.com:echo-type", "foo.bar") }
   )
-  
+
   Methods = [
     ["echo", "echo",
       [
