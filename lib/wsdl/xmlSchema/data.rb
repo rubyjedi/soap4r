@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/xmlSchema/schema'
+require 'wsdl/xmlSchema/import'
 require 'wsdl/xmlSchema/complexType'
 require 'wsdl/xmlSchema/complexContent'
 require 'wsdl/xmlSchema/element'
