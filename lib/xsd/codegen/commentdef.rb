@@ -21,7 +21,11 @@ module CommentDef
 private
 
   def dump_comment
-    format(@comment).gsub(/^/, "# ")
+    if /^#/ =~ @comment
+      format(@comment)
+    else
+      format(@comment).gsub(/^/, "# ")
+    end
   end
 end
 

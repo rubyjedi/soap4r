@@ -96,8 +96,8 @@ private
 
   def dump_requirepath
     format(
-      @requirepath.sort.collect { |path|
-        %Q(require "#{path}")
+      @requirepath.collect { |path|
+        %Q(require '#{path}')
       }.join("\n")
     )
   end
