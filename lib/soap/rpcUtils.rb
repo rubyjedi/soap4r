@@ -69,7 +69,7 @@ class SOAPBody < SOAPStruct
 
   def fault
     if @isFault
-      @data[ 'fault' ]
+      self[ 'fault' ]
     else
       nil
     end

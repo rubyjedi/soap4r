@@ -351,8 +351,8 @@ module RPCUtils
       if node.typeEqual( RubyTypeNamespace, 'Hash' )
 	obj = Hash.new
 	markUnmarshalledObj( node, obj )
-	keyArray = RPCUtils._soap2obj( node.key, map )
-	valueArray = RPCUtils._soap2obj( node.value, map )
+	keyArray = RPCUtils._soap2obj( node[ 'key' ], map )
+	valueArray = RPCUtils._soap2obj( node[ 'value' ], map )
 	while !keyArray.empty?
 	  obj[ keyArray.shift ] = valueArray.shift
 	end
@@ -361,8 +361,8 @@ module RPCUtils
 	obj = Hash.new
 	markUnmarshalledObj( node, obj )
 	node.each do | key, value |
-	  obj[ RPCUtils._soap2obj( value.key, map ) ] =
-	    RPCUtils._soap2obj( value.value, map )
+	  obj[ RPCUtils._soap2obj( value[ 'key' ], map ) ] =
+	    RPCUtils._soap2obj( value[ 'value' ], map )
 	end
 	obj
       else
