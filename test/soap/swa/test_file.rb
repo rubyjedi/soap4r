@@ -44,6 +44,7 @@ class TestFile < Test::Unit::TestCase
     @client = SOAP::RPC::Driver.new(@endpoint, 'http://www.acmetron.com/soap')
     @client.add_method('get_file')
     @client.add_method('put_file', 'name', 'file')
+    @client.wiredump_dev = STDERR if $DEBUG
   end
 
   def teardown
