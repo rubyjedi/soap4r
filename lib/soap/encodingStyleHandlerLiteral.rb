@@ -64,9 +64,15 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
 	data.position = nil
         yield( child, true )
       end
+    when SOAPElement
+      SOAPGenerator.encodeTag( buf, name, attrs.update( data.attr ), true )
+      buf << data.text if data.text
+      data.each do | key, value |
+	value.namespace = data.namespace if !value.namespace
+        yield( value, data.qualified )
+      end
     else
-      raise EncodingStyleError.new( "Unknown object:#{ data } in this encodingSt
-yle." )
+      raise EncodingStyleError.new( "Unknown object:#{ data } in this encodingStyle." )
     end
   end
 
