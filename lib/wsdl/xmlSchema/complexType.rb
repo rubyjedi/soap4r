@@ -19,6 +19,7 @@ module XMLSchema
 class ComplexType < Info
   attr_accessor :name
   attr_accessor :complexcontent
+  attr_accessor :simplecontent
   attr_accessor :content
   attr_accessor :final
   attr_accessor :mixed
@@ -28,6 +29,7 @@ class ComplexType < Info
     super()
     @name = name
     @complexcontent = nil
+    @simplecontent = nil
     @content = nil
     @final = nil
     @mixed = false
@@ -95,16 +97,14 @@ class ComplexType < Info
     case element
     when AllName
       @content = All.new
-      @content
     when SequenceName
       @content = Sequence.new
-      @content
     when ChoiceName
       @content = Choice.new
-      @content
     when ComplexContentName
       @complexcontent = ComplexContent.new
-      @complexcontent
+    when SimpleContentName
+      @simplecontent = SimpleContent.new
     when AttributeName
       o = Attribute.new
       @attributes << o
