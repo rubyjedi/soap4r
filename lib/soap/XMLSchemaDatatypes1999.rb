@@ -40,6 +40,8 @@ module SOAP
       XSD::BooleanLiteral => SOAPBoolean,
       XSD::StringLiteral => SOAPString,
       XSD::DateTimeLiteral => SOAPDateTime,
+      XSD::DateLiteral => SOAPDate,
+      XSD::TimeLiteral => SOAPTime,
       XSD::Base64BinaryLiteral => SOAPBase64,
     }
   end
