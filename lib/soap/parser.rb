@@ -189,7 +189,7 @@ private
       end
     end
 
-    unless o and namespace.nil?
+    unless o and namespace.nil? and parent.node.is_a?( SOAPFault )
       if name == 'faultcode'
 	o = SOAPString.decode( ns, entity )
 	parent.node.faultCode = o
