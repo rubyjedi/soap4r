@@ -114,6 +114,7 @@ public
   end
 
   def do_POST(req, res)
+    @config[:Logger].debug { "SOAP request: " + req.body }
     soapaction = parse_soapaction(req.meta_vars['HTTP_SOAPACTION'])
     router = lookup_router(soapaction)
     with_headerhandler(router) do |router|
@@ -143,6 +144,9 @@ public
 
     if res.body.is_a?(IO)
       res.chunked = true
+      @config[:Logger].debug { "SOAP response: (chunked response not logged)" }
+    else
+      @config[:Logger].debug { "SOAP response: " + res.body }
     end
   end
 
