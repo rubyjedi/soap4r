@@ -73,47 +73,26 @@ private
     requestString = request.data.read( length )        
     log( SEV_DEBUG ) { "XML Request: #{requestString}" }
 
-    kcodeAdjusted = false
-    charsetStrBackup = nil
-    if requestCharset
-      #requestString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
-      charsetStr = Charset.getCharsetStr( requestCharset )
-      Charset.setXMLInstanceEncoding( charsetStr )
-
-      if SOAPParser.factory.adjustKCode
-     	charsetStrBackup = $KCODE.to_s.dup
-  	$KCODE = charsetStr
-     	kcodeAdjusted = true
-      end
-    end
-
-    responseString = isFault = nil
-    begin
-      responseString, isFault = route( requestString )
-      log( SEV_DEBUG ) { "XML Response: #{responseString}" }
-    ensure
-      if kcodeAdjusted
-	$KCODE = charsetStrBackup
-      end
-    end
+    responseString, isFault = route( requestString, requestCharset )
+    log( SEV_DEBUG ) { "XML Response: #{responseString}" }
     
     unless isFault
       response.status = 200
     else
       response.status = 500
     end
-    response.body = responseString
-    response.header['Content-Type']   = StreamHandler.createMediaType(
-      requestCharset || Charset.getXMLInstanceEncodingLabel )
+    response.header['Cache-Control'] = 'private'  
+    response.header['Content-Type'] = StreamHandler.createMediaType(
+      requestCharset )
     response.header['Content-Length'] = responseString.length
-    response.header['Cache-Control']  = 'private'  
+    response.body = responseString
 
   rescue Exception
     responseString  = createFaultResponseString( $! )
     response.body   = responseString
     response.status = 500
-    response.header['Content-Type']   = StreamHandler.createMediaType(
-      Charset.getXMLInstanceEncodingLabel )
+    response.header['Content-Type'] = StreamHandler.createMediaType(
+      requestCharset )
 
   end
   
