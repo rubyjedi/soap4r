@@ -7,6 +7,10 @@ module Marshal
 
 
 module MarshalTestLib
+
+  module Mod1; end
+  module Mod2; end
+
   def encode(o)
     SOAPMarshal.dump(o)
   end
@@ -49,6 +53,30 @@ module MarshalTestLib
 
   def test_object_subclass
     marshal_equal(MyObject.new(2)) {|o| o.v}
+  end
+
+  def test_object_extend
+    o1 = Object.new
+    o1.extend(Mod1)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+    o1.extend(Mod2)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+  end
+
+  def test_object_subclass_extend
+    o1 = MyObject.new(2)
+    o1.extend(Mod1)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+    o1.extend(Mod2)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
   end
 
   class MyArray < Array; def initialize(v, *args) super args; @v = v; end end
@@ -107,6 +135,30 @@ module MarshalTestLib
     marshal_equal(o1) {|o| o.instance_eval { @iv }}
   end
 
+  def test_hash_extend
+    o1 = Hash.new
+    o1.extend(Mod1)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+    o1.extend(Mod2)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+  end
+
+  def test_hash_subclass_extend
+    o1 = MyHash.new(2)
+    o1.extend(Mod1)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+    o1.extend(Mod2)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+  end
+
   def test_bignum
     marshal_equal(-0x4000_0000_0000_0001)
     marshal_equal(-0x4000_0001)
@@ -139,6 +191,18 @@ module MarshalTestLib
     o1 = 1.23
     o1.instance_eval { @iv = 1 }
     marshal_equal(o1) {|o| o.instance_eval { @iv }}
+  end
+
+  def test_float_extend
+    o1 = 0.0/0.0
+    o1.extend(Mod1)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+    o1.extend(Mod2)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
   end
 
   class MyRange < Range; def initialize(v, *args) super(*args); @v = v; end end
@@ -209,6 +273,18 @@ module MarshalTestLib
     o1 = MyStruct.new
     o1.instance_eval { @iv = 1 }
     marshal_equal(o1) {|o| o.instance_eval { @iv }}
+  end
+
+  def test_struct_subclass_extend
+    o1 = MyStruct.new
+    o1.extend(Mod1)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
+    o1.extend(Mod2)
+    marshal_equal(o1) { |o|
+      (class << self; self; end).ancestors
+    }
   end
 
   def test_symbol
@@ -302,8 +378,6 @@ module MarshalTestLib
     assert_raises(TypeError) { marshaltest(ENV) }
   end
 
-  module Mod1 end
-  module Mod2 end
   def test_extend
     o = Object.new
     o.extend Mod1
