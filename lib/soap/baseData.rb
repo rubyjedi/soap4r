@@ -442,6 +442,14 @@ public
     @array
   end
 
+  def to_obj
+    hash = {}
+    each do |k, v|
+      hash[k] = v.respond_to?(:to_obj) ? v.to_obj : v.to_s
+    end
+    hash
+  end
+
   def each
     for i in 0..(@array.length - 1)
       yield(@array[i], @data[i])
@@ -549,7 +557,7 @@ class SOAPElement
     else
       hash = {}
       each do |k, v|
-	hash[k] = v.is_a?(SOAPElement) ? v.to_obj : v.to_s
+	hash[k] = v.respond_to?(:to_obj) ? v.to_obj : v.to_s
       end
       hash
     end
@@ -568,14 +576,16 @@ class SOAPElement
 
   def self.from_obj(hash_or_string)
     o = SOAPElement.new(nil)
-    if hash_or_string.is_a?(Hash)
+    if hash_or_string.nil?
+      o.text = nil
+    elsif hash_or_string.is_a?(Hash)
       hash_or_string.each do |k, v|
 	child = self.from_obj(v)
 	child.elename = k.is_a?(XSD::QName) ? k : XSD::QName.new(nil, k.to_s)
 	o.add(child)
       end
     else
-      o.text = hash_or_string
+      o.text = hash_or_string.to_s
     end
     o
   end
@@ -656,7 +666,8 @@ public
     value = idxary.slice!(-1)
 
     if idxary.size != @rank
-      raise ArgumentError.new("Given #{ idxary.size } params(#{ idxary }) does not match rank: #{ @rank }")
+      raise ArgumentError.new("given #{ idxary.size } params(#{ idxary })" +
+        " does not match rank: #{ @rank }")
     end
 
     for i in 0..(idxary.size - 1)
