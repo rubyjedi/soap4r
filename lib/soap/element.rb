@@ -26,7 +26,10 @@ module SOAP
 ###
 ## SOAP elements
 #
+module SOAPEnvelopeElement; end
+
 class SOAPFault < SOAPStruct
+  include SOAPEnvelopeElement
   include SOAPCompoundtype
   Name = XSD::QName.new( EnvelopeNamespace, 'Fault' )
 
@@ -104,6 +107,7 @@ end
 
 
 class SOAPBody < SOAPStruct
+  include SOAPEnvelopeElement
   Name = XSD::QName.new( EnvelopeNamespace, 'Body' )
 
 public
@@ -149,6 +153,7 @@ end
 
 
 class SOAPHeaderItem < NSDBase
+  include SOAPEnvelopeElement
   include SOAPCompoundtype
 
 public
@@ -178,6 +183,7 @@ end
 
 
 class SOAPHeader < SOAPArray
+  include SOAPEnvelopeElement
   Name = XSD::QName.new( EnvelopeNamespace, 'Header' )
 
   def initialize()
@@ -202,6 +208,7 @@ end
 
 
 class SOAPEnvelope < NSDBase
+  include SOAPEnvelopeElement
   include SOAPCompoundtype
   Name = XSD::QName.new( EnvelopeNamespace, 'Envelope' )
 

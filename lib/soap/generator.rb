@@ -95,26 +95,21 @@ public
     attrs = {}
     elementName = nil
 
-    case obj
-    when SOAPEnvelope, SOAPHeader, SOAPHeaderItem, SOAPFault
+    if obj.is_a?( SOAPEnvelopeElement )
+      if obj.is_a?( SOAPBody )
+        @refTarget = obj
+      end
       obj.encode( buf, ns ) do | child, childQualified |
 	encodeData( buf, ns.clone, childQualified, child, obj )
       end
-
-    when SOAPBody
-      @refTarget = obj
-      obj.encode( buf, ns ) do | child, childQualified |
-	encodeData( buf, ns.clone, childQualified, child, obj )
+      if obj.is_a?( SOAPBody )
+        @refTarget = nil
       end
-      @refTarget = nil
-
     else
       unless handler
        	raise FormatEncodeError.new( "Unknown encodingStyle: #{ encodingStyle }." )
       end
 
-      # Generator knows nothing about RPC.
-      # obj.name ||= RPCUtils.getElementNameFromName( obj.type.to_s )
       if !obj.elementName.name
        	raise FormatEncodeError.new( "Element name not defined: #{ obj }." )
       end
@@ -127,19 +122,20 @@ public
   end
 
   def self.encodeTag( buf, elementName, attrs = nil, pretty = nil )
-    buf << '<' << elementName
     if attrs
+      buf << "<#{ elementName }"
       attrs.each do | key, value |
-        # Value should be escaped!
-        buf << ' ' << key << '=' << '"' << value << '"'
+        buf << %Q[ #{ key }="#{ value }"]
       end
+      buf << '>'
+    else
+      buf << "<#{ elementName }>"
     end
-    buf << '>'
     buf << "\n" if pretty
   end
 
   def self.encodeTagEnd( buf, elementName, pretty = nil )
-    buf << '</' << elementName << '>'
+    buf << "</#{ elementName }>"
     buf << "\n" if pretty
   end
 
