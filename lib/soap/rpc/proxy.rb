@@ -108,7 +108,7 @@ public
     rescue ::SOAP::FaultError => e
       Mapping.fault2exception(e)
     end
-    op.create_response_obj(env, @mapping_registry, @literal_mapping_registly)
+    op.create_response_obj(env, @mapping_registry, @literal_mapping_registry)
   end
 
   def check_fault(body)
@@ -246,7 +246,7 @@ private
         SOAPBody.new(method)
       else
         name = @document_method_name[:input]
-        document = literal_mapping_registry.obj2soap(nil, values[0], name)
+        document = literal_mapping_registry.obj2soap(values[0], name)
         SOAPBody.new(document)
       end
     end
