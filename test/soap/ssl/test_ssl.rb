@@ -58,7 +58,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert_equal(": certificate verify failed", ssle.message)
       assert(@verify_callback_called)
     end
     #
@@ -69,7 +69,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert_equal(": certificate verify failed", ssle.message)
       assert(@verify_callback_called)
     end
     #
@@ -79,7 +79,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert_equal(": certificate verify failed", ssle.message)
       assert(@verify_callback_called)
     end
     #
@@ -94,7 +94,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert_equal(": certificate verify failed", ssle.message)
       assert(@verify_callback_called)
     end
     #
@@ -105,7 +105,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert_equal(": certificate verify failed", ssle.message)
     end
     #
     cfg["protocol.http.ssl_config.verify_mode"] = ""
@@ -134,7 +134,7 @@ __EOP__
         @client.hello_world("ssl client")
         assert(false)
       rescue OpenSSL::SSL::SSLError => ssle
-        assert_equal("certificate verify failed", ssle.message)
+        assert_equal(": certificate verify failed", ssle.message)
         assert(@verify_callback_called)
       end
       #
@@ -161,7 +161,7 @@ __EOP__
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("no ciphers available", ssle.message)
+      assert_equal(": no ciphers available", ssle.message)
     end
     #
     cfg["protocol.http.ssl_config.ciphers"] = "ALL"
