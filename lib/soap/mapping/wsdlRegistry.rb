@@ -76,18 +76,6 @@ class WSDLRegistry
     raise MappingError.new("Cannot map #{ klass.name } to SOAP/OM.")
   end
 
-  def obj2ele(obj, type_qname)
-    ele = nil
-    type = @complextypes[type_qname]
-    if obj.nil?
-      ele = SOAPElement.new(type_qname)
-    elsif type
-      ele = struct2ele(obj, type_qname, type)
-    end
-    return ele if ele
-    raise MappingError.new("Cannot map #{ type_qname } to XML element.")
-  end
-
   def soap2obj(klass, node)
     raise RuntimeError.new("#{ self } is for obj2soap only.")
   end
@@ -130,22 +118,8 @@ private
   def elements2soap(obj, soap_obj, elements)
     elements.each do |element|
       name = element.name
-      child_obj = obj.instance_eval('@' << name)
+      child_obj = obj.instance_eval("@#{ name }")
       soap_obj.add(name, Mapping._obj2soap(child_obj, self, element.type))
-    end
-  end
-
-  def struct2ele(obj, type_qname, type)
-    ele = SOAPElement.new(type_qname)
-    elements2ele(obj, ele, type.content.elements)
-    ele
-  end
-
-  def elements2ele(obj, ele, elements)
-    elements.each do |element|
-      name = element.name
-      child_obj = obj.instance_eval('@' << name)
-      ele.add(obj2ele(child_obj, element.type))
     end
   end
 end
