@@ -36,14 +36,20 @@ class SOAPGenerator
 
 public
 
+  attr_accessor :charset
+  attr_accessor :defaultEncodingStyle
+  attr_accessor :generateEncodeType
+
   def initialize( opt = {} )
-    @option = opt
     @refTarget = nil
     @handlers = {}
-    @encodeType = @option[ 'noEncodeType' ] ? false : true
-    EncodingStyleHandler.defaultHandler =
-      EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
-      EncodingNamespace )
+    @charset = opt[ :charset ] || Charset.getEncodingLabel
+    @defaultEncodingStyle = opt[ :defaultEncodingStyle ] || EncodingNamespace
+    @generateEncodeType = if opt.has_key?( :generateEncodeType )
+	opt[ :generateEncodeType ]
+      else
+	true
+      end
   end
 
   def generate( obj )
@@ -59,7 +65,7 @@ public
     end
     epilogue
 
-    serializedString
+    xmlDecl << serializedString
   end
 
   def doGenerate( obj )
@@ -83,12 +89,11 @@ public
     end
 
     encodingStyle = obj.encodingStyle
-
     # Children's encodingStyle is derived from its parent.
     encodingStyle ||= parent.encodingStyle if parent
     obj.encodingStyle = encodingStyle
 
-    handler = getHandler( encodingStyle )
+    handler = getHandler( encodingStyle || @defaultEncodingStyle )
 
     attrs = {}
     elementName = nil
@@ -161,12 +166,21 @@ private
 
   def getHandler( encodingStyle )
     unless @handlers.has_key?( encodingStyle )
-      handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new
-      handler.encodeType = @encodeType
+      handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new(
+	@charset )
+      handler.generateEncodeType = @generateEncodeType
       handler.encodePrologue
       @handlers[ encodingStyle ] = handler
     end
     @handlers[ encodingStyle ]
+  end
+
+  def xmlDecl
+    if @charset
+      %Q[<?xml version="1.0" encoding="#{ @charset }" ?>\n]
+    else
+      %Q[<?xml version="1.0" ?>\n]
+    end
   end
 end
 
