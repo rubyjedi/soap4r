@@ -71,7 +71,7 @@ private
 
     contentType = request.header['Content-Type']
     if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ contentType
-      raise RuntimeError.new("Illegal content-type.")
+      raise RuntimeError.new("Illegal content-type: #{ request.header['Content-Type']}.")
     end
     requestCharset = $1
     
