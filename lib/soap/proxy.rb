@@ -107,13 +107,12 @@ class SOAPProxy
   def call( headers, methodName, *values )
     req = createRequest( methodName, *values )
     data = invoke( headers, req.method, req.method.soapAction || @soapAction )
-    receiveString = data.receiveString
+    return nil, nil if data.receiveString.empty?
+
     receiveCharset = StreamHandler.parseMediaType( data.receiveContentType )
-    # StreamHandler returns receiveCharset to use.
     kcodeAdjusted = false
     charsetStrBackup = nil
     if receiveCharset
-      #receiveString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
       charsetStr = Charset.getCharsetStr( receiveCharset )
       Charset.setXMLInstanceEncoding( charsetStr )
 
@@ -127,7 +126,7 @@ class SOAPProxy
     header = body = nil
     begin
       # SOAP tree parsing.
-      header, body = Processor.unmarshal( receiveString, getOpt )
+      header, body = Processor.unmarshal( data.receiveString, getOpt )
     ensure
       if kcodeAdjusted
        	$KCODE = charsetStrBackup
