@@ -202,11 +202,6 @@ public
     set( initDecimal ) if initDecimal
   end
 
-  # override original definition.
-  def data
-    _to_s
-  end
-
 private
   def _set( newDecimal )
     /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( newDecimal.to_s )
@@ -226,6 +221,8 @@ private
 
     # normalize
     @sign = '' if @sign == '+'
+
+    @data = _to_s
   end
 
   # 0.0 -> 0; right?
@@ -659,7 +656,7 @@ end
 class XSDHexBinary < XSDBase
 public
   # String in Ruby could be a binary.
-  def initialize( initString = '' )
+  def initialize( initString = nil )
     super( HexBinaryLiteral )
     set( initString ) if initString
   end
@@ -683,7 +680,7 @@ end
 class XSDBase64Binary < XSDBase
 public
   # String in Ruby could be a binary.
-  def initialize( initString = '' )
+  def initialize( initString = nil )
     super( Base64BinaryLiteral )
     set( initString ) if initString
   end
