@@ -20,6 +20,16 @@ require 'nqxml/document'
 
 
 module NQXML
+  def NQXML.encode(str)
+    copy = str.gsub('&', '&amp;')
+    copy.gsub!('<', '&lt;')
+    copy.gsub!('>', '&gt;')
+    copy.gsub!('"', '&quot;')
+    copy.gsub!('\'', '&apos;')
+    copy.gsub!("\r", '&#xd;')
+    return copy
+  end
+
   Attr = Struct.new( "Attr", :nodeName, :nodeValue )
 
   class Node
