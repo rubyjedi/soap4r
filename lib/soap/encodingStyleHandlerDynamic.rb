@@ -33,8 +33,11 @@ module SOAP
     end
 
     class SOAPUnknown < SOAPTemporalObject
+      attr_accessor :textBuf
+
       def initialize( handler, ns, entity, typeNamespace, typeName )
 	super()
+	@textBuf = ''
 	@handler = handler
 	@ns = ns
 	@entity = entity
@@ -128,19 +131,21 @@ module SOAP
     end
 
     def decodeTagAsXSD( ns, typeNameString, entity )
-      if typeNameString == 'int'
+      if typeNameString == XSD::AnyTypeLiteral
+	SOAPUnknown.new( self, ns, entity, XSD::Namespace, typeNameString )
+      elsif typeNameString == XSD::IntLiteral
     	SOAPInt.decode( ns, entity )
-      elsif typeNameString == 'integer'
+      elsif typeNameString == XSD::IntegerLiteral
     	SOAPInteger.decode( ns, entity )
-      elsif typeNameString == 'float'
+      elsif typeNameString == XSD::FloatLiteral
     	SOAPFloat.decode( ns, entity )
-      elsif typeNameString == 'boolean'
+      elsif typeNameString == XSD::BooleanLiteral
     	SOAPBoolean.decode( ns, entity )
-      elsif typeNameString == 'string'
+      elsif typeNameString == XSD::StringLiteral
     	SOAPString.decode( ns, entity )
-      elsif typeNameString == 'dateTime'
+      elsif typeNameString == XSD::DateTimeLiteral
    	SOAPDateTime.decode( ns, entity )
-      elsif typeNameString == 'base64Binary'
+      elsif typeNameString == XSD::Base64BinaryLiteral
     	SOAPBase64.decode( ns, entity )
       else
 	nil
@@ -148,19 +153,19 @@ module SOAP
     end
 
     def decodeTagAsSOAPENC( ns, typeNameString, entity )
-      if typeNameString == 'int'
+      if typeNameString == XSD::IntLiteral
     	SOAPInt.decode( ns, entity )
-      elsif typeNameString == 'integer'
+      elsif typeNameString == XSD::IntegerLiteral
     	SOAPInteger.decode( ns, entity )
-      elsif typeNameString == 'float'
+      elsif typeNameString == XSD::FloatLiteral
         SOAPFloat.decode( ns, entity )
-      elsif typeNameString == 'boolean'
+      elsif typeNameString == XSD::BooleanLiteral
         SOAPBoolean.decode( ns, entity )
-      elsif typeNameString == 'string'
+      elsif typeNameString == XSD::StringLiteral
         SOAPString.decode( ns, entity )
-      elsif typeNameString == 'dateTime'
+      elsif typeNameString == XSD::DateTimeLiteral
         SOAPDateTime.decode( ns, entity )
-      elsif typeNameString == 'base64'
+      elsif typeNameString == SOAP::Base64Literal
         SOAPBase64.decode( ns, entity )
       else
 	nil
@@ -168,24 +173,31 @@ module SOAP
     end
 
     def decodeTagEnd( ns, node )
-      if node.node.is_a?( SOAPUnknown )
-	node.node.toStruct
+      o = node.node
+      if o.is_a?( SOAPUnknown )
+	if /\A\s*\z/ =~ o.textBuf
+	  o.toStruct
+	else
+	  newNode = o.toString
+	  if newNode.id
+	    @idPool << newParent
+	  end
+	  node.replaceNode( newNode )
+	  node.node.set( o.textBuf )
+	end
       end
     end
 
     def decodeText( ns, entity, parent )
       case parent.node
+      when SOAPUnknown
+	parent.node.textBuf << entity.text
       when XSDBase64Binary
         parent.node.setEncoded( entity.text )
-      when SOAPUnknown
-	newParent = parent.node.toString
-	if newParent.id
-	  @idPool << newParent
-	end
-	parent.replaceNode( newParent )
-	parent.node.set( entity.text )
-      else
+      when SOAPBasetype
         parent.node.set( entity.text )
+      else
+	# Nothing to do...
       end
     end
 
