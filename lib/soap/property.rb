@@ -15,9 +15,17 @@ class Property
   # Property file format:
   #   line separator is \r?\n.  1 line per a property.
   #   line which begins with '#' is comment line.  empty line is ignored.
-  #   key/value separator is ':', '=', or \s.
+  #   key/value separator is ':' or '='.
   #   '\' as escape character.  but line separator cannot be escaped.
   #   \s at the head/tail of key/value are trimmed.
+  #
+  #   line which is '[' + key + ']' indicates property section.
+  #     [aaa.bbb]
+  #     ccc = ddd
+  #     eee.fff = ggg
+  #   is the same as;
+  #     aaa.bbb.ccc = ddd
+  #     aaa.bbb.eee.fff = ggg
 
   def self.load(stream)
     prop = new
@@ -48,16 +56,25 @@ class Property
     @locked = false
   end
 
-  KEY_REGSRC = '\\s*([^=:\\s\\\\]+(?:\\\\.[^=:\\s\\\\]*)*)\\s*[=:\\s]\\s*(.*)'
-  CAT_REGEXP = Regexp.new()
-  LINE_REGEXP = Regexp.new("^#{KEY_REGSRC}$")
+  KEY_REGSRC = '([^=:\\\\]*(?:\\\\.[^=:\\\\]*)*)'
+  DEF_REGSRC = '\\s*' + KEY_REGSRC + '\\s*[=:]\\s*(.*)'
+  CAT_REGEXP = Regexp.new("^\\[\\s*#{KEY_REGSRC}\\s*\\]$")
+  LINE_REGEXP = Regexp.new("^#{DEF_REGSRC}$")
   def load(stream)
+    key_prefix = nil
     stream.each_with_index do |line, lineno|
       line.sub!(/\r?\n\z/, '')
       next if /^(#.*|)$/ =~ line
-      if LINE_REGEXP =~ line
+      if CAT_REGEXP =~ line
+	key_prefix = $1.strip
+	if key_prefix.empty?
+	  key_prefix = nil
+	else
+	  key_prefix += '.'
+	end
+      elsif LINE_REGEXP =~ line
 	key, value = $1, $2
-	key = eval("\"#{key}\"")
+	key = eval("\"#{key_prefix}#{key.strip}\"")
 	value = eval("\"#{value.strip}\"")
 	self[key] = value
       else
