@@ -73,10 +73,21 @@ module RPCUtils
   end
 
 
-  ###
-  ## Ruby's obj <-> SOAP/OM mapping registry.
-  #
+  module TraverseSupport
+    # It breaks Thread.current[ :SOAPMarshalDataKey ].
+    def markMarshalledObj( obj, soapObj )
+      Thread.current[ :SOAPMarshalDataKey ][ obj.__id__ ] = soapObj
+    end
+
+    # It breaks Thread.current[ :SOAPMarshalDataKey ].
+    def markUnmarshalledObj( node, obj )
+      Thread.current[ :SOAPMarshalDataKey ][ node.id ] = obj
+    end
+  end
+
   class Factory
+    include TraverseSupport
+
     def obj2soap( soapKlass, obj, info, map )
       raise NotImplementError.new
       # return soapObj
@@ -768,7 +779,7 @@ module RPCUtils
 
       def soap2obj( klass, node )
 	@map.each do | objKlass, soapKlass, factory, info |
-	  if klass == soapKlass
+	  if klass <= soapKlass
 	    conv, obj = factory.soap2obj( objKlass, node, info, @registry )
 	    return true, obj if conv
 	  end
@@ -872,23 +883,32 @@ module RPCUtils
     end
     alias :set :add
 
-    def obj2soap( klass, obj )
+    # This mapping registry ignores type hint.
+    def obj2soap( klass, obj, type = nil )
       ret = nil
+      if obj.is_a?( SOAPStruct ) || obj.is_a?( SOAPArray )
+       	obj.replace do | ele |
+	  RPCUtils._obj2soap( ele, self )
+	end
+	return obj
+      elsif obj.is_a?( SOAPBasetype )
+	return obj
+      end
       begin 
 	ret = @map.obj2soap( klass, obj ) ||
 	  @defaultFactory.obj2soap( klass, obj, nil, self )
       rescue MappingError
       end
+      return ret if ret
 
-      if ret.nil? && @obj2soapExceptionHandler
+      if @obj2soapExceptionHandler
 	ret = @obj2soapExceptionHandler.call( obj ) { | yieldObj |
 	  RPCUtils._obj2soap( yieldObj, self )
 	}
       end
-      if ret.nil?
-	raise MappingError.new( "Cannot map #{ klass.name } to SOAP/OM." )
-      end
-      ret
+      return ret if ret
+
+      raise MappingError.new( "Cannot map #{ klass.name } to SOAP/OM." )
     end
 
     def soap2obj( klass, node )
@@ -930,6 +950,87 @@ module RPCUtils
       @map.searchMappedRubyClass( soapClass )
     end
   end
+
+  class WSDLMappingRegistry
+    include TraverseSupport
+
+    def initialize( wsdl, config = {} )
+      @wsdl = wsdl
+      @config = config
+      @complexTypes = @wsdl.complexTypes
+      @obj2soapExceptionHandler = nil
+    end
+
+    def obj2soap( klass, obj, typeQName )
+      soapObj = nil
+      if obj.nil?
+	soapObj = SOAPNil.new
+      elsif obj.is_a?( SOAPBasetype )
+	soapObj = obj
+      elsif obj.is_a?( SOAPStruct ) && ( type = @complexTypes[ obj.type ] )
+	soapObj = obj
+	markMarshalledObj( obj, soapObj )
+	type.content.elements.each do | elementName, element |
+	  childObj = obj[ elementName ]
+       	  soapObj[ elementName ] =
+	    RPCUtils._obj2soap( childObj, self, element.type )
+	end
+      elsif obj.is_a?( SOAPArray ) && ( type = @complexTypes[ obj.type ] )
+	contentType = type.getChildrenType
+	soapObj = obj
+	markMarshalledObj( obj, soapObj )
+	obj.replace do | ele |
+	  RPCUtils._obj2soap( ele, self, contentType )
+	end
+      elsif ( type = @complexTypes[ typeQName ] )
+	case type.compoundType
+	when :TYPE_STRUCT
+	  soapObj = SOAPStruct.new( typeQName )
+	  markMarshalledObj( obj, soapObj )
+	  type.content.elements.each do | elementName, element |
+	    childObj = obj.instance_eval( '@' << elementName )
+	    soapObj.add( elementName,
+	      RPCUtils._obj2soap( childObj, self, element.type ))
+	  end
+	when :TYPE_ARRAY
+	  contentType = type.getChildrenType
+	  soapObj = SOAPArray.new( contentType )
+	  markMarshalledObj( obj, soapObj )
+	  obj.each do | item |
+	    soapObj.add( RPCUtils._obj2soap( item, self, contentType ))
+	  end
+	end
+      elsif ( type = TypeMap[ typeQName ] )
+	if type <= XSD::XSDString
+	  soapObj = type.new( Charset.isCES( obj, $KCODE ) ?
+	    Charset.codeConv( obj, $KCODE, Charset.getEncoding ) : obj )
+	  markMarshalledObj( obj, soapObj )
+	else
+	  soapObj = type.new( obj )
+	end
+      end
+      return soapObj if soapObj
+
+      if @obj2soapExceptionHandler
+	soapObj = @obj2soapExceptionHandler.call( obj ) { | yieldObj |
+	  RPCUtils._obj2soap( yieldObj, self )
+	}
+      end
+      return soapObj if soapObj
+
+      raise MappingError.new( "Cannot map #{ klass.name } to SOAP/OM." )
+    end
+
+    def soap2obj( klass, node )
+      raise RuntimeError.new( "#{ self } is for obj2soap only." )
+    end
+
+    def obj2soapExceptionHandler=( newHandler )
+      @obj2soapExceptionHandler = newHandler
+    end
+  end
+
+  DefaultMappingRegistry = MappingRegistry.new
 end
 
 
