@@ -59,6 +59,18 @@ __EOD__
     str
   end
 
+  def dq(ele)
+    "\"#{ ele }\""
+  end
+
+  def ndq(ele)
+    ele.nil? ? "nil" : dq(ele)
+  end
+
+  def sym(ele)
+    ':' + ele
+  end
+
 private
 
   def dump_inout_type(param)

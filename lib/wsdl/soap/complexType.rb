@@ -20,14 +20,15 @@ class ComplexType < Info
 
   def check_type
     if content
-      if content.elements.size == 1 and content.elements[0].maxoccurs != '1'
+      if attributes.empty? and
+          content.elements.size == 1 and content.elements[0].maxoccurs != '1'
 	:TYPE_ARRAY
       else
 	:TYPE_STRUCT
       end
     elsif complexcontent and complexcontent.base == ::SOAP::ValueArrayName
       :TYPE_ARRAY
-    elsif attributes.size > 0
+    elsif !attributes.empty?
       :TYPE_STRUCT
     else
       raise NotImplementedError.new("Unknown kind of complexType.")
