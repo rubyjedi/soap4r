@@ -236,7 +236,7 @@ class SOAPMethodResponse < SOAPMethod
 
   def retval=(retval)
     @retval = retval
-    @retval.elename = @retval.elename.dup_name('return')
+    @retval.elename = @retval.elename.dup_name(@retval_name || 'return')
   end
 
   def each
