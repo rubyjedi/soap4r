@@ -36,7 +36,7 @@ module SOAP
 class Server < Devel::Application
   include SOAP
 
-  def initialize( appName, namespace )
+  def initialize( appName, namespace = nil )
     super( appName )
     @namespace = namespace
     @router = RPCRouter.new( appName )
@@ -51,35 +51,44 @@ class Server < Devel::Application
     @router.mappingRegistry = value
   end
 
+  def addServant( obj, namespace = @namespace )
+   ( obj.methods - Kernel.instance_methods ).each do | methodName |
+      method = obj.method( methodName )
+      paramDef = RPCUtils::SOAPMethod.createParamDef(
+	( 1..method.arity.abs ).collect { |i| "p#{ i }" } )
+      @router.addMethod( namespace, obj, methodName, paramDef )
+    end
+  end
 
 protected
   
   def methodDef
-    # Override this method in derived class to call 'addMethod' to add methods.
+    # Override this method in derived class to call 'addMethod*' to add methods.
   end
 
   def addMethod( receiver, methodName, *paramArg )
-    addMethodWithNS( @namespace, receiver, methodName, *paramArg )
+    addMethodWithNSAs( @namespace, receiver, methodName, methodName, *paramArg )
+  end
+
+  def addMethodAs( receiver, methodName, methodNameAs, *paramArg )
+    addMethodWithNSAs( @namespace, receiver, methodName, methodNameAs,
+      *paramArg )
   end
 
   def addMethodWithNS( namespace, receiver, methodName, *paramArg )
+    addMethodWithNSAs( namespace, receiver, methodName, methodName, *paramArg )
+  end
+
+  def addMethodWithNSAs( namespace, receiver, methodName, methodNameAs,
+      *paramArg )
     paramDef = if paramArg.size == 1 and paramArg[ 0 ].is_a?( Array )
         paramArg[ 0 ]
       else
         RPCUtils::SOAPMethod.createParamDef( paramArg )
       end
-    @router.addMethod( @namespace, receiver, methodName, paramDef )
+    @router.addMethodAs( namespace, receiver, methodName, methodNameAs,
+      paramDef )
   end
-
-  def addServant( obj )
-   ( obj.methods - Kernel.instance_methods ).each do | methodName |
-      method = obj.method( methodName )
-      paramDef = RPCUtils::SOAPMethod.createParamDef(
-	( 1..method.arity.abs ).collect { |i| "p#{ i }" } )
-      @router.addMethod( @namespace, obj, methodName, paramDef )
-    end
-  end
-
 
   def route( requestString )
     @router.route( requestString )

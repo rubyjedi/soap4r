@@ -237,7 +237,8 @@ module RPCUtils
     end
 
     def createMethodResponse
-      response = SOAPMethodResponse.new( @namespace.dup, @name + 'Response', @paramDef.dup )
+      response = SOAPMethodResponse.new( @namespace, @name + 'Response',
+	@paramDef )
       response
     end
   end
@@ -390,7 +391,7 @@ module RPCUtils
     if /^[A-Z]/ !~ name
       return nil
     end
-    klass = Object
+    klass = ::Object
     name.split( '::' ).each do | klassStr |
       if klass.const_defined?( klassStr )
 	klass = klass.const_get( klassStr )

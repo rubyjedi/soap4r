@@ -73,7 +73,11 @@ class SOAPProxy
   end
 
   def addMethod( methodName, paramDef, soapAction = nil )
-    @method[ methodName ] = SOAPMethodRequest.new( @namespace, methodName,
+    addMethodAs( methodName, methodName, paramDef, soapAction )
+  end
+
+  def addMethodAs( methodNameAs, methodName, paramDef, soapAction = nil )
+    @method[ methodName ] = SOAPMethodRequest.new( @namespace, methodNameAs,
       paramDef, soapAction )
   end
 
@@ -112,6 +116,7 @@ class SOAPProxy
       raise StreamError.new( "Illegal content-type: #{ data.receiveContentType }" )
     end
     receiveCharset = $1
+    receiveCharset.sub!( /^(['"])(.*)\1$/ ) { $2 } if receiveCharset
 
     # StreamHandler returns receiveCharset to use.
     parser = Processor.getDefaultParser
