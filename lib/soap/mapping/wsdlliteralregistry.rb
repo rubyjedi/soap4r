@@ -131,11 +131,11 @@ private
   end
 
   def add_elements2soap(obj, ele)
-    elements = obj.class.class_eval('@@schema_element')
+    elements, as_array = schema_element_definition(obj.class)
     elements.each do |elename, type|
       child = Mapping.find_attribute(obj, elename)
       name = ::XSD::QName.new(nil, elename)
-      if child.is_a?(::Array)
+      if as_array.include?(type)
         child.each do |item|
           ele.add(obj2soap(item, name))
         end
@@ -146,7 +146,7 @@ private
   end
   
   def add_attributes2soap(obj, ele)
-    attributes = obj.class.class_eval('@@schema_attribute')
+    attributes = schema_attribute_definition(obj.class)
     attributes.each do |attrname, param|
       attr = Mapping.find_attribute(obj, 'attr_' + attrname)
       ele.extraattr[attrname] = attr
@@ -172,7 +172,7 @@ private
     klass = ::SOAP::Mapping::Object
     obj = klass.new
     node.each do |name, value|
-      obj.__soap_set_property(name, Mapping._soap2obj(value, map))
+      obj.__soap_set_property(name, Mapping._soap2obj(value, self))
     end
     obj
   end
@@ -244,6 +244,8 @@ private
     Mapping.set_instance_vars(obj, vars)
   end
 
+  # it caches @@schema_element.  this means that @@schema_element must not be
+  # changed while a lifetime of a WSDLLiteralRegistry.
   def schema_element_definition(klass)
     if @schema_element_cache.key?(klass)
       return @schema_element_cache[klass]
