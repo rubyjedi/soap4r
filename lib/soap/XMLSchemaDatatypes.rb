@@ -52,6 +52,10 @@ class NSDBase
     @typeName = typeName
     @typeNamespace = typeNamespace
   end
+
+  def typeEqual( typeNamespace, typeName )
+    ( @typeNamespace == typeNamespace and @typeName == typeName )
+  end
 end
 
 
