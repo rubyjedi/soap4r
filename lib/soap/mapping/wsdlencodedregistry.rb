@@ -168,7 +168,7 @@ private
   def elements2soap(obj, soap_obj, elements)
     elements.each do |element|
       name = element.name.name
-      child_obj = obj.instance_variable_get('@' + name)
+      child_obj = Mapping.get_attribute(obj, name)
       soap_obj.add(name,
         Mapping._obj2soap(child_obj, self, element.type || element.name))
     end

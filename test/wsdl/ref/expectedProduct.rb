@@ -7,12 +7,13 @@ end
 
 # urn:product
 class ProductBag
-  @@schema_type = "ProductBag"
+  @@schema_type = "Product-Bag"
   @@schema_ns = "urn:product"
   @@schema_attribute = {"version" => "SOAP::SOAPString", "yesno" => "SOAP::SOAPString"}
-  @@schema_element = {"bag" => "Product[]", "Rating" => "SOAP::SOAPString[]", "ProductBag" => nil, "comment_1" => nil, "comment_2" => "Comment[]"}
+  @@schema_element = {"bag" => "Product[]", "rating" => ["SOAP::SOAPString[]", XSD::QName.new("urn:product", "Rating")], "product_Bag" => [nil, XSD::QName.new("urn:product", "Product-Bag")], "comment_1" => nil, "comment_2" => ["Comment[]", XSD::QName.new(nil, "comment-2")]}
 
   attr_accessor :bag
+  attr_accessor :product_Bag
   attr_accessor :comment_1
   attr_accessor :comment_2
 
@@ -22,14 +23,6 @@ class ProductBag
 
   def Rating=(value)
     @rating = value
-  end
-
-  def ProductBag
-    @productBag
-  end
-
-  def ProductBag=(value)
-    @productBag = value
   end
 
   def attr_version
@@ -48,10 +41,10 @@ class ProductBag
     @__soap_attribute["yesno"] = value
   end
 
-  def initialize(bag = [], rating = [], productBag = nil, comment_1 = [], comment_2 = [])
+  def initialize(bag = [], rating = [], product_Bag = nil, comment_1 = [], comment_2 = [])
     @bag = bag
     @rating = rating
-    @productBag = productBag
+    @product_Bag = product_Bag
     @comment_1 = comment_1
     @comment_2 = comment_2
     @__soap_attribute = {}
@@ -72,7 +65,7 @@ end
 class Product
   @@schema_type = "Product"
   @@schema_ns = "urn:product"
-  @@schema_element = {"name" => "SOAP::SOAPString", "Rating" => "SOAP::SOAPString"}
+  @@schema_element = {"name" => "SOAP::SOAPString", "rating" => ["SOAP::SOAPString", XSD::QName.new("urn:product", "Rating")]}
 
   attr_accessor :name
 

@@ -30,6 +30,7 @@ class WSDLLiteralRegistry
     @excn_handler_soap2obj = nil
     @rubytype_factory = RubytypeFactory.new(:allow_original_mapping => false)
     @schema_element_cache = {}
+    @schema_attribute_cache = {}
   end
 
   def obj2soap(obj, qname)
@@ -84,7 +85,7 @@ private
     elsif ele.local_complextype
       o = SOAPElement.new(ele.name)
       ele.local_complextype.each_element do |child_ele|
-        o.add(_obj2soap(Mapping.find_attribute(obj, child_ele.name.name),
+        o.add(_obj2soap(Mapping.get_attribute(obj, child_ele.name.name),
           child_ele))
       end
     else
@@ -115,7 +116,7 @@ private
   def complex2soap(obj, type)
     o = SOAPElement.new(type.name)
     type.each_element do |child_ele|
-      o.add(_obj2soap(Mapping.find_attribute(obj, child_ele.name.name),
+      o.add(_obj2soap(Mapping.get_attribute(obj, child_ele.name.name),
         child_ele))
     end
     o
@@ -141,8 +142,8 @@ private
   def add_elements2soap(obj, ele)
     elements, as_array = schema_element_definition(obj.class)
     elements.each do |elename, type|
-      child = Mapping.find_attribute(obj, elename)
-      name = ::XSD::QName.new(nil, elename)
+      child = Mapping.get_attribute(obj, elename)
+      name = XSD::QName.new(nil, elename)
       if as_array.include?(type)
         child.each do |item|
           ele.add(obj2soap(item, name))
@@ -157,7 +158,7 @@ private
     attributes = schema_attribute_definition(obj.class)
     if attributes
       attributes.each do |attrname, param|
-        attr = Mapping.find_attribute(obj, 'attr_' + attrname)
+        attr = Mapping.get_attribute(obj, 'attr_' + attrname)
         ele.extraattr[attrname] = attr
       end
     end
@@ -165,9 +166,9 @@ private
 
   def base2soap(obj, type)
     soap_obj = nil
-    if type <= ::XSD::XSDString
-      soap_obj = type.new(::XSD::Charset.is_ces(obj, $KCODE) ?
-        ::XSD::Charset.encoding_conv(obj, $KCODE, ::XSD::Charset.encoding) :
+    if type <= XSD::XSDString
+      soap_obj = type.new(XSD::Charset.is_ces(obj, $KCODE) ?
+        XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding) :
         obj)
     else
       soap_obj = type.new(obj)
@@ -189,7 +190,7 @@ private
 
   def soapele2obj(node, obj_class = nil)
     unless obj_class
-      typestr = ::XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
+      typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
       obj_class = Mapping.class_from_name(typestr)
     end
     if obj_class and obj_class.class_variables.include?('@@schema_element')
@@ -236,16 +237,16 @@ private
         vars[name] = child
       end
     end
-    Mapping.set_instance_vars(obj, vars)
+    Mapping.set_attributes(obj, vars)
   end
 
   def add_attributes2obj(node, obj)
-    Mapping.set_instance_vars(obj, {'__soap_attribute' => {}})
+    Mapping.set_attributes(obj, {'__soap_attribute' => {}})
     vars = {}
     attributes = schema_attribute_definition(obj.class)
     if attributes
       attributes.each do |attrname, class_name|
-        attr = node.extraattr[::XSD::QName.new(nil, attrname)]
+        attr = node.extraattr[XSD::QName.new(nil, attrname)]
         next if attr.nil? or attr.empty?
         klass = Mapping.class_from_name(class_name)
         if klass.ancestors.include?(::SOAP::SOAPBasetype)
@@ -256,30 +257,17 @@ private
         vars['attr_' + attrname] = child
       end
     end
-    Mapping.set_instance_vars(obj, vars)
+    Mapping.set_attributes(obj, vars)
   end
 
   # it caches @@schema_element.  this means that @@schema_element must not be
   # changed while a lifetime of a WSDLLiteralRegistry.
   def schema_element_definition(klass)
-    if @schema_element_cache.key?(klass)
-      return @schema_element_cache[klass]
-    end
-    elements = {}
-    as_array = []
-    klass.class_eval('@@schema_element').each do |name, class_name|
-      if /\[\]$/ =~ class_name
-        class_name = class_name.sub(/\[\]$/, '')
-        as_array << class_name
-      end
-      elements[name] = class_name
-    end
-    @schema_element_cache[klass] = [elements, as_array]
-    return @schema_element_cache[klass]
+    @schema_element_cache[klass] ||= Mapping.schema_element_definition(klass)
   end
 
   def schema_attribute_definition(klass)
-    klass.class_eval('@@schema_attribute')
+    @schema_attribute_cache[klass] ||= Mapping.schema_attribute_definition(klass)
   end
 end
 
