@@ -5,6 +5,7 @@
     xmlns:tns="urn:www.example.org:hashsample"
     xmlns="http://schemas.xmlsoap.org/wsdl/"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:apachesoap="http://xml.apache.org/xml-soap">
 
   <types>
@@ -17,8 +18,8 @@
 	  <element name="item" minOccurs="0" maxOccurs="unbounded">
 	    <complexType>
 	      <sequence>
-		<element name="key" type="anyType" />
-		<element name="value" type="anyType" />
+		<element name="key" type="xsd:anyType" />
+		<element name="value" type="xsd:anyType" />
 	      </sequence>
 	    </complexType>
 	  </element>
