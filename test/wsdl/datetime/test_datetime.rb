@@ -38,6 +38,7 @@ class TestDatetime < Test::Unit::TestCase
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.generate_explicit_type = true
+    @client.wiredump_dev = STDOUT if $DEBUG
   end
 
   def teardown

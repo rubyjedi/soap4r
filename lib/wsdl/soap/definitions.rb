@@ -111,13 +111,13 @@ private
       if op_bind_rpc?(op_bind)
 	operation = op_bind.find_operation
 	if op_bind.input
-	  type = XMLSchema::ComplexType.new(operation_input_name(operation))
+	  type = XMLSchema::ComplexType.new(operation.inputname)
 	  message = messages[operation.input.message]
 	  type.sequence_elements = elements_from_message(message)
 	  types << type
 	end
 	if op_bind.output
-	  type = XMLSchema::ComplexType.new(operation_output_name(operation))
+	  type = XMLSchema::ComplexType.new(operation.outputname)
 	  message = messages[operation.output.message]
 	  type.sequence_elements = elements_from_message(message)
 	  types << type
@@ -125,15 +125,6 @@ private
       end
     end
     types
-  end
-
-  def operation_input_name(operation)
-    operation.input.name || operation.name
-  end
-
-  def operation_output_name(operation)
-    operation.output.name ||
-      XSD::QName.new(operation.name.namespace, operation.name.name + "Response")
   end
 
   def op_bind_rpc?(op_bind)

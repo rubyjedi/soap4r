@@ -1,5 +1,5 @@
 # SOAP4R - WSDL literal mapping registry.
-# Copyright (C) 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2004, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -10,6 +10,7 @@ require 'soap/baseData'
 require 'soap/mapping/mapping'
 require 'soap/mapping/typeMap'
 require 'xsd/codegen/gensupport'
+require 'xsd/namedelements'
 
 
 module SOAP
@@ -22,18 +23,22 @@ class WSDLLiteralRegistry
   attr_accessor :excn_handler_obj2soap
   attr_accessor :excn_handler_soap2obj
 
-  def initialize(definedelements = nil, definedtypes = nil)
+  Empty = XSD::NamedElements.new.freeze
+
+  def initialize(definedelements = Empty, definedtypes = Empty)
     @definedelements = definedelements
     @definedtypes = definedtypes
+    @excn_handler_obj2soap = nil
+    @excn_handler_soap2obj = nil
     @rubytype_factory = RubytypeFactory.new(:allow_original_mapping => false)
     @schema_element_cache = {}
   end
 
   def obj2soap(obj, qname)
     ret = nil
-    if !@definedelements.nil? && ele = @definedelements[qname]
+    if ele = @definedelements[qname]
       ret = _obj2soap(obj, ele)
-    elsif !@definedtypes.nil? && type = @definedtypes[qname]
+    elsif type = @definedtypes[qname]
       ret = obj2type(obj, type)
     else
       ret = unknownobj2soap(obj, qname)
@@ -45,7 +50,7 @@ class WSDLLiteralRegistry
       }
       return ret if ret
     end
-    raise MappingError.new("Cannot map #{ obj.class.name } to SOAP/OM.")
+    raise MappingError.new("cannot map #{obj.class.name} to SOAP/OM")
   end
 
   # node should be a SOAPElement
@@ -62,7 +67,7 @@ class WSDLLiteralRegistry
       rescue Exception
       end
     end
-    raise MappingError.new("Cannot map #{ node.type.name } to Ruby object.")
+    raise MappingError.new("cannot map #{node.type.name} to Ruby object")
   end
 
 private
@@ -75,7 +80,7 @@ private
       elsif type = TypeMap[ele.type]
         o = base2soap(obj, type)
       else
-        raise MappingError.new("Cannot find type #{ele.type}.")
+        raise MappingError.new("cannot find type #{ele.type}")
       end
       o.elename = ele.name
     elsif ele.local_complextype
@@ -102,7 +107,7 @@ private
     o = base2soap(obj, TypeMap[type.base])
     if type.restriction.enumeration.empty?
       STDERR.puts(
-        "#{type.name}: simpleType which is not enum type not supported.")
+        "#{type.name}: simpleType which is not enum type not supported")
       return o
     end
     type.check_lexical_format(obj)

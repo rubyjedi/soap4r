@@ -9,7 +9,7 @@ class DatetimePortType
   # No mapping definition
 
   Methods = [
-    ["now", "now", [
+    ["nowRequest", "now", [
       ["in", "now",
        [SOAP::SOAPDateTime]],
       ["retval", "now",

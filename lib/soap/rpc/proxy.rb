@@ -84,7 +84,7 @@ public
     opt[:response_style] ||= :rpc
     opt[:request_use] ||= :encoded
     opt[:response_use] ||= :encoded
-    @operation[name] = Operation.new(soapaction, name, param_def, opt)
+    @operation[name] = Operation.new(soapaction, param_def, opt)
   end
 
   def add_document_operation(soapaction, name, param_def, opt = {})
@@ -92,7 +92,7 @@ public
     opt[:response_style] ||= :document
     opt[:request_use] ||= :literal
     opt[:response_use] ||= :literal
-    @operation[name] = Operation.new(soapaction, name, param_def, opt)
+    @operation[name] = Operation.new(soapaction, param_def, opt)
   end
 
   # add_method is for shortcut of typical rpc/encoded method definition.
@@ -129,14 +129,6 @@ public
     op_info.response_obj(env.body, @mapping_registry, @literal_mapping_registry)
   end
 
-  def check_fault(body)
-    if body.fault
-      raise SOAP::FaultError.new(body.fault)
-    end
-  end
-
-private
-
   def route(req_header, req_body, reqopt, resopt)
     req_env = SOAPEnvelope.new(req_header, req_body)
     reqopt[:external_content] = nil
@@ -158,6 +150,14 @@ private
     end
     unmarshal(conn_data, resopt)
   end
+
+  def check_fault(body)
+    if body.fault
+      raise SOAP::FaultError.new(body.fault)
+    end
+  end
+
+private
 
   def create_request_header
     headers = @headerhandler.on_outbound
@@ -228,9 +228,8 @@ private
     attr_reader :request_use
     attr_reader :response_use
 
-    def initialize(soapaction, name, param_def, opt)
+    def initialize(soapaction, param_def, opt)
       @soapaction = soapaction
-      @name = name
       @request_style = opt[:request_style]
       @response_style = opt[:response_style]
       @request_use = opt[:request_use]
@@ -240,9 +239,12 @@ private
       check_use(@request_use)
       check_use(@response_use)
       if @request_style == :rpc
-        request_qname = opt[:request_qname] or raise
+        @rpc_request_qname = opt[:request_qname]
+        if @rpc_request_qname.nil?
+          raise MethodDefinitionError.new("rpc_request_qname must be given")
+        end
         @rpc_method_factory =
-          RPC::SOAPMethodRequest.new(request_qname, param_def, @soapaction)
+          RPC::SOAPMethodRequest.new(@rpc_request_qname, param_def, @soapaction)
       else
         @doc_request_qnames = []
         @doc_response_qnames = []
@@ -320,14 +322,10 @@ private
 
     def request_rpc_enc(values, mapping_registry)
       method = @rpc_method_factory.dup
-      values = Mapping.obj2soap(values, mapping_registry).to_a
-      params = {}
-      idx = 0
-      method.each_in_param_name do |name|
-        params[name] = values[idx] || SOAPNil.new
-        idx += 1
-      end
-      method.set_param(params)
+      names = method.input_params
+      obj = create_request_obj(names, values)
+      soap = Mapping.obj2soap(obj, mapping_registry, @rpc_request_qname)
+      method.set_param(soap)
       method
     end
 
@@ -335,7 +333,7 @@ private
       method = @rpc_method_factory.dup
       params = {}
       idx = 0
-      method.each_in_param_name do |name|
+      method.input_params.each do |name|
         params[name] = SOAPElement.from_obj(values[idx])
         idx += 1
       end
@@ -352,10 +350,6 @@ private
     def request_doc_lit(values, mapping_registry)
       (0...values.size).collect { |idx|
         item = values[idx]
-        unless item.respond_to?(:size) and item.size == 1
-          raise ArgumentError.new(
-          "values element is expected to be Hash-like object with one key")
-        end
         qname = @doc_request_qnames[idx]
         ele = SOAPElement.from_obj(item, qname.namespace)
         ele.elename = qname
@@ -373,9 +367,9 @@ private
 
     def response_doc(body, mapping_registry)
       if @response_use == :encoded
-        response_doc_enc(body, mapping_registry)
+        return *response_doc_enc(body, mapping_registry)
       else
-        response_doc_lit(body, mapping_registry)
+        return *response_doc_lit(body, mapping_registry)
       end
     end
 
@@ -396,7 +390,7 @@ private
 
     def response_rpc_lit(body, mapping_registry)
       body.root_node.collect { |key, value|
-        value.to_obj
+        value.respond_to?(:to_obj) ? value.to_obj : value.data
       }
     end
 
@@ -408,8 +402,16 @@ private
 
     def response_doc_lit(body, mapping_registry)
       body.collect { |key, value|
-        value.to_obj
+        value.respond_to?(:to_obj) ? value.to_obj : value.data
       }
+    end
+
+    def create_request_obj(names, params)
+      o = Object.new
+      for idx in 0 ... params.length
+        o.instance_variable_set('@' + names[idx], params[idx])
+      end
+      o
     end
   end
 end

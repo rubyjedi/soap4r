@@ -46,23 +46,28 @@ class Operation < Info
   end
 
   def input_info
-    op_name = @name
-    optype_name = XSD::QName.new(targetnamespace, input.name ? input.name.name : @name.name)
-    NameInfo.new(op_name, optype_name, inputparts)
+    NameInfo.new(@name, inputname, inputparts)
   end
 
   def output_info
-    op_name = @name
-    optype_name = XSD::QName.new(targetnamespace, output.name ? output.name.name : @name.name)
-    NameInfo.new(op_name, optype_name, outputparts)
+    NameInfo.new(@name, outputname, outputparts)
   end
 
   def inputparts
     sort_parts(input.find_message.parts)
   end
 
+  def inputname
+    XSD::QName.new(targetnamespace, input.name ? input.name.name : @name.name)
+  end
+
   def outputparts
     sort_parts(output.find_message.parts)
+  end
+
+  def outputname
+    XSD::QName.new(targetnamespace,
+      output.name ? output.name.name : @name.name + "Response")
   end
 
   def outputname

@@ -1,5 +1,5 @@
 # XSD4R - WSDL named element collection.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -21,6 +21,12 @@ class NamedElements
     o = NamedElements.new
     o.elements = @elements.dup
     o
+  end
+
+  def freeze
+    super
+    @elements.freeze
+    self
   end
 
   def empty?
