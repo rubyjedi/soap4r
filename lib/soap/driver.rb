@@ -127,8 +127,8 @@ public
     log( SEV_INFO ) { "call: calling method '#{ methodName }'." }
     log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
 
-    # Convert parameters
-    params.collect! { |param| RPCUtils.obj2soap( param, @mappingRegistry ) }
+    # Convert parameters: params array => SOAPArray => members array
+    params = RPCUtils.obj2soap( params, @mappingRegistry ).to_a
     log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
 
     # Set dumpDev if needed.

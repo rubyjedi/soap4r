@@ -115,11 +115,10 @@ public
     createHandler
     @operationMap = {}
     # Convert Map which key is QName, to aHash which key is String.
-    @port.createInputOperationMap.each do | name, value |
-      @operationMap[ name.name ] = value
-      operation, parts, = value
-      paramNames = parts.collect { | part | part.name }
-      addMethodInterface( name.name, paramNames )
+    @port.createInputOperationMap.each do | operationName, value |
+      @operationMap[ operationName.name ] = value.dup.unshift( operationName )
+      operation, paramNames, = value
+      addMethodInterface( operationName.name, paramNames )
     end
   end
 
@@ -151,17 +150,23 @@ private
     @handler.proxy = @httpProxy
   end
 
+  def createMethodObject( names, params )
+    o = Object.new
+    for idx in 0 ... params.length
+      o.instance_eval( "@#{ names[ idx ] } = params[ idx ]" )
+    end
+    o
+  end
+
   def call( methodName, *params )
     log( SEV_INFO ) { "call: calling method '#{ methodName }'." }
     log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
 
-    name, parts, soapAction = @operationMap[ methodName ]
-    method = SOAPStruct.new
-    method.elementName = name
-    for idx in 0 ... params.length
-      method.add( parts[ idx ].name, RPCUtils.obj2soap( params[ idx ],
-	@wsdlMappingRegistry, parts[ idx ].type ))
-    end
+    operationName, messageName, paramNames, soapAction =
+      @operationMap[ methodName ]
+    obj = createMethodObject( paramNames, params )
+    method = RPCUtils.obj2soap( obj, @wsdlMappingRegistry, messageName )
+    method.elementName = operationName
 
     if @dumpFileBase
       @handler.dumpFileBase = @dumpFileBase + '_' << methodName

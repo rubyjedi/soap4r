@@ -954,6 +954,8 @@ module RPCUtils
   class WSDLMappingRegistry
     include TraverseSupport
 
+    attr_reader :complexTypes
+
     def initialize( wsdl, config = {} )
       @wsdl = wsdl
       @config = config
