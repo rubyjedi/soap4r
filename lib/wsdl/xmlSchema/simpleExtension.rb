@@ -1,5 +1,5 @@
-# WSDL4R - XMLSchema simpleContent restriction definition for WSDL.
-# Copyright (C) 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# WSDL4R - XMLSchema simpleType extension definition for WSDL.
+# Copyright (C) 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -14,24 +14,30 @@ module WSDL
 module XMLSchema
 
 
-class SimpleRestriction < Info
+class SimpleExtension < Info
   attr_reader :base
-  attr_reader :enumeration
+  attr_reader :attributes
 
   def initialize
     super
     @base = nil
-    @enumeration = []   # NamedElements?
+    @attributes = XSD::NamedElements.new
+  end
+
+  def targetnamespace
+    parent.targetnamespace
   end
   
   def valid?(value)
-    @enumeration.include?(value)
+    true
   end
 
   def parse_element(element)
     case element
-    when EnumerationName
-      Enumeration.new   # just a parsing handler
+    when AttributeName
+      o = Attribute.new
+      @attributes << o
+      o
     end
   end
 
