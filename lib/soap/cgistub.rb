@@ -111,46 +111,22 @@ private
     
       # SOAP request parsing.
       @request = SOAPRequest.new.init
-      log( SEV_INFO ) { "SOAP CGI Request: #{@request}" }
-
+      requestCharset = @request.charset
       requestString = @request.dump
       log( SEV_DEBUG ) { "XML Request: #{requestString}" }
 
-      kcodeAdjusted = false
-      requestCharset = @request.charset
-      charsetStrBackup = nil
-      if requestCharset
-       	#requestString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
-	charsetStr = Charset.getCharsetStr( requestCharset )
-	Charset.setXMLInstanceEncoding( charsetStr )
-
-	if SOAPParser.factory.adjustKCode
-  	  charsetStrBackup = $KCODE.to_s.dup
-  	  $KCODE = charsetStr
-	  kcodeAdjusted = true
-   	end
-      end
-
-      responseString = isFault = nil
-      begin
-	responseString, isFault = route( requestString )
-	log( SEV_DEBUG ) { "XML Response: #{responseString}" }
-      ensure
-	if kcodeAdjusted
-	  $KCODE = charsetStrBackup
-	end
-      end
+      responseString, isFault = route( requestString, requestCharset )
+      log( SEV_DEBUG ) { "XML Response: #{responseString}" }
 
       @response = HTTP::Message.newResponse( responseString )
-      @response.header.set( 'Cache-Control', 'private' )
-      @response.body.type = MediaType
-      @response.body.charset = Charset.getCharsetStr( requestCharset ) ||
-	Charset.getXMLInstanceEncoding
       unless isFault
 	@response.status = 200
       else
 	@response.status = 500
       end
+      @response.header.set( 'Cache-Control', 'private' )
+      @response.body.type = MediaType
+      @response.body.charset = requestCharset
       str = @response.dump
       log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
       print str
@@ -162,7 +138,7 @@ private
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
       @response.body.type = MediaType
-      @response.body.charset = Charset.getXMLInstanceEncoding
+      @response.body.charset = @request ? @request.charset : nil
       @response.status = 500
       str = @response.dump
       log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
