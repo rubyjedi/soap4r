@@ -1,5 +1,5 @@
 # WSDL4R - WSDL additional definitions for SOAP.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002-2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -80,7 +80,7 @@ class Definitions < Info
     collect_fault_messages.each do |message|
       parts = message(message).parts
       if parts.size != 1
-	raise RuntimeError.new("Expecting fault message to have only 1 part.")
+	raise RuntimeError.new("expecting fault message to have only 1 part")
       end
       if result.index(parts[0].type).nil?
 	result << parts[0].type
@@ -128,13 +128,19 @@ private
   end
 
   def op_bind_rpc?(op_bind)
-    op_bind.soapoperation and op_bind.soapoperation.operation_style == :rpc
+    op_bind.soapoperation_style == :rpc
   end
 
   def elements_from_message(message)
     message.parts.collect { |part|
-      qname = XSD::QName.new(nil, part.name)
-      XMLSchema::Element.new(qname, part.type)
+      if part.element
+        collect_elements[part.element]
+      elsif part.name.nil? or part.type.nil?
+	raise RuntimeError.new("part of a message must be an element or typed")
+      else
+        qname = XSD::QName.new(nil, part.name)
+        XMLSchema::Element.new(qname, part.type)
+      end
     }
   end
 end
