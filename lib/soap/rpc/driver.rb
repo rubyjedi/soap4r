@@ -47,36 +47,35 @@ class Driver
   __attr_proxy :default_encodingstyle, true
 
   def httpproxy
-    @servant.options["client.streamhandler.http.proxy"]
+    @servant.options["client.protocol.http.proxy"]
   end
 
   def httpproxy=(httpproxy)
-    @servant.options["client.streamhandler.http.proxy"] = httpproxy
-  end
-
-  def mandatorycharset
-    @servant.options["client.streamhandler.mandatorycharset"]
-  end
-
-  def mandatorycharset=(mandatorycharset)
-    @servant.options["client.streamhandler.mandatorycharset"] = mandatorycharset
+    @servant.options["client.protocol.http.proxy"] = httpproxy
   end
 
   def wiredump_dev
-    @servant.options["client.streamhandler.wiredump_dev"]
+    @servant.options["client.protocol.http.wiredump_dev"]
   end
 
   def wiredump_dev=(wiredump_dev)
-    @servant.options["client.streamhandler.wiredump_dev"] = wiredump_dev
+    @servant.options["client.protocol.http.wiredump_dev"] = wiredump_dev
+  end
+
+  def mandatorycharset
+    @servant.options["client.protocol.mandatorycharset"]
+  end
+
+  def mandatorycharset=(mandatorycharset)
+    @servant.options["client.protocol.mandatorycharset"] = mandatorycharset
   end
 
   def wiredump_file_base
-    @servant.options["client.streamhandler.wiredump_file_base"]
+    @servant.options["client.protocol.wiredump_file_base"]
   end
 
   def wiredump_file_base=(wiredump_file_base)
-    @servant.options["client.streamhandler.wiredump_file_base"] =
-      wiredump_file_base
+    @servant.options["client.protocol.wiredump_file_base"] = wiredump_file_base
   end
 
   def initialize(endpoint_url, namespace, soapaction = nil)
@@ -136,15 +135,13 @@ private
     def initialize(host, endpoint_url, namespace)
       @host = host
       @namespace = namespace
-      @mapping_registry = nil      # for unmarshal
-      @soapaction = soapaction
+      @mapping_registry = nil
+      @soapaction = nil
       @wiredump_file_base = nil
       @options = ::SOAP::Property.new
-      set_options_hook
-      name = 'http_proxy'
-      httpproxy = ENV[name] || ENV[name.upcase]
-      @streamhandler = HTTPPostStreamHandler.new(endpoint_url, httpproxy,
-	XSD::Charset.encoding_label)
+      set_options
+      @streamhandler = HTTPPostStreamHandler.new(endpoint_url,
+	@options["client.protocol.http"] ||= ::SOAP::Property.new)
       @proxy = Proxy.new(@streamhandler, @soapaction)
       @proxy.allow_unqualified_element = true
     end
@@ -241,21 +238,14 @@ private
       end
     end
 
-    def set_options_hook
-      @options.add_hook("client.streamhandler.http.proxy") do |key, value|
-	@streamhandler.proxy = value
-	@streamhandler.reset
-      end
-      @options.add_hook("client.streamhandler.mandatorycharset") do |key, value|
+    def set_options
+      @options.add_hook("client.protocol.mandatorycharset") do |key, value|
 	@proxy.mandatorycharset = value
       end
-      @options.add_hook("client.streamhandler.wiredump_dev") do |key, value|
-	@streamhandler.wiredump_dev = value
-	@streamhandler.reset
-      end
-      @options.add_hook("client.streamhandler.wiredump_file_base") do |key, value|
+      @options.add_hook("client.protocol.wiredump_file_base") do |key, value|
 	@wiredump_file_base = value
       end
+      @options["client.protocol.http.charset"] = XSD::Charset.encoding_label
     end
   end
 end

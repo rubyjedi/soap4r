@@ -7,6 +7,7 @@
 
 
 require 'soap/soap'
+require 'soap/property'
 
 
 module SOAP
@@ -76,29 +77,21 @@ class HTTPPostStreamHandler < StreamHandler
 
 public
   
-  attr_accessor :wiredump_dev
-  attr_accessor :wiredump_file_base
-  attr_accessor :charset
   attr_reader :client
   
   NofRetry = 10       	# [times]
 
-  def initialize(endpoint_url, proxy = nil, charset = nil)
+  def initialize(endpoint_url, options)
     super(endpoint_url)
-    @proxy = proxy || ENV['http_proxy'] || ENV['HTTP_PROXY']
-    @charset = charset || XSD::Charset.charset_label($KCODE)
-    @wiredump_dev = nil	# Set an IO to get wiredump.
-    @wiredump_file_base = nil
+    @proxy = @charset = @wiredump_dev = @wiredump_file_base = nil
     @client = Client.new(@proxy, "SOAP4R/#{ Version }")
+    @options = options
+    set_options
+    @client.debug_dev = @wiredump_dev
   end
 
   def inspect
     "#<#{self.class}:#{endpoint_url}>"
-  end
-
-  def proxy=(proxy)
-    @proxy = proxy
-    @client.proxy = @proxy
   end
 
   def send(soap_string, soapaction = nil, charset = @charset)
@@ -111,17 +104,31 @@ public
 
 private
 
+  def set_options
+    @proxy = @options["proxy"]
+    @options.add_hook("proxy") do |key, value|
+      @proxy = value
+    end
+    @charset = @options["charset"] || XSD::Charset.charset_label($KCODE)
+    @options.add_hook("charset") do |key, value|
+      @charset = value
+    end
+    @wiredump_dev = @options["wiredump_dev"]
+    @options.add_hook("wiredump_dev") do |key, value|
+      @wiredump_dev = value
+      @client.debug_dev = @wiredump_dev
+    end
+    @wiredump_file_base = @options["wiredump_file_base"]
+    @options.add_hook("wiredump_file_base") do |key, value|
+      @wiredump_file_base = value
+    end
+    @options.lock
+  end
+
   def send_post(soap_string, soapaction, charset)
     data = ConnectionData.new
     data.send_string = soap_string
     data.send_contenttype = StreamHandler.create_media_type(charset)
-
-    wiredump_dev = if @wiredump_dev && @wiredump_dev.respond_to?("<<")
-	@wiredump_dev
-      else
-	nil
-      end
-    @client.debug_dev = wiredump_dev
 
     if @wiredump_file_base
       filename = @wiredump_file_base + '_request.xml'
@@ -134,14 +141,14 @@ private
     extra['Content-Type'] = data.send_contenttype
     extra['SOAPAction'] = "\"#{ soapaction }\""
 
-    wiredump_dev << "Wire dump:\n\n" if wiredump_dev
+    @wiredump_dev << "Wire dump:\n\n" if @wiredump_dev
     begin
       res = @client.post(@endpoint_url, soap_string, extra)
     rescue
       @client.reset(@endpoint_url)
       raise
     end
-    wiredump_dev << "\n\n" if wiredump_dev
+    @wiredump_dev << "\n\n" if @wiredump_dev
 
     receive_string = res.content
 
