@@ -35,13 +35,16 @@ class Proxy
 public
 
   attr_accessor :soapaction
-  attr_accessor :allow_unqualified_element, :default_encodingstyle
+  attr_accessor :mandatorycharset
+  attr_accessor :allow_unqualified_element
+  attr_accessor :default_encodingstyle
   attr_reader :method
 
   def initialize(stream_handler, soapaction = nil)
     @handler = stream_handler
     @soapaction = soapaction
     @method = {}
+    @mandatorycharset = nil
     @allow_unqualified_element = false
     @default_encodingstyle = nil
   end
@@ -104,9 +107,9 @@ public
     if data.receive_string.empty?
       return nil, nil
     end
-    res_charset = StreamHandler.parse_media_type(data.receive_contenttype)
     opt = create_options
-    opt[:charset] = res_charset
+    opt[:charset] = @mandatorycharset ||
+      StreamHandler.parse_media_type(data.receive_contenttype)
     res_header, res_body = Processor.unmarshal(data.receive_string, opt)
     return res_header, res_body
   end

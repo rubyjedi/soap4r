@@ -47,7 +47,8 @@ public
     @soapaction = soapaction
     @wiredump_dev = nil
     @wiredump_file_base = nil
-    @httpproxy = ENV['httpproxy'] || ENV['HTTP_PROXY']
+    name = 'http_proxy'
+    @httpproxy = ENV[name] || ENV[name.upcase]
     @handler = HTTPPostStreamHandler.new(@endpoint_url, @httpproxy,
       XSD::Charset.encoding_label)
     @proxy = Proxy.new(@handler, @soapaction)
@@ -80,6 +81,14 @@ public
       @handler.proxy = @httpproxy
       @handler.reset
     end
+  end
+
+  def mandatorycharset
+    @proxy.mandatorycharset
+  end
+
+  def mandatorycharset=(mandatorycharset)
+    @proxy.mandatorycharset = mandatorycharset
   end
 
   def default_encodingstyle
