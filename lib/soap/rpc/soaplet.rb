@@ -29,7 +29,6 @@ public
 
   def initialize
     @rpc_router_map = {}
-    @document_router_map = {}
     @app_scope_router = ::SOAP::RPC::Router.new(self.class.name)
     @headerhandlerfactory = []
     @app_scope_headerhandler = nil
@@ -60,28 +59,12 @@ public
     router.mapping_registry = mapping_registry
   end
 
-  def add_document_request_servant(factory, namespace, mapping_registry = nil)
-    unless factory.respond_to?(:create)
-      raise TypeError.new("factory must respond to 'create'")
-    end
-    router = setup_document_request_router(namespace)
-    router.factory = factory
-    router.mapping_registry = mapping_registry
-  end
-
   # Add servant object which has application scope.
   def add_rpc_servant(obj, namespace)
     router = @app_scope_router
     SOAPlet.add_rpc_servant_to_router(router, obj, namespace)
     add_rpc_router(namespace, router)
   end
-
-  def add_document_servant(obj, namespace)
-    router = @app_scope_router
-    SOAPlet.add_document_servant_to_router(router, obj, namespace)
-    add_document_router(namespace, router)
-  end
-
   alias add_servant add_rpc_servant
 
   def add_rpc_request_headerhandler(factory)
@@ -169,7 +152,7 @@ private
       if @style == :rpc
         SOAPlet.add_rpc_servant_to_router(router, obj, namespace)
       else
-        SOAPlet.add_document_servant_to_router(router, obj, namespace)
+        raise RuntimeError.new("'document' style not supported.")
       end
       router.route(soap_string)
     end
@@ -181,18 +164,8 @@ private
     router
   end
 
-  def setup_document_request_router(namespace)
-    router = @document_router_map[namespace] || RequestRouter.new(:document, namespace)
-    add_rpc_router(namespace, router)
-    router
-  end
-
   def add_rpc_router(namespace, router)
     @rpc_router_map[namespace] = router
-  end
-
-  def add_document_router(namespace, router)
-    @document_router_map[namespace] = router
   end
 
   def parse_soapaction(soapaction)
@@ -207,8 +180,7 @@ private
 
   def lookup_router(namespace)
     if namespace
-      @rpc_router_map[namespace] || @document_router_map[namespace] ||
-        @app_scope_router
+      @rpc_router_map[namespace] || @app_scope_router
     else
       @app_scope_router
     end
@@ -260,16 +232,6 @@ private
       end
     end
 
-    def add_document_servant_to_router(router, obj, namespace)
-      ::SOAP::RPC.defined_methods(obj).each do |name|
-        begin
-          add_document_servant_method_to_router(router, obj, namespace, name)
-        rescue SOAP::RPC::MethodDefinitionError => e
-          p e if $DEBUG
-        end
-      end
-    end
-
     def add_rpc_servant_method_to_router(router, obj, namespace, name,
         style = :rpc, use = :encoded)
       qname = XSD::QName.new(namespace, name)
@@ -281,16 +243,6 @@ private
       opt[:request_style] = opt[:response_style] = style
       opt[:request_use] = opt[:response_use] = use
       router.add_operation(qname, soapaction, obj, name, param_def, opt)
-    end
-
-    def add_document_servant_method_to_router(router, obj, namespace, name,
-        style = :document, use = :literal)
-      qname = XSD::QName.new(namespace, name)
-      soapaction = nil
-      opt = {}
-      opt[:request_style] = opt[:response_style] = style
-      opt[:request_use] = opt[:response_use] = use
-      router.add_operation(qname, soapaction, obj, name, nil, opt)
     end
   end
 end

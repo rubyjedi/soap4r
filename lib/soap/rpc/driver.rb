@@ -27,17 +27,13 @@ class Driver
   class << self
     def __attr_proxy(symbol, assignable = false)
       name = symbol.to_s
-      module_eval <<-EOD
-    	def #{name}
-  	  @servant.#{name}
-   	end
-      EOD
+      self.__send__(:define_method, name, proc {
+        @servant.__send__(name)
+      })
       if assignable
-	module_eval <<-EOD
-  	  def #{name}=(rhs)
-  	    @servant.#{name} = rhs
-  	  end
-	EOD
+        self.__send__(:define_method, name + '=', proc { |rhs|
+          @servant.__send__(name + '=', rhs)
+        })
       end
     end
   end
@@ -101,25 +97,52 @@ class Driver
     "#<#{self.class}:#{@servant.inspect}>"
   end
 
-  def add_method(name, *params)
-    add_method_with_soapaction_as(name, name, @servant.soapaction, *params)
+  def add_rpc_method(name, *params)
+    param_def = create_rpc_param_def(params)
+    @servant.add_rpc_method(name, @servant.soapaction, name, param_def)
   end
 
-  def add_method_as(name, name_as, *params)
-    add_method_with_soapaction_as(name, name_as, @servant.soapaction, *params)
+  def add_rpc_method_as(name, name_as, *params)
+    param_def = create_rpc_param_def(params)
+    @servant.add_rpc_method(name_as, @servant.soapaction, name, param_def)
   end
 
-  def add_method_with_soapaction(name, soapaction, *params)
-    add_method_with_soapaction_as(name, name, soapaction, *params)
+  def add_rpc_method_with_soapaction(name, soapaction, *params)
+    param_def = create_rpc_param_def(params)
+    @servant.add_rpc_method(name, soapaction, name, param_def)
   end
 
-  def add_method_with_soapaction_as(name, name_as, soapaction, *params)
-    param_def = if params.size == 1 and params[0].is_a?(Array)
-        params[0]
-      else
-        SOAPMethod.create_param_def(params)
-      end
-    @servant.add_method(name_as, soapaction, name, param_def)
+  def add_rpc_method_with_soapaction_as(name, name_as, soapaction, *params)
+    param_def = create_rpc_param_def(params)
+    @servant.add_rpc_method(name_as, soapaction, name, param_def)
+  end
+
+  # add_method is for shortcut of typical rpc/encoded method definition.
+  alias add_method add_rpc_method
+  alias add_method_as add_rpc_method_as
+  alias add_method_with_soapaction add_rpc_method_with_soapaction
+  alias add_method_with_soapaction_as add_rpc_method_with_soapaction_as
+
+  def add_document_method(name, req_qname, res_qname)
+    param_def = create_document_param_def(name, req_qname, res_qname)
+    @servant.add_document_method(name, @servant.soapaction, name, param_def)
+  end
+
+  def add_document_method_as(name, name_as, req_qname, res_qname)
+    param_def = create_document_param_def(name, req_qname, res_qname)
+    @servant.add_document_method(name_as, @servant.soapaction, name, param_def)
+  end
+
+  def add_document_method_with_soapaction(name, soapaction, req_qname,
+      res_qname)
+    param_def = create_document_param_def(name, req_qname, res_qname)
+    @servant.add_document_method(name, soapaction, name, param_def)
+  end
+
+  def add_document_method_with_soapaction_as(name, name_as, soapaction,
+      req_qname, res_qname)
+    param_def = create_document_param_def(name, req_qname, res_qname)
+    @servant.add_document_method(name_as, soapaction, name, param_def)
   end
 
   def reset_stream
@@ -135,6 +158,21 @@ class Driver
   end
 
 private
+
+  def create_rpc_param_def(params)
+    if params.size == 1 and params[0].is_a?(Array)
+      params[0]
+    else
+      SOAPMethod.create_param_def(params)
+    end
+  end
+
+  def create_document_param_def(name, req_qname, res_qname)
+    [
+      ['input', name, [nil, req_qname.namespace, req_qname.name]],
+      ['output', name, [nil, res_qname.namespace, res_qname.name]]
+    ]
+  end
 
   def add_rpc_method_interface(name, param_def)
     @servant.add_rpc_method_interface(name, param_def)
@@ -237,35 +275,40 @@ private
       @proxy.call(name, *params)
     end
 
-    def add_method(name_as, soapaction, name, param_def)
+    def add_rpc_method(name_as, soapaction, name, param_def)
       qname = XSD::QName.new(@namespace, name_as)
-      @proxy.add_method(qname, soapaction, name, param_def)
+      @proxy.add_rpc_method(qname, soapaction, name, param_def)
       add_rpc_method_interface(name, param_def)
     end
 
+    def add_document_method(name_as, soapaction, name, param_def)
+      qname = XSD::QName.new(@namespace, name_as)
+      @proxy.add_document_method(qname, soapaction, name, param_def)
+      add_document_method_interface(name, param_def)
+    end
+
     def add_rpc_method_interface(name, param_def)
-      param_names = []
-      i = 0
+      param_count = 0
       @proxy.operation[name].each_param_name(RPC::SOAPMethod::IN,
   	  RPC::SOAPMethod::INOUT) do |param_name|
-   	i += 1
-    	param_names << "arg#{ i }"
+   	param_count += 1
       end
-      callparam = (param_names.collect { |pname| ", " + pname }).join
-      @host.instance_eval <<-EOS
-     	def #{ name }(#{ param_names.join(", ") })
-      	  @servant.call(#{ name.dump }#{ callparam })
-       	end
-      EOS
+      sclass = class << @host; self; end
+      sclass.__send__(:define_method, name, proc { |*arg|
+        unless arg.size == param_count
+          raise ArgumentError.new(
+            "wrong number of arguments (#{arg.size} for #{param_count})")
+        end
+        @servant.call(name, *arg)
+      })
       @host.method(name)
     end
 
     def add_document_method_interface(name, paramname)
-      @host.instance_eval <<-EOS
-     	def #{ name }(param)
-      	  @servant.call(#{ name.dump }, param)
-       	end
-      EOS
+      sclass = class << @host; self; end
+      sclass.__send__(:define_method, name, proc { |param|
+        @servant.call(name, param)
+      })
       @host.method(name)
     end
 
