@@ -35,7 +35,7 @@ class Attribute < Info
   end
 
   def parseElement( element )
-    raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
+    nil
   end
 
   RefAttrName = Name.new( nil, 'ref' )
