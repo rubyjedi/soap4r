@@ -123,6 +123,15 @@ public
     # Element.new( ns.name( EnvelopeNamespace, 'Body' ), attrs, contents )
     Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Body' ), attrs, contents )
   end
+
+  def rootNode
+    @data.each do | node |
+      if node.root
+	return node
+      end
+    end
+    @data[0]
+  end
 end
 
 
