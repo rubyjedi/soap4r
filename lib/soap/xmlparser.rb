@@ -24,26 +24,27 @@ module SOAP
 
 
 class SOAPXMLParser < SOAPParser
-  def initialize( stringOrReadable )
-    super
+  def initialize( *vars )
+    super( *vars )
   end
 
   def doParse( stringOrReadable )
-    parser = XML::Parser.new
-    parser.parse( stringOrReadable ) do | type, entity, data |
+    @parser = XML::Parser.new
+    @parser.parse( stringOrReadable ) do | type, name, data |
       case type
       when XML::Parser::START_ELEM
-	tag( NQXML::Tag.new( entity, data, false ))
+	startElement( name, data )
       when XML::Parser::END_ELEM
-	tag( NQXML::Tag.new( entity, nil, true ))
+	endElement( name )
       when XML::Parser::CDATA
-	text( NQXML::Text.new( data ))
+	cdata( data )
       else
 	raise FormatDecodeError.new( "Unexpected XML: #{ entity }." )
       end
     end
   end
 end
+SOAP::Processor.setEncoding( $KCODE )
 
 
 end
