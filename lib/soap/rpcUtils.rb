@@ -290,7 +290,12 @@ private
       Thread.critical = false
 
     rescue NameError
-      klass = Struct.new( structName(node.typeName), *node.array )
+      klass = nil
+      if Struct.constants.member?( node.typeName )
+	klass = eval( "Struct::" << node.typeName )
+      else
+        klass = Struct.new( structName(node.typeName), *node.array )
+      end
       obj = klass.new( *( node.collect { |name, value| soap2obj( value ) } ))
     end
 
