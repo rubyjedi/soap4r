@@ -545,7 +545,7 @@ class WSDLDriver
 
       def obj2type(obj, type)
         if type.is_a?(::WSDL::XMLSchema::SimpleType)
-          simple2soap(obj, TypeMap[type.base])
+          simple2soap(obj, type)
         else
           complext2soap(obj, type)
         end
