@@ -26,7 +26,8 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
   Namespace = 'http://tempuri.org/ASP.NET'
   addHandler
 
-  def initialize
+  def initialize( charset = nil )
+    super( charset )
     @textBuf = ''
   end
 
@@ -53,7 +54,8 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
       buf << data.to_s
     when XSDString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
-      buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))
+      buf << SOAPGenerator.encodeStr( @charset ?
+	Charset.encodingToXML( data.to_s, @charset ) : data.to_s )
     when XSDAnySimpleType
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( data.to_s )
@@ -211,8 +213,11 @@ private
 
   def decodeTextBuf( node )
     if node.is_a?( XSDString )
-      encoded = Charset.encodingFromXML( @textBuf )
-      node.set( encoded )
+      if @charset
+	node.set( Charset.encodingFromXML( @textBuf, @charset ))
+      else
+	node.set( @textBuf )
+      end
     else
       # Nothing to do...
     end

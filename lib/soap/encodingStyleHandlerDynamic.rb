@@ -25,13 +25,14 @@ module SOAP
 class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   Namespace = SOAP::EncodingNamespace
   addHandler
-  attr_accessor :encodeType
+  attr_accessor :generateEncodeType
 
-  def initialize
+  def initialize( charset = nil )
+    super( charset )
     @referencePool = []
     @idPool = []
     @textBuf = ''
-    @encodeType = true
+    @generateEncodeType = true
     @decodeComplexTypes = nil
     @firstTopElement = true
   end
@@ -68,7 +69,8 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       buf << data.to_s
     when XSDString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
-      buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))
+      buf << SOAPGenerator.encodeStr( @charset ?
+	Charset.encodingToXML( data.to_s, @charset ) : data.to_s )
     when XSDAnySimpleType
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( data.to_s )
@@ -322,7 +324,7 @@ private
 	attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
       end
       attrs[ ns.name( XSD::AttrNilName ) ] = XSD::NilValue
-    elsif @encodeType
+    elsif @generateEncodeType
       if !ns.assigned?( XSD::InstanceNamespace )
        	tag = ns.assign( XSD::InstanceNamespace )
 	attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
@@ -449,8 +451,11 @@ private
     when XSDHexBinary, XSDBase64Binary
       node.setEncoded( @textBuf )
     when XSDString
-      encoded = Charset.encodingFromXML( @textBuf )
-      node.set( encoded )
+      if @charset
+	node.set( Charset.encodingFromXML( @textBuf, @charset ))
+      else
+	node.set( @textBuf )
+      end
     when SOAPNil
       # Nothing to do.
     when SOAPBasetype
