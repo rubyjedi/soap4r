@@ -1,5 +1,5 @@
 # WSDL4R - XMLSchema element definition for WSDL.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -26,6 +26,7 @@ class Element < Info
 
   attr_writer :name	# required
   attr_writer :type
+  attr_writer :local_simpletype
   attr_writer :local_complextype
   attr_writer :constraint
   attr_writer :maxoccurs
@@ -34,6 +35,7 @@ class Element < Info
 
   attr_reader_ref :name
   attr_reader_ref :type
+  attr_reader_ref :local_simpletype
   attr_reader_ref :local_complextype
   attr_reader_ref :constraint
   attr_reader_ref :maxoccurs
@@ -42,11 +44,11 @@ class Element < Info
 
   attr_accessor :ref
 
-  def initialize(name = nil, type = XSD::AnyTypeName)
+  def initialize(name = nil, type = nil)
     super()
     @name = name
     @type = type
-    @local_complextype = nil
+    @local_simpletype = @local_complextype = nil
     @constraint = nil
     @maxoccurs = '1'
     @minoccurs = '1'
@@ -70,6 +72,9 @@ class Element < Info
 
   def parse_element(element)
     case element
+    when SimpleTypeName
+      @local_simpletype = SimpleType.new
+      @local_simpletype
     when ComplexTypeName
       @type = nil
       @local_complextype = ComplexType.new
@@ -93,16 +98,14 @@ class Element < Info
     when MaxOccursAttrName
       if parent.is_a?(All)
 	if value.source != '1'
-	  raise Parser::AttrConstraintError.new(
-	    "Cannot parse #{ value } for #{ attr }.")
+	  raise Parser::AttrConstraintError.new("cannot parse #{value} for #{attr}")
 	end
       end
       @maxoccurs = value.source
     when MinOccursAttrName
       if parent.is_a?(All)
 	unless ['0', '1'].include?(value.source)
-	  raise Parser::AttrConstraintError.new(
-	    "Cannot parse #{ value } for #{ attr }.")
+	  raise Parser::AttrConstraintError.new("cannot parse #{value} for #{attr}")
 	end
       end
       @minoccurs = value.source

@@ -1,5 +1,5 @@
 # WSDL4R - XMLSchema attribute definition for WSDL.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -28,6 +28,7 @@ class Attribute < Info
   attr_writer :form
   attr_writer :name
   attr_writer :type
+  attr_writer :local_simpletype
   attr_writer :default
   attr_writer :fixed
 
@@ -35,6 +36,7 @@ class Attribute < Info
   attr_reader_ref :form
   attr_reader_ref :name
   attr_reader_ref :type
+  attr_reader_ref :local_simpletype
   attr_reader_ref :default
   attr_reader_ref :fixed
 
@@ -47,6 +49,7 @@ class Attribute < Info
     @form = nil
     @name = nil
     @type = nil
+    @local_simpletype = nil
     @default = nil
     @fixed = nil
     @ref = nil
@@ -63,7 +66,11 @@ class Attribute < Info
   end
 
   def parse_element(element)
-    nil
+    case element
+    when SimpleTypeName
+      @local_simpletype = SimpleType.new
+      @local_simpletype
+    end
   end
 
   def parse_attr(attr, value)
