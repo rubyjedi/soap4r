@@ -2,7 +2,6 @@ require 'test/unit'
 require 'wsdl/parser'
 require 'soap/mapping/wsdlRegistry'
 require 'soap/marshal'
-require 'fileutils'
 
 class WSDLMarshaller
   include SOAP
@@ -62,6 +61,6 @@ class TestWSDLMarshal < Test::Unit::TestCase
     person_org = File.open(pathname("person_org.rb")).read
     person_new = File.open("Person.rb").read
     assert_equal(person_org, person_new)
-    FileUtils.rm("Person.rb")
+    File.unlink('Person.rb') if File.exist?('Person.rb')
   end
 end
