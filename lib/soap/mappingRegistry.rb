@@ -609,9 +609,6 @@ module RPCUtils
 	  obj[ RPCUtils._soap2obj( value[ 'key' ], map ) ] =
 	    RPCUtils._soap2obj( value[ 'value' ], map )
 	end
-#	if node.members.include?( 'ivars' )
-#  	  setiv2obj( obj, node[ 'ivars' ], map )
-#   	end
       when TYPE_CLASS
 	obj = RPCUtils.getClassFromName( node[ 'name' ].data )
       when TYPE_MODULE
@@ -671,18 +668,27 @@ module RPCUtils
     end
 
     def anyType2obj( node, map )
-      klass = Object	# SOAP::RPCUtils::Object
-      obj = klass.new
-      markUnmarshalledObj( node, obj )
-      node.each do | name, value |
-	obj.setProperty( name, RPCUtils._soap2obj( value, map ))
+      case node
+      when SOAPBasetype
+	return true, node.data
+      when SOAPStruct
+	klass = Object	# SOAP::RPCUtils::Object
+	obj = klass.new
+	markUnmarshalledObj( node, obj )
+	node.each do | name, value |
+	  obj.setProperty( name, RPCUtils._soap2obj( value, map ))
+	end
+	return true, obj
+      else
+	return false
       end
-      return true, obj
     end
 
     def unknownType2obj( node, map )
-      obj = struct2obj( node, map )
-      return true, obj if obj
+      if node.is_a?( SOAPStruct )
+	obj = struct2obj( node, map )
+	return true, obj if obj
+      end
       if !@allowUntypedStruct
 	return false
       end
