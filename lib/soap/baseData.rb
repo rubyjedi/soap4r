@@ -494,8 +494,10 @@ public
 	parentArray.baseTypeName == @typeName
       # No need to add.
     else
-      attrs.push( datatypeAttr( ns ))
+      attrs.push( arrayTypeAttr( ns ))
     end
+
+    attrs.push( datatypeAttr( ns ))
 
     childTypeName = contentTypeName().gsub( /\[,*\]/, ArrayEncodePostfix ) << ArrayEncodePostfix
 
@@ -522,6 +524,10 @@ public
 private
 
   def datatypeAttr( ns )
+    Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( EncodingNamespace, 'Array' ))
+  end
+
+  def arrayTypeAttr( ns )
     Attr.new( ns.name( EncodingNamespace, 'arrayType' ), ns.name( @typeNamespace, arrayTypeValue() ))
   end
 
