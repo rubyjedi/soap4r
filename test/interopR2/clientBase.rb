@@ -175,6 +175,50 @@ def submitTestResult
   $testResultDrv.add( $testResults )
 end
 
+class FakeFloat < SOAP::SOAPFloat
+  def initialize( str )
+    super()
+    @data = str
+  end
+
+  def to_s
+    @data.to_s
+  end
+end
+
+class FakeDateTime < SOAP::SOAPDateTime
+  def initialize( str )
+    super()
+    @data = str
+  end
+
+  def to_s
+    @data.to_s
+  end
+end
+
+class FakeDecimal < SOAP::SOAPDecimal
+  def initialize( str )
+    super()
+    @data = str
+  end
+
+  def to_s
+    @data.to_s
+  end
+end
+
+class FakeInt < SOAP::SOAPInt
+  def initialize( str )
+    super()
+    @data = str
+  end
+
+  def to_s
+    @data.to_s
+  end
+end
+
 
 ###
 ## Invoke methods.
@@ -392,6 +436,90 @@ def doTestBase( drv )
     dumpException( title )
   end
 
+  title = 'echoInteger (2147483648: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeInt.new( "2147483648" )
+      var = drv.echoInteger( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoInteger (-2147483649: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeInt.new( "-2147483649" )
+      var = drv.echoInteger( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoInteger (0.0: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeInt.new( "0.0" )
+      var = drv.echoInteger( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoInteger (-5.2: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeInt.new( "-5.2" )
+      var = drv.echoInteger( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoInteger (0.000000000a: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeInt.new( "0.000000000a" )
+      var = drv.echoInteger( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoInteger (+-5: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeInt.new( "+-5" )
+      var = drv.echoInteger( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
   title = 'echoIntegerArray'
   dumpTitle( title )
   begin
@@ -455,6 +583,36 @@ def doTestBase( drv )
     dumpException( title )
   end
 
+  title = 'echoFloat (scientific notation 2)'
+  dumpTitle( title )
+  begin
+    arg = FakeFloat.new( "12.34e36" )
+    var = drv.echoFloat( arg )
+    dumpNormal( title, 12.34e36, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (scientific notation 3)'
+  dumpTitle( title )
+  begin
+    arg = FakeFloat.new( "12.34E+36" )
+    var = drv.echoFloat( arg )
+    dumpNormal( title, 12.34e36, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (scientific notation 4)'
+  dumpTitle( title )
+  begin
+    arg = FakeFloat.new( "-1.4E" )
+    var = drv.echoFloat( arg )
+    dumpNormal( title, 1.4, var )
+  rescue Exception
+    dumpException( title )
+  end
+
   title = 'echoFloat (positive lower boundary)'
   dumpTitle( title )
   begin
@@ -469,6 +627,26 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = -1.4e-45
+    var = drv.echoFloat( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (special values: +0)'
+  dumpTitle( title )
+  begin
+    arg = 0.0
+    var = drv.echoFloat( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (special values: -0)'
+  dumpTitle( title )
+  begin
+    arg = -0.0
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
   rescue Exception
@@ -501,6 +679,62 @@ def doTestBase( drv )
     arg = -1.0/0.0
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (0.000a: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeFloat.new( "0.0000000000000000a" )
+      var = drv.echoFloat( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (00a.0001: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeFloat.new( "00a.000000000000001" )
+      var = drv.echoFloat( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (+-5: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeFloat.new( "+-5" )
+      var = drv.echoFloat( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (5_0: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeFloat.new( "5_0" )
+      var = drv.echoFloat( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
   rescue Exception
     dumpException( title )
   end
@@ -834,13 +1068,149 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoDate (client side TZ conversion)'
+  title = 'echoDate (positive TZ)'
+  dumpTitle( title )
+  begin
+    arg = SOAP::SOAPDateTime.new( '2001-06-17T01:13:40+07:00' )
+    argNormalized = DateTime.new( 2001, 6, 16, 18, 13, 40 )
+    var = drv.echoDate( arg )
+    dumpNormal( title, argNormalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (negative TZ)'
   dumpTitle( title )
   begin
     arg = SOAP::SOAPDateTime.new( '2001-06-16T18:13:40-07:00' )
     argNormalized = DateTime.new( 2001, 6, 17, 1, 13, 40 )
     var = drv.echoDate( arg )
-    dumpNormal( title, argNormalized.to_s, var.to_s )
+    dumpNormal( title, argNormalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (+00:00 TZ)'
+  dumpTitle( title )
+  begin
+    arg = SOAP::SOAPDateTime.new( '2001-06-17T01:13:40+00:00' )
+    argNormalized = DateTime.new( 2001, 6, 17, 1, 13, 40 )
+    var = drv.echoDate( arg )
+    dumpNormal( title, argNormalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (-00:00 TZ)'
+  dumpTitle( title )
+  begin
+    arg = SOAP::SOAPDateTime.new( '2001-06-17T01:13:40-00:00' )
+    argNormalized = DateTime.new( 2001, 6, 17, 1, 13, 40 )
+    var = drv.echoDate( arg )
+    dumpNormal( title, argNormalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (min TZ)'
+  dumpTitle( title )
+  begin
+    arg = SOAP::SOAPDateTime.new( '2001-06-16T00:00:01+00:01' )
+    argNormalized = DateTime.new( 2001, 6, 15, 23, 59, 1 )
+    var = drv.echoDate( arg )
+    dumpNormal( title, argNormalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (year > 9999)'
+  dumpTitle( title )
+  begin
+    arg = SOAP::SOAPDateTime.new( '10000-06-16T18:13:40-07:00' )
+    argNormalized = DateTime.new( 10000, 6, 17, 1, 13, 40 )
+    var = drv.echoDate( arg )
+    dumpNormal( title, argNormalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (year < -9999)'
+  dumpTitle( title )
+  begin
+    arg = SOAP::SOAPDateTime.new( '-29999-06-16T18:13:40-07:00' )
+    argNormalized = DateTime.new( -29999, 6, 17, 1, 13, 40 )
+    var = drv.echoDate( arg )
+    dumpNormal( title, argNormalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (year 0000: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDateTime.new( "0000-05-18T16:52:20Z" )
+      var = drv.echoDate( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (year nn: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDateTime.new( "05-05-18T16:52:20Z" )
+      var = drv.echoDate( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (no day part: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDateTime.new( "2002-05T16:52:20Z" )
+      var = drv.echoDate( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (no sec part: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDateTime.new( "2002-05-18T16:52Z" )
+      var = drv.echoDate( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (empty: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDateTime.new( "" )
+      var = drv.echoDate( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
   rescue Exception
     dumpException( title )
   end
@@ -880,6 +1250,43 @@ def doTestBase( drv )
     dumpException( title )
   end
 
+  title = 'echoBase64 (\0)'
+  dumpTitle( title )
+  begin
+    str = "\0"
+    arg = SOAP::SOAPBase64.new( str )
+    var = drv.echoBase64( arg )
+    dumpNormal( title, str, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoBase64 (\0a\0)'
+  dumpTitle( title )
+  begin
+    str = "a\0b\0\0c\0\0\0"
+    arg = SOAP::SOAPBase64.new( str )
+    var = drv.echoBase64( arg )
+    dumpNormal( title, str, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoBase64 (-: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = SOAP::SOAPBase64.new( "dummy" )
+      arg.instance_eval { @data = '-' }
+      var = drv.echoBase64( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
   title = 'echoHexBinary'
   dumpTitle( title )
   begin
@@ -898,6 +1305,55 @@ def doTestBase( drv )
     arg = SOAP::SOAPHexBinary.new( str )
     var = drv.echoHexBinary( arg )
     dumpNormal( title, str, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoHexBinary(\0)'
+  dumpTitle( title )
+  begin
+    str = "\0"
+    arg = SOAP::SOAPHexBinary.new( str )
+    var = drv.echoHexBinary( arg )
+    dumpNormal( title, str, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoHexBinary(\0a\0)'
+  dumpTitle( title )
+  begin
+    str = "a\0b\0\0c\0\0\0"
+    arg = SOAP::SOAPHexBinary.new( str )
+    var = drv.echoHexBinary( arg )
+    dumpNormal( title, str, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoHexBinary(lower case)'
+  dumpTitle( title )
+  begin
+    str = "lower case"
+    arg = SOAP::SOAPHexBinary.new
+    arg.setEncoded(( str.unpack( "H*" )[ 0 ] ).tr( 'A-F', 'a-f' ))
+    var = drv.echoHexBinary( arg )
+    dumpNormal( title, str, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoHexBinary (0FG7: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = SOAP::SOAPHexBinary.new( "dummy" )
+      arg.instance_eval { @data = '0FG7' }
+      var = drv.echoHexBinary( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
   rescue Exception
     dumpException( title )
   end
@@ -922,20 +1378,25 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-#  title = 'echoDouble'
-#  dumpTitle( title )
-#  begin
-#    arg = 3.14159265358979
-#    var = drv.echoDouble( arg )
-#    dumpNormal( title, arg, var )
-#  rescue Exception
-#    dumpException( title )
-#  end
+  title = 'echoBoolean (junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = SOAP::SOAPBoolean.new( true )
+      arg.instance_eval { @data = 'junk' }
+      var = drv.echoBoolean( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
 
   title = 'echoDecimal (123456)'
   dumpTitle( title )
   begin
-    arg = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+    arg = "123456789012345678"
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     normalized = arg
     dumpNormal( title, normalized, var )
@@ -946,7 +1407,7 @@ def doTestBase( drv )
   title = 'echoDecimal (+0.123)'
   dumpTitle( title )
   begin
-    arg = "+0.12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+    arg = "+0.12345678901234567"
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     normalized = arg.sub( /0$/, '' ).sub( /^\+/, '' )
     dumpNormal( title, normalized, var )
@@ -957,9 +1418,20 @@ def doTestBase( drv )
   title = 'echoDecimal (.00000123)'
   dumpTitle( title )
   begin
-    arg = ".0000012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+    arg = ".00000123456789012"
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     normalized = '0' << arg.sub( /0$/, '' )
+    dumpNormal( title, normalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDecimal (-.00000123)'
+  dumpTitle( title )
+  begin
+    arg = "-.00000123456789012"
+    var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
+    normalized = '-0' << arg.sub( /0$/, '' ).sub( /-/, '' )
     dumpNormal( title, normalized, var )
   rescue Exception
     dumpException( title )
@@ -968,7 +1440,7 @@ def doTestBase( drv )
   title = 'echoDecimal (-123.456)'
   dumpTitle( title )
   begin
-    arg = "-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123.45678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+    arg = "-123456789012345.008"
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
@@ -978,7 +1450,7 @@ def doTestBase( drv )
   title = 'echoDecimal (-123.)'
   dumpTitle( title )
   begin
-    arg = "-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890."
+    arg = "-12345678901234567."
     normalized = arg.sub( /\.$/, '' )
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     dumpNormal( title, normalized, var )
@@ -986,6 +1458,61 @@ def doTestBase( drv )
     dumpException( title )
   end
 
+  title = 'echoDecimal (0.000a: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDecimal.new( "0.0000000000000000a" )
+      var = drv.echoDecimal( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDecimal (00a.0001: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDecimal.new( "00a.000000000000001" )
+      var = drv.echoDecimal( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDecimal (+-5: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDecimal.new( "+-5" )
+      var = drv.echoDecimal( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDecimal (5_0: junk)'
+  dumpTitle( title )
+  begin
+    begin
+      arg = FakeDecimal.new( "5_0" )
+      var = drv.echoDecimal( arg )
+      dumpNormal( title, true, 'No error occurred.' )
+    rescue SOAP::RPCServerException
+      dumpNormal( title, true, true )
+    end
+  rescue Exception
+    dumpException( title )
+  end
 
 unless $noEchoMap
 
