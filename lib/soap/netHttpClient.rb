@@ -25,6 +25,13 @@ module SOAP
 
 class NetHttpClient
 
+  SSLEnabled = begin
+      require 'net/https'
+      true
+    rescue LoadError
+      false
+    end
+
   attr_accessor :proxy
   attr_accessor :no_proxy
   attr_accessor :debug_dev
@@ -86,13 +93,7 @@ class NetHttpClient
 private
 
   def start(url)
-    proxy_host = proxy_port = nil
-    unless no_proxy?(url)
-      proxy_host = @proxy.host
-      proxy_port = @proxy.port
-    end
-    http = Net::HTTP::Proxy(proxy_host, proxy_port).new(url.host, url.port)
-    http.set_debug_output(@debug_dev) if http.respond_to?(:set_debug_output)
+    http = create_connection(url)
     response = nil
     http.start { |worker|
       response, = yield(worker)
@@ -100,6 +101,31 @@ private
     }
     @debug_dev << response.body if @debug_dev
     response
+  end
+
+  def create_connection(url)
+    proxy_host = proxy_port = nil
+    unless no_proxy?(url)
+      proxy_host = @proxy.host
+      proxy_port = @proxy.port
+    end
+    http = Net::HTTP::Proxy(proxy_host, proxy_port).new(url.host, url.port)
+    if http.respond_to?(:set_debug_output)
+      http.set_debug_output(@debug_dev)
+    end
+    case url
+    when URI::HTTPS
+      if SSLEnabled
+	http.use_ssl = true
+      else
+	raise RuntimeError.new("Cannot connect to #{url} (OpenSSL is not installed.)")
+      end
+    when URI::HTTP
+      # OK
+    else
+      raise RuntimeError.new("Cannot connect to #{url} (Not HTTP.)")
+    end
+    http
   end
 
   NO_PROXY_HOSTS = ['localhost']
