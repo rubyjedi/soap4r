@@ -29,6 +29,7 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
   def initialize( charset = nil )
     super( charset )
     @textBuf = ''
+    @decodeComplexTypes = nil
   end
 
 
@@ -174,21 +175,21 @@ yle." )
       decodeParent( parent, node )
 
     when SOAPStruct
-      data = parent.node[ node.name ]
+      data = parent.node[ node.elementName.name ]
       case data
       when nil
-	parent.node.add( node.name, node )
+	parent.node.add( node.elementName.name, node )
       when SOAPArray
-	name, typeNamespace = node.name, node.type.namespace
+	name, typeNamespace = node.elementName.name, node.type.namespace
 	data.add( node )
-	node.name, node.type.namespace = name, typeNamespace
+	node.elementName, node.type.namespace = name, typeNamespace
       else
-	parent.node[ node.name ] = SOAPArray.new
+	parent.node[ node.elementName.name ] = SOAPArray.new
 	name, typeNamespace = data.elementName.name, data.type.namespace
-	parent.node[ node.name ].add( data )
+	parent.node[ node.elementName.name ].add( data )
 	data.elementName.name, data.type.namespace = name, typeNamespace
 	name, typeNamespace = node.elementName.name, node.type.namespace
-	parent.node[ node.name ].add( node )
+	parent.node[ node.elementName.name ].add( node )
 	node.elementName.name, node.type.namespace = name, typeNamespace
       end
 

@@ -25,15 +25,12 @@ module SOAP
 class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   Namespace = SOAP::EncodingNamespace
   addHandler
-  attr_accessor :generateEncodeType
 
   def initialize( charset = nil )
     super( charset )
     @referencePool = []
     @idPool = []
     @textBuf = ''
-    @generateEncodeType = true
-    @decodeComplexTypes = nil
     @firstTopElement = true
   end
 
@@ -231,10 +228,6 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   def decodeText( ns, text )
     # @textBuf is set at decodeTagEnd.
     @textBuf << text
-  end
-
-  def decodeComplexTypes=( complexTypes )
-    @decodeComplexTypes = complexTypes
   end
 
   def decodePrologue
