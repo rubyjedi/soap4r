@@ -130,7 +130,7 @@ class MIMEMessage
     end
 
     def contentid
-      if @contentid == nil
+      if @contentid == nil and @headers.key?('content-id')
 	@contentid = @headers['content-id'].str
 	@contentid = $1 if @contentid =~ /^<(.+)>$/
       end

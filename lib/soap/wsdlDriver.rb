@@ -305,7 +305,7 @@ class WSDLDriver
 	  value = Attachment.new(part.content)
 	  value.contentid = part.contentid
 	  obj = SOAPAttachment.new(value)
-	  opt[:external_content][value.contentid] = obj
+	  opt[:external_content][value.contentid] = obj if value.contentid
 	end
 	opt[:charset] = @mandatorycharset ||
 	  StreamHandler.parse_media_type(mime.root.headers['content-type'].str)
