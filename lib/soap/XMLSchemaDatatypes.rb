@@ -273,12 +273,8 @@ private
     if f.nan? || f.infinite?
       f
     else
-      single = [ f ].pack( "f" )
-      if single == "\0\0\0\0"
-	single.unpack( "f" )[ 0 ]
-      else
-	f
-      end
+      packed = [ f ].pack( "f" )
+      ( /^\0*$/ =~ packed )? 0.0 : f
     end
   end
 end
