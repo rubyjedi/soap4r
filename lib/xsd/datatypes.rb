@@ -477,11 +477,11 @@ module XSDDateTimeImpl
     begin
       if @data.offset * SecInDay == Time.now.utc_offset
         d = @data
-        usec = ((d.sec_fraction * SecInDay * 1000000) + 0.5).to_i
+	usec = (d.sec_fraction * SecInDay * 1000000).round
         Time.local(d.year, d.month, d.mday, d.hour, d.min, d.sec, usec)
       else
         d = @data.newof
-        usec = ((d.sec_fraction * SecInDay * 1000000) + 0.5).to_i
+	usec = (d.sec_fraction * SecInDay * 1000000).round
         Time.gm(d.year, d.month, d.mday, d.hour, d.min, d.sec, usec)
       end
     rescue ArgumentError
