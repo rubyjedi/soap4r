@@ -1,1 +1,1 @@
-require 'soap/streamHander_wo_http-access'
+require 'soap/streamHandler_wo_http-access'
