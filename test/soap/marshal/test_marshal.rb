@@ -1,5 +1,10 @@
 require 'test/unit'
+
+dir = File.dirname(__FILE__)
+$:.push(dir)
 require 'cmarshal'
+$:.delete(dir)
+
 CMarshal.soap4r
 
 
