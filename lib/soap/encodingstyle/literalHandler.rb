@@ -65,9 +65,6 @@ class LiteralHandler < Handler
       generator.encode_tag(name, attrs.update(data.extraattr))
       generator.encode_rawstring(data.text) if data.text
       data.each do |key, value|
-	if !value.elename.namespace
-	  value.elename.namespace = data.elename.namespace
-	end
 	yield(value, qualified)
       end
     else
@@ -81,7 +78,8 @@ class LiteralHandler < Handler
       else
         data.elename.name
       end
-    generator.encode_tag_end(name)
+    cr = data.is_a?(SOAPElement) && !data.text
+    generator.encode_tag_end(name, cr)
   end
 
 
