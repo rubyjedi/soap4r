@@ -11,7 +11,6 @@ logDev = Devel::Logger.new( 'httpd.log' )
 port = $OPT_p || 2000
 
 wwwsvr = WEBrick::HTTPServer.new(
-  :ServerName     => "rrr.jin.gr.jp",
   :Port           => port,
   :Logger         => logDev
 )
