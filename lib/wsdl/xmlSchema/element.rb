@@ -31,8 +31,7 @@ class Element < Info
   attr_accessor :minOccurs
   attr_accessor :nillable
 
-  AnyType = XSD::QName.new( XSD::Namespace, XSD::AnyTypeLiteral )
-  def initialize( name = nil, type = AnyType )
+  def initialize( name = nil, type = XSD::XSDAnyType::Type )
     super()
     @name = name
     @type = type
@@ -45,29 +44,20 @@ class Element < Info
     parent.targetNamespace
   end
 
-  def getParentComplexType
-    parent.parent
-  end
-  
-  ComplexTypeName = XSD::QName.new( XSD::Namespace, 'complexType' )
   def parseElement( element )
     case element
     when ComplexTypeName
-      o = ComplexType.new
-      @type = XSD::QName.new( targetNamespace, createAnonymousTypeName )
-      o.setAnonymousTypeName( @type )
-      root.addType( o )
-      o
+      raise NotImplementedError.new( "Local complex type is not supported now." )
+#      o = ComplexType.new
+#      @type = XSD::QName.new( targetNamespace, createAnonymousTypeName )
+#      o.setAnonymousTypeName( @type )
+#      root.addType( o )
+#      o
     else
       nil
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  TypeAttrName = XSD::QName.new( nil, 'type' )
-  MaxOccursAttrName = XSD::QName.new( nil, 'maxOccurs' )
-  MinOccursAttrName = XSD::QName.new( nil, 'minOccurs' )
-  NillableAttrName = XSD::QName.new( nil, 'nillable' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
@@ -79,39 +69,44 @@ class Element < Info
 	  XSD::QName.new( XSD::Namespace, value )
 	end
     when MaxOccursAttrName
-      if parent.type == Content::TypeAll
+      if parent.type == 'all'
 	if value != '1'
 	  raise WSDLParser::AttrConstraintError.new(
 	    "Cannot parse #{ value } for #{ attr }." )
 	end
 	@maxOccurs = value
-      elsif parent.type == Content::TypeSequence
+      elsif parent.type == 'sequence'
 	@maxOccurs = value
       else
 	raise NotImplementedError.new
       end
     when MinOccursAttrName
-      if parent.type == Content::TypeAll
+      if parent.type == 'all'
 	if [ '0', '1' ].includes?( value )
 	  @minOccurs = value
 	else
 	  raise WSDLParser::AttrConstraintError.new(
 	    "Cannot parse #{ value } for #{ attr }." )
 	end
-      elsif parent.type == Content::TypeSequence
+      elsif parent.type == 'sequence'
 	@maxOccurs = value
       else
 	raise NotImplementedError.new
       end
     when NillableAttrName
-      @nillable = value == 'true' ? true : false
+      @nillable = ( value == 'true' )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
   end
 
+=begin
 private
 
+  def getParentComplexType
+    parent.parent
+  end
+  
   def createAnonymousTypeName
     base = capitalize( @name )
     begin
@@ -127,6 +122,7 @@ private
   def capitalize( target )
     target.gsub( /^([a-z])/ ) { $1.tr!( '[a-z]', '[A-Z]' ) }
   end
+=end
 end
 
   end
