@@ -68,10 +68,8 @@ public
   # add_method is for shortcut of typical use="encoded" method definition.
   alias add_method add_rpc_method
 
-  def invoke(req_header, req_body, soapaction = nil, decode_typemap = nil)
+  def invoke(req_header, req_body, opt)
     req_env = SOAPEnvelope.new(req_header, req_body)
-    opt = create_options
-    opt[:decode_typemap] = decode_typemap
     opt[:external_content] = nil
     conn_data = marshal(req_env, opt)
     if ext = opt[:external_content]
@@ -84,7 +82,7 @@ public
       conn_data.send_string = mime.content_str
       conn_data.send_contenttype = mime.headers['content-type'].str
     end
-    conn_data = @streamhandler.send(conn_data, soapaction)
+    conn_data = @streamhandler.send(conn_data, opt[:soapaction])
     if conn_data.receive_string.empty?
       return nil
     end
@@ -99,8 +97,10 @@ public
     # Convert parameters: params array => SOAPArray => members array
     req_header = create_request_header
     req_body = op.create_request_body(params, @mapping_registry, @literal_mapping_registry)
-    req_body.encodingstyle ||= @default_encodingstyle
-    env = invoke(req_header, req_body, op.soapaction || @soapaction)
+    opt = create_options({
+      :soapaction => op.soapaction || @soapaction,
+      :default_encodingstyle => op.response_default_encodingstyle})
+    env = invoke(req_header, req_body, opt)
     receive_headers(env.header)
     raise EmptyResponseError.new("Empty response.") unless env
     begin
@@ -172,13 +172,12 @@ private
     header
   end
 
-  def create_options
+  def create_options(hash = nil)
     opt = {}
     opt[:default_encodingstyle] = @default_encodingstyle
-    if @allow_unqualified_element
-      opt[:allow_unqualified_element] = true
-    end
+    opt[:allow_unqualified_element] = @allow_unqualified_element
     opt[:generate_explicit_type] = @generate_explicit_type
+    opt.update(hash) if hash
     opt
   end
 
@@ -218,6 +217,14 @@ private
           end
         end
       end
+    end
+
+    def request_default_encodingstyle
+      (@request_style == :rpc) ? EncodingNamespace : LiteralNamespace
+    end
+
+    def response_default_encodingstyle
+      (@response_style == :rpc) ? EncodingNamespace : LiteralNamespace
     end
 
     # for rpc
