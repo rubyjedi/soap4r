@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: December 7, 2001<br />
+Last modified: December 28, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 本文書が対象としているSOAP4Rのバージョンは，
-SOAP4R/1.4.1
+SOAP4R/1.4.2
 です．
 </p>
 
@@ -54,17 +54,18 @@ SOAP4R/1.4.1
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-SOAP4R/1.4は（いつも通り．．．）たくさんのバグを含んでいました．
-1.4.1はメンテナンスリリースです．いくつかのバグが修正されています．
-Michael Neumannさん，どうもありがとう．
+SOAPのRuby言語マッピング部分を大量に変更しました．
+DRbのマーシャリング形式をSOAPマーシャリングに置き換えて，
+DRbのパッケージに付属している単体テストのほとんどにパスするのを確認しました．
+唯一失敗したテストはパケットサイズに関するものでした．
+Marshal.(load|dump)の替わりに，
+SOAP::Marshal.(un|)marshalを使えるかもしれません．
 </p>
 
 <ul>
-<li>SOAPStruct#addの中で，accessorを定義するために用いているinstance_evalが，name，name=などの重要なメソッドを不正に上書きしていました．これを取り除き，このコードに依存していた部分を書き直しました．報告し，有用なアドバイスをくれたMNeumannさん，ありがとう．</li>
-<li>charsetの扱いにバグがありました．利用するXMLプロセッサを明示的に指定しなかった場合，HTTPヘッダのcharsetが正しく指定されませんでした．</li>
-<li>element.rbの中の不要なコードを取り除きました．</li>
-<li>SOAPメッセージにフォーマットエラーがあったときに参照する定数が不正でした．修正しました．</li>
-<li>LiteralEncodingNamespaceがSOAPモジュール直下に移動しました．</li>
+<li>position属性付きの要素の後にpositionなしの要素が来た時のdecodingに失敗していました．修正しました．</li>
+<li>Rubyの型のencoding/decodingサポートを追加しました: Regexp，Class，ModuleおよびSymbol．</li>
+<li>MappingRegistryに，不明な型があったときに例外をあげるオプションを追加しました．デフォルトでは例外をあげず，特異メソッドを持つオブジェクトとして渡されます．</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -248,6 +249,20 @@ SOAP Encoding本体に埋め込まれたxsi:typeのみを利用します．</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.4.2 - December 28, 2001</dt>
+<dd>SOAPのRuby言語マッピング部分を大量に変更しました．
+DRbのマーシャリング形式をSOAPマーシャリングに置き換えて，
+DRbのパッケージに付属している単体テストのほとんどにパスするのを確認しました．
+唯一失敗したテストはパケットサイズに関するものでした．
+Marshal.(load|dump)の替わりに，
+SOAP::Marshal.(un|)marshalを使えるかもしれません．
+
+<ul>
+<li>position属性付きの要素の後にpositionなしの要素が来た時のdecodingに失敗していました．修正しました．</li>
+<li>Rubyの型のencoding/decodingサポートを追加しました: Regexp，Class，ModuleおよびSymbol．</li>
+<li>MappingRegistryに，不明な型があったときに例外をあげるオプションを追加しました．デフォルトでは例外をあげず，特異メソッドを持つオブジェクトとして渡されます．</li>
+</ul></dd>
+
 <dt>1.4.1 - December 7, 2001</dt>
 <dd>SOAP4R/1.4は（いつも通り．．．）たくさんのバグを含んでいました．
 1.4.1はメンテナンスリリースです．いくつかのバグが修正されています．
