@@ -17,19 +17,19 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-STDERR.puts "Loading compatibility library."; raise
+STDERR.puts "Loading compatibility library..."
 
 
 require 'xsd/qname'
 require 'xsd/ns'
 require 'xsd/charset'
+require 'soap/mapping'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/rpc/driver'
 require 'soap/rpc/router'
 require 'soap/rpc/server'
 require 'soap/rpc/standaloneServer'
-require 'soap/mapping'
 
 
 module SOAP
