@@ -24,6 +24,17 @@ module XSD
 
 
 class NS
+  class Assigner
+    def initialize
+      @count = 0
+    end
+
+    def assign(ns)
+      @count += 1
+      "n#{ @count }"
+    end
+  end
+
   attr_reader :default_namespace
 
   class FormatError < Error; end
@@ -32,6 +43,7 @@ public
 
   def initialize(tag2ns = {})
     @tag2ns = tag2ns
+    @assigner = nil
     @ns2tag = {}
     @tag2ns.each do |tag, ns|
       @ns2tag[ns] = tag
@@ -44,7 +56,8 @@ public
       @default_namespace = ns
       tag
     else
-      tag ||= NS.assign(ns)
+      @assigner ||= Assigner.new
+      tag ||= @assigner.assign(ns)
       @ns2tag[ns] = tag
       @tag2ns[tag] = ns
       tag
@@ -59,8 +72,9 @@ public
     @tag2ns.key?(tag)
   end
 
-  def clone
+  def clone_ns
     cloned = NS.new(@tag2ns.dup)
+    cloned.assigner = @assigner
     cloned.assign(@default_namespace, '') if @default_namespace
     cloned
   end
@@ -116,15 +130,10 @@ public
     end
   end
 
-  AssigningName = [0]
+protected
 
-  def NS.assign(ns)
-    AssigningName[0] += 1
-    'n' << AssigningName[0].to_s
-  end
-
-  def NS.reset()
-    AssigningName[0] = 0
+  def assigner=(assigner)
+    @assigner = assigner
   end
 end
 

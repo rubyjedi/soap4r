@@ -101,10 +101,9 @@ public
     lastframe = @parsestack.last
     ns = parent = nil
     if lastframe
-      ns = lastframe.ns.clone
+      ns = lastframe.ns.clone_ns
       parent = lastframe.node
     else
-      ::SOAP::NS.reset
       ns = ::SOAP::NS.new
       parent = nil
     end
