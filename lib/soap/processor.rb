@@ -45,7 +45,11 @@ module Processor
     def unmarshal(stream, opt = {})
       parser = create_parser(opt)
       env = parser.parse(stream)
-      return env.header, env.body
+      if env
+	return env.header, env.body
+      else
+	return nil, nil
+      end
     end
 
     def default_parser_option=(rhs)
