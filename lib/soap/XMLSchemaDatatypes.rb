@@ -383,18 +383,23 @@ private
       hour = $4.to_i
       min = $5.to_i
       sec = $6.to_i
-      usec = $7
+      sec_frac = $7
       zoneStr = $8
 
       @data = DateTime.civil( year, mon, mday, hour, min, sec,
 	ofFromTZ( zoneStr ))
 
-      if usec
-	diffDay = usec.to_i.to_r / ( 10 ** usec.size ) / SecInDay
-	jd = @data.jd
-	day_fraction = @data.day_fraction + diffDay
-	@data = DateTime.new0( DateTime.jd_to_rjd( jd, day_fraction,
-	  @data.offset ), @data.offset )
+      if sec_frac
+	diffDay = sec_frac.to_i.to_r / ( 10 ** sec_frac.size ) / SecInDay
+	# jd = @data.jd
+	# day_fraction = @data.day_fraction + diffDay
+	# @data = DateTime.new0( DateTime.jd_to_rjd( jd, day_fraction,
+	#   @data.offset ), @data.offset )
+	#
+	# Thanks to Funaba-san, above code can be simply written as below.
+	@data += diffDay
+	# FYI: new0 and jd_to_rjd are not necessary to use if you don't have
+	# exceptional reason.
       end
     end
   end
@@ -437,10 +442,18 @@ private
       hour = $1.to_i
       min = $2.to_i
       sec = $3.to_i
-      usec = $4.to_i
+      sec_frac = $4
       zoneSign = $5
       zoneHour = $6.to_i
       zoneMin = $7.to_i
+
+      usec = 0
+      if sec_frac
+	# Truncate fraction part at usec.
+	# 0.9 [sec] => 0 [sec]
+	# 1.1 [sec] => 1 [sec]
+	usec = ( sec_frac + "00000" )[ 0, 6 ].to_i
+      end
 
       @data = Time.mktime( 2000, 1, 1, hour, min, sec, usec )
 
@@ -467,7 +480,7 @@ private
     s = if @data.usec.zero?
       format( '%02d:%02d:%02d', @data.hour, @data.min, @data.sec )
     else
-      format( '%02d:%02d:%02d.%d', @data.hour, @data.min, @data.sec, @data.usec )
+      format( '%02d:%02d:%02d.%06d', @data.hour, @data.min, @data.sec, @data.usec )
     end
     s + 'Z'
   end
