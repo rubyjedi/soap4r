@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: December 7, 2001<br />
+Last modified: December 28, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.4.1
+Target SOAP4R version: SOAP4R/1.4.2
 </p>
 
 <ol>
@@ -51,17 +51,19 @@ Target SOAP4R version: SOAP4R/1.4.1
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-SOAP4R/1.4 contained many bugs (as usual...)
-1.4.1 is a maintenance release.  Some bugs are fixed.
-Thanks to Michael Neumann.
+Many changes around Ruby language mapping for SOAP.
+I replaced DRb's marshalling format with SOAP marshalling and it passed
+about all unit test packed in DRb package.
+Only test failed was regards to packet size.
+You might be able to use SOAP::Marshal.(un|)marshal for serializing objects
+instead of Marshal.(load|dump).
 </p>
 
 <ul>
-<li>instance_eval in SOAPStruct#add for adding accessor illegaly overrode important methods for SOAP4R such as name, name= and so on.  Removed this instance_eval and rewrote other codes which did depend the code.  Thanks to MNeumann for reporting it and giving a suggestion to fix it.</li>
-<li>Fixed charset handling.  Illegal charset was set when automatic XML processor detecting.</li>
-<li>Removed unused code(self.decode) in element.rb.</li>
-<li>Illegal constant access when SOAP format error.  Fixed.</li>
-<li>LiteralEncodingNamespace moved to SOAP module.</li>
+<li>Illegal decoding of a position-less element after position-ed element.  Fixed.</li>
+<li>Add Rubytype encoding/decoding support: Regexp, Class, Module and Symbol.</li>
+<li>Added an option of MappingRegistry to raise an exception when unknown Struct.
+The option is set 'false' by default so that same behaviour as before.</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -237,6 +239,22 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.4.2 - December 28, 2001</dt>
+<dd>
+Many changes around Ruby language mapping for SOAP.
+I replaced DRb's marshalling format with SOAP marshalling and it passed
+about all unit test packed in DRb package.
+Only test failed was regards to packet size.
+You might be able to use SOAP::Marshal.(un|)marshal for serializing objects
+instead of Marshal.(load|dump).
+
+<ul>
+<li>Illegal decoding of a position-less element after position-ed element.  Fixed.</li>
+<li>Add Rubytype encoding/decoding support: Regexp, Class, Module and Symbol.</li>
+<li>Added an option of MappingRegistry to raise an exception when unknown Struct.
+The option is set 'false' by default so that same behaviour as before.</li>
+</ul></dd>
+
 <dt>1.4.1 - December 7, 2001</dt>
 <dd>SOAP4R/1.4 contained many bugs (as usual...)
 1.4.1 is a maintenance release.  Some bugs are fixed.
