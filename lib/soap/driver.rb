@@ -21,30 +21,41 @@ require 'soap/rpcUtils'
 require 'application'
 
 
-class SOAPDriver
+module SOAP
+
+
+class Driver
   include Log::Severity
-  include SOAPRPCUtils
+  include RPCUtils
 
   public
 
-  def initialize( log, logId, namespace, endPoint, httpProxy = nil )
+  def initialize( log, logId, namespace, endPoint, httpProxy = nil, soapAction = nil )
     @log = log
     @logId = logId
     log( SEV_INFO, 'initialize: initializing SOAP driver...' )
     @namespace = namespace
-    @handler = SOAPHTTPPostStreamHandler.new( endPoint, httpProxy )
-    @proxy = SOAPProxy.new( @namespace, @handler )
+    @handler = HTTPPostStreamHandler.new( endPoint, httpProxy )
+    @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
     @proxy.allowUnqualifiedElement = true
   end
 
+  def setWireDumpDev( dumpDev )
+    @handler.dumpDev = dumpDev
+  end
+
   def addMethod( name, *paramNames )
+    addMethodWithSOAPAction( name, nil, *paramNames )
+  end
+
+  def addMethodWithSOAPAction( name, soapAction, *paramNames )
     log( SEV_DEBUG, "addMethod: method '#{ name }', param '#{ paramNames.join( ',' ) }'." )
     paramDef = []
     paramNames.each do | paramName |
       paramDef.push( [ 'in', paramName ] )
     end
     paramDef.push( [ 'retval', 'return' ] )
-    @proxy.addMethod( name, paramDef )
+    @proxy.addMethod( name, paramDef, soapAction )
   end
 
   def method_missing( msg_id, *params )
@@ -70,19 +81,19 @@ class SOAPDriver
     headers = nil
 
     # Assign my namespace.
-    SOAPNS.reset
-    ns = SOAPNS.new()
+    NS.reset
+    ns = NS.new
     ns.assign( @namespace )
 
     # Then, call @proxy.call like the following.
-    ns, header, body = @proxy.call( ns, headers, methodName, *params )
+    header, body = @proxy.call( ns, headers, methodName, *params )
 
     # Check Fault.
     log( SEV_INFO, "call: checking SOAP-Fault..." )
     begin
-      @proxy.checkFault( ns, body )
+      @proxy.checkFault( body )
     rescue SOAP::FaultError
-      detail = soap2obj( $!.detail )
+      detail = soap2obj( $!.detail ) || ""
       $!.set_backtrace(
 	if detail.is_a?( Array )
 	  soap2obj( $!.detail ).map! { |s|
@@ -98,4 +109,7 @@ class SOAPDriver
     obj = soap2obj( body.response )
     return obj
   end
+end
+
+
 end
