@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: August 24, 2001<br />
+Last modified: October 4, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.7
+Target SOAP4R version: SOAP4R/1.3.8
 </p>
 
 <ol>
@@ -59,25 +59,22 @@ and Michael Neumann.  Thanks!
 <ul>
 <li>Datatypes:
 <ul>
-<li>All datatypes try to keep nil correctly.</li>
-<li>XSDInt/Integer/Long: to_i -&gt; Integer() to detect format error.</li>
-<li>XSDDateTime, XSDDate, XSDTime: Add trailing 'Z' to indicate UTC.</li>
-<li>SOAPStruct: Accept untyped struct.</li>
-<li>Map(Hash): Let &lt;item&gt; untyped.</li>
-<li>Apache allows only 'item' in Map type.</li>
+<li>XSDFloat: Creating float data from junk string such as "123.0junk" was
+  converted to 0.0.  It should be avoided.  Fixed.</li>
+<li>XSDFloat: Fixed double -&gt; single rounding code.</li>
 </ul></li>
 
-<li>Stream handler:
+<li>RPC related functions:
 <ul>
-<li>Removed MPOST support.</li>
-<li>ECONNRESET was not caught.  Fixed.</li>
-<li>Added timeout support.</li>
+<li>Changed typename <=> NCName strategy.  '::' &lt;=&gt; '.'</li>
+<li>Added mappingRegistry argument to interfaces for SOAP object creation.</li>
 </ul></li>
 
 <li>Others:
 <ul>
-<li>Changed using URI library: URb -&gt; URI; following its name change.</li>
-<li>Added NQXML/1.1.0 support.  A XMLDecl now recognized as a XMLDecl, not a PI.</li>
+<li>Set faultstring '(No faultstring)' to SOAP Fault when empty faultstring element.</li>
+<li>server.rb: Added mappingRegistry interface.</li>
+<li>marshal.rb: Create NCName from typename.</li>
 </ul></li>
 </ul>
 
@@ -255,6 +252,34 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.8 - October 4, 2001</dt>
+<dd>Feedback from
+<a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
+and Michael Neumann.  Thanks!
+
+<ul>
+<li>Datatypes:
+<ul>
+<li>XSDFloat: Creating float data from junk string such as "123.0junk" was
+  converted to 0.0.  It should be avoided.  Fixed.</li>
+<li>XSDFloat: Fixed double -&gt; single rounding code.</li>
+</ul></li>
+
+<li>RPC related functions:
+<ul>
+<li>Changed typename <=> NCName strategy.  '::' &lt;=&gt; '.'</li>
+<li>Added mappingRegistry argument to interfaces for SOAP object creation.</li>
+</ul></li>
+
+<li>Others:
+<ul>
+<li>Set faultstring '(No faultstring)' to SOAP Fault when empty faultstring element.</li>
+<li>server.rb: Added mappingRegistry interface.</li>
+<li>marshal.rb: Create NCName from typename.</li>
+</ul></li>
+</ul></dd>
+
+
 <dt>1.3.7 - August 24, 2001</dt>
 <dd>Feedback from
 <a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
