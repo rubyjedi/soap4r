@@ -37,7 +37,7 @@ class StreamHandler
     end
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.34 2003/09/10 14:08:40 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.35 2003/09/12 14:58:54 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -94,7 +94,7 @@ public
   attr_accessor :charset
   
   NofRetry = 10       	# [times]
-  ConnectTimeout = 60   # [sec]
+  ConnectTimeout = 20   # [sec]
   SendTimeout = 60	# [sec]
   ReceiveTimeout = 60   # [sec]
 
