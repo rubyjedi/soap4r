@@ -55,7 +55,7 @@ class NetHttpClient
   def set_basic_auth(uri, user_id, passwd)
     # net/http does not handle url.
     @basic_auth = [user_id, passwd]
-    STDERR.puts("basic_auth is not supported under soap4r + net/http for now.")
+    raise NotImplementedError.new("basic_auth is not supported under soap4r + net/http.")
   end
 
   def set_cookie_store(filename)
