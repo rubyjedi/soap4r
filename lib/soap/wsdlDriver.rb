@@ -344,25 +344,6 @@ class WSDLDriver
       end
     end
 
-    def document_call(name, *values)
-      set_wiredump_file_base(name)
-      unless op_info = @operation[name]
-        raise RuntimeError, "method: #{name} not defined"
-      end
-      req_header = create_request_header
-
-
-      req_body = body_from_obj(body_obj, op_info)
-      env = @proxy.invoke(req_header, req_body, op_info.soapaction || @soapaction, @wsdl_types)
-      raise EmptyResponseError.new("empty response") unless env
-      if env.body.fault
-	raise ::SOAP::FaultError.new(env.body.fault)
-      end
-      res_body_obj = env.body.response ?
-	Mapping.soap2obj(env.body.response, @mapping_registry) : nil
-      return env.header, res_body_obj
-    end
-
     # req_header: [[element, mustunderstand, encodingstyle(QName/String)], ...]
     # req_body: SOAPBasetype/SOAPCompoundtype
     def document_send(name, header_obj, body_obj)
@@ -455,7 +436,7 @@ class WSDLDriver
 	if obj.nil?
 	  nil
 	else
-	  raise RuntimeError.new("no header definition in schema")
+	  raise RuntimeError.new("no header definition in schema: #{obj}")
 	end
       elsif op_info.headerparts.size == 1
        	part = op_info.headerparts[0]
@@ -551,12 +532,8 @@ class WSDLDriver
 
     def add_document_method_interface(name, parts_names)
       sclass = class << @host; self; end
-      sclass.__send__(:define_method, name, proc { |*arg|
-        unless arg.size == parts_names.size
-          raise ArgumentError.new(
-            "wrong number of arguments (#{arg.size} for #{parts_names.size})")
-        end
-        @servant.document_call(name, *arg)
+      sclass.__send__(:define_method, name, proc { |h, b|
+        @servant.document_send(name, h, b)
       })
       @host.method(name)
     end
