@@ -25,16 +25,20 @@ require 'soap/rpcRouter'
 require 'application'
 
 
+module SOAP
+
+
 ###
 # SYNOPSIS
-#   SOAPCGIStub.new
+#   CGIStub.new
 #
 # DESCRIPTION
 #   To be written...
 #
-class SOAPCGIStub < Application
-  include SOAPProcessor
-  include SOAPRPCUtils
+class CGIStub < Application
+  include SOAP
+  include Processor
+  include RPCUtils
 
   class CGIError < Error; end
 
@@ -222,7 +226,7 @@ class SOAPCGIStub < Application
     @remote_host = ENV[ 'REMOTE_HOST' ] || ENV[ 'REMOTE_ADDR' ] || 'unknown'
     @request = nil
     @response = nil
-    @router = SOAPRPCRouter.new( appName )
+    @router = RPCRouter.new( appName )
   end
   
 protected
@@ -236,12 +240,12 @@ private
     begin
       log( SEV_INFO, "Received a request from '#{ @remote_user }@#{ @remote_host }'." )
     
-      # Method definition
-      methodDef
-  
       # SOAP request parsing.
       @request = CGIRequest.new.init
       log( SEV_INFO, "CGI Request: #{@request}" )
+
+      # Method definition
+      methodDef
 
       requestString = @request.dump
       log( SEV_DEBUG, "XML Request: #{requestString}" )
@@ -256,16 +260,21 @@ private
       print str
 
     rescue
-      @response = CGIResponse.new( $!.to_s )
-      @response.body.type = 'text/plain'
+      responseString = @router.faultResponseString( $! )
+      @response = CGIResponse.new( responseString )
+      @response.body.type = 'text/xml'
       str = @response.dump
       log( SEV_DEBUG, "CGI Response:\n#{ str }" )
       print str
       raise
+
     end
   end
 
   def addMethod( receiver, methodName, namespace = nil )
     @router.addMethod( namespace || @namespace, receiver, methodName )
   end
+end
+
+
 end
