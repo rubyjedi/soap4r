@@ -515,7 +515,7 @@ private
 
   def add_accessor(name)
     methodname = name
-    if self.methods.include?(methodname)
+    if self.respond_to?(methodname)
       methodname = safe_accessor_name(methodname)
     end
     begin
