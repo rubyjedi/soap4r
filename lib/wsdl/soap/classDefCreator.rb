@@ -72,7 +72,7 @@ private
       name = createMethodName( element.name )
       type = element.type
       attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
-      init_lines << "    @#{ name } = nil\n"
+      init_lines << "    @#{ name } = #{ name }\n"
       unless var_lines.empty?
 	var_lines << ",\n      "
       end
