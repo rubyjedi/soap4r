@@ -169,6 +169,10 @@ __EOX__
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
     assert_match(%r"POST http://localhost:17171/ HTTP/1.", r)
+    # illegal proxy uri
+    assert_raise(ArgumentError) do
+      @client.options["protocol.http.proxy"] = 'ftp://foo:8080'
+    end
   ensure
     if Object.const_defined?('HTTPAccess2')
       HTTPAccess2::Client::NO_PROXY_HOSTS.replace(backup)
