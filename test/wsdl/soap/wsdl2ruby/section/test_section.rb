@@ -19,7 +19,7 @@ class TestSection < Test::Unit::TestCase
   end
 
   def test_marshal
-    require 'mysample'
+    require pathname('mysample.rb')
     s1 = Section.new(1, "section1", "section 1", 1001, Question.new("q1"))
     s2 = Section.new(2, "section2", "section 2", 1002, Question.new("q2"))
     org = SectionArray[s1, s2]
