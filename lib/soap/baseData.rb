@@ -418,10 +418,13 @@ public
   attr_accessor :qualified
   attr_accessor :elename
 
-  def initialize(namespace, name, text = nil)
+  def initialize(elename, text = nil)
     super(nil)
+    if !elename.is_a?(XSD::QName)
+      elename = XSD::QName.new(nil, elename)
+    end
     @encodingstyle = LiteralNamespace
-    @elename = XSD::QName.new(namespace, name)
+    @elename = elename
 
     @id = nil
     @precedents = []
@@ -440,7 +443,7 @@ public
 
   # Element interfaces.
   def add(value)
-    add_member(value.name, value)
+    add_member(value.elename.name, value)
   end
 
   def [](idx)
@@ -485,7 +488,7 @@ private
     value = SOAPNil.new() unless value
     add_accessor(name)
     @array.push(name)
-    value.name = name
+    value.elename.name = name
     @data.push(value)
   end
 
