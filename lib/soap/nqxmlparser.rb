@@ -45,6 +45,8 @@ class SOAPNQXMLLightWeightParser < SOAPParser
 	else
 	  endElement( entity.name )
 	end
+      when NQXML::Text
+	cdata( entity.text )
       # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
       when NQXML::XMLDecl, NQXML::ProcessingInstruction
 	encoding = entity.attrs[ 'encoding' ]
@@ -54,8 +56,6 @@ class SOAPNQXMLLightWeightParser < SOAPParser
 	  $KCODE = charsetStr
 	  Charset.setXMLInstanceEncoding( charsetStr )
 	end
-      when NQXML::Text
-	cdata( entity.text )
       when NQXML::Comment
 	# Nothing to do.
       else
@@ -74,6 +74,9 @@ class SOAPNQXMLStreamingParser < SOAPParser
   def initialize( *vars )
     super( *vars )
     require 'nqxml/streamingparser'
+    unless NQXML.const_defined?( "XMLDecl" )
+      NQXML.const_set( "XMLDecl", NilClass )
+    end
   end
 
   def prologue
@@ -92,7 +95,8 @@ class SOAPNQXMLStreamingParser < SOAPParser
 	end
       when NQXML::Text
 	cdata( entity )
-      when NQXML::ProcessingInstruction
+      # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
+      when NQXML::XMLDecl, NQXML::ProcessingInstruction
 	encoding = entity.attrs[ 'encoding' ]
 	if encoding
 	  charsetStr = Charset.getCharsetStr( encoding )
