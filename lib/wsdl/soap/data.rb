@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
+require 'wsdl/soap/definitions'
 require 'wsdl/soap/binding'
 require 'wsdl/soap/operation'
 require 'wsdl/soap/body'
