@@ -23,7 +23,6 @@ require 'soap/mapping'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/streamHandler'
-require 'soap/headerHandler'
 
 
 module SOAP
@@ -49,7 +48,6 @@ public
     @wiredump_dev = nil
     @wiredump_file_base = nil
     @httpproxy = ENV['httpproxy'] || ENV['HTTP_PROXY']
-    @headerhandler = HeaderHandler.new
     @handler = HTTPPostStreamHandler.new(@endpoint_url, @httpproxy,
       XSD::Charset.encoding_label)
     @proxy = Proxy.new(@handler, @soapaction)
