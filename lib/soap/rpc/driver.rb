@@ -43,6 +43,7 @@ class Driver
 
   __attr_proxy :options
   __attr_proxy :headerhandler
+  __attr_proxy :test_loopback_response
   __attr_proxy :endpoint_url, true
   __attr_proxy :mapping_registry, true
   __attr_proxy :soapaction, true
@@ -180,6 +181,10 @@ private
 
     def default_encodingstyle=(encodingstyle)
       @proxy.default_encodingstyle = encodingstyle
+    end
+
+    def test_loopback_response
+      @streamhandler.test_loopback_response
     end
 
     def invoke(headers, body)

@@ -85,6 +85,10 @@ public
     @client.debug_dev = @wiredump_dev
   end
 
+  def test_loopback_response
+    @client.test_loopback_response
+  end
+
   def inspect
     "#<#{self.class}:#{endpoint_url}>"
   end
