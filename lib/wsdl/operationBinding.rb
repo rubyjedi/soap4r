@@ -28,7 +28,7 @@ class OperationBinding < Info
   attr_reader :input
   attr_reader :output
   attr_reader :fault
-  attr_reader :soap_operation
+  attr_reader :soapoperation
 
   def initialize
     super
@@ -36,7 +36,7 @@ class OperationBinding < Info
     @input = nil
     @output = nil
     @fault = nil
-    @soap_operation = nil
+    @soapoperation = nil
   end
 
   def targetnamespace
@@ -49,39 +49,6 @@ class OperationBinding < Info
 
   def find_operation
     porttype.operations[@name]
-  end
-
-  def input_op_sig
-    operation = find_operation
-    soapbody = input.soapbody
-    if soapbody.encodingstyle and
-	soapbody.encodingstyle != ::SOAP::EncodingNamespace
-      raise NotImplementedError.new(
-	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
-    end
-
-    op_name = operation.name.dup
-    op_name.namespace = soapbody.namespace if soapbody.namespace
-    msg_name = operation.inputname
-    param_names = operation.inputparts.collect { |part| part.name }
-    soapaction = soap_operation.soapaction
-    return op_name, msg_name, param_names, soapaction
-  end
-
-  def output_op_sig
-    operation = find_operation
-    soapbody = output.soapbody
-    if soapbody.encodingstyle and
-	soapbody.encodingstyle != ::SOAP::EncodingNamespace
-      raise NotImplementedError.new(
-	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
-    end
-
-    op_name = operation.name.dup
-    op_name.namespace = soapbody.namespace if soapbody.namespace
-    msg_name = operation.outputname
-    param_names = operation.outputparts.collect { |part| part.name }
-    return op_name, msg_name, param_names
   end
 
   def parse_element(element)
@@ -100,7 +67,7 @@ class OperationBinding < Info
       o
     when SOAPOperationName
       o = WSDL::SOAP::Operation.new
-      @soap_operation = o
+      @soapoperation = o
       o
     when DocumentationName
       o = Documentation.new

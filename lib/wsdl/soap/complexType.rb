@@ -21,7 +21,7 @@ require 'wsdl/xmlSchema/complexType'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class ComplexType < Info
@@ -81,5 +81,6 @@ private
   end
 end
 
-  end
+
+end
 end

@@ -22,7 +22,7 @@ require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 class MethodDefCreator
@@ -55,7 +55,7 @@ private
     name = create_method_name(operation.name.name)
     name_as = operation.name.name
     params = collect_parameter(operation)
-    soapaction = binding.soap_operation.soapaction
+    soapaction = binding.soapoperation.soapaction
     namespace = binding.input.soapbody.namespace
     paramstr = param2str(params)
     if paramstr.empty?
@@ -150,5 +150,5 @@ __EOD__
 end
 
 
-  end
+end
 end

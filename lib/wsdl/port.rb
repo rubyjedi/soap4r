@@ -25,7 +25,7 @@ module WSDL
 
 class Port < Info
   attr_reader :name		# required
-  attr_reader :binding	# required
+  attr_reader :binding		# required
   attr_reader :soap_address
 
   def initialize
@@ -50,8 +50,8 @@ class Port < Info
   def inputoperation_map
     result = {}
     find_binding.operations.each do |op_bind|
-      op_name, msg_name, parts, soapaction = op_bind.input_op_sig
-      result[op_name] = [msg_name, parts, soapaction]
+      op_info = op_bind.soapoperation.input_info
+      result[op_info.op_name] = op_info
     end
     result
   end
@@ -59,8 +59,8 @@ class Port < Info
   def outputoperation_map
     result = {}
     find_binding.operations.each do |op_bind|
-      op_name, msg_name, parts = op_bind.output_op_sig
-      result[op_name] = [msg_name, parts]
+      op_info = op_bind.soapoperation.output_info
+      result[op_info.op_name] = op_info
     end
     result
   end

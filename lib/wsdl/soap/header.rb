@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 class Header < Info
@@ -73,5 +73,5 @@ class Header < Info
 end
 
 
-  end
+end
 end
