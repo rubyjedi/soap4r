@@ -164,7 +164,7 @@ class LiteralHandler < Handler
       decode_parent(parent, node)
 
     when SOAPStruct
-      parent.node.add(node.name, node)
+      parent.node.add(node.elename, node)
 
     when SOAPArray
       if node.position
