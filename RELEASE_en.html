@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 14, 2001<br />
+Last modified: July 27, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.5
+Target SOAP4R version: SOAP4R/1.3.6
 </p>
 
 <ol>
@@ -50,39 +50,17 @@ Target SOAP4R version: SOAP4R/1.3.5
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<p>
-Many feedbacks from Michael Neumann.
-I much appreciate valuable comments to him.
-Thanks!
-</p>
+<p>Many feedbacks from Michael Neumann.  Thanks!</p>
 
 <ul>
-<li>Changed using URI library: uri -&gt; URb.</li>
-<li>Types changed:
-  <ul>
-    <li>All: Triming data except XSDString before parsing it.</li>
-    <li>String: Regexp for XML Char check did not work under $KCODE = 'UTF8' condition.  Fixed.</li>
-    <li>Nil: 2001xsd:nil must not accept a value '1'.  1999xsd:null must not accept a value 'true' because these are not a boolean but only a flag for nil.  Fixed.</li>
-  </ul>
-</li>
-
-<li>Supported XML parser:
-  <ul>
-    <li>Added automatic CES conversion support for NQXMLParser.
-        (Depends on uconv module).
-        Set $KCODE for regexps used in NQXML parser.</li>
-    <li>Moved SOAPNQXML*Parser to nqxmlparser.rb.</li>
-  </ul>
-</li>
-
-<li>RPC related functions changed:</li>
-  <ul>
-    <li>Added marshalling/unmarshalling Ruby's object using SOAP Encoding.</li>
-    <li>Parallelize of signatures of 'addMethod': proxy.rb &lt;-&gt; rpcRouter.rb, driver.rb &lt;-&gt; cgistub.rb.</li>
-    <li>Void return if 'retval' is not defined.</li>
-    <li>Added SOAP's Long type to default mapping table.</li>
-  </ul>
-</li>
+<li>hexBinary type: Added.</li>
+<li>nil type: Should not be xsd:nil but xsi:nil.</li>
+<li>Added StandaloneServer implementation.  Thanks to Michael Neumann!</li>
+<li>Illegal parsing of XMLDecl.  Fixed.</li>
+<li>RPC's 'inout' param was not supported.  Fixed.  Thanks to Michael Neumann!</li>
+<li>URb::Generic#path returns '' when abs_path is empty (such as http://foo).
+Added checking code.</li>
+<li>Use http-access2 instead of original HTTP implementation.  http-access2 supports HTTP/1.1's persistent connection.</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -113,6 +91,19 @@ Followings are redistributed files in redist/.
 
 <dt class="path">URb</dt>
 <dd>by akira yamada-san: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=URb">[RAA:URb]</a></dd>
+
+<dt class="path">GServer</dt>
+<dd>by John W. Small</dd>
+
+<dt class="path">httpserver.rb</dt>
+<dd>by Michael Neumann: httpserver.rb in <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XML-RPC">[RAA:XML-RPC]</a></dd>
+
+<dt class="path">application.rb</dt>
+<dd>by NaHi: <a href="http://www.jin.gr.jp/~nahi/Ruby/Application/application.rb">http://www.jin.gr.jp/~nahi/Ruby/Application/application.rb</a></dd>
+
+<dt class="path">http-access2</dt>
+<dd>by NaHi: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a></dd>
+
 </dl>
 
 <p>
@@ -241,7 +232,7 @@ Only xsi:type in SOAP Encoding is checked</li>
 </ul></li>
 <li style="margin-top: 2ex;">Othres
 <ul>
-<li>Transport binding except HTTP server(CGI) and client</li>
+<li>Transport binding except HTTP server and client</li>
 <li>HTTP Extension Framework (M-POST)</li>
 </ul></li>
 </ul>
@@ -249,6 +240,20 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.6 - July 27, 2001</dt>
+<dd>Many feedbacks from Michael Neumann.  Thanks!
+
+<ul>
+<li>hexBinary type: Added.</li>
+<li>nil type: Should not be xsd:nil but xsi:nil.</li>
+<li>Added StandaloneServer implementation.  Thanks to Michael Neumann!</li>
+<li>Illegal parsing of XMLDecl.  Fixed.</li>
+<li>RPC's 'inout' param was not supported.  Fixed.  Thanks to Michael Neumann!</li>
+<li>URb::Generic#path returns '' when abs_path is empty (such as http://foo).
+Added checking code.</li>
+<li>Use http-access2 instead of original HTTP implementation.  http-access2 supports HTTP/1.1's persistent connection.</li>
+</ul>
+
 <dt>1.3.5 - July 14, 2001</dt>
 <dd>Many feedbacks from Michael Neumann.
 I much appreciate valuable comments to him.
