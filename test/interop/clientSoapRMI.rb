@@ -3,6 +3,7 @@
 $serverName = 'SoapRMI'
 
 require 'clientBase'
+require 'soap/XMLSchemaDatatypes1999'
 
 $server = 'http://rainier.extreme.indiana.edu:1568'
 $soapAction = 'urn:soapinterop'
