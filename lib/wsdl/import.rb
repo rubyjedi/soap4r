@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'wsdl/importer'
 
 
 module WSDL
@@ -68,26 +69,7 @@ class Import < Info
 private
 
   def import(location)
-    content = nil
-    if FileTest.exist?(location)
-      content = File.open(location).read
-    else
-      proxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
-      content = web_client.new(@proxy, "WSDL4R").get_content(location)
-    end
-    WSDL::WSDLParser.create_parser.parse(content)
-  end
-
-  def web_client
-    @web_client ||= begin
-	require 'http-access2'
-	HTTPAccess2::Client
-      rescue LoadError
-	STDERR.puts "Loading http-access2 failed.  Net/http is used." if $DEBUG
-	require 'soap/netHttpClient'
-	SOAP::NetHttpClient
-      end
-    @web_client
+    Importer.import(location)
   end
 end
 
