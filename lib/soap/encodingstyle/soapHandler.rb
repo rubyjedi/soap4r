@@ -537,6 +537,7 @@ private
         id = value
         next
       end
+      qname = ns.parse_local(key)
       extraattr[qname] = decode_attr_value(ns, qname, value)
     end
 
