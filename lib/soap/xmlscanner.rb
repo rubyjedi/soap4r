@@ -1,6 +1,6 @@
 =begin
 SOAP4R - SOAP XMLScan parser library.
-Copyright (C) 2002 NAKAMURA Hiroshi.
+Copyright (C) 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -28,15 +28,18 @@ class SOAPXMLScanner < SOAPParser
     super( *vars )
   end
 
-  def self.adjustKCode
-    true
-  end
-
   def prologue
   end
 
   def doParse( stringOrReadable )
-    XMLScan::XMLScanner.new( Visitor.new( self )).parse( stringOrReadable )
+    @scanner = XMLScan::XMLScanner.new( Visitor.new( self ))
+    @scanner.kcode = Charset.getCharsetStr( charset )
+    @scanner.parse( stringOrReadable )
+  end
+
+  def setScannerKCode( charset )
+    @scanner.kcode = Charset.getCharsetStr( charset )
+    setXMLDeclEncoding( charset )
   end
 
   def epilogue
@@ -55,7 +58,6 @@ class SOAPXMLScanner < SOAPParser
       @dest = dest
       @attrs = {}
       @currentAttr = nil
-      @charsetStrBackup = nil
     end
 
     def parse_error( msg )
@@ -82,9 +84,7 @@ class SOAPXMLScanner < SOAPParser
     end
 
     def on_xmldecl_encoding( str )
-      charsetStr = Charset.getCharsetStr( str )
-      $KCODE = charsetStr
-      Charset.setXMLInstanceEncoding( charsetStr )
+      @dest.setScannerKCode( str )
     end
 
     def on_xmldecl_standalone( str )
@@ -136,12 +136,9 @@ class SOAPXMLScanner < SOAPParser
     end
 
     def on_start_document
-      @charsetStrBackup = $KCODE.to_s.dup
     end
 
     def on_end_document
-      $KCODE = @charsetStrBackup
-      Charset.setXMLInstanceEncoding( $KCODE )
     end
 
     def on_stag( name )
