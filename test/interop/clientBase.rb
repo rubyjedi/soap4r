@@ -1,4 +1,5 @@
 require 'soap/driver'
+require 'soap/xmlparser'
 require 'soap/rpcUtils'
 include SOAP::RPCUtils
 require 'base'
@@ -247,10 +248,21 @@ def doTest( drv )
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoBase64' )
+  dumpTitle( dumpDev, 'echoBase64(SOAP-ENC:base64)' )
   begin
     str = "Hello (日本語Japanese) こんにちは"
     arg = SOAP::SOAPBase64.new( str )
+    var = drv.echoBase64( arg )
+    dumpResult( dumpDev, str, var )
+  rescue
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoBase64(xsd:base64Binary)' )
+  begin
+    str = "Hello (日本語Japanese) こんにちは"
+    arg = SOAP::SOAPBase64.new( str )
+    arg.asXSD	# Force xsd:base64Binary instead of soap-enc:base64
     var = drv.echoBase64( arg )
     dumpResult( dumpDev, str, var )
   rescue
