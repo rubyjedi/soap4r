@@ -108,6 +108,7 @@ module SOAPCompoundtype
   attr_accessor :name
   attr_accessor :id
   attr_accessor :parent
+
   attr_reader :extraAttributes
 
 public
@@ -265,8 +266,19 @@ public
   # Override the definition in SOAPBasetype.
   def initialize( *vars )
     super( *vars )
-    @typeNamespace = EnvelopeNamespace
-    @typeName = 'base64'
+    @typeNamespace = EncodingNamespace
+    @typeName = Base64Literal
+  end
+
+  def createNS( attrs, ns )
+    unless ns.assigned?( XSD::Namespace )
+      tag = ns.assign( XSD::Namespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, XSD::Namespace ))
+    end
+    if @typeNamespace and !ns.assigned?( @typeNamespace )
+      tag = ns.assign( @typeNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
+    end
   end
 end
 
