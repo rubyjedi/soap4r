@@ -150,4 +150,4 @@ class InteropApp < SOAP::CGIStub
   end
 end
 
-InteropApp.new( "InteropApp", InterfaceNS ).start
+InteropApp.new( 'InteropApp', InterfaceNS ).start

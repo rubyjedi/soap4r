@@ -2,9 +2,8 @@
 
 $KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
 
-require "soap/standaloneServer"
+require 'soap/standaloneServer'
 require 'base'
-
 
 class InteropApp < SOAP::StandaloneServer
 
@@ -18,7 +17,7 @@ class InteropApp < SOAP::StandaloneServer
       addMethod( self, methodName, params )
     end
   end
-  
+
   # In echoVoid, 'retval' is not defined.  So nothing will be returned.
   def echoVoid
     # return SOAP::RPCUtils::SOAPVoid.new
@@ -114,7 +113,7 @@ class InteropApp < SOAP::StandaloneServer
 
   def echoDouble( inputDouble )
     # inputDouble.is_a? Float
-    inputDouble.dup
+    inputDouble.clone
   end
 
   def echoDecimal( inputDecimal )
@@ -123,20 +122,24 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echoMap( inputMap )
-    inputMap.dup
+    inputMap.clone
+  end
+
+  def echoMapArray( inputMapArray )
+    inputMapArray.clone
   end
 
   def echoXSDDateTime( inputXSDDateTime )
-    inputXSDDateTime.dup
+    inputXSDDateTime.clone
   end
 
   def echoXSDDate( inputXSDDate )
-    SOAP::SOAPDate.new( inputXSDDate.dup )
+    SOAP::SOAPDate.new( inputXSDDate.clone )
   end
 
   def echoXSDTime( inputXSDTime )
-    SOAP::SOAPTime.new( inputXSDTime.dup )
+    SOAP::SOAPTime.new( inputXSDTime.clone )
   end
 end
 
-InteropApp.new( "Test-Server", InterfaceNS, "0.0.0.0", 10080 ).start
+InteropApp.new( 'InteropApp', InterfaceNS, '0.0.0.0', 10080 ).start
