@@ -18,7 +18,6 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/soap'
 require 'soap/XMLSchemaDatatypes'
-require 'soap/nqxmlDocument'
 
 
 module SOAP
