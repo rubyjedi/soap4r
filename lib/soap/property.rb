@@ -30,6 +30,8 @@ class Property
     value
   end
 
+  # name: a Symbol, String or an Array
+  # hook: block which will be called with 2 args, name and value
   def add_hook(name, &hook)
     assign_hook(name_to_a(name), &hook)
   end
@@ -37,30 +39,33 @@ class Property
 protected
 
   def referent(ary)
-    key = to_key(ary[0])
-    if ary.size == 1
+    name, *rest = *ary
+    key = to_key(name)
+    if ary.empty?
       @store[key]
     else
-      deref_key(key).referent(ary[1..-1])
+      deref_key(key).referent(rest)
     end
   end
 
   def assign(ary, value)
-    key = to_key(ary[0])
-    if ary.size == 1
+    name, *rest = *ary
+    key = to_key(name)
+    if rest.empty?
       @store[key] = value
       local_hook(key)
     else
-      local_hook(key) + deref_key(key).assign(ary[1..-1], value)
+      local_hook(key) + deref_key(key).assign(rest, value)
     end
   end
 
   def assign_hook(ary, &hook)
-    key = to_key(ary[0])
-    if ary.size == 1
+    name, *rest = *ary
+    key = to_key(name)
+    if ary.empty?
       (@hook[key] ||= []) << hook
     else
-      deref_key(key).assign_hook(ary[1..-1], &hook)
+      deref_key(key).assign_hook(rest, &hook)
     end
   end
 
