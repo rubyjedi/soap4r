@@ -19,7 +19,55 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/baseData'
 
 
-module SOAPSerializable
+module SOAP
+
+
+class SOAPBody < SOAPStruct
+  public
+
+  def request
+    getResponse
+  end
+
+  def response
+    if !@isFault
+      if void?
+	nil
+      else
+	# Initial element is [retVal].
+	getResponse[ 0 ]
+      end
+    else
+      getResponse
+    end
+  end
+
+  def void?
+    getResponse.nil? # || getResponse.is_a?( SOAPNil )
+  end
+
+  def fault
+    if @isFault
+      @data[ 'fault' ]
+    else
+      nil
+    end
+  end
+
+  def setFault( faultData )
+    @isFault = true
+    addMember( 'fault', faultData )
+  end
+
+private
+
+  def getResponse
+    @data[ 0 ]
+  end
+end
+
+
+module Marshallable
   @@typeName = nil
   @@typeNamespace = nil
 
@@ -36,8 +84,10 @@ module SOAPSerializable
 end
 
 
-module SOAPRPCUtils
-  class SOAPMethod < SOAPCompoundBase
+module RPCUtils
+  class SOAPMethod < NSDBase
+    include SOAPCompoundtype
+
     attr_reader :namespace
     attr_reader :name
 
@@ -45,11 +95,12 @@ module SOAPRPCUtils
     attr_accessor :paramNames
     attr_reader :paramTypes
     attr_reader :params
+    attr_reader :soapAction
 
     attr_accessor :retName
     attr_accessor :retVal
   
-    def initialize( namespace, name, paramDef = nil )
+    def initialize( namespace, name, paramDef = nil, soapAction = nil )
       super( self.type.to_s )
   
       @namespace = namespace
@@ -59,6 +110,8 @@ module SOAPRPCUtils
       @paramNames = []
       @paramTypes = {}
       @params = {}
+
+      @soapAction = soapAction
   
       @retName = nil
       @retVal = nil
@@ -80,10 +133,12 @@ module SOAPRPCUtils
         paramElem = @paramNames.collect { | param |
           @params[ param ].encode( ns.clone, param )
         }
-        Element.new( ns.name( @namespace, @name ), attrs, paramElem )
+        # Element.new( ns.name( @namespace, @name ), attrs, paramElem )
+	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, paramElem )
       else
         retElem = retVal.encode( ns.clone, 'return' )
-        Element.new( ns.name( @namespace, responseTypeName() ), attrs, retElem )
+        # Element.new( ns.name( @namespace, responseTypeName() ), attrs, retElem )
+        Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, retElem )
       end
     end
   
@@ -94,7 +149,7 @@ module SOAPRPCUtils
     end
 
     def createNS( attrs, ns )
-      unless ns[ @namespace ]
+      unless ns.assigned?( @namespace )
 	tag = ns.assign( @namespace )
 	attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
       end
@@ -139,10 +194,10 @@ module SOAPRPCUtils
 
   def obj2soap( obj )
     case obj
-    when SOAPBasetypeUtils
+    when SOAPBasetype
       obj
     when NilClass
-      SOAPNull.new
+      SOAPNil.new
     when TrueClass, FalseClass
       SOAPBoolean.new( obj )
     when String
@@ -151,6 +206,8 @@ module SOAPRPCUtils
       SOAPDateTime.new( obj )
     when Fixnum
       SOAPInt.new( obj )
+    when Float
+      SOAPFloat.new( obj )
     when Integer
       SOAPInteger.new( obj )
     when Array
@@ -197,7 +254,7 @@ module SOAPRPCUtils
       typeName = getTypeName( obj ) || obj.type.to_s
       param = SOAPStruct.new( typeName  )
       param.typeNamespace = getNamespace( obj ) || RubyCustomTypeNamespace
-      if obj.type.ancestors.member?( SOAPSerializable )
+      if obj.type.ancestors.member?( Marshallable )
 	obj.instance_variables do |var, data|
 	  name = var.dup.sub!( /^@/, '' )
 	  param.add( name, obj2soap( data ))
@@ -214,14 +271,17 @@ module SOAPRPCUtils
 
   def soap2obj( node )
     case node
-    when SOAPNull
+    when SOAPReference
+      # ToDo: multi-reference decoding...
+      soap2obj( node.__getobj__ )
+    when SOAPNil
       nil
-    when SOAPBoolean, SOAPString, SOAPInteger, SOAPInt, SOAPDateTime
-      node.data
     when SOAPBase64
       node.to_s
     when SOAPArray
-      node.collect { |elem| soap2obj( elem ) }
+      node.collect { |elem|
+	soap2obj( elem )
+      }
     when SOAPStruct
       if node.typeNamespace == RubyTypeNamespace and node.typeName == "Hash"
 	obj = Hash.new
@@ -240,6 +300,8 @@ module SOAPRPCUtils
       else
 	struct2obj( node )
       end
+    when XSDBase
+      node.data
     else
       node
     end
@@ -267,11 +329,12 @@ private
 
   def struct2obj( node )
     obj = nil
+    typeName = node.typeName || node.instance_eval( "@name" )
     begin
-      klass = Object.const_get( capitalize( node.typeName ))
+      klass = Object.const_get( toTypeName( typeName ))
       if getNamespace( klass ) != node.typeNamespace
 	raise NameError.new()
-      elsif getTypeName( klass ) and ( getTypeName( klass ) != node.typeName )
+      elsif getTypeName( klass ) and ( getTypeName( klass ) != typeName )
 	raise NameError.new()
       end
 
@@ -286,12 +349,17 @@ private
 
     rescue NameError
       klass = nil
-      if ( Struct.constants - Struct.superclass.constants ).member?( node.typeName )
-	klass = Struct.const_get( node.typeName )
+      structName = toTypeName( typeName )
+      if ( Struct.constants - Struct.superclass.constants ).member?( structName )
+	klass = Struct.const_get( structName )
+	if klass.members.length != node.members.length
+	  klass = Struct.new( structName, *node.members )
+	end
       else
-        klass = Struct.new( structName(node.typeName), *node.members )
+        klass = Struct.new( structName, *node.members )
       end
-      obj = klass.new( *( node.collect { |name, value| soap2obj( value ) } ))
+      arg = node.collect { |name, value| soap2obj( value ) }
+      obj = klass.new( *arg )
     end
 
     obj
@@ -350,11 +418,14 @@ EOS
     obj
   end
 
-  def structName( name )
+  def toTypeName( name )
     capitalize( name )
   end
 
   def capitalize( target )
     target.gsub('^([a-z])') { $1.tr!('[a-z]', '[A-Z]') }
   end
+end
+
+
 end
