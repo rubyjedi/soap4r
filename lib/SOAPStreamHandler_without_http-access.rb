@@ -90,8 +90,6 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
     end
     action = methodNamespace.dup << '#' << methodName
 
-    puts soapString if $DEBUG
-
     header = {}
     begin
       timeout( CallTimeout ) do
@@ -167,7 +165,6 @@ EOS
       raise HTTPStreamError.new( 'Read timeout' )
     end
 
-    puts receiveString if $DEBUG
     receiveString
   end
 
