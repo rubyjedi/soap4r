@@ -72,7 +72,8 @@ private
 
   def elements_from_message(message)
     message.parts.collect { |part|
-      XMLSchema::Element.new(part.name, part.type)
+      qname = XSD::QName.new(nil, part.name)
+      XMLSchema::Element.new(qname, part.type)
     }
   end
 
@@ -101,15 +102,11 @@ private
 =end
   def fault_complextype
     type = XMLSchema::ComplexType.new(::SOAP::EleFaultName)
-    faultcode = XMLSchema::Element.new(::SOAP::EleFaultCodeName.name,
-      XSD::XSDQName::Type)
-    faultstring = XMLSchema::Element.new(::SOAP::EleFaultStringName.name,
-      XSD::XSDString::Type)
-    faultactor = XMLSchema::Element.new(::SOAP::EleFaultActorName.name,
-      XSD::XSDAnyURI::Type)
+    faultcode = XMLSchema::Element.new(::SOAP::EleFaultCodeName, XSD::XSDQName::Type)
+    faultstring = XMLSchema::Element.new(::SOAP::EleFaultStringName, XSD::XSDString::Type)
+    faultactor = XMLSchema::Element.new(::SOAP::EleFaultActorName, XSD::XSDAnyURI::Type)
     faultactor.minoccurs = 0
-    detail = XMLSchema::Element.new(::SOAP::EleFaultDetailName.name,
-      XSD::AnyTypeName)
+    detail = XMLSchema::Element.new(::SOAP::EleFaultDetailName, XSD::AnyTypeName)
     detail.minoccurs = 0
     type.all_elements = [faultcode, faultstring, faultactor, detail]
     type.final = 'extension'
@@ -119,10 +116,10 @@ private
   def exception_complextype
     type = XMLSchema::ComplexType.new(XSD::QName.new(
 	::SOAP::Mapping::RubyCustomTypeNamespace, 'SOAPException'))
-    excn_name = XMLSchema::Element.new('exceptionTypeName', XSD::XSDString::Type)
-    cause = XMLSchema::Element.new('cause', XSD::AnyTypeName)
-    backtrace = XMLSchema::Element.new('backtrace', ::SOAP::ValueArrayName)
-    message = XMLSchema::Element.new('message', XSD::XSDString::Type)
+    excn_name = XMLSchema::Element.new(XSD::QName.new(nil, 'exceptionTypeName'), XSD::XSDString::Type)
+    cause = XMLSchema::Element.new(XSD::QName.new(nil, 'cause'), XSD::AnyTypeName)
+    backtrace = XMLSchema::Element.new(XSD::QName.new(nil, 'backtrace'), ::SOAP::ValueArrayName)
+    message = XMLSchema::Element.new(XSD::QName.new(nil, 'message'), XSD::XSDString::Type)
     type.all_elements = [excn_name, cause, backtrace, message]
     type
   end
