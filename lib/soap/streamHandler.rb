@@ -121,6 +121,7 @@ Host: #{ server.host }
 Connection: close
 Content-Length: #{ soapString.size }
 Content-Type: #{ MediaType }
+User-Agent: SOAP4R/#{ Version }
 SOAPAction: #{ action }
 
 EOS
@@ -150,7 +151,7 @@ EOS
         begin
           line = s.gets.chop
           dumpDev << line << "\n" if dumpDev
-          Regexp.new( '^HTTP/(1.\d)\s+(\d+)\s+(.*)$' ) =~ line
+          Regexp.new( '^HTTP/(1.\d)\s+(\d+)(?:\s+(.*))?$' ) =~ line
           version = $1
           status = $2
           reason = $3
