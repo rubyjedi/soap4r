@@ -45,6 +45,7 @@ begin
   install_dir('wsdl', 'xmlSchema')
   install_dir('wsdl', 'soap')
   install_dir('xsd')
+  install_dir('xsd', 'codegen')
   install_dir('xsd', 'xmlparser')
 
   puts "install succeed!"
