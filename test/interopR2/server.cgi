@@ -1,26 +1,34 @@
 #!/home/nahi/bin/ruby
 
+$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
+#$KCODE = "EUC"
+#$KCODE = "SJIS"
+
 require 'soap/cgistub'
 require 'base'
+#require 'soap/rexmlparser'
+#require 'soap/xmlscanner'
+#require 'soap/xmlparser'
+#require 'soap/nqxmlparser'
 
 LogFile = 'SOAPBuildersInterop.log'
 
 class InteropApp < SOAP::CGIStub
-
   def initialize( *arg )
     super( *arg )
-    setLog( LogFile )
     @router.mappingRegistry = SOAPBuildersInterop::MappingRegistry
+    setLog( LogFile )
+    setSevThreshold( Devel::Logger::ERROR )
+  end
+
+  def prologue
+    @log.sevThreshold = SEV_DEBUG
   end
 
   def methodDef
     ( SOAPBuildersInterop::MethodsBase + SOAPBuildersInterop::MethodsGroupB + SOAPBuildersInterop::MethodsPolyMorph ).each do | methodName, *params |
       addMethod( self, methodName, params )
     end
-  end
-
-  def prologue
-    @log.sevThreshold = SEV_DEBUG
   end
 
   def clone( obj )
@@ -30,11 +38,38 @@ class InteropApp < SOAP::CGIStub
       return obj
     end
   end
+
+  def cloneStruct( struct )
+    result = clone( struct )
+    result.varFloat = SOAPFloat.new( struct.varFloat ) if struct.varFloat
+    result
+  end
+  
+  def cloneStructArray( structArray )
+    result = clone( structArray )
+    result.map { | ele |
+      ele.varFloat = SOAPFloat.new( ele.varFloat ) if ele.varFloat
+    }
+    result
+  end
+  
+  def cloneStructStruct( structStruct )
+    result = clone( structStruct )
+    result.varFloat = SOAPFloat.new( structStruct.varFloat ) if structStruct.varFloat
+    if struct = result.varStruct
+      struct.varFloat = SOAPFloat.new( struct.varFloat ) if struct.varFloat
+    end
+    result
+  end
   
   # In echoVoid, 'retval' is not defined.  So nothing will be returned.
   def echoVoid
     # return SOAP::RPCUtils::SOAPVoid.new
     return "Hello"
+  end
+
+  def echoBoolean( inputBoolean )
+    inputBoolean
   end
 
   def echoString( inputString )
@@ -57,6 +92,11 @@ class InteropApp < SOAP::CGIStub
     SOAPFloat.new( inputFloat )
   end
 
+  def echoDecimal( inputDecimal )
+    # inputDecimal.is_a? String
+    SOAP::SOAPDecimal.new( clone( inputDecimal ))
+  end
+
   def echoFloatArray( inputFloatArray )
     outArray = SOAPBuildersInterop::FloatArray.new
     inputFloatArray.each do | f |
@@ -66,11 +106,11 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoStruct( inputStruct )
-    clone( inputStruct )
+    cloneStruct( inputStruct )
   end
 
   def echoStructArray( inputStructArray )
-    clone( inputStructArray )
+    cloneStructArray( inputStructArray )
   end
 
   def echoDate( inputDate )
@@ -95,7 +135,7 @@ class InteropApp < SOAP::CGIStub
   def echoStructAsSimpleTypes( inputStruct )
     outputString = inputStruct.varString
     outputInteger = inputStruct.varInt
-    outputFloat = inputStruct.varFloat
+    outputFloat = inputStruct.varFloat ? SOAPFloat.new( inputStruct.varFloat ) : nil
     # retVal is not returned to SOAP client because retVal of this method is
     #   not defined in method definition.
     # retVal, out, out, out
@@ -108,7 +148,7 @@ class InteropApp < SOAP::CGIStub
 
   def echo2DStringArray( ary )
     # In Ruby, M-D Array is converted to Array of Array now.
-    mdary = SOAP::RPCUtils.ary2md( ary, 2 )
+    mdary = SOAP::RPCUtils.ary2md( ary, 2, XSD::Namespace, XSD::StringLiteral )
     if mdary.include?( nil )
       mdary.sparse = true
     end
@@ -116,25 +156,11 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoNestedStruct( inputStruct )
-    clone( inputStruct )
+    cloneStructStruct( inputStruct )
   end
 
   def echoNestedArray( inputStruct )
-    clone( inputStruct )
-  end
-
-  def echoBoolean( inputBoolean )
-    inputBoolean
-  end
-
-  def echoDouble( inputDouble )
-    # inputDouble.is_a? Float
-    clone( inputDouble )
-  end
-
-  def echoDecimal( inputDecimal )
-    # inputDecimal.is_a? String
-    SOAP::SOAPDecimal.new( inputDecimal.to_s )
+    cloneStruct( inputStruct )
   end
 
   def echoMap( inputMap )
@@ -145,12 +171,98 @@ class InteropApp < SOAP::CGIStub
     clone( inputMapArray )
   end
 
+  def echoPolyMorph( anObject )
+    clone( anObject )
+  end
+
+  alias echoPolyMorphStruct echoPolyMorph
+  alias echoPolyMorphArray echoPolyMorph
+
+
+  def echoXSDBoolean( inputBoolean )
+    inputBoolean
+  end
+
+  def echoXSDString( inputString )
+    clone( inputString )
+  end
+
+  def echoXSDDecimal( inputDecimal )
+    SOAP::SOAPDecimal.new( clone( inputDecimal ))
+  end
+
+  def echoXSDFloat( inputFloat )
+    SOAPFloat.new( inputFloat )
+  end
+
+  def echoXSDDouble( inputDouble )
+    SOAP::SOAPDouble.new( clone( inputDouble ))
+  end
+
+  def echoXSDDuration( inputDuration )
+    SOAP::SOAPDuration.new( clone( inputDuration ))
+  end
+
   def echoXSDDateTime( inputXSDDateTime )
     clone( inputXSDDateTime )
   end
 
+  def echoXSDTime( inputXSDTime )
+    SOAP::SOAPTime.new( clone( inputXSDTime ))
+  end
+
   def echoXSDDate( inputXSDDate )
     SOAP::SOAPDate.new( clone( inputXSDDate ))
+  end
+
+  def echoXSDgYearMonth( inputGYearMonth )
+    SOAP::SOAPgYearMonth.new( clone( inputGYearMonth ))
+  end
+
+  def echoXSDgYear( inputGYear )
+    SOAP::SOAPgYear.new( clone( inputGYear ))
+  end
+
+  def echoXSDgMonthDay( inputGMonthDay )
+    SOAP::SOAPgMonthDay.new( clone( inputGMonthDay ))
+  end
+
+  def echoXSDgDay( inputGDay )
+    SOAP::SOAPgDay.new( clone( inputGDay ))
+  end
+
+  def echoXSDgMonth( inputGMonth )
+    SOAP::SOAPgMonth.new( clone( inputGMonth ))
+  end
+
+  def echoXSDHexBinary( inputHexBinary )
+    SOAP::SOAPHexBinary.new( clone( inputHexBinary ))
+  end
+
+  def echoXSDBase64( inputBase64 )
+    o = SOAP::SOAPBase64.new( clone( inputBase64 ))
+    o.asXSD
+    o
+  end
+
+  def echoXSDanyURI( inputAnyURI )
+    clone( inputAnyURI )
+  end
+
+  def echoXSDQName( inputQName )
+    SOAP::SOAPQName.new( clone( inputQName ))
+  end
+
+  def echoXSDInteger( inputXSDInteger )
+    clone( inputXSDInteger )
+  end
+
+  def echoXSDLong( inputLong )
+    SOAP::SOAPLong.new( clone( inputLong ))
+  end
+
+  def echoXSDInt( inputInt )
+    SOAP::SOAPInt.new( clone( inputInteger ))
   end
 
   def echoXSDTime( inputXSDTime )
