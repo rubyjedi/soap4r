@@ -41,6 +41,15 @@ begin
   Dir[ 'lib/soap/*.rb' ].each do | name |
     uninstall( name, join( DSTPATH, 'soap' ))
   end
+  Dir[ 'lib/wsdl/*.rb' ].each do | name |
+    uninstall( name, join( DSTPATH, 'wsdl' ))
+  end
+  Dir[ 'lib/wsdl/soap/*.rb' ].each do | name |
+    uninstall( name, join( DSTPATH, 'wsdl', 'soap' ))
+  end
+  Dir[ 'lib/wsdl/xmlSchema/*.rb' ].each do | name |
+    uninstall( name, join( DSTPATH, 'wsdl', 'xmlSchema' ))
+  end
   Dir[ 'redist/soap/*.rb' ].each do | name |
     uninstall( name, join( DSTPATH, 'soap' ))
   end
@@ -49,6 +58,9 @@ begin
   end
 
   delPath( join( DSTPATH, 'soap' ))
+  delPath( join( DSTPATH, 'wsdl', 'xmlSchema' ))
+  delPath( join( DSTPATH, 'wsdl', 'soap' ))
+  delPath( join( DSTPATH, 'wsdl' ))
 
   $installed.dump
 

@@ -23,27 +23,23 @@ def install( from, to )
   end
 end
 
-begin
-  unless FileTest.directory?( join( 'lib', 'soap' ))
-    raise RuntimeError.new( "'lib/soap' not found." )
+def installDir( from, to )
+  unless FileTest.directory?( from )
+    raise RuntimeError.new( "'#{ from }' not found." )
   end
-  unless FileTest.directory?( "redist" )
-    raise RuntimeError.new( "'redist' not found." )
+  File.mkpath( to, true )
+  Dir[ join( from, '*.rb' ) ].each do | name |
+    install( name, to )
   end
-  unless FileTest.directory?( join( 'redist', 'soap' ))
-    raise RuntimeError.new( "'redist/soap' not found." )
-  end
+end
 
-  File.mkpath( join( DSTPATH, 'soap' ), true )
-  Dir[ 'lib/soap/*.rb' ].each do | name |
-    install( name, join( DSTPATH, 'soap' ))
-  end
-  Dir[ 'redist/soap/*.rb' ].each do | name |
-    install( name, join( DSTPATH, 'soap' ))
-  end
-  Dir[ 'redist/*.rb' ].each do | name |
-    install( name, DSTPATH )
-  end
+begin
+  installDir( join( 'lib', 'soap' ), join( DSTPATH, 'soap' ))
+  installDir( join( 'lib', 'wsdl' ), join( DSTPATH, 'wsdl' ))
+  installDir( join( 'lib', 'wsdl', 'xmlSchema' ), join( DSTPATH, 'wsdl', 'xmlSchema' ))
+  installDir( join( 'lib', 'wsdl', 'soap' ), join( DSTPATH, 'wsdl', 'soap' ))
+  installDir( "redist", DSTPATH )
+  installDir( join( 'redist', 'soap' ), join( DSTPATH, 'soap' ))
 
   $installed.dump
 
