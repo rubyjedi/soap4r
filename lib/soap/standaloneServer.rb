@@ -82,13 +82,13 @@ private
     kcodeAdjusted = false
     charsetStrBackup = nil
     if requestCharset
-      requestString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
+      #requestString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
+      charsetStr = Charset.getCharsetStr( requestCharset )
+      Charset.setXMLInstanceEncoding( charsetStr )
 
       if parser.adjustKCode
-	charsetStr = Charset.getCharsetStr( requestCharset )
      	charsetStrBackup = $KCODE.to_s.dup
   	$KCODE = charsetStr
-	Charset.setXMLInstanceEncoding( charsetStr )
      	kcodeAdjusted = true
       end
     end
@@ -100,7 +100,6 @@ private
     ensure
       if kcodeAdjusted
 	$KCODE = charsetStrBackup
-     	Charset.setXMLInstanceEncoding( $KCODE )
       end
     end
     

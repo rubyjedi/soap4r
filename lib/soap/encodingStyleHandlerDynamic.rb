@@ -111,6 +111,9 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     when SOAPReference
       attrs[ 'href' ] = '#' << data.refId
       SOAPGenerator.encodeTag( buf, name, attrs, false )
+    when SOAPString
+      SOAPGenerator.encodeTag( buf, name, attrs, false )
+      buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))
     when SOAPBasetype
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( data.to_s )

@@ -24,12 +24,17 @@ module SOAP
 
 
 class SOAPXMLParser < SOAPParser
+  class Listener < XML::Parser
+    # Dummy handler to get XML::Parser::XML_DECL event.
+    def xmlDecl; end
+  end
+
   def initialize( *vars )
     super( *vars )
   end
 
   def doParse( stringOrReadable )
-    @parser = XML::Parser.new
+    @parser = Listener.new
     @parser.parse( stringOrReadable ) do | type, name, data |
       case type
       when XML::Parser::START_ELEM
@@ -38,13 +43,18 @@ class SOAPXMLParser < SOAPParser
 	endElement( name )
       when XML::Parser::CDATA
 	characters( data )
+      when XML::Parser::XML_DECL
+	encoding = Charset.getCharsetStr( data[ 1 ] )
+	if encoding != Charset.getXMLInstanceEncoding
+	  raise FormatDecodeError.new( "Illegal encoding: #{ encoding }/#{ Charset.getXMLInstanceEncoding }" )
+	end
+	Charset.setXMLInstanceEncoding( encoding )
       else
 	raise FormatDecodeError.new( "Unexpected XML: #{ type }/#{ name }/#{ data }." )
       end
     end
   end
 end
-Charset.setXMLInstanceEncoding( 'UTF8' )
 
 
 end
