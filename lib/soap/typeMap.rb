@@ -21,7 +21,7 @@ module SOAP
 
 
 TypeMap = {
-  XSD::XSDAnyType::Type => SOAPAnyType,
+  XSD::XSDAnySimpleType::Type => SOAPAnySimpleType,
   XSD::XSDString::Type => SOAPString,
   XSD::XSDBoolean::Type => SOAPBoolean,
   XSD::XSDDecimal::Type => SOAPDecimal,

@@ -274,7 +274,7 @@ module RPCUtils
   #    ...
   #    return SOAP::RPCUtils::SOAPVoid.new
   #  end
-  class SOAPVoid < XSDAnyType
+  class SOAPVoid < XSDAnySimpleType
     include SOAPBasetype
     extend SOAPModuleUtils
     Name = XSD::QName.new( RubyCustomTypeNamespace, nil )
@@ -309,7 +309,7 @@ module RPCUtils
       typeName = XSD::AnyTypeLiteral, mappingRegistry = nil )
     type = XSD::QName.new( typeNamespace, typeName )
     mappingRegistry ||= RPCUtils::DefaultMappingRegistry
-    soapAry = SOAPArray.new( type )
+    soapAry = SOAPArray.new( ValueArrayName, 1, type )
     Thread.current[ :SOAPMarshalDataKey ] = {}
     ary.each do | ele |
       soapAry.add( RPCUtils._obj2soap( ele, mappingRegistry, type ))
@@ -322,7 +322,7 @@ module RPCUtils
       typeName = XSD::AnyTypeLiteral, mappingRegistry = nil )
     type = XSD::QName.new( typeNamespace, typeName )
     mappingRegistry ||= RPCUtils::DefaultMappingRegistry
-    mdAry = SOAPArray.new( type, rank )
+    mdAry = SOAPArray.new( ValueArrayName, rank, type )
     Thread.current[ :SOAPMarshalDataKey ] = {}
     addMDAry( mdAry, ary, [], mappingRegistry )
     Thread.current[ :SOAPMarshalDataKey ] = nil
