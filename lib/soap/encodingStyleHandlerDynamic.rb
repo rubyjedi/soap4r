@@ -79,8 +79,8 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       elsif !data.typeName
 	# No need to add.
       elsif data.is_a?( SOAPNil )
-	attrs[ ns.name( XSD::InstanceNamespace, XSD::NilLiteral ) ] =
-	  XSD::NilValue
+	attrs[ ns.name( XSD::InstanceNamespace, XSD::XSDNil::Literal ) ] =
+	  XSD::XSDNil::Value
       else
 	attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
 	  ns.name( data.typeNamespace, data.typeName )
@@ -117,7 +117,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     when XSDString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))
-    when XSDBase
+    when XSDAnyType
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( data.to_s )
     when SOAPStruct
@@ -359,28 +359,29 @@ private
   end
 
   XSDBaseTypeMap = {
-    XSD::StringLiteral => SOAPString,
-    XSD::BooleanLiteral => SOAPBoolean,
-    XSD::DecimalLiteral => SOAPDecimal,
-    XSD::FloatLiteral => SOAPFloat,
-    XSD::DoubleLiteral => SOAPDouble,
-    XSD::DurationLiteral => SOAPDuration,
-    XSD::DateTimeLiteral => SOAPDateTime,
-    XSD::TimeLiteral => SOAPTime,
-    XSD::DateLiteral => SOAPDate,
-    XSD::GYearMonthLiteral => SOAPGYearMonth,
-    XSD::GYearLiteral => SOAPGYear,
-    XSD::GMonthDayLiteral => SOAPGMonthDay,
-    XSD::GDayLiteral => SOAPGDay,
-    XSD::GMonthLiteral => SOAPGMonth,
-    XSD::HexBinaryLiteral => SOAPHexBinary,
-    XSD::Base64BinaryLiteral => SOAPBase64,
-    XSD::AnyURILiteral => SOAPAnyURI,
-    XSD::QNameLiteral => SOAPQName,
-    XSD::IntegerLiteral => SOAPInteger,
-    XSD::LongLiteral => SOAPLong,
-    XSD::IntLiteral => SOAPInt,
-    XSD::ShortLiteral => SOAPShort,
+    XSD::XSDAnyType::Literal => SOAPAnyType,
+    XSD::XSDString::Literal => SOAPString,
+    XSD::XSDBoolean::Literal => SOAPBoolean,
+    XSD::XSDDecimal::Literal => SOAPDecimal,
+    XSD::XSDFloat::Literal => SOAPFloat,
+    XSD::XSDDouble::Literal => SOAPDouble,
+    XSD::XSDDuration::Literal => SOAPDuration,
+    XSD::XSDDateTime::Literal => SOAPDateTime,
+    XSD::XSDTime::Literal => SOAPTime,
+    XSD::XSDDate::Literal => SOAPDate,
+    XSD::XSDGYearMonth::Literal => SOAPGYearMonth,
+    XSD::XSDGYear::Literal => SOAPGYear,
+    XSD::XSDGMonthDay::Literal => SOAPGMonthDay,
+    XSD::XSDGDay::Literal => SOAPGDay,
+    XSD::XSDGMonth::Literal => SOAPGMonth,
+    XSD::XSDHexBinary::Literal => SOAPHexBinary,
+    XSD::XSDBase64Binary::Literal => SOAPBase64,
+    XSD::XSDAnyURI::Literal => SOAPAnyURI,
+    XSD::XSDQName::Literal => SOAPQName,
+    XSD::XSDInteger::Literal => SOAPInteger,
+    XSD::XSDLong::Literal => SOAPLong,
+    XSD::XSDInt::Literal => SOAPInt,
+    XSD::XSDShort::Literal => SOAPShort,
   }
 
   SOAPBaseTypeMap = {
@@ -388,9 +389,7 @@ private
   }
 
   def decodeTagAsXSD( ns, typeNameString, name )
-    if typeNameString == XSD::AnyTypeLiteral
-      SOAPUnknown.new( self, ns, name, XSD::Namespace, typeNameString )
-    elsif XSDBaseTypeMap.has_key?( typeNameString )
+    if XSDBaseTypeMap.has_key?( typeNameString )
       XSDBaseTypeMap[ typeNameString ].decode( ns, name )
     else
       nil
@@ -434,14 +433,14 @@ private
     position = nil
 
     attrs.each do | key, value |
-      if ( ns.compare( XSD::InstanceNamespace, XSD::NilLiteral, key ))
+      if ( ns.compare( XSD::InstanceNamespace, XSD::XSDNil::Literal, key ))
 	# isNil = (( value == 'true' ) || ( value == '1' ))
 	if (( value == 'true' ) || ( value == '1' ))
 	  isNil = true
 	elsif (( value == 'false' ) || ( value == '0' ))
 	  isNil = false
 	else
-	  raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true', 'false', '1', or '0')." )
+	  raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::XSDNil::Literal } (expected 'true', 'false', '1', or '0')." )
 	end
       elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	type = value

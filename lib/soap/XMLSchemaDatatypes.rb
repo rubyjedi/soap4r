@@ -28,10 +28,10 @@ module XSD
   InstanceNamespace = 'http://www.w3.org/2001/XMLSchema-instance'
 
   AttrType = 'type'
+  NilValue = 'true'
 
   AnyTypeLiteral = 'anyType'
   NilLiteral = 'nil'
-  NilValue = 'true'
   StringLiteral = 'string'
   BooleanLiteral = 'boolean'
   DecimalLiteral = 'decimal'
@@ -66,13 +66,22 @@ end
 ## The base class of all datatypes with Namespace.
 #
 class NSDBase
-public
+  @@types = []
 
+public
   attr_accessor :typeName
   attr_accessor :typeNamespace
 
-  def initialize( typeName, typeNamespace )
-    @typeName = typeName
+  def self.inherited( klass )
+    @@types << klass
+  end
+
+  def self.types
+    @@types
+  end
+
+  def initialize( typeNamespace )
+    @typeName = nil
     @typeNamespace = typeNamespace
   end
 
@@ -89,8 +98,9 @@ end
 ###
 ## The base class of XSD datatypes.
 #
-class XSDBase < NSDBase
+class XSDAnyType < NSDBase
   include XSD
+  Literal = AnyTypeLiteral
 
 public
 
@@ -99,10 +109,11 @@ public
   # @isNil represents this data is nil or not.
   attr_accessor :isNil
 
-  def initialize( typeName )
-    super( typeName, Namespace )
+  def initialize( initObj = nil )
+    super( Namespace )
     @data = nil
     @isNil = true
+    set( initObj ) if initObj
   end
 
   # set accepts a string which follows lexical space (ex. String: "+123"), or
@@ -132,8 +143,8 @@ protected
   end
 
 private
-  def _set( newData )
-    raise NotImplementedError.new
+  def _set( newObj )
+    @data = newObj
   end
 
   def _to_s
@@ -141,10 +152,14 @@ private
   end
 end
 
-class XSDNil < XSDBase
+class XSDNil < XSDAnyType
+  Literal = NilLiteral
+  Value = 'true'
+
 public
   def initialize( initNil = nil )
-    super( XSD::NilLiteral )
+    super()
+    @typeName = Literal
     set( initNil )
   end
 
@@ -158,10 +173,13 @@ end
 ###
 ## Primitive datatypes.
 #
-class XSDString < XSDBase
+class XSDString < XSDAnyType
+  Literal = StringLiteral
+
 public
   def initialize( initString = nil )
-    super( StringLiteral )
+    super()
+    @typeName = Literal
     @encoding = nil
     set( initString ) if initString
   end
@@ -175,10 +193,13 @@ private
   end
 end
 
-class XSDBoolean < XSDBase
+class XSDBoolean < XSDAnyType
+  Literal = BooleanLiteral
+
 public
   def initialize( initBoolean = nil )
-    super( BooleanLiteral )
+    super()
+    @typeName = Literal
     set( initBoolean )
   end
 
@@ -199,10 +220,13 @@ private
   end
 end
 
-class XSDDecimal < XSDBase
+class XSDDecimal < XSDAnyType
+  Literal = DecimalLiteral
+
 public
   def initialize( initDecimal = nil )
-    super( DecimalLiteral )
+    super()
+    @typeName = Literal
     @sign = ''
     @number = ''
     @point = 0
@@ -259,10 +283,13 @@ private
   end
 end
 
-class XSDFloat < XSDBase
+class XSDFloat < XSDAnyType
+  Literal = FloatLiteral
+
 public
   def initialize( initFloat = nil )
-    super( FloatLiteral )
+    super()
+    @typeName = Literal
     set( initFloat ) if initFloat
   end
 
@@ -320,10 +347,13 @@ private
 end
 
 # Ruby's Float is double-precision 64-bit floating point value.
-class XSDDouble < XSDBase
+class XSDDouble < XSDAnyType
+  Literal = DoubleLiteral
+
 public
   def initialize( initDouble = nil )
-    super( DoubleLiteral )
+    super()
+    @typeName = Literal
     set( initDouble ) if initDouble
   end
 
@@ -365,7 +395,9 @@ private
   end
 end
 
-class XSDDuration < XSDBase
+class XSDDuration < XSDAnyType
+  Literal = DurationLiteral
+
 public
   attr_accessor :sign
   attr_accessor :year
@@ -376,7 +408,8 @@ public
   attr_accessor :sec
 
   def initialize( initDuration = nil )
-    super( DurationLiteral )
+    super()
+    @typeName = Literal
     @sign = nil
     @year = nil
     @month = nil
@@ -495,12 +528,14 @@ module XSDDateTimeImpl
   end
 end
 
-class XSDDateTime < XSDBase
+class XSDDateTime < XSDAnyType
   include XSDDateTimeImpl
+  Literal = DateTimeLiteral
 
 public
   def initialize( initDateTime = nil )
-    super( DateTimeLiteral )
+    super()
+    @typeName = Literal
     set( initDateTime ) if initDateTime
   end
 
@@ -556,12 +591,14 @@ private
   end
 end
 
-class XSDTime < XSDBase
+class XSDTime < XSDAnyType
   include XSDDateTimeImpl
+  Literal = TimeLiteral
 
 public
   def initialize( initTime = nil )
-    super( TimeLiteral )
+    super()
+    @typeName = Literal
     set( initTime ) if initTime
   end
 
@@ -597,12 +634,14 @@ private
   end
 end
 
-class XSDDate < XSDBase
+class XSDDate < XSDAnyType
   include XSDDateTimeImpl
+  Literal = DateLiteral
 
 public
   def initialize( initDate = nil )
-    super( DateLiteral )
+    super()
+    @typeName = Literal
     set( initDate ) if initDate
   end
 
@@ -631,12 +670,14 @@ private
   end
 end
 
-class XSDGYearMonth < XSDBase
+class XSDGYearMonth < XSDAnyType
   include XSDDateTimeImpl
+  Literal = GYearMonthLiteral
 
 public
   def initialize( initGYearMonth = nil )
-    super( GYearMonthLiteral )
+    super()
+    @typeName = Literal
     set( initGYearMonth ) if initGYearMonth
   end
 
@@ -664,12 +705,14 @@ private
   end
 end
 
-class XSDGYear < XSDBase
+class XSDGYear < XSDAnyType
   include XSDDateTimeImpl
+  Literal = GYearLiteral
 
 public
   def initialize( initGYear = nil )
-    super( GYearLiteral )
+    super()
+    @typeName = Literal
     set( initGYear ) if initGYear
   end
 
@@ -696,12 +739,14 @@ private
   end
 end
 
-class XSDGMonthDay < XSDBase
+class XSDGMonthDay < XSDAnyType
   include XSDDateTimeImpl
+  Literal = GMonthDayLiteral
 
 public
   def initialize( initGMonthDay = nil )
-    super( GMonthDayLiteral )
+    super()
+    @typeName = Literal
     set( initGMonthDay ) if initGMonthDay
   end
 
@@ -725,12 +770,14 @@ private
   end
 end
 
-class XSDGDay < XSDBase
+class XSDGDay < XSDAnyType
   include XSDDateTimeImpl
+  Literal = GDayLiteral
 
 public
   def initialize( initGDay = nil )
-    super( GDayLiteral )
+    super()
+    @typeName = Literal
     set( initGDay ) if initGDay
   end
 
@@ -753,12 +800,14 @@ private
   end
 end
 
-class XSDGMonth < XSDBase
+class XSDGMonth < XSDAnyType
   include XSDDateTimeImpl
+  Literal = GMonthLiteral
 
 public
   def initialize( initGMonth = nil )
-    super( GMonthLiteral )
+    super()
+    @typeName = Literal
     set( initGMonth ) if initGMonth
   end
 
@@ -781,11 +830,14 @@ private
   end
 end
 
-class XSDHexBinary < XSDBase
+class XSDHexBinary < XSDAnyType
+  Literal = HexBinaryLiteral
+
 public
   # String in Ruby could be a binary.
   def initialize( initString = nil )
-    super( HexBinaryLiteral )
+    super()
+    @typeName = Literal
     set( initString ) if initString
   end
 
@@ -808,11 +860,14 @@ private
   end
 end
 
-class XSDBase64Binary < XSDBase
+class XSDBase64Binary < XSDAnyType
+  Literal = Base64BinaryLiteral
+
 public
   # String in Ruby could be a binary.
   def initialize( initString = nil )
-    super( Base64BinaryLiteral )
+    super()
+    @typeName = Literal
     set( initString ) if initString
   end
 
@@ -834,10 +889,13 @@ private
   end
 end
 
-class XSDAnyURI < XSDBase
+class XSDAnyURI < XSDAnyType
+  Literal = AnyURILiteral
+
 public
   def initialize( initAnyURI = nil )
-    super( AnyURILiteral )
+    super()
+    @typeName = Literal
     set( initAnyURI ) if initAnyURI
   end
 
@@ -851,10 +909,13 @@ private
   end
 end
 
-class XSDQName < XSDBase
+class XSDQName < XSDAnyType
+  Literal = QNameLiteral
+
 public
   def initialize( initQName = nil )
-    super( QNameLiteral )
+    super()
+    @typeName = Literal
     set( initQName ) if initQName
   end
 
@@ -884,10 +945,12 @@ end
 ## Derived types
 #
 class XSDNormalizedString < XSDString
+  Literal = NormalizedStringLiteral
+
 public
   def initialize( initNormalizedString = nil )
     super()
-    @typeName = NormalizedStringLiteral
+    @typeName = Literal
     set( initNormalizedString ) if initNormalizedString
   end
 
@@ -901,10 +964,12 @@ private
 end
 
 class XSDInteger < XSDDecimal
+  Literal = IntegerLiteral
+
 public
   def initialize( initInteger = nil )
     super()
-    @typeName = IntegerLiteral
+    @typeName = Literal
     set( initInteger ) if initInteger
   end
 
@@ -923,10 +988,12 @@ private
 end
 
 class XSDLong < XSDInteger
+  Literal = LongLiteral
+
 public
   def initialize( initLong = nil )
     super()
-    @typeName = LongLiteral
+    @typeName = Literal
     set( initLong ) if initLong
   end
 
@@ -950,10 +1017,12 @@ private
 end
 
 class XSDInt < XSDLong
+  Literal = IntLiteral
+
 public
   def initialize( initInt = nil )
     super()
-    @typeName = IntLiteral
+    @typeName = Literal
     set( initInt ) if initInt
   end
 
@@ -977,10 +1046,12 @@ private
 end
 
 class XSDShort < XSDInt
+  Literal = ShortLiteral
+
 public
   def initialize( initShort = nil )
     super()
-    @typeName = ShortLiteral
+    @typeName = Literal
     set( initShort ) if initShort
   end
 

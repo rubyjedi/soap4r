@@ -54,7 +54,7 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
     when XSDString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))
-    when XSDBase
+    when XSDAnyType
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( data.to_s )
     when SOAPStruct

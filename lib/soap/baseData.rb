@@ -89,7 +89,8 @@ module SOAPCompoundtype
 public
 
   def initialize( typeName )
-    super( typeName, nil )
+    super( nil )
+    @typeName = typeName
     @encodingStyle = nil
     @namespace = nil
     @name = nil
@@ -115,7 +116,8 @@ public
 
   # Override the definition in SOAPBasetype.
   def initialize( refId = nil )
-    super( nil, nil )
+    super( nil )
+    @typeName = nil
     @encodingStyle = nil
     @namespace = nil
     @name = nil
@@ -176,7 +178,7 @@ private
 
   # Override the definition in SOAPBasetype.
   def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::InstanceNamespace, XSD::NilLiteral ), XSD::NilValue )
+    Attr.new( ns.name( XSD::InstanceNamespace, Literal ), Value )
   end
 end
 
@@ -192,6 +194,11 @@ end
 ###
 ## Basic datatypes.
 #
+class SOAPAnyType < XSDAnyType
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
 class SOAPString < XSDString
   include SOAPBasetype
   extend SOAPModuleUtils
@@ -281,7 +288,7 @@ public
 
   def asXSD
     @typeNamespace = XSD::Namespace
-    @typeName = XSD::Base64BinaryLiteral
+    @typeName = XSD::XSDBase64Binary::Literal
   end
 end
 
