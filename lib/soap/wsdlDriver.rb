@@ -216,7 +216,9 @@ class WSDLDriver
 
     def rpc_call(name, *values)
       set_wiredump_file_base(name)
-      op_info = @operation[name]
+      unless op_info = @operation[name]
+        raise MethodDefinitionError, "Method: #{name} not defined."
+      end
       req_header = create_request_header
       req_body = create_request_body(op_info, *values)
       opt = create_options({
