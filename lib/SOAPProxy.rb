@@ -89,7 +89,7 @@ class SOAPProxy
     receiveString = sendRequest( req, tree )
 
     # SOAP tree parsing.
-    ns, header, body = parseTree( req, receiveString )
+    ns, header, body = unmarshal( receiveString )
 
     # Check Fault.
     checkFault( ns, body )
@@ -126,15 +126,6 @@ class SOAPProxy
     receiveString = @handler.send( request.namespace, request.name, sendString )
 
     receiveString
-  end
-
-  # SOAP tree parsing.
-  def parseTree( request, receiveString )
-    # SOAP tree parsing.
-    ns, header, body = unmarshal( request.method, receiveString )
-
-    # Used namespaces, header element, and body element.
-    return ns, header, body
   end
 
   # SOAP Fault checking.
