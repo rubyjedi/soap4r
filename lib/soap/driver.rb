@@ -30,6 +30,8 @@ class Driver
 
   public
 
+  attr_accessor :mappingRegistry
+
   def initialize( log, logId, namespace, endPoint, httpProxy = nil, soapAction = nil )
     @log = log
     @logId = logId
@@ -38,6 +40,7 @@ class Driver
     @handler = HTTPPostStreamHandler.new( endPoint, httpProxy )
     @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
     @proxy.allowUnqualifiedElement = true
+    @mappingRegistry = nil
   end
 
   def setWireDumpDev( dumpDev )
@@ -78,7 +81,7 @@ class Driver
     log( SEV_DEBUG, "call: parameters '#{ params.inspect }'." )
 
     # Convert parameters
-    params.collect! { |param| obj2soap( param ) }
+    params.collect! { |param| RPCUtils.obj2soap( param, @mappingRegistry ) }
     log( SEV_DEBUG, "call: parameters '#{ params.inspect }'." )
 
     # Prepare SOAP header.
@@ -102,7 +105,7 @@ class Driver
     begin
       @proxy.checkFault( body )
     rescue SOAP::FaultError
-      detail = soap2obj( $!.detail ) || ""
+      detail = RPCUtils.soap2obj( $!.detail, @mappingRegistry ) || ""
       $!.set_backtrace(
 	if detail.is_a?( Array )
 	  detail.map! { |s|
@@ -115,7 +118,7 @@ class Driver
       raise
     end
 
-    obj = soap2obj( body.response )
+    obj = RPCUtils.soap2obj( body.response, @mappingRegistry )
     return obj
   end
 end
