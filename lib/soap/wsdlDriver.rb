@@ -23,7 +23,7 @@ require 'soap/element'
 require 'soap/baseData'
 require 'soap/streamHandler'
 require 'soap/rpcUtils'
-require 'soap/mappingRegistry'
+require 'soap/mapping'
 require 'soap/processor'
 require 'devel/logger'
 
@@ -57,8 +57,8 @@ class WSDLDriverFactory
       raise RuntimeError.new( "Port #{ portName } not found in WSDL." )
     end
     drv = WSDLDriver.new( @wsdl, port, @logDev, opt )
-    drv.wsdlMappingRegistry = Mapping::WSDLMappingRegistry.new( @wsdl,
-      port.getPortType )
+    complexTypes = @wsdl.getComplexTypesWithMessages( port.getPortType )
+    drv.wsdlMappingRegistry = Mapping::WSDLMappingRegistry.new( complexTypes )
     drv
   end
 
@@ -187,7 +187,7 @@ private
     operationName, messageName, paramNames, soapAction =
       @operationMap[ methodName ]
     obj = createMethodObject( paramNames, params )
-    method = RPC.obj2soap( obj, @wsdlMappingRegistry, messageName )
+    method = Mapping.obj2soap( obj, @wsdlMappingRegistry, messageName )
     method.elementName = operationName
     method.type = XSD::QName.new	# Request should not be typed.
 
@@ -201,15 +201,15 @@ private
 	raise EmptyResponseError.new( "Empty response." )
       end
     rescue SOAP::FaultError => e
-      RPC.fault2exception( e )
+      Mapping.fault2exception( e )
     end
 
     ret = body.response ?
-      RPC.soap2obj( body.response, @mappingRegistry ) : nil
+      Mapping.soap2obj( body.response, @mappingRegistry ) : nil
 
     if body.outParams
       outParams = body.outParams.collect { | outParam |
-	RPC.soap2obj( outParam )
+	Mapping.soap2obj( outParam )
       }
       return [ ret ].concat( outParams )
     else
