@@ -33,7 +33,7 @@ module SOAP
 # DESCRIPTION
 #   To be written...
 #
-class Server < Application
+class Server < Devel::Application
   include SOAP
 
   def initialize( appName, namespace )
