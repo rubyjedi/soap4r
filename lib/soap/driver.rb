@@ -46,6 +46,7 @@ class Driver
     @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
     @proxy.allowUnqualifiedElement = true
     @mappingRegistry = nil
+    @dumpFileBase = nil
   end
 
 
