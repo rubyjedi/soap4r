@@ -50,7 +50,7 @@ class NetHttpClient
   end
 
   def initialize(proxy = nil, agent = nil)
-    @proxy = proxy
+    @proxy = proxy ? URI.parse(proxy) : nil
     @agent = agent
     @debug_dev = nil
     @session_manager = SessionManager.new
