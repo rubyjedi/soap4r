@@ -119,7 +119,6 @@ class ASPDotNetHandler < Handler
   end
 
   def decode_tag(ns, elename, attrs, parent)
-    # ToDo: check if @textbuf is empty...
     @textbuf = ''
     o = SOAPUnknown.new(self, elename)
     o.parent = parent
