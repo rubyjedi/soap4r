@@ -1,6 +1,6 @@
 =begin
 SOAP4R - CGI stub library
-Copyright (C) 2001 NAKAMURA Hiroshi.
+Copyright (C) 2001, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -34,6 +34,10 @@ module SOAP
 #
 class CGIStub < Server
   include SOAP
+
+  # There is a client which does not accept the media-type which is defined in
+  # SOAP spec.
+  attr_accessor :mediaType
 
   class CGIError < Error; end
 
@@ -92,6 +96,7 @@ class CGIStub < Server
     @remote_host = ENV[ 'REMOTE_HOST' ] || ENV[ 'REMOTE_ADDR' ] || 'unknown'
     @request = nil
     @response = nil
+    @mediaType = MediaType
   end
   
 protected
@@ -125,7 +130,7 @@ private
 	@response.status = 500
       end
       @response.header.set( 'Cache-Control', 'private' )
-      @response.body.type = MediaType
+      @response.body.type = @mediaType
       @response.body.charset = requestCharset
       str = @response.dump
       log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
@@ -137,7 +142,7 @@ private
       responseString = createFaultResponseString( $! )
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
-      @response.body.type = MediaType
+      @response.body.type = @mediaType
       @response.body.charset = @request ? @request.charset : nil
       @response.status = 500
       str = @response.dump
