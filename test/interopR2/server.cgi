@@ -121,7 +121,7 @@ class InteropApp < SOAP::CGIStub
 
   def echoDouble( inputDouble )
     # inputDouble.is_a? Float
-    inputDouble.dup
+    inputDouble.clone
   end
 
   def echoDecimal( inputDecimal )
@@ -130,19 +130,23 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoMap( inputMap )
-    inputMap.dup
+    inputMap.clone
+  end
+
+  def echoMapArray( inputMapArray )
+    inputMapArray.clone
   end
 
   def echoXSDDateTime( inputXSDDateTime )
-    inputXSDDateTime.dup
+    inputXSDDateTime.clone
   end
 
   def echoXSDDate( inputXSDDate )
-    SOAP::SOAPDate.new( inputXSDDate.dup )
+    SOAP::SOAPDate.new( inputXSDDate.clone )
   end
 
   def echoXSDTime( inputXSDTime )
-    SOAP::SOAPTime.new( inputXSDTime.dup )
+    SOAP::SOAPTime.new( inputXSDTime.clone )
   end
 end
 
