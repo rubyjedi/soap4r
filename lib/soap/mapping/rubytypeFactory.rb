@@ -369,7 +369,7 @@ private
       obj = klass.new
       mark_unmarshalled_obj(node, obj)
       node.each do |name, value|
-        obj.set_property(name, Mapping._soap2obj(value, map))
+        obj.__set_property(name, Mapping._soap2obj(value, map))
       end
       return true, obj
     else
