@@ -25,6 +25,7 @@ require 'soap/charset'
 
 require 'soap/encodingStyleHandlerDynamic'
 require 'soap/encodingStyleHandlerLiteral'
+require 'soap/encodingStyleHandlerASPDotNet'
 
 
 module SOAP
@@ -36,9 +37,9 @@ module Processor
   ###
   ## SOAP marshalling
   #
-  def marshal( header, body )
-    generator = SOAPGenerator.new
+  def marshal( header, body, opt = {} )
     env = SOAPEnvelope.new( header, body )
+    generator = SOAPGenerator.new( opt )
     xmlDecl + generator.generate( env )
   end
   module_function :marshal
@@ -78,12 +79,12 @@ module Processor
       parser = SOAPSAXDriver.new( opt )
     else
       begin
+	require 'soap/xmlparser'
+	parser = SOAPXMLParser.new( opt )
+      rescue LoadError
 	require 'soap/nqxmlparser'
 	# parser = SOAPNQXMLStreamingParser.new( opt )
 	parser = SOAPNQXMLLightWeightParser.new( opt )
-      rescue LoadError
-	require 'soap/xmlparser'
-	parser = SOAPXMLParser.new( opt )
       end
     end
     parser
@@ -91,10 +92,6 @@ module Processor
   module_function :loadParser
 
 private
-
-  SOAPNamespaceTag = 'SOAP-ENV'
-  XSDNamespaceTag = 'xsd'
-  XSINamespaceTag = 'xsi'
 
   def xmlDecl
     if Charset.getXMLInstanceEncoding == 'NONE'
