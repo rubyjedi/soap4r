@@ -38,13 +38,13 @@ class Any < Info
   def parse_attr(attr, value)
     case attr
     when MaxOccursAttrName
-      @maxoccurs = value
+      @maxoccurs = value.source
     when MinOccursAttrName
-      @minoccurs = value
+      @minoccurs = value.source
     when NamespaceAttrName
-      @namespace = value
+      @namespace = value.source
     when ProcessContentsAttrName
-      @process_contents = value
+      @process_contents = value.source
     else
       nil
     end

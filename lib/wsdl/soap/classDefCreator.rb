@@ -22,7 +22,7 @@ class ClassDefCreator
     @elements = definitions.collect_elements
     @simpletypes = definitions.collect_simpletypes
     @complextypes = definitions.collect_complextypes
-    @faulttypes = definitions.collect_faulttypes
+    @faulttypes = definitions.collect_faulttypes if definitions.respond_to?(:collect_faulttypes)
   end
 
   def dump(class_name = nil)
@@ -70,8 +70,11 @@ private
         dump_classdef(type)
       when :TYPE_ARRAY
         dump_arraydef(type)
+      when :TYPE_SIMPLE
+        STDERR.puts("not implemented: ToDo")
       else
-        raise RuntimeError.new('Unknown complexContent definition...')
+        raise RuntimeError.new(
+          "Unknown kind of complexContent: #{type.compoundtype}")
       end
     }.join("\n")
   end
@@ -92,7 +95,7 @@ private
 
   def dump_classdef(type_or_element)
     qname = type_or_element.name
-    if @faulttypes.index(qname)
+    if @faulttypes and @faulttypes.index(qname)
       c = XSD::CodeGen::ClassDef.new(create_class_name(qname),
         '::StandardError')
     else
@@ -106,6 +109,7 @@ private
     init_lines = ''
     params = []
     type_or_element.each_element do |element|
+      next unless element.name
       name = element.name.name
       if element.type == XSD::AnyTypeName
         type = nil
@@ -114,8 +118,9 @@ private
       else
         type = create_class_name(element.type)
       end
+      attrname = safemethodname?(name) ? name : safemethodname(name)
       varname = safevarname(name)
-      c.def_attr(name, true, varname)
+      c.def_attr(attrname, true, varname)
       init_lines << "@#{ varname } = #{ varname }\n"
       if element.map_as_array?
         params << "#{ varname } = []"

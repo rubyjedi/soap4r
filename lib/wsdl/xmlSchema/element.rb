@@ -59,32 +59,27 @@ class Element < Info
   def parse_attr(attr, value)
     case attr
     when NameAttrName
-      #@name = XSD::QName.new(nil, value)
-      @name = XSD::QName.new(targetnamespace, value)
+      @name = XSD::QName.new(targetnamespace, value.source)
     when TypeAttrName
-      @type = if value.is_a?(XSD::QName)
-	  value
-	else
-	  XSD::QName.new(XSD::Namespace, value)
-	end
+      @type = value
     when MaxOccursAttrName
       if parent.is_a?(All)
-	if value != '1'
+	if value.source != '1'
 	  raise Parser::AttrConstraintError.new(
 	    "Cannot parse #{ value } for #{ attr }.")
 	end
       end
-      @maxoccurs = value
+      @maxoccurs = value.source
     when MinOccursAttrName
       if parent.is_a?(All)
-	unless ['0', '1'].include?(value)
+	unless ['0', '1'].include?(value.source)
 	  raise Parser::AttrConstraintError.new(
 	    "Cannot parse #{ value } for #{ attr }.")
 	end
       end
-      @minoccurs = value
+      @minoccurs = value.source
     when NillableAttrName
-      @nillable = (value == 'true')
+      @nillable = (value.source == 'true')
     else
       nil
     end
