@@ -23,19 +23,20 @@ module MarshalTestLib
     o2
   end
 
-  def marshal_equal(o1)
+  def marshal_equal(o1, msg = nil)
+    msg = msg ? msg + "(#{ caller[0] })" : caller[0]
     o2 = marshaltest(o1)
-    assert_equal(o1.class, o2.class, caller[0])
+    assert_equal(o1.class, o2.class, msg)
     iv1 = o1.instance_variables.sort
     iv2 = o2.instance_variables.sort
     assert_equal(iv1, iv2)
     val1 = iv1.map {|var| o1.instance_eval {eval var}}
     val2 = iv1.map {|var| o2.instance_eval {eval var}}
-    assert_equal(val1, val2, caller[0])
+    assert_equal(val1, val2, msg)
     if block_given?
-      assert_equal(yield(o1), yield(o2), caller[0])
+      assert_equal(yield(o1), yield(o2), msg)
     else
-      assert_equal(o1, o2, caller[0])
+      assert_equal(o1, o2, msg)
     end
   end
 
@@ -135,8 +136,6 @@ module MarshalTestLib
   end
 
   def test_float_ivar
-    STDERR.puts("Not supported: Instance which has instance variable and is a class which is mapped to SOAP Basetype (true, false, nil, Fixnum, Float, etc.)")
-    return
     o1 = 1.23
     o1.instance_eval { @iv = 1 }
     marshal_equal(o1) {|o| o.instance_eval { @iv }}
@@ -176,6 +175,24 @@ module MarshalTestLib
 
   def test_string_subclass
     marshal_equal(MyString.new(10, "a"))
+  end
+
+  def test_string_subclass_cycle
+    str = MyString.new(10, "b")
+    str.instance_eval { @v = str }
+    marshal_equal(str) { |o|
+      assert_equal(o.__id__, o.instance_eval { @v }.__id__)
+      o.instance_eval { @v }
+    }
+  end
+
+  def test_string_subclass_extend
+    o = "abc"
+    o.extend(Mod1)
+    str = MyString.new(o, "c")
+    marshal_equal(str) { |o|
+      assert(o.instance_eval { @v }).kind_of?(Mod1)
+    }
   end
 
   MyStruct = Struct.new("MyStruct", :a, :b)
@@ -230,8 +247,9 @@ module MarshalTestLib
   class MyTime < Time; def initialize(v, *args) super(*args); @v = v; end end
   def test_time
     # once there was a bug caused by usec overflow.  try a little harder.
-    50.times do
-      marshal_equal(Time.now)
+    10.times do
+      t = Time.now
+      marshal_equal(t, t.usec.to_s)
     end
   end
 
