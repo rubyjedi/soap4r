@@ -123,7 +123,6 @@ private
       requestString = @request.dump
       log( SEV_DEBUG ) { "XML Request: #{requestString}" }
 
-      parser = Processor.getDefaultParser
       kcodeAdjusted = false
       requestCharset = @request.charset
       charsetStrBackup = nil
@@ -132,7 +131,7 @@ private
 	charsetStr = Charset.getCharsetStr( requestCharset )
 	Charset.setXMLInstanceEncoding( charsetStr )
 
-	if parser.adjustKCode
+	if Processor.defaultParserFactory.adjustKCode
   	  charsetStrBackup = $KCODE.to_s.dup
   	  $KCODE = charsetStr
 	  kcodeAdjusted = true
