@@ -284,31 +284,6 @@ module RPCUtils
   end
 
 
-  # For outparam.
-  #
-  #  foo( [in] a, [in/out] b, [out] c, [out,retVal] d )
-  #
-  #  def foo( a, b, c )
-  #    b << a + b
-  #    c << a + c
-  #    d = b + c
-  #    return d
-  #  end
-  class SOAPOutParam < SimpleDelegator
-    def initialize( o )
-      super( o )
-    end
-
-    def set( rhs )
-      self.__setobj__( rhs )
-    end
-
-    def get
-      self.__getobj__
-    end
-  end
-
-
   # Inner class to pass an exception.
   class SOAPException
     include Marshallable
@@ -854,6 +829,7 @@ module RPCUtils
   def RPCUtils.obj2soap( obj, mappingRegistry = MappingRegistry.new )
     mappingRegistry ||= MappingRegistry.new
     if obj.is_a?( SOAPBasetype ) || obj.is_a?( SOAPCompoundtype )
+      # SOAPNil when obj.isNil == true?
       return obj
     end
     return mappingRegistry.obj2soap( obj.type, obj )
@@ -870,9 +846,20 @@ module RPCUtils
   end
 
 
-  def RPCUtils.ary2md( ary, rank )
-    mdAry = SOAPArray.new( XSD::AnyTypeLiteral, rank )
-    mdAry.typeNamespace = XSD::Namespace
+  def RPCUtils.ary2soap( ary, typeNamespace = XSD::Namespace, type = XSD::AnyTypeLiteral )
+    soapAry = SOAPArray.new( type )
+    soapAry.typeNamespace = typeNamespace
+
+    ary.each do | ele |
+      soapAry.add( RPCUtils.obj2soap( ele ))
+    end
+
+    soapAry
+  end
+
+  def RPCUtils.ary2md( ary, rank, typeNamespace = XSD::Namespace, type = XSD::AnyTypeLiteral )
+    mdAry = SOAPArray.new( type, rank )
+    mdAry.typeNamespace = typeNamespace
 
     addMDAry( mdAry, ary, [] )
 
@@ -892,8 +879,6 @@ module RPCUtils
     end
   end
 end
-
-
 
 
 end
