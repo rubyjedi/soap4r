@@ -222,7 +222,7 @@ class SOAPCGIStub < Application
     @remote_host = ENV[ 'REMOTE_HOST' ] || ENV[ 'REMOTE_ADDR' ] || 'unknown'
     @request = nil
     @response = nil
-    @router = SOAPRPCRouter.new( namespace, appName )
+    @router = SOAPRPCRouter.new( appName )
   end
   
 protected
@@ -255,7 +255,7 @@ private
     print str
   end
 
-  def addMethod( receiver, methodName )
-    @router.addMethod( receiver, methodName )
+  def addMethod( receiver, methodName, namespace = nil )
+    @router.addMethod( namespace || @namespace, receiver, methodName )
   end
 end

@@ -31,19 +31,22 @@ class SOAPRPCRouter
 
   class RPCRoutingError < Error; end
 
-  attr_reader :namespace, :actor
+  attr_reader :actor
+  attr_accessor :allowUnqualifiedElement
 
-  def initialize( namespace, actor )
-    @namespace = namespace
+  def initialize( actor )
     @actor = actor
+    @namespace = {}
     @receiver = {}
     @method = {}
+    @allowUnqualifiedElement = false
   end
 
   # Method definition.
-  def addMethod( receiver, methodName, paramDef = nil )
-    @receiver[ methodName ] = receiver
-    @method[ methodName ] = SOAPMethod.new( @namespace, methodName, paramDef )
+  def addMethod( namespace, receiver, methodName, paramDef = nil )
+    name = "#{ namespace }:#{ methodName }"
+    @receiver[ name ] = receiver
+    @method[ name ] = SOAPMethod.new( namespace, methodName, paramDef )
   end
 
   def addHeaderHandler
@@ -52,15 +55,18 @@ class SOAPRPCRouter
 
   # Routing...
   def route( soapString )
-    ns, header, body = unmarshal( soapString )
-
-    # So far, header is omitted...
-
-    soapRequest = body.data
-    soapResponse = nil
-
     begin
+      opt = {}
+      opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
+      ns, header, body = unmarshal( soapString, opt )
+
+      # So far, header is omitted...
+
+      soapRequest = body.request
+      soapResponse = nil
+
       soapResponse = dispatch( soapRequest )
+
     rescue Exception
       soapResponse = fault( $! )
     end
@@ -85,11 +91,12 @@ class SOAPRPCRouter
 private
 
   # Create new response.
-  def createResponse( methodName, *values )
-    if ( @method.has_key?( methodName ))
-      method = @method[ methodName ]
+  def createResponse( namespace, methodName, *values )
+    name = "#{ namespace }:#{ methodName }"
+    if ( @method.has_key?( name ))
+      method = @method[ name ]
     else
-      raise RPCRoutingError.new( "Method: #{ methodName } not defined." )
+      raise RPCRoutingError.new( "Method: #{ name } not defined." )
     end
 
     retVal = values[ 0 ]
@@ -104,22 +111,25 @@ private
 
   # Dispatch to defined method.
   def dispatch( soapMethod )
+    namespace = soapMethod.namespace
     methodName = soapMethod.typeName
+
     requestStruct = soap2obj( soapMethod )
     values = requestStruct.members.collect { |member|
       requestStruct[ member ]
     }
-    method = lookup( methodName, values )
+    method = lookup( namespace, methodName, values )
     unless method
       raise Error.new( "Method: #{methodName} not supported." )
     end
 
     result = method.call( *values )
-    createResponse( methodName, result )
+    createResponse( namespace, methodName, result )
   end
 
   # Method lookup
-  def lookup( name, values )
+  def lookup( namespace, methodName, values )
+    name = "#{ namespace }:#{ methodName }"
     # It may be necessary to check all part of method signature...
     if @method.member?( name )
       @receiver[ name ].method( @method[ name ].name.intern )
