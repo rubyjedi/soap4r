@@ -135,13 +135,13 @@ end
 class XSDString < XSDBase
 public
 
-  def initialize( initString = nil )
+  def initialize( initString = '' )
     super( StringLiteral )
     set( initString ) if initString
   end
 
   def set( newString )
-    @data = String.new( newString )
+    @data = newString
   end
 end
 
