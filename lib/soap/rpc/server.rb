@@ -27,16 +27,16 @@ module RPC
 
 ###
 # SYNOPSIS
-#   Server.new(appName, namespace)
+#   Server.new(appName, defaultNamespace)
 #
 # DESCRIPTION
 #   To be written...
 #
 class Server < Devel::Application
-  def initialize(appName, namespace = nil)
+  def initialize(appName, defaultNamespace = nil)
     super(appName)
     setSevThreshold(SEV_INFO)
-    @namespace = namespace
+    @defaultNamespace = defaultNamespace
     @router = SOAP::RPC::Router.new(appName)
     methodDef
   end
@@ -49,8 +49,8 @@ class Server < Devel::Application
     @router.mappingRegistry = value
   end
 
-  def addServant(obj, namespace = @namespace, soapAction = nil)
-   (obj.methods - Kernel.instance_methods).each do |methodName|
+  def addServant(obj, namespace = @defaultNamespace, soapAction = nil)
+   (obj.methods - Kernel.instance_methods(true)).each do |methodName|
       qname = XSD::QName.new(namespace, methodName)
       paramSize = obj.method(methodName).arity.abs
       params = (1..paramSize).collect { |i| "p#{ i }" }
@@ -59,18 +59,16 @@ class Server < Devel::Application
     end
   end
 
-protected
-  
   def methodDef
     # Override this method in derived class to call 'addMethod*' to add methods.
   end
 
   def addMethod(receiver, methodName, *paramArg)
-    addMethodWithNSAs(@namespace, receiver, methodName, methodName, *paramArg)
+    addMethodWithNSAs(@defaultNamespace, receiver, methodName, methodName, *paramArg)
   end
 
   def addMethodAs(receiver, methodName, methodNameAs, *paramArg)
-    addMethodWithNSAs(@namespace, receiver, methodName, methodNameAs, *paramArg)
+    addMethodWithNSAs(@defaultNamespace, receiver, methodName, methodNameAs, *paramArg)
   end
 
   def addMethodWithNS(namespace, receiver, methodName, *paramArg)
