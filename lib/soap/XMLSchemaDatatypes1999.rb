@@ -19,30 +19,15 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/XMLSchemaDatatypes'
 
+
 module XSD
-  Namespace = 'http://www.w3.org/1999/XMLSchema'
-  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  AnyTypeLiteral = 'ur-type'
-  NilLiteral = 'null'
-  NilValue = '1'
-  DateTimeLiteral = 'timeInstant'
+  Namespace.replace( 'http://www.w3.org/1999/XMLSchema' )
+  InstanceNamespace.replace( 'http://www.w3.org/1999/XMLSchema-instance' )
+  AnyTypeLiteral.replace( 'ur-type' )
+  NilLiteral.replace( 'null' )
+  NilValue.replace( '1' )
+  DateTimeLiteral.replace( 'timeInstant' )
 end
 
-module SOAP
-  class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
-    XSDBaseTypeMap = {
-      XSD::DecimalLiteral => SOAPDecimal,
-      XSD::IntegerLiteral => SOAPInteger,
-      XSD::LongLiteral => SOAPLong,
-      XSD::IntLiteral => SOAPInt,
-      XSD::FloatLiteral => SOAPFloat,
-      XSD::DoubleLiteral => SOAPDouble,
-      XSD::BooleanLiteral => SOAPBoolean,
-      XSD::StringLiteral => SOAPString,
-      XSD::DateTimeLiteral => SOAPDateTime,
-      XSD::DateLiteral => SOAPDate,
-      XSD::TimeLiteral => SOAPTime,
-      XSD::Base64BinaryLiteral => SOAPBase64,
-    }
-  end
-end
+
+load 'soap/typeMap.rb'
