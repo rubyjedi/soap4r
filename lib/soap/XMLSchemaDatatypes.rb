@@ -55,6 +55,7 @@ module XSD
   IntegerLiteral = 'integer'
   LongLiteral = 'long'
   IntLiteral = 'int'
+  ShortLiteral = 'short'
 
   class Error < StandardError; end
   class ValueSpaceError < Error; end
@@ -952,6 +953,33 @@ private
 
   MaxInclusive = +2147483647
   MinInclusive = -2147483648
+  def validate( v )
+    (( MinInclusive <= v ) && ( v <= MaxInclusive ))
+  end
+end
+
+class XSDShort < XSDInt
+public
+  def initialize( initShort = nil )
+    super()
+    @typeName = ShortLiteral
+    set( initShort ) if initShort
+  end
+
+private
+  def set_str( str )
+    begin
+      @data = Integer( str )
+    rescue ArgumentError
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+    end
+    unless validate( @data )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+    end
+  end
+
+  MaxInclusive = +32767
+  MinInclusive = -32768
   def validate( v )
     (( MinInclusive <= v ) && ( v <= MaxInclusive ))
   end
