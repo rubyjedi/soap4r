@@ -74,8 +74,8 @@ class TestSOAPBodyParts < Test::Unit::TestCase
   end
 
   def test_soapbodyparts
-    assert_equal(["2", "1"], @client.foo("1", "2"))
-    assert_equal(["1", "2"], @client.foo("2", "1"))
+    assert_equal(["1", "2"], @client.foo("1", "2"))
+    assert_equal(["2", "1"], @client.foo("2", "1"))
     assert_equal(["2", "3"], @client.bar("2", "3"))
     assert_equal(["1", "2", "3"], @client.baz("1", "2", "3"))
   end

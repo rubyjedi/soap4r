@@ -10,10 +10,14 @@ module SimpleType
 class TestSimpleType < Test::Unit::TestCase
   class Server < ::SOAP::RPC::StandaloneServer
     def on_init
-      add_method(self, 'ruby', 'version', 'date')
+      add_document_method(self, 'urn:example.com:simpletype', 'ruby',
+        XSD::QName.new('urn:example.com:simpletype', 'ruby'),
+        XSD::QName.new('http://www.w3.org/2001/XMLSchema', 'string'))
     end
   
-    def ruby(version, date)
+    def ruby(ruby)
+      version = ruby["version"]
+      date = ruby["date"]
       "#{version} (#{date})"
     end
   end
@@ -38,6 +42,7 @@ class TestSimpleType < Test::Unit::TestCase
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.generate_explicit_type = false
+    @client.wiredump_dev = STDOUT if $DEBUG
   end
 
   def teardown
@@ -71,8 +76,8 @@ class TestSimpleType < Test::Unit::TestCase
   end
 
   def test_ping
-    header, body = @client.ping(nil, {:version => "1.9", :date => "2004-01-01T00:00:00Z"})
-    assert_equal("1.9 (2004-01-01T00:00:00Z)", body)
+    ret = @client.ping({:version => "1.9", :date => "2004-01-01T00:00:00Z"})
+    assert_equal("1.9 (2004-01-01T00:00:00Z)", ret)
   end
 end
 

@@ -20,11 +20,13 @@ class WSDLEncodedRegistry
 
   attr_reader :definedtypes
   attr_accessor :excn_handler_obj2soap
+  attr_accessor :excn_handler_soap2obj
 
   def initialize(definedtypes, config = {})
     @definedtypes = definedtypes
     @config = config
     @excn_handler_obj2soap = nil
+    @excn_handler_soap2obj = nil
     # For mapping AnyType element.
     @rubytype_factory = RubytypeFactory.new(
       :allow_untyped_struct => true,
@@ -55,8 +57,9 @@ class WSDLEncodedRegistry
     raise MappingError.new("cannot map #{obj.class.name} to SOAP/OM")
   end
 
+  # map anything for now: must refer WSDL while mapping.  [ToDo]
   def soap2obj(node)
-    raise RuntimeError.new("#{self} is for obj2soap only")
+    Mapping.soap2obj(node)
   end
 
 private

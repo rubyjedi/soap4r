@@ -9,19 +9,10 @@
 require 'wsdl/parser'
 require 'wsdl/importer'
 require 'xsd/qname'
-require 'soap/element'
-require 'soap/baseData'
-require 'soap/streamHandler'
-require 'soap/mimemessage'
-require 'soap/mapping'
+require 'xsd/codegen/gensupport'
 require 'soap/mapping/wsdlencodedregistry'
 require 'soap/mapping/wsdlliteralregistry'
-require 'soap/rpc/rpc'
-require 'soap/rpc/element'
-require 'soap/rpc/proxy'
-require 'soap/processor'
-require 'soap/header/handlerset'
-require 'xsd/codegen/gensupport'
+require 'soap/rpc/driver'
 
 
 module SOAP
@@ -32,8 +23,7 @@ class WSDLDriverFactory
 
   attr_reader :wsdl
 
-  def initialize(wsdl, logdev = nil)
-    @logdev = logdev
+  def initialize(wsdl)
     @wsdl = import(wsdl)
   end
   
@@ -41,26 +31,19 @@ class WSDLDriverFactory
     "#<#{self.class}:#{@wsdl.name}>"
   end
 
+  def create_rpc_driver(servicename = nil, portname = nil)
+    port = find_port(servicename, portname)
+    drv = SOAP::RPC::Driver.new(port.soap_address.location)
+    init_driver(drv, port)
+    add_operation(drv, port)
+    drv
+  end
+
+  # depricated old interface
   def create_driver(servicename = nil, portname = nil)
-    service = if servicename
-	@wsdl.service(XSD::QName.new(@wsdl.targetnamespace, servicename))
-      else
-	@wsdl.services[0]
-      end
-    if service.nil?
-      raise FactoryError.new("service #{ servicename } not found in WSDL")
-    end
-    port = if portname
-	service.ports[XSD::QName.new(@wsdl.targetnamespace, portname)]
-      else
-	service.ports[0]
-      end
-    if port.nil?
-      raise FactoryError.new("port #{ portname } not found in WSDL")
-    end
-    if port.soap_address.nil?
-      raise FactoryError.new("soap:address element not found in WSDL")
-    end
+    STDERR.puts "WSDLDriverFactory#create_driver is depricated." +
+      "  Use create_rpc_driver instead."
+    port = find_port(servicename, portname)
     WSDLDriver.new(@wsdl, port, @logdev)
   end
 
@@ -68,9 +51,120 @@ class WSDLDriverFactory
   alias createDriver create_driver
 
 private
-  
+
+  def find_port(servicename = nil, portname = nil)
+    service = port = nil
+    if servicename
+      service = @wsdl.service(
+        XSD::QName.new(@wsdl.targetnamespace, servicename))
+    else
+      service = @wsdl.services[0]
+    end
+    if service.nil?
+      raise FactoryError.new("service #{servicename} not found in WSDL")
+    end
+    if portname
+      port = service.ports[XSD::QName.new(@wsdl.targetnamespace, portname)]
+    else
+      port = service.ports[0]
+    end
+    if port.nil?
+      raise FactoryError.new("port #{portname} not found in WSDL")
+    end
+    if port.soap_address.nil?
+      raise FactoryError.new("soap:address element not found in WSDL")
+    end
+    port
+  end
+
+  def init_driver(drv, port)
+    wsdl_elements = @wsdl.collect_elements
+    wsdl_types = @wsdl.collect_complextypes + @wsdl.collect_simpletypes
+    rpc_decode_typemap = wsdl_types +
+      @wsdl.soap_rpc_complextypes(port.find_binding)
+    drv.proxy.mapping_registry =
+      Mapping::WSDLEncodedRegistry.new(rpc_decode_typemap)
+    drv.proxy.literal_mapping_registry =
+      Mapping::WSDLLiteralRegistry.new(wsdl_elements, wsdl_types)
+  end
+
+  def add_operation(drv, port)
+    # Convert a map which key is QName, to a Hash which key is String.
+    port.find_binding.operations.each do |op_bind|
+      op = op_bind.find_operation
+
+      soapaction = op_bind.soapoperation.soapaction
+      orgname = op.name.name
+      name = ::XSD::CodeGen::GenSupport.safemethodname(orgname)
+      param_def = create_param_def(op_bind)
+      opt = {}
+      opt[:request_style] = opt[:response_style] =
+        op_bind.soapoperation.operation_style || :document
+      opt[:request_use] = (op_bind.input.soapbody.use || 'literal').intern
+      opt[:response_use] = (op_bind.output.soapbody.use || 'literal').intern
+      if op_bind.soapoperation.operation_style == :rpc
+        qname = op.inputname
+        drv.add_rpc_operation(qname, soapaction, name, param_def, opt)
+      else
+        drv.add_document_operation(soapaction, name, param_def, opt)
+      end
+      if orgname != name and orgname.capitalize == name.capitalize
+        sclass = class << drv; self; end
+        sclass.__send__(:define_method, orgname, proc { |*arg|
+          __send__(name, *arg)
+        })
+      end
+    end
+  end
+
   def import(location)
     WSDL::Importer.import(location)
+  end
+
+  def create_param_def(op_bind)
+    op = op_bind.find_operation
+    param_def = []
+    inputparts = op.inputparts
+    if op_bind.input.soapbody.parts
+      inputparts = filter_parts(op_bind.input.soapbody.parts, inputparts)
+    end
+    inputparts.each do |part|
+      partqname = partqname(part)
+      param_def << param_def(::SOAP::RPC::SOAPMethod::IN, partqname)
+    end
+    outputparts = op.outputparts
+    if op_bind.output.soapbody.parts
+      outputparts = filter_parts(op_bind.output.soapbody.parts, outputparts)
+    end
+    if op_bind.soapoperation.operation_style == :rpc
+      part = outputparts.shift
+      param_def << param_def(::SOAP::RPC::SOAPMethod::RETVAL, partqname(part))
+      outputparts.each do |part|
+        param_def << param_def(::SOAP::RPC::SOAPMethod::OUT, partqname(part))
+      end
+    else
+      outputparts.each do |part|
+        param_def << param_def(::SOAP::RPC::SOAPMethod::OUT, partqname(part))
+      end
+    end
+    param_def
+  end
+
+  def partqname(part)
+    if part.type
+      XSD::QName.new(@wsdl.targetnamespace, part.name)
+    else
+      part.element
+    end
+  end
+
+  def param_def(type, partqname)
+    [type, partqname.name, [nil, partqname.namespace, partqname.name]]
+  end
+
+  def filter_parts(partsdef, partssource)
+    parts = partsdef.split(/\s+/)
+    partssource.find_all { |part| parts.include?(part.name) }
   end
 end
 
@@ -226,12 +320,13 @@ class WSDLDriver
       end
       req_header = create_request_header
       req_body = create_request_body(op_info, *values)
-      opt = create_options({
-        :soapaction => op_info.soapaction || @soapaction,
+      reqopt = create_options({
+        :soapaction => op_info.soapaction || @soapaction})
+      resopt = create_options({
         :decode_typemap => @rpc_decode_typemap})
-      env = @proxy.invoke(req_header, req_body, opt)
-      raise EmptyResponseError.new("empty response") unless env
+      env = @proxy.route(req_header, req_body, reqopt, resopt)
       receive_headers(env.header)
+      raise EmptyResponseError.new("empty response") unless env
       begin
         @proxy.check_fault(env.body)
       rescue ::SOAP::FaultError => e
@@ -249,10 +344,14 @@ class WSDLDriver
       end
     end
 
-    def document_call(name, param)
+    def document_call(name, *values)
       set_wiredump_file_base(name)
-      op_info = @operation[name]
-      req_header = header_from_obj(header_obj, op_info)
+      unless op_info = @operation[name]
+        raise RuntimeError, "method: #{name} not defined"
+      end
+      req_header = create_request_header
+
+
       req_body = body_from_obj(body_obj, op_info)
       env = @proxy.invoke(req_header, req_body, op_info.soapaction || @soapaction, @wsdl_types)
       raise EmptyResponseError.new("empty response") unless env
@@ -297,7 +396,7 @@ class WSDLDriver
 
     def set_wiredump_file_base(name)
       if @wiredump_file_base
-      	@proxy.set_wiredump_file_base(@wiredump_file_base + "_#{ name }")
+      	@proxy.set_wiredump_file_base(@wiredump_file_base + "_#{name}")
       end
     end
 
@@ -420,18 +519,21 @@ class WSDLDriver
 
     def add_method_interface(op_info)
       name = ::XSD::CodeGen::GenSupport.safemethodname(op_info.op_name.name)
+      orgname = op_info.op_name.name
+      parts_names = op_info.bodyparts.collect { |part| part.name }
       case op_info.style
       when :document
-	add_document_method_interface(name)
+        if orgname != name and orgname.capitalize == name.capitalize
+          add_document_method_interface(orgname, parts_names)
+        end
+	add_document_method_interface(name, parts_names)
       when :rpc
-	parts_names = op_info.bodyparts.collect { |part| part.name }
-        orgname = op_info.op_name.name
         if orgname != name and orgname.capitalize == name.capitalize
           add_rpc_method_interface(orgname, parts_names)
         end
 	add_rpc_method_interface(name, parts_names)
       else
-	raise RuntimeError.new("Unknown style: #{op_info.style}")
+	raise RuntimeError.new("unknown style: #{op_info.style}")
       end
     end
 
@@ -447,10 +549,14 @@ class WSDLDriver
       @host.method(name)
     end
 
-    def add_document_method_interface(name)
+    def add_document_method_interface(name, parts_names)
       sclass = class << @host; self; end
-      sclass.__send__(:define_method, name, proc { |h, b|
-        @servant.document_send(name, h, b)
+      sclass.__send__(:define_method, name, proc { |*arg|
+        unless arg.size == parts_names.size
+          raise ArgumentError.new(
+            "wrong number of arguments (#{arg.size} for #{parts_names.size})")
+        end
+        @servant.document_call(name, *arg)
       })
       @host.method(name)
     end
@@ -476,5 +582,3 @@ end
 
 
 end
-
-

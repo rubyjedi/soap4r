@@ -101,24 +101,12 @@ class SOAPMethod < SOAPStruct
     @outparam_names.size > 0
   end
 
-  def each_param_name(*type)
-    @signature.each do |io_type, name, param_type|
-      if type.include?(io_type)
-        yield(name)
-      end
-    end
+  def input_params
+    collect_params(IN, INOUT)
   end
 
-  def each_in_param_name
-    each_param_name(IN, INOUT) do |name|
-      yield name
-    end
-  end
-
-  def each_out_param_name
-    each_param_name(OUT, INOUT) do |name|
-      yield name
-    end
+  def output_params
+    collect_params(OUT, INOUT)
   end
 
   def set_param(params)
@@ -183,6 +171,14 @@ class SOAPMethod < SOAPStruct
 
 private
 
+  def collect_params(*type)
+    names = []
+    @signature.each do |io_type, name, param_type|
+      names << name if type.include?(io_type)
+    end
+    names
+  end
+
   def init_param(param_def)
     param_def.each do |io_type, name, param_type|
       case io_type
@@ -234,7 +230,7 @@ class SOAPMethodRequest < SOAPMethod
   end
 
   def each
-    each_param_name(IN, INOUT) do |name|
+    input_params.each do |name|
       unless @inparam[name]
         raise ParameterError.new("parameter: #{name} was not given")
       end
@@ -284,11 +280,11 @@ class SOAPMethodResponse < SOAPMethod
       yield(@retval_name, @retval)
     end
 
-    each_param_name(OUT, INOUT) do |param_name|
-      unless @outparam[param_name]
-        raise ParameterError.new("parameter: #{param_name} was not given")
+    output_params.each do |name|
+      unless @outparam[name]
+        raise ParameterError.new("parameter: #{name} was not given")
       end
-      yield(param_name, @outparam[param_name])
+      yield(name, @outparam[name])
     end
   end
 end

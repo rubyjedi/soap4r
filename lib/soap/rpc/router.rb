@@ -392,7 +392,7 @@ private
 
     def request_rpc_lit(request)
       request.collect { |key, value|
-        value.to_obj
+        value.respond_to?(:to_obj) ? value.to_obj : value.data
       }
     end
 
@@ -404,7 +404,7 @@ private
 
     def request_doc_lit(body)
       body.collect { |key, value|
-        value.to_obj
+        value.respond_to?(:to_obj) ? value.to_obj : value.data
       }
     end
 
@@ -440,7 +440,7 @@ private
         end
         outparams = {}
         i = 1
-        soap_response.each_out_param_name do |outparam|
+        soap_response.output_params.each do |outparam|
           outparams[outparam] = Mapping.obj2soap(result[i], mapping_registry)
           i += 1
         end
@@ -461,7 +461,7 @@ private
         end
         outparams = {}
         i = 1
-        soap_response.each_out_param_name do |outparam|
+        soap_response.output_params.each do |outparam|
           outparams[outparam] = SOAPElement.from_obj(result[i])
           i += 1
         end
@@ -484,10 +484,6 @@ private
     def response_doc_lit(result)
       (0...result.size).collect { |idx|
         item = result[idx]
-        unless item.respond_to?(:size) and item.size == 1
-          raise ArgumentError.new(
-            "result element is expected to be Hash-like object with one key")
-        end
         qname = @doc_response_qnames[idx]
         ele = SOAPElement.from_obj(item, qname.namespace)
         ele.elename = qname
