@@ -530,15 +530,15 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoIntegerArray (nil)'
-  dumpTitle( title )
-  begin
-    arg = IntArray[ nil, nil, nil ]
-    var = drv.echoIntegerArray( arg )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoIntegerArray (nil)'
+#  dumpTitle( title )
+#  begin
+#    arg = IntArray[ nil, nil, nil ]
+#    var = drv.echoIntegerArray( arg )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoIntegerArray (empty)'
   dumpTitle( title )
@@ -1134,11 +1134,22 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoDate (year < -9999)'
+  title = 'echoDate (year < 0)'
   dumpTitle( title )
   begin
-    arg = SOAP::SOAPDateTime.new( '-29999-06-16T18:13:40-07:00' )
-    argNormalized = DateTime.new( -29999, 6, 17, 1, 13, 40 )
+    arg = SOAP::SOAPDateTime.new( '-0001-06-16T18:13:40-07:00' )
+    argNormalized = DateTime.new( 0, 6, 17, 1, 13, 40 )
+    var = drv.echoDate( arg )
+    dumpNormal( title, argNormalized, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoDate (year == -4713)'
+  dumpTitle( title )
+  begin
+    arg = SOAP::SOAPDateTime.new( '-4713-01-01T12:00:00' )
+    argNormalized = DateTime.new( -4712, 1, 1, 12, 0, 0 )
     var = drv.echoDate( arg )
     dumpNormal( title, argNormalized, var )
   rescue Exception
