@@ -173,9 +173,9 @@ def doTest( drv )
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoFloatOutOfValueSpace' )
+  dumpTitle( dumpDev, 'echoFloatScientificNotation' )
   begin
-    arg = 1.0e150
+    arg = 12.34e56
     var = drv.echoFloat( arg )
     dumpResult( dumpDev, arg, var )
   rescue
@@ -232,15 +232,15 @@ def doTest( drv )
     t = Time.now.gmtime
     arg = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
     var = drv.echoDate( arg )
-    dumpResult( dumpDev, arg, var )
+    dumpResult( dumpDev, arg.to_s, var.to_s )
   rescue
     dumpException( dumpDev )
   end
 
   dumpTitle( dumpDev, 'echoDate(With TZ)' )
   begin
-    arg = SOAP::SOAPDateTime.new( '2001-06-16T18:13:40-07:00' )
-    argNormalized = Date.new3( 2001, 6, 16, 11, 13, 40 )
+    arg = SOAP::SOAPDateTime.new( '2001-06-16T11:13:40-07:00' )
+    argNormalized = Date.new3( 2001, 6, 16, 18, 13, 40 )
     var = drv.echoDate( arg )
     dumpResult( dumpDev, argNormalized.to_s, var.to_s )
   rescue
