@@ -32,6 +32,7 @@ module XSD
   NilValue = 'true'
 
   AnyTypeLiteral = 'anyType'
+  AnySimpleTypeLiteral = 'anySimpleType'
   NilLiteral = 'nil'
   StringLiteral = 'string'
   BooleanLiteral = 'boolean'
@@ -60,7 +61,9 @@ module XSD
 
   AttrTypeName = QName.new( InstanceNamespace, AttrType )
   AttrNilName = QName.new( InstanceNamespace, NilLiteral )
-  AnyType = QName.new( Namespace, AnyTypeLiteral )
+
+  AnyTypeName = QName.new( Namespace, AnyTypeLiteral )
+
   class Error < StandardError; end
   class ValueSpaceError < Error; end
 end
@@ -92,9 +95,9 @@ end
 ###
 ## The base class of XSD datatypes.
 #
-class XSDAnyType < NSDBase
+class XSDAnySimpleType < NSDBase
   include XSD
-  Type = QName.new( Namespace, AnyTypeLiteral )
+  Type = QName.new( Namespace, AnySimpleTypeLiteral )
 
 public
 
@@ -146,7 +149,7 @@ private
   end
 end
 
-class XSDNil < XSDAnyType
+class XSDNil < XSDAnySimpleType
   Type = QName.new( Namespace, NilLiteral )
   Value = 'true'
 
@@ -167,7 +170,7 @@ end
 ###
 ## Primitive datatypes.
 #
-class XSDString < XSDAnyType
+class XSDString < XSDAnySimpleType
   Type = QName.new( Namespace, StringLiteral )
 
 public
@@ -187,7 +190,7 @@ private
   end
 end
 
-class XSDBoolean < XSDAnyType
+class XSDBoolean < XSDAnySimpleType
   Type = QName.new( Namespace, BooleanLiteral )
 
 public
@@ -214,7 +217,7 @@ private
   end
 end
 
-class XSDDecimal < XSDAnyType
+class XSDDecimal < XSDAnySimpleType
   Type = QName.new( Namespace, DecimalLiteral )
 
 public
@@ -277,7 +280,7 @@ private
   end
 end
 
-class XSDFloat < XSDAnyType
+class XSDFloat < XSDAnySimpleType
   Type = QName.new( Namespace, FloatLiteral )
 
 public
@@ -341,7 +344,7 @@ private
 end
 
 # Ruby's Float is double-precision 64-bit floating point value.
-class XSDDouble < XSDAnyType
+class XSDDouble < XSDAnySimpleType
   Type = QName.new( Namespace, DoubleLiteral )
 
 public
@@ -389,7 +392,7 @@ private
   end
 end
 
-class XSDDuration < XSDAnyType
+class XSDDuration < XSDAnySimpleType
   Type = QName.new( Namespace, DurationLiteral )
 
 public
@@ -522,7 +525,7 @@ module XSDDateTimeImpl
   end
 end
 
-class XSDDateTime < XSDAnyType
+class XSDDateTime < XSDAnySimpleType
   include XSDDateTimeImpl
   Type = QName.new( Namespace, DateTimeLiteral )
 
@@ -585,7 +588,7 @@ private
   end
 end
 
-class XSDTime < XSDAnyType
+class XSDTime < XSDAnySimpleType
   include XSDDateTimeImpl
   Type = QName.new( Namespace, TimeLiteral )
 
@@ -628,7 +631,7 @@ private
   end
 end
 
-class XSDDate < XSDAnyType
+class XSDDate < XSDAnySimpleType
   include XSDDateTimeImpl
   Type = QName.new( Namespace, DateLiteral )
 
@@ -664,7 +667,7 @@ private
   end
 end
 
-class XSDGYearMonth < XSDAnyType
+class XSDGYearMonth < XSDAnySimpleType
   include XSDDateTimeImpl
   Type = QName.new( Namespace, GYearMonthLiteral )
 
@@ -699,7 +702,7 @@ private
   end
 end
 
-class XSDGYear < XSDAnyType
+class XSDGYear < XSDAnySimpleType
   include XSDDateTimeImpl
   Type = QName.new( Namespace, GYearLiteral )
 
@@ -733,7 +736,7 @@ private
   end
 end
 
-class XSDGMonthDay < XSDAnyType
+class XSDGMonthDay < XSDAnySimpleType
   include XSDDateTimeImpl
   Type = QName.new( Namespace, GMonthDayLiteral )
 
@@ -764,7 +767,7 @@ private
   end
 end
 
-class XSDGDay < XSDAnyType
+class XSDGDay < XSDAnySimpleType
   include XSDDateTimeImpl
   Type = QName.new( Namespace, GDayLiteral )
 
@@ -794,7 +797,7 @@ private
   end
 end
 
-class XSDGMonth < XSDAnyType
+class XSDGMonth < XSDAnySimpleType
   include XSDDateTimeImpl
   Type = QName.new( Namespace, GMonthLiteral )
 
@@ -824,7 +827,7 @@ private
   end
 end
 
-class XSDHexBinary < XSDAnyType
+class XSDHexBinary < XSDAnySimpleType
   Type = QName.new( Namespace, HexBinaryLiteral )
 
 public
@@ -854,7 +857,7 @@ private
   end
 end
 
-class XSDBase64Binary < XSDAnyType
+class XSDBase64Binary < XSDAnySimpleType
   Type = QName.new( Namespace, Base64BinaryLiteral )
 
 public
@@ -883,7 +886,7 @@ private
   end
 end
 
-class XSDAnyURI < XSDAnyType
+class XSDAnyURI < XSDAnySimpleType
   Type = QName.new( Namespace, AnyURILiteral )
 
 public
@@ -903,7 +906,7 @@ private
   end
 end
 
-class XSDQName < XSDAnyType
+class XSDQName < XSDAnySimpleType
   Type = QName.new( Namespace, QNameLiteral )
 
 public
