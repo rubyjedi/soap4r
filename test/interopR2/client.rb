@@ -5,6 +5,7 @@ require 'soap/rpc/driver'
 require 'soap/mapping'
 require 'base'
 require 'interopResultBase'
+#XSD::Charset.encoding = 'EUC'
 
 class Float
   Precision = 5
@@ -72,6 +73,8 @@ end
 class SOAPBuildersTest < Test::Unit::TestCase
   include SOAP
   include SOAPBuildersInterop
+
+  NegativeZero = (-1.0 / (1.0 / 0.0))
 
   class << self
     include SOAP
@@ -449,7 +452,7 @@ class SOAPBuildersTest < Test::Unit::TestCase
 
   def test_echoFloat_special_values_negative_0
     log_test
-    arg = -0.0
+    arg = NegativeZero
     var = drv.echoFloat(SOAPFloat.new(arg))
     assert_equal(arg, var)
   end
