@@ -25,7 +25,7 @@ module MethodDefCreatorSupport
     if klass = basetype_mapped_class(name)
       ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass.name)
     else
-      result = capitalize(name.name)
+      result = capitalize(name.name).gsub(/[^a-zA-Z0-9_]/, '_')
       unless /^[A-Z]/ =~ result
 	result = "C_#{ name }"
       end
