@@ -58,8 +58,8 @@ private
     init_lines = ""
     params = []
     complextype.each_element do |element|
-      c.def_attr(element.name.name, true, uncapitalize(element.name.name))
-      name = safemethodname(element.name.name)
+      c.def_attr(element.name.name, true, safevarname(element.name.name))
+      name = safevarname(element.name.name)
       init_lines << "@#{ name } = #{ name }\n"
       params << "#{ name } = nil"
     end
@@ -72,8 +72,8 @@ private
   def dump_arraydef(qname)
     c = XSD::CodeGen::ClassDef.new(create_class_name(qname), ::Array)
     c.comment = "#{ qname.namespace }"
-    c.def_classvar("schema_type", qname.name)
-    c.def_classvar("schema_ns", qname.namespace)
+    c.def_classvar("schema_type", qname.name.dump)
+    c.def_classvar("schema_ns", qname.namespace.dump)
     c.dump
   end
 
