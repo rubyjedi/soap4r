@@ -106,10 +106,10 @@ protected
       end
 
       parseNS( ns, entity )
-      encodingStyle, root = getEncodingStyle( ns, entity )
+      encodingStyle = getEncodingStyle( ns, entity )
 
       # Children's encodingStyle is derived from its parent.
-      encodingStyle ||= parentEncodingStyle
+      encodingStyle ||= parentEncodingStyle || EncodingStyleHandler.defaultHandler
 
       node = decodeTag( ns, entity, parent, encodingStyle )
 
