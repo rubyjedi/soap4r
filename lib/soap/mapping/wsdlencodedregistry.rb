@@ -32,7 +32,7 @@ class WSDLEncodedRegistry
     )
   end
 
-  def obj2soap(klass, obj, type_qname)
+  def obj2soap(obj, type_qname)
     soap_obj = nil
     if obj.nil?
       soap_obj = SOAPNil.new
@@ -52,10 +52,10 @@ class WSDLEncodedRegistry
       }
       return soap_obj if soap_obj
     end
-    raise MappingError.new("Cannot map #{ klass.name } to SOAP/OM.")
+    raise MappingError.new("Cannot map #{ obj.class.name } to SOAP/OM.")
   end
 
-  def soap2obj(klass, node)
+  def soap2obj(node)
     raise RuntimeError.new("#{ self } is for obj2soap only.")
   end
 
