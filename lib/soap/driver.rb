@@ -32,7 +32,8 @@ class Driver
   include Devel::Logger::Severity
   include RPCUtils
 
-  public
+public
+  class EmptyResponseError < Error; end
 
   attr_accessor :mappingRegistry
 
@@ -137,8 +138,10 @@ class Driver
 
     # Then, call @proxy.call like the following.
     header, body = @proxy.call( nil, methodName, *params )
+    unless body
+      raise EmptyResponseError.new( "Empty response." )
+    end
 
-    # Check Fault.
     log( SEV_INFO ) { "call: checking SOAP-Fault..." }
     begin
       @proxy.checkFault( body )
