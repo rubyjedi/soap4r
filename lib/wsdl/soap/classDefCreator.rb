@@ -128,7 +128,11 @@ private
     unless type_or_element.attributes.empty?
       type_or_element.attributes.each do |attribute|
         name = attribute.name
-        type = basetype_class(attribute.type).name
+        if basetype = basetype_class(attribute.type)
+          type = basetype_class(attribute.type).name
+        else
+          type = nil
+        end
         varname = safevarname('attr_' + name)
         c.def_method(varname) do <<-__EOD__
             @__soap_attribute[#{name.dump}]
