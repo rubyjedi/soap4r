@@ -87,14 +87,14 @@ public
   end
 
   def Charset.codeConv( str, encFrom, encTo )
-    retStr = str
+    return str if encFrom == encTo
     if encFrom == 'NONE' or encTo == 'NONE'
-      return retStr
+      return str
     end
     if converter = EncodingConvertMap[ [ encFrom, encTo ] ]
-      retStr = converter.call( str )
+      return converter.call( str )
     end
-    retStr
+    str
   end
 
   def Charset.getXMLInstanceEncodingLabel

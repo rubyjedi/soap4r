@@ -188,7 +188,7 @@ module RPCUtils
       begin
 	if soapKlass <= XSD::XSDString
 	  if Charset.isCES( obj, $KCODE )
-	    encoded = Charset.codeConv( obj, $KCODE, 'UTF8' )
+	    encoded = Charset.codeConv( obj, $KCODE, Charset.getEncoding )
 	    soapObj = soapKlass.new( encoded )
 	  else
 	    soapObj = nil
@@ -213,7 +213,7 @@ module RPCUtils
 
     def soap2obj( objKlass, node, info, map )
       obj = if objKlass <= ::String
-	  Charset.codeConv( node.data, 'UTF8', $KCODE )
+	  Charset.codeConv( node.data, Charset.getEncoding, $KCODE )
 	else
 	  node.data
 	end
