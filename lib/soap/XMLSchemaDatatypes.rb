@@ -51,6 +51,7 @@ module XSD
   AnyURILiteral = 'anyURI'
   QNameLiteral = 'QName'
 
+  NormalizedStringLiteral = 'normalizedString'
   IntegerLiteral = 'integer'
   LongLiteral = 'long'
   IntLiteral = 'int'
@@ -92,7 +93,9 @@ class XSDBase < NSDBase
 
 public
 
+  # @data represents canonical space (ex. Integer: 123).
   attr_reader :data
+  # @isNil represents this data is nil or not.
   attr_accessor :isNil
 
   def initialize( typeName )
@@ -101,6 +104,8 @@ public
     @isNil = true
   end
 
+  # set accepts a string which follows lexical space (ex. String: "+123"), or
+  # an object which follows canonical space (ex. Integer: 123).
   def set( newData )
     if newData.nil?
       @isNil = true
@@ -111,6 +116,7 @@ public
     end
   end
 
+  # to_s creates a string which follows lexical space (ex. String: "123").
   def to_s()
     if @isNil
       ""
@@ -619,7 +625,7 @@ private
   end
 end
 
-class XSDgYearMonth < XSDBase
+class XSDGYearMonth < XSDBase
   include XSDDateTimeImpl
 
 public
@@ -647,7 +653,7 @@ private
   end
 end
 
-class XSDgYear < XSDBase
+class XSDGYear < XSDBase
   include XSDDateTimeImpl
 
 public
@@ -674,7 +680,7 @@ private
   end
 end
 
-class XSDgMonthDay < XSDBase
+class XSDGMonthDay < XSDBase
   include XSDDateTimeImpl
 
 public
@@ -702,7 +708,7 @@ private
   end
 end
 
-class XSDgDay < XSDBase
+class XSDGDay < XSDBase
   include XSDDateTimeImpl
 
 public
@@ -729,7 +735,7 @@ private
   end
 end
 
-class XSDgMonth < XSDBase
+class XSDGMonth < XSDBase
   include XSDDateTimeImpl
 
 public
@@ -809,7 +815,7 @@ private
   end
 end
 
-class XSDanyURI < XSDBase
+class XSDAnyURI < XSDBase
 public
   def initialize( initAnyURI = nil )
     super( AnyURILiteral )
@@ -858,6 +864,23 @@ end
 ###
 ## Derived types
 #
+class XSDNormalizedString < XSDString
+public
+  def initialize( initNormalizedString = nil )
+    super()
+    @typeName = NormalizedStringLiteral
+    set( initNormalizedString ) if initNormalizedString
+  end
+
+private
+  def _set( newNormalizedString )
+    if /[\t\r\n]/ =~ newNormalizedString
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newNormalizedString }'." )
+    end
+    super
+  end
+end
+
 class XSDInteger < XSDDecimal
 public
   def initialize( initInteger = nil )

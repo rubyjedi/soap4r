@@ -233,27 +233,27 @@ class SOAPDate < XSDDate
   extend SOAPModuleUtils
 end
 
-class SOAPgYearMonth < XSDgYearMonth
+class SOAPGYearMonth < XSDGYearMonth
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPgYear < XSDgYear
+class SOAPGYear < XSDGYear
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPgMonthDay < XSDgMonthDay
+class SOAPGMonthDay < XSDGMonthDay
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPgDay < XSDgDay
+class SOAPGDay < XSDGDay
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPgMonth < XSDgMonth
+class SOAPGMonth < XSDGMonth
   include SOAPBasetype
   extend SOAPModuleUtils
 end
@@ -281,7 +281,7 @@ public
   end
 end
 
-class SOAPanyURI < XSDanyURI
+class SOAPAnyURI < XSDAnyURI
   include SOAPBasetype
   extend SOAPModuleUtils
 end
