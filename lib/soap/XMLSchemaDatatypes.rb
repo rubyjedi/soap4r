@@ -490,10 +490,8 @@ module XSDDateTimeImpl
     end
   end
 
-  def strftime( format )
-    s = @data.strftime( format )
-    s << tzFromOf( @data.offset )
-    s
+  def addTz( s )
+    s + tzFromOf( @data.offset )
   end
 end
 
@@ -517,6 +515,9 @@ private
     end
 
     year = $1.to_i
+    if year < 0
+      year += 1
+    end
     mon = $2.to_i
     mday = $3.to_i
     hour = $4.to_i
@@ -542,16 +543,16 @@ private
   end
 
   def _to_s
+    year = ( @data.year > 0 ) ? @data.year : @data.year - 1
     s = format( '%.4d-%02d-%02dT%02d:%02d:%02d',
-      @data.year, @data.mon, @data.mday, @data.hour, @data.min, @data.sec )
+      year, @data.mon, @data.mday, @data.hour, @data.min, @data.sec )
     if @data.sec_fraction.nonzero?
       fr = @data.sec_fraction * SecInDay
       shiftSize = fr.denominator.to_s.size
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
       s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
     end
-    s << tzFromOf( @data.offset )
-    s
+    addTz( s )
   end
 end
 
@@ -592,8 +593,7 @@ private
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
       s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
     end
-    s << tzFromOf( @data.offset )
-    s
+    addTz( s )
   end
 end
 
@@ -614,6 +614,9 @@ private
     end
 
     year = $1.to_i
+    if year < 0
+      year += 1
+    end
     mon = $2.to_i
     mday = $3.to_i
     zoneStr = $4
@@ -622,7 +625,9 @@ private
   end
 
   def _to_s
-    strftime( "%Y-%m-%d" )
+    year = ( @data.year > 0 ) ? @data.year : @data.year - 1
+    s = format( '%.4d-%02d-%02d', year, @data.mon, @data.mday )
+    addTz( s )
   end
 end
 
@@ -643,6 +648,9 @@ private
     end
 
     year = $1.to_i
+    if year < 0
+      year += 1
+    end
     mon = $2.to_i
     zoneStr = $3
 
@@ -650,7 +658,9 @@ private
   end
 
   def _to_s
-    strftime( "%Y-%m" )
+    year = ( @data.year > 0 ) ? @data.year : @data.year - 1
+    s = format( '%.4d-%02d', year, @data.mon )
+    addTz( s )
   end
 end
 
@@ -671,13 +681,18 @@ private
     end
 
     year = $1.to_i
+    if year < 0
+      year += 1
+    end
     zoneStr = $2
 
     @data = DateTime.civil( year, 1, 1, 0, 0, 0, ofFromTZ( zoneStr ))
   end
 
   def _to_s
-    strftime( "%Y" )
+    year = ( @data.year > 0 ) ? @data.year : @data.year - 1
+    s = format( '%.4d', year )
+    addTz( s )
   end
 end
 
@@ -705,7 +720,8 @@ private
   end
 
   def _to_s
-    strftime( "%m-%d" )
+    s = format( '%02d-%02d', @data.mon, @data.mday )
+    addTz( s )
   end
 end
 
@@ -732,7 +748,8 @@ private
   end
 
   def _to_s
-    strftime( "%d" )
+    s = format( '%02d', @data.mday )
+    addTz( s )
   end
 end
 
@@ -759,7 +776,8 @@ private
   end
 
   def _to_s
-    strftime( "%m" )
+    s = format( '%02d', @data.mon )
+    addTz( s )
   end
 end
 
