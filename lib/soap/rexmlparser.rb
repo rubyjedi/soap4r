@@ -19,7 +19,6 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/parser'
 require 'rexml/streamlistener'
 require 'rexml/document'
-require 'uconv'
 
 
 module SOAP
