@@ -17,7 +17,6 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/encoding'
-require 'soap/nqxmlDocument'
 
 
 module SOAP
@@ -36,96 +35,112 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   ###
   ## encode interface.
   #
-  def encodeData( ns, data, name, parent )
+  def encodeData( buf, ns, qualified, data, parent )
+    attrs = {}
+
+  if !data.is_a?( SOAPReference )
+
+    if !parent || parent.encodingStyle != EncodingNamespace
+      if !ns.assigned?( EnvelopeNamespace )
+	tag = ns.assign( EnvelopeNamespace )
+	attrs[ 'xmlns:' << tag ] = EnvelopeNamespace
+      end
+      if !ns.assigned?( EncodingNamespace )
+	tag = ns.assign( EncodingNamespace )
+	attrs[ 'xmlns:' << tag ] = EncodingNamespace
+      end
+      attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
+	EncodingNamespace
+    end
+
+    if !ns.assigned?( XSD::InstanceNamespace )
+      tag = ns.assign( XSD::InstanceNamespace )
+      attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
+    end
+
+    if data.typeNamespace and !ns.assigned?( data.typeNamespace )
+      tag = ns.assign( data.typeNamespace )
+      attrs[ 'xmlns:' << tag ] = data.typeNamespace
+    end
+
+    if data.is_a?( SOAPArray )
+      attrs[ ns.name( EncodingNamespace, 'arrayType' ) ] =
+	ns.name( data.typeNamespace, arrayTypeValue( ns, data ) ) 
+      if data.typeName
+	attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
+	  ns.name( EncodingNamespace, 'Array' )
+      end
+    elsif parent && parent.is_a?( SOAPArray ) &&
+	parent.typeNamespace == data.typeNamespace &&
+     	parent.baseTypeName == data.typeName
+      # No need to add.
+    elsif !data.typeName
+      # No need to add.
+    elsif data.is_a?( SOAPNil )
+      attrs[ ns.name( XSD::InstanceNamespace, XSD::NilLiteral ) ] =
+	XSD::NilValue
+    else
+      attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
+	ns.name( data.typeNamespace, data.typeName )
+    end
+
+    if data.id
+      attrs[ 'id' ] = data.id
+    end
+
   end
 
-  def encodeBaseData( ns, data, name, parent )
-    # for basetype...
-    attrs = []
-    addNSDeclAttr( attrs, ns )
-#    if parentEncodingStyle != EncodingNamespace
-#      addEncodingAttr( attrs, ns )
-#    end
-    if !parent.is_a?( SOAPArray )
-      attrs.push( datatypeAttr( ns )) if data.typeName
-    else
-      if parent.position
-	attrs.push( positionAttr( parent.position, ns ))
-      end
-      if parent.typeNamespace != data.typeNamespace ||
-	  parent.baseTypeName != data.typeName
-	attrs.push( datatypeAttr( ns )) if data.typeName
-      end
+    if parent && parent.is_a?( SOAPArray ) && parent.position
+      attrs[ ns.name( EncodingNamespace, AttrPosition ) ] =
+	'[' << parent.position.join( ',' ) << ']'
     end
 
-    if ( data.to_s.empty? )
-      Node.initializeWithChildren( name, attrs )
+    name = nil
+    if qualified and data.namespace
+      if !ns.assigned?( data.namespace )
+	tag = ns.assign( data.namespace )
+	attrs[ 'xmlns:' << tag ] = data.namespace
+      end
+      name = ns.name( data.namespace, data.name )
     else
-      Node.initializeWithChildren( name, attrs, Text.new( data.to_s ))
+      name = data.name
+    end
+
+    case data
+    when SOAPReference
+      attrs[ 'href' ] = '#' << data.refId
+      SOAPGenerator.encodeTag( buf, name, attrs, false )
+    when SOAPBasetype
+      SOAPGenerator.encodeTag( buf, name, attrs, false )
+      buf << SOAPGenerator.encodeStr( data.to_s )
+    when SOAPStruct
+      SOAPGenerator.encodeTag( buf, name, attrs, true )
+      data.each do | key, value |
+	yield( value, false )
+      end
+    when SOAPArray
+      SOAPGenerator.encodeTag( buf, name, attrs, true )
+      data.traverse do | child, *rank |
+	unless data.sparse
+	  data.position = nil
+	else
+	  data.position = rank
+	end
+	yield( child, false )
+      end
+    else
+      raise EncodingStyleError.new( "Unknown object:#{ data } in this encodingStyle." )
     end
   end
 
-# @
-  def encodeStruct( ns, data, name, parent )
-    attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
-    addNSDeclAttr( attrs, ns )
-#    if parentEncodingStyle != EncodingNamespace
-#      addEncodingAttr( attrs, ns )
-#    end
-    if !parent.is_a?( SOAPArray )
-      attrs.push( datatypeAttr( ns )) if data.typeName
+  def encodeDataEnd( buf, ns, qualified, data, parent )
+    name = nil
+    if qualified and data.namespace
+      name = ns.name( data.namespace, data.name )
     else
-      if parent.position
-       	attrs.push( positionAttr( parent.position, ns ))
-      end
-      if parent.typeNamespace != data.typeNamespace ||
-	  parentArray.baseTypeName != data.typeName
-	attrs.push( datatypeAttr( ns )) if data.typeName
-      end
+      name = data.name
     end
-
-    children = []
-    0.upto( @array.length - 1 ) do | i |
-      children.push( @data[ i ].encodeData( ns.clone, @array[ i ], data ))
-    end
-
-    # Element.new( name, attrs, children )
-    Node.initializeWithChildren( name, attrs, children )
-  end
-
-  def encodeDataArray( ns, data, name, parent )
-    attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
-    addNSDeclAttr( attrs, ns )
-#    if parentEncodingStyle != EncodingNamespace
-#      addEncodingAttr( attrs, ns )
-#    end
-
-    attrs.push( arrayTypeAttr( ns ))
-    attrs.push( datatypeAttr( ns )) if data.typeName
-    if !parent.is_a?( SOAPArray )
-      attrs.push( datatypeAttr( ns )) if data.typeName	# Added in rewriting...
-    else
-      if parent.position
-	attrs.push( positionAttr( parent.position, ns ))
-      end
-      # Add always.
-      attrs.push( datatypeAttr( ns )) if data.typeName
-    end
-
-    childTypeName = contentTypeName().gsub( /\[,*\]/, ArrayEncodePostfix ) << ArrayEncodePostfix
-
-    children = []
-    traverse do | child, *rank |
-      unless @sparse
-	@position = nil
-      else
-	@position = rank
-      end
-      children << child.encode( ns.clone, childTypeName, EncodingNamespace, self )
-    end
-
-    # Element.new( name, attrs, children )
-    Node.initializeWithChildren( name, attrs, children )
+    SOAPGenerator.encodeTagEnd( buf, name, true )
   end
 
 
@@ -147,12 +162,11 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   end
 
   class SOAPUnknown < SOAPTemporalObject
-    def initialize( handler, ns, name, data, typeNamespace, typeName )
+    def initialize( handler, ns, name, typeNamespace, typeName )
       super()
       @handler = handler
       @ns = ns
       @name = name
-      @data = data
       @typeNamespace = typeNamespace
       @typeName = typeName
     end
@@ -191,7 +205,8 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   def decodeTag( ns, name, attrs, parent )
     # ToDo: check if @textBuf is empty...
     @textBuf = ''
-    isNil, type, arrayType, reference, id, root, offset, position = decodeAttrs( ns, attrs )
+    isNil, type, arrayType, reference, id, root, offset, position =
+      decodeAttrs( ns, attrs )
     o = nil
     if isNil
       o = SOAPNil.decode( ns, name )
@@ -216,7 +231,8 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       if type
 	typeNamespace, typeNameString = ns.parse( type )
       elsif parent.node.is_a?( SOAPArray )
-	typeNamespace, typeNameString = parent.node.typeNamespace, parent.node.typeName
+	typeNamespace, typeNameString =
+	  parent.node.typeNamespace, parent.node.typeName
       else
 	# Since it's in dynamic(without any type) encoding process,
 	# assumes entity as its type itself.
@@ -241,7 +257,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 
       else
 	# Unknown type... Struct or String
-	o = SOAPUnknown.new( self, ns, name, attrs, typeNamespace, typeNameString )
+	o = SOAPUnknown.new( self, ns, name, typeNamespace, typeNameString )
 
       end
     end
@@ -329,32 +345,15 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 
 private
 
-  def encodeBaseData()
-    attrs = []
-    addNSDeclAttr( attrs, ns )
-    if parentEncodingStyle != EncodingNamespace
-      addEncodingAttr( attrs, ns )
-    end
-    if parentArray && parentArray.typeNamespace == @typeNamespace &&
-        parentArray.baseTypeName == @typeName
-      # No need to add.
-    else
-      attrs.push( datatypeAttr( ns )) if @typeName
-    end
+  ArrayEncodePostfix = 'Ary'
 
-    if parentArray && parentArray.position
-      attrs.push( positionAttr( parentArray.position, ns ))
-    end
-
-    if ( self.to_s.empty? )
-      # Element.new( name, attrs )
-      Node.initializeWithChildren( name, attrs )
-    else
-      # Element.new( name, attrs, Text.new( self.to_s ))
-      Node.initializeWithChildren( name, attrs, Text.new( self.to_s ))
-    end
+  def contentTypeName( data )
+    data.typeName ? data.typeName.sub( /\[,*\]$/, '' ) : ''
   end
 
+  def arrayTypeValue( ns, data )
+    contentTypeName( data ) << '[' << data.size.join( ',' ) << ']'
+  end
 
   XSDBaseTypeMap = {
     XSD::DecimalLiteral => SOAPDecimal,
@@ -425,10 +424,12 @@ private
     attrs.each do | key, value |
       if ( ns.compare( XSD::InstanceNamespace, XSD::NilLiteral, key ))
 	# isNil = (( value == 'true' ) || ( value == '1' ))
-	if value == XSD::NilValue
+	if (( value == 'true' ) || ( value == '1' ))
 	  isNil = true
+	elsif (( value == 'false' ) || ( value == '0' ))
+	  isNil = false
 	else
-	  raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true')." )
+	  raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true', 'false', '1', or '0')." )
 	end
       elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	type = value
@@ -465,7 +466,6 @@ private
     count = @referencePool.length	# To avoid infinite loop
     while !@referencePool.empty? && count > 0
       @referencePool = @referencePool.find_all { | ref |
-	count -= 1
 	o = @idPool.find { | item |
 	  ( '#' << item.id == ref.refId )
 	}
@@ -479,6 +479,7 @@ private
 	  false
 	end
       }
+      count -= 1
     end
   end
 end
