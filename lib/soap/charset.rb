@@ -53,12 +53,27 @@ module Charset
 	trueProc,
 	Uconv.method( :u8tosjis )
       ]
+
+      # Original regexps: http://www.din.or.jp/~ohzaki/perl.htm
+      # ascii_euc = '[\x00-\x7F]'
+      ascii_euc = '[\x9\xa\xd\x20-\x7F]'	# XML 1.0 restricted.
+      twoBytes_euc = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])'
+      threeBytes_euc = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])'
+      character_euc = "(?:#{ ascii_euc }|#{ twoBytes_euc }|#{ threeBytes_euc })"
+      # oneByte_sjis = '[\x00-\x7F\xA1-\xDF]'
+      oneByte_sjis = '[\x9\xa\xd\x20-\x7F\xA1-\xDF]'	# XML 1.0 restricted.
+      twoBytes_sjis = '(?:[\x81-\x9F\xE0-\xFC][\x40-\x7E\x80-\xFC])'
+      character_sjis = "(?:#{ oneByte_sjis }|#{ twoBytes_sjis })"
+
+      eucRegexp = Regexp.new( "\A#{ character_euc }*\z", nil, "NONE" )
+      sjisRegexp = Regexp.new( "\A#{ character_sjis }*\z", nil, "NONE" )
+
       EncodingConvertMap[ [ 'EUC' , 'UTF8' ] ] = [
-	Proc.new { |str| NKF.guess( str ) == NKF::EUC },
+	Proc.new { |str| eucRegexp =~ str },
 	Uconv.method( :euctou8 )
       ]
       EncodingConvertMap[ [ 'SJIS', 'UTF8' ] ] = [
-	Proc.new { |str| NKF.guess( str ) == NKF::SJIS },
+	Proc.new { |str| sjisRegexp =~ str },
 	Uconv.method( :sjistou8 )
       ]
     rescue LoadError
