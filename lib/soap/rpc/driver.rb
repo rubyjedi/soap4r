@@ -1,5 +1,5 @@
 # SOAP4R - SOAP RPC driver
-# Copyright (C) 2000, 2001, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003, 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -13,6 +13,7 @@ require 'soap/rpc/proxy'
 require 'soap/rpc/element'
 require 'soap/streamHandler'
 require 'soap/property'
+require 'soap/header/handlerset'
 
 
 module SOAP
@@ -41,6 +42,7 @@ class Driver
   end
 
   __attr_proxy :options
+  __attr_proxy :headerhandler
   __attr_proxy :endpoint_url, true
   __attr_proxy :mapping_registry, true
   __attr_proxy :soapaction, true
@@ -130,6 +132,7 @@ private
   class Servant__
     attr_reader :options
     attr_reader :streamhandler
+    attr_reader :headerhandler
     attr_reader :proxy
 
     def initialize(host, endpoint_url, namespace)
@@ -141,6 +144,7 @@ private
       @options = setup_options
       @streamhandler = HTTPPostStreamHandler.new(endpoint_url,
 	@options["protocol.http"] ||= ::SOAP::Property.new)
+      @headerhandler = Header::HandlerSet.new
       @proxy = Proxy.new(@streamhandler, @soapaction)
       @proxy.allow_unqualified_element = true
     end
@@ -192,7 +196,7 @@ private
       set_wiredump_file_base(name)
       # Convert parameters: params array => SOAPArray => members array
       params = Mapping.obj2soap(params, @mapping_registry).to_a
-      env = @proxy.call(nil, name, *params)
+      env = @proxy.call(call_headers, name, *params)
       raise EmptyResponseError.new("Empty response.") unless env
       header, body = env.header, env.body
       begin
@@ -236,6 +240,19 @@ private
     end
 
   private
+
+    def call_headers
+      headers = @headerhandler.on_outbound
+      if headers.empty?
+	nil
+      else
+	h = ::SOAP::SOAPHeader.new
+	headers.each do |header|
+	  h.add(header)
+	end
+	h
+      end
+    end
 
     def set_wiredump_file_base(name)
       if @wiredump_file_base
