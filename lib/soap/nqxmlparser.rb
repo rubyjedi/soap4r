@@ -17,6 +17,8 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/parser'
+require 'nqxml/tokenizer'
+require 'nqxml/streamingparser'
 
 
 module SOAP
@@ -25,7 +27,6 @@ module SOAP
 class SOAPNQXMLLightWeightParser < SOAPParser
   def initialize( *vars )
     super( *vars )
-    require 'nqxml/tokenizer'
     unless NQXML.const_defined?( "XMLDecl" )
       NQXML.const_set( "XMLDecl", NilClass )
     end
@@ -77,7 +78,6 @@ end
 class SOAPNQXMLStreamingParser < SOAPParser
   def initialize( *vars )
     super( *vars )
-    require 'nqxml/streamingparser'
     unless NQXML.const_defined?( "XMLDecl" )
       NQXML.const_set( "XMLDecl", NilClass )
     end
