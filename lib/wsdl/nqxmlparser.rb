@@ -1,5 +1,5 @@
 =begin
-SOAP4R - WSDL xmlparser library.
+SOAP4R - WSDL NQXMLParser library.
 Copyright (C) 2001 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -17,36 +17,40 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'wsdl/parser'
-require 'xmlparser'
+require 'nqxml/tokenizer'
+require 'nqxml/streamingparser'
 
 
 module WSDL
 
 
-class WSDLXMLParser < WSDLParser
-  class Listener < XML::Parser
-    # Dummy handler to get XML::Parser::XML_DECL event.
-    def xmlDecl; end
-  end
-
+class WSDLNQXMLLightWeightParser < WSDLParser
   def initialize( *vars )
     super( *vars )
+    unless NQXML.const_defined?( "XMLDecl" )
+      NQXML.const_set( "XMLDecl", NilClass )
+    end
   end
 
   def doParse( stringOrReadable )
-    @parser = Listener.new
-    @parser.parse( stringOrReadable ) do | type, name, data |
-      case type
-      when XML::Parser::START_ELEM
-	startElement( name, data )
-      when XML::Parser::END_ELEM
-	endElement( name )
-      when XML::Parser::CDATA
-	characters( data )
-      when XML::Parser::XML_DECL
-	# ?
+    tokenizer = NQXML::Tokenizer.new( stringOrReadable )
+    tokenizer.each do | entity |
+      case entity
+      when NQXML::Tag
+	unless entity.isTagEnd
+	  startElement( entity.name, entity.attrs )
+	else
+	  endElement( entity.name )
+	end
+      when NQXML::Text
+	characters( entity.text )
+      # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
+      when NQXML::XMLDecl, NQXML::ProcessingInstruction
+	#?
+      when NQXML::Comment
+	# Nothing to do.
       else
-	raise FormatDecodeError.new( "Unexpected XML: #{ type }/#{ name }/#{ data }." )
+	raise FormatDecodeError.new( "Unexpected XML: #{ entity }." )
       end
     end
   end

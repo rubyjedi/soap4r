@@ -36,10 +36,6 @@ class WSDLParser
   class UnexpectedElementError < FormatDecodeError; end
   class ElemenConstraintError < FormatDecodeError; end
 
-  def self.adjustKCode
-    false
-  end
-
   @@parserFactory = nil
 
   def self.factory
@@ -95,7 +91,6 @@ public
       'Method doParse must be defined in derived class.' )
   end
 
-protected
   def startElement( name, attrs )
     lastFrame = @parseStack.last
     ns = parent = nil
@@ -199,4 +194,24 @@ private
 end
 
 
+end
+
+
+# Try to load XML processor.
+loaded = false
+[
+  'wsdl/xmlparser',
+  'wsdl/nqxmlparser',
+  'wsdl/rexmlparser',
+  'wsdl/xmlscanner',
+].each do | lib |
+  begin
+    require lib
+    loaded = true
+    break
+  rescue LoadError
+  end
+end
+unless loaded
+  raise RuntimeError.new( "XML processor module not found." )
 end

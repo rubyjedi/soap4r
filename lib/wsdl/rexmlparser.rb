@@ -1,6 +1,6 @@
 =begin
-SOAP4R - WSDL xmlparser library.
-Copyright (C) 2001 NAKAMURA Hiroshi.
+SOAP4R - WSDL REXMLParser library.
+Copyright (C) 2002 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,38 +17,38 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'wsdl/parser'
-require 'xmlparser'
+require 'rexml/streamlistener'
+require 'rexml/document'
 
 
 module WSDL
 
 
-class WSDLXMLParser < WSDLParser
-  class Listener < XML::Parser
-    # Dummy handler to get XML::Parser::XML_DECL event.
-    def xmlDecl; end
-  end
+class WSDLREXMLParser < WSDLParser
+  include REXML::StreamListener
 
   def initialize( *vars )
     super( *vars )
   end
 
   def doParse( stringOrReadable )
-    @parser = Listener.new
-    @parser.parse( stringOrReadable ) do | type, name, data |
-      case type
-      when XML::Parser::START_ELEM
-	startElement( name, data )
-      when XML::Parser::END_ELEM
-	endElement( name )
-      when XML::Parser::CDATA
-	characters( data )
-      when XML::Parser::XML_DECL
-	# ?
-      else
-	raise FormatDecodeError.new( "Unexpected XML: #{ type }/#{ name }/#{ data }." )
-      end
-    end
+    REXML::Document.parse_stream( stringOrReadable, self )
+  end
+
+  def tag_start( name, attrs )
+    startElement( name, attrs )
+  end
+
+  def tag_end( name )
+    endElement( name )
+  end
+
+  def text( text )
+    characters( text )
+  end
+
+  def xmldecl( version, encoding, standalone )
+    # Version should be checked.
   end
 
   setFactory( self )
