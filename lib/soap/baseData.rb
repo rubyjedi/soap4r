@@ -198,6 +198,11 @@ class SOAPBoolean < XSDBoolean
   extend SOAPModuleUtils
 end
 
+class SOAPDecimal < XSDDecimal
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
 class SOAPFloat < XSDFloat
   include SOAPBasetype
   extend SOAPModuleUtils
@@ -208,22 +213,7 @@ class SOAPDouble < XSDDouble
   extend SOAPModuleUtils
 end
 
-class SOAPDecimal < XSDDecimal
-  include SOAPBasetype
-  extend SOAPModuleUtils
-end
-
-class SOAPInteger < XSDInteger
-  include SOAPBasetype
-  extend SOAPModuleUtils
-end
-
-class SOAPLong < XSDLong
-  include SOAPBasetype
-  extend SOAPModuleUtils
-end
-
-class SOAPInt < XSDInt
+class SOAPDuration < XSDDuration
   include SOAPBasetype
   extend SOAPModuleUtils
 end
@@ -233,12 +223,37 @@ class SOAPDateTime < XSDDateTime
   extend SOAPModuleUtils
 end
 
+class SOAPTime < XSDTime
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
 class SOAPDate < XSDDate
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPTime < XSDTime
+class SOAPgYearMonth < XSDgYearMonth
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPgYear < XSDgYear
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPgMonthDay < XSDgMonthDay
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPgDay < XSDgDay
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPgMonth < XSDgMonth
   include SOAPBasetype
   extend SOAPModuleUtils
 end
@@ -253,7 +268,6 @@ class SOAPBase64 < XSDBase64Binary
   extend SOAPModuleUtils
 
 public
-
   # Override the definition in SOAPBasetype.
   def initialize( *vars )
     super( *vars )
@@ -265,6 +279,32 @@ public
     @typeNamespace = XSD::Namespace
     @typeName = XSD::Base64BinaryLiteral
   end
+end
+
+class SOAPanyURI < XSDanyURI
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPQName < XSDQName
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+
+class SOAPInteger < XSDInteger
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPLong < XSDLong
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPInt < XSDInt
+  include SOAPBasetype
+  extend SOAPModuleUtils
 end
 
 
