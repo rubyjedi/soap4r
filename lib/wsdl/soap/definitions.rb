@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'xsd/namedelements'
 require 'soap/mapping'
 
 
@@ -36,7 +37,7 @@ class Definitions < Info
 private
 
   def rpc_operation_complextypes(binding)
-    types = NamedElements.new
+    types = XSD::NamedElements.new
     binding.operations.each do |op_bind|
       if op_bind_rpc?(op_bind)
 	operation = op_bind.find_operation

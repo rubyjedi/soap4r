@@ -37,7 +37,7 @@ class StreamHandler
     end
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.35 2003/09/12 14:58:54 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.36 2003/09/20 13:28:57 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -101,7 +101,7 @@ public
   def initialize(endpoint_url, proxy = nil, charset = nil)
     super(endpoint_url)
     @proxy = proxy || ENV['http_proxy'] || ENV['HTTP_PROXY']
-    @charset = charset || Charset.charset_label($KCODE)
+    @charset = charset || XSD::Charset.charset_label($KCODE)
     @wiredump_dev = nil	# Set an IO to get wiredump.
     @wiredump_file_base = nil
     @client = Client.new(@proxy, "SOAP4R/#{ Version }")

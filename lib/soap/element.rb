@@ -143,7 +143,7 @@ public
 end
 
 
-class SOAPHeaderItem < NSDBase
+class SOAPHeaderItem < XSD::NSDBase
   include SOAPEnvelopeElement
   include SOAPCompoundtype
 
@@ -200,7 +200,7 @@ class SOAPHeader < SOAPArray
 end
 
 
-class SOAPEnvelope < NSDBase
+class SOAPEnvelope < XSD::NSDBase
   include SOAPEnvelopeElement
   include SOAPCompoundtype
 

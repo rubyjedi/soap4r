@@ -110,7 +110,7 @@ end
 ###
 ## Convenience datatypes.
 #
-class SOAPReference < NSDBase
+class SOAPReference < XSD::NSDBase
   include SOAPBasetype
   extend SOAPModuleUtils
 
@@ -173,7 +173,7 @@ public
   end
 end
 
-class SOAPNil < XSDNil
+class SOAPNil < XSD::XSDNil
   include SOAPBasetype
   extend SOAPModuleUtils
 end
@@ -181,7 +181,7 @@ end
 # SOAPRawString is for sending raw string.  In contrast to SOAPString,
 # SOAP4R does not do XML encoding and does not convert its CES.  The string it
 # holds is embedded to XML instance directly as a 'xsd:string'.
-class SOAPRawString < XSDString
+class SOAPRawString < XSD::XSDString
   include SOAPBasetype
   extend SOAPModuleUtils
 end
@@ -190,87 +190,87 @@ end
 ###
 ## Basic datatypes.
 #
-class SOAPAnySimpleType < XSDAnySimpleType
+class SOAPAnySimpleType < XSD::XSDAnySimpleType
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPString < XSDString
+class SOAPString < XSD::XSDString
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPBoolean < XSDBoolean
+class SOAPBoolean < XSD::XSDBoolean
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPDecimal < XSDDecimal
+class SOAPDecimal < XSD::XSDDecimal
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPFloat < XSDFloat
+class SOAPFloat < XSD::XSDFloat
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPDouble < XSDDouble
+class SOAPDouble < XSD::XSDDouble
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPDuration < XSDDuration
+class SOAPDuration < XSD::XSDDuration
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPDateTime < XSDDateTime
+class SOAPDateTime < XSD::XSDDateTime
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPTime < XSDTime
+class SOAPTime < XSD::XSDTime
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPDate < XSDDate
+class SOAPDate < XSD::XSDDate
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPGYearMonth < XSDGYearMonth
+class SOAPGYearMonth < XSD::XSDGYearMonth
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPGYear < XSDGYear
+class SOAPGYear < XSD::XSDGYear
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPGMonthDay < XSDGMonthDay
+class SOAPGMonthDay < XSD::XSDGMonthDay
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPGDay < XSDGDay
+class SOAPGDay < XSD::XSDGDay
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPGMonth < XSDGMonth
+class SOAPGMonth < XSD::XSDGMonth
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPHexBinary < XSDHexBinary
+class SOAPHexBinary < XSD::XSDHexBinary
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPBase64 < XSDBase64Binary
+class SOAPBase64 < XSD::XSDBase64Binary
   include SOAPBasetype
   extend SOAPModuleUtils
   Type = QName.new(EncodingNamespace, Base64Literal)
@@ -287,33 +287,33 @@ public
   end
 end
 
-class SOAPAnyURI < XSDAnyURI
+class SOAPAnyURI < XSD::XSDAnyURI
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPQName < XSDQName
+class SOAPQName < XSD::XSDQName
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
 
-class SOAPInteger < XSDInteger
+class SOAPInteger < XSD::XSDInteger
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPLong < XSDLong
+class SOAPLong < XSD::XSDLong
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPInt < XSDInt
+class SOAPInt < XSD::XSDInt
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
-class SOAPShort < XSDShort
+class SOAPShort < XSD::XSDShort
   include SOAPBasetype
   extend SOAPModuleUtils
 end
@@ -322,7 +322,7 @@ end
 ###
 ## Compound datatypes.
 #
-class SOAPStruct < NSDBase
+class SOAPStruct < XSD::NSDBase
   include SOAPCompoundtype
   include Enumerable
 
@@ -467,6 +467,18 @@ class SOAPElement
     @array
   end
 
+  def to_obj
+    if members.empty?
+      @text
+    else
+      hash = {}
+      each do |k, v|
+	hash[k] = v.to_obj
+      end
+      hash
+    end
+  end
+
   def each
     for i in 0..(@array.length - 1)
       yield(@array[i], @data[i])
@@ -479,13 +491,25 @@ class SOAPElement
     o
   end
 
+  def self.from_obj(hash_or_string)
+    o = SOAPElement.new(nil)
+    if hash_or_string.is_a?(Hash)
+      hash_or_string.each do |k, v|
+	child = self.from_obj(v)
+	child.elename = XSD::QName.new(nil, k)
+	o.add(child)
+      end
+    else
+      o.text = hash_or_string
+    end
+    o
+  end
+
 private
 
-  def add_member(name, value = nil)
-    value = SOAPNil.new() unless value
+  def add_member(name, value)
     add_accessor(name)
     @array.push(name)
-    value.elename = value.elename.dup_name(name)
     @data.push(value)
   end
 
@@ -516,7 +540,7 @@ private
 end
 
 
-class SOAPArray < NSDBase
+class SOAPArray < XSD::NSDBase
   include SOAPCompoundtype
   include Enumerable
 

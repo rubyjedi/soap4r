@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'xsd/namedelements'
 
 
 module WSDL
@@ -43,12 +44,12 @@ class Definitions < Info
     @targetnamespace = nil
     @types = nil
     @imports = []
-    @messages = NamedElements.new
-    @porttypes = NamedElements.new
-    @bindings = NamedElements.new
-    @services = NamedElements.new
+    @messages = XSD::NamedElements.new
+    @porttypes = XSD::NamedElements.new
+    @bindings = XSD::NamedElements.new
+    @services = XSD::NamedElements.new
 
-    @anontypes = NamedElements.new
+    @anontypes = XSD::NamedElements.new
     @root = self
   end
 
@@ -60,7 +61,7 @@ class Definitions < Info
   end
 
   def collect_elements
-    result = NamedElements.new
+    result = XSD::NamedElements.new
     if @types
       @types.schemas.each do |schema|
 	result.concat(schema.elements)

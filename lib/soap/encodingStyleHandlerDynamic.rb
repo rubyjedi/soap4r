@@ -66,11 +66,11 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     when SOAPRawString
       SOAPGenerator.encode_tag(buf, name, attrs, indent)
       buf << data.to_s
-    when XSDString
+    when XSD::XSDString
       SOAPGenerator.encode_tag(buf, name, attrs, indent)
       buf << SOAPGenerator.encode_str(@charset ?
-	Charset.encoding_to_xml(data.to_s, @charset) : data.to_s)
-    when XSDAnySimpleType
+	XSD::Charset.encoding_to_xml(data.to_s, @charset) : data.to_s)
+    when XSD::XSDAnySimpleType
       SOAPGenerator.encode_tag(buf, name, attrs, indent)
       buf << SOAPGenerator.encode_str(data.to_s)
     when SOAPStruct
@@ -433,11 +433,11 @@ private
 
   def decode_textbuf(node)
     case node
-    when XSDHexBinary, XSDBase64Binary
+    when XSD::XSDHexBinary, XSD::XSDBase64Binary
       node.set_encoded(@textbuf)
-    when XSDString
+    when XSD::XSDString
       if @charset
-	node.set(Charset.encoding_from_xml(@textbuf, @charset))
+	node.set(XSD::Charset.encoding_from_xml(@textbuf, @charset))
       else
 	node.set(@textbuf)
       end

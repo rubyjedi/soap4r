@@ -105,8 +105,8 @@ end
 class StringFactory_ < Factory
   def obj2soap(soap_class, obj, info, map)
     begin
-      if Charset.is_ces(obj, $KCODE)
-        encoded = Charset.encoding_conv(obj, $KCODE, Charset.encoding)
+      if XSD::Charset.is_ces(obj, $KCODE)
+        encoded = XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding)
         soap_obj = soap_class.new(encoded)
       else
         return nil
@@ -119,7 +119,7 @@ class StringFactory_ < Factory
   end
 
   def soap2obj(obj_class, node, info, map)
-    obj = Charset.encoding_conv(node.data, Charset.encoding, $KCODE)
+    obj = XSD::Charset.encoding_conv(node.data, XSD::Charset.encoding, $KCODE)
     mark_unmarshalled_obj(node, obj)
     return true, obj
   end

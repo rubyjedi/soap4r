@@ -19,6 +19,7 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'wsdl/info'
 require 'wsdl/xmlSchema/content'
+require 'xsd/namedelements'
 
 
 module WSDL
@@ -40,7 +41,7 @@ class ComplexType < Info
     @content = nil
     @final = nil
     @mixed = false
-    @attributes = NamedElements.new
+    @attributes = XSD::NamedElements.new
   end
 
   def targetnamespace

@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'xsd/namedelements'
 
 
 module WSDL
@@ -31,7 +32,7 @@ class Service < Info
   def initialize
     super
     @name = nil
-    @ports = NamedElements.new
+    @ports = XSD::NamedElements.new
     @soap_address = nil
   end
 

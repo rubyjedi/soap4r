@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'xsd/namedelements'
 
 
 module WSDL
@@ -33,7 +34,7 @@ class Binding < Info
     super
     @name = nil
     @type = nil
-    @operations = NamedElements.new
+    @operations = XSD::NamedElements.new
     @soapbinding = nil
   end
 
