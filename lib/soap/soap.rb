@@ -24,7 +24,7 @@ require 'xsd/charset'
 module SOAP
 
 
-Version = '1.4.8'
+Version = '1.5.0'
 
 EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
 EncodingNamespace = 'http://schemas.xmlsoap.org/soap/encoding/'
