@@ -10,7 +10,6 @@ require 'wsdl/info'
 require 'wsdl/soap/mappingRegistryCreator'
 require 'wsdl/soap/methodDefCreator'
 require 'wsdl/soap/classDefCreatorSupport'
-require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
@@ -19,7 +18,6 @@ module SOAP
 
 class StandaloneServerStubCreator
   include ClassDefCreatorSupport
-  include MethodDefCreatorSupport
 
   attr_reader :definitions
 
@@ -38,49 +36,41 @@ class StandaloneServerStubCreator
 
 private
 
-  def dump_porttype(porttype)
-    name = create_class_name(porttype)
-    methoddef, types = MethodDefCreator.new(@definitions).dump(porttype)
+  def dump_porttype(name)
+    class_name = create_class_name(name)
+    methoddef, types = MethodDefCreator.new(@definitions).dump(name)
     mr_creator = MappingRegistryCreator.new(@definitions)
-    mr = mr_creator.dump(types)
-    if mr.empty?
-      mr = "# No mapping definition"
+
+    c1 = ::XSD::CodeGen::ClassDef.new(class_name)
+    c1.def_require("soap/rpc/standaloneServer")
+    c1.def_require("soap/mapping/registry")
+    c1.def_const("MappingRegistry", "::SOAP::Mapping::Registry.new")
+    c1.def_code(mr_creator.dump(types))
+    c1.def_code <<-EOD
+Methods = [
+#{ methoddef.gsub(/^/, "  ") }
+]
+    EOD
+    c2 = ::XSD::CodeGen::ClassDef.new(class_name + "App",
+      "::SOAP::RPC::StandaloneServer")
+    c2.def_method("initialize", "*arg") do
+      <<-EOD
+        super(*arg)
+        servant = #{class_name}.new
+        #{class_name}::Methods.each do |name_as, name, params, soapaction, ns|
+          qname = XSD::QName.new(ns, name_as)
+          @soaplet.app_scope_router.add_method(servant, qname, soapaction, name, params)
+        end
+        self.mapping_registry = #{class_name}::MappingRegistry
+      EOD
     end
-    mr.gsub!(/^/, "  ")
+    c1.dump + "\n" + c2.dump + format(<<-EOD)
 
-    return <<__EOD__
-require 'soap/rpc/standaloneServer'
-
-class #{ name }
-  MappingRegistry = SOAP::Mapping::Registry.new
-
-#{ mr }
-
-  Methods = [
-#{ methoddef.gsub(/^/, "    ").chomp }
-  ]
-end
-
-class #{name}App < SOAP::RPC::StandaloneServer
-  def initialize(*arg)
-    super
-
-    servant = #{ name }.new
-    #{ name }::Methods.each do |name_as, name, params, soapaction, namespace|
-      qname = XSD::QName.new(namespace, name_as)
-      @soaplet.app_scope_router.add_method(servant, qname, soapaction,
-	name, params)
-    end
-
-    self.mapping_registry = #{ name }::MappingRegistry
-  end
-end
-
-# Change listen port.
-if $0 == __FILE__
-  #{name}App.new('app', nil, '0.0.0.0', 10080).start
-end
-__EOD__
+      if $0 == __FILE__
+        # Change listen port.
+        #{class_name}App.new('app', nil, '0.0.0.0', 10080).start
+      end
+    EOD
   end
 end
 

@@ -8,7 +8,7 @@
 
 require 'wsdl/data'
 require 'wsdl/soap/classDefCreatorSupport'
-require 'wsdl/soap/methodDefCreatorSupport'
+require 'xsd/codegen'
 
 
 module WSDL
@@ -17,7 +17,6 @@ module SOAP
 
 class ClassDefCreator
   include ClassDefCreatorSupport
-  include MethodDefCreatorSupport
 
   def initialize(complextypes, definitions = nil)
     @complextypes = complextypes
@@ -46,69 +45,36 @@ class ClassDefCreator
 
 private
 
-  def dump_attrline(name)
-    var_name = uncapitalize(name)
-    return <<__EOD__
-  def #{ name }
-    @#{ var_name }
-  end
-
-  def #{ name }=(value)
-    @#{ var_name } = value
-  end
-
-__EOD__
-  end
-
-  def dump_classdef(class_name)
-    complextype = @complextypes[class_name]
-    attr_lines = ""
-    var_lines = ""
-    init_lines = ""
-    complextype.each_element do |element|
-      name = create_method_name(element.name)
-      type = element.type
-      attr_lines << dump_attrline(element.name.name)
-      init_lines << "    @#{ name } = #{ name }\n"
-      unless var_lines.empty?
-        var_lines << ",\n      "
-      end
-      var_lines << "#{ name } = nil"
-    end
-    attr_lines.chomp!
-    init_lines.chomp!
-
-    return <<__EOD__
-# #{ class_name.namespace }
-class #{ safe_class_name(class_name) }
-  @@schema_type = "#{ class_name.name }"
-  @@schema_ns = "#{ class_name.namespace }"
-
-#{ attr_lines }
-  def initialize(#{ var_lines })
-#{ init_lines }
-  end
-end
-__EOD__
-  end
-
-  def dump_arraydef(name)
-    return <<__EOD__
-# #{ name.namespace }
-class #{ name.name } < Array
-  # Contents type should be dumped here...
-  @@schema_type = "#{ name.name }"
-  @@schema_ns = "#{ name.namespace }"
-end
-__EOD__
-  end
-
-  def safe_class_name(name)
-    if @faulttypes.index(name)
-      "#{ create_class_name(name) } < StandardError"
+  def dump_classdef(qname)
+    complextype = @complextypes[qname]
+    if @faulttypes.index(qname)
+      c = XSD::CodeGen::ClassDef.new(create_class_name(qname), ::StandardError)
     else
-      "#{ create_class_name(name) }"
+      c = XSD::CodeGen::ClassDef.new(create_class_name(qname))
     end
+    c.comment = "#{ qname.namespace }"
+    c.def_classvar("schema_type", qname.name.dump)
+    c.def_classvar("schema_ns", qname.namespace.dump)
+    init_lines = ""
+    params = []
+    complextype.each_element do |element|
+      c.def_attr(element.name.name, true, uncapitalize(element.name.name))
+      name = safemethodname(element.name.name)
+      init_lines << "@#{ name } = #{ name }\n"
+      params << "#{ name } = nil"
+    end
+    c.def_method("initialize", *params) do
+      init_lines
+    end
+    c.dump
+  end
+
+  def dump_arraydef(qname)
+    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), ::Array)
+    c.comment = "#{ qname.namespace }"
+    c.def_classvar("schema_type", qname.name)
+    c.def_classvar("schema_ns", qname.namespace)
+    c.dump
   end
 
   def collect_faulttype(definitions)

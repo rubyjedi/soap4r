@@ -16,7 +16,6 @@ module SOAP
 
 class MappingRegistryCreator
   include ClassDefCreatorSupport
-  include MethodDefCreatorSupport
 
   attr_reader :definitions
 

@@ -10,7 +10,7 @@ require 'wsdl/info'
 require 'wsdl/soap/mappingRegistryCreator'
 require 'wsdl/soap/methodDefCreator'
 require 'wsdl/soap/classDefCreatorSupport'
-require 'wsdl/soap/methodDefCreatorSupport'
+require 'xsd/codegen'
 
 
 module WSDL
@@ -19,7 +19,6 @@ module SOAP
 
 class DriverCreator
   include ClassDefCreatorSupport
-  include MethodDefCreatorSupport
 
   attr_reader :definitions
 
@@ -43,42 +42,40 @@ class DriverCreator
 private
 
   def dump_porttype(name)
+    class_name = create_class_name(name)
     methoddef, types = MethodDefCreator.new(@definitions).dump(name)
     mr_creator = MappingRegistryCreator.new(@definitions)
     binding = @definitions.bindings.find { |item| item.type == name }
     addresses = @definitions.porttype(name).locations
 
-    return <<__EOD__
-require 'soap/rpc/driver'
-
-class #{ create_class_name(name) } < SOAP::RPC::Driver
-  MappingRegistry = ::SOAP::Mapping::Registry.new
-
-#{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
-  Methods = [
-#{ methoddef.gsub(/^/, "    ") }
-  ]
-
-  DefaultEndpointUrl = "#{ addresses[0] }"
-
-  def initialize(endpoint_url = nil)
-    endpoint_url ||= DefaultEndpointUrl
-    super(endpoint_url, nil)
-    self.mapping_registry = MappingRegistry
-    init_methods
-  end
-
-private 
-
-  def init_methods
-    Methods.each do |name_as, name, params, soapaction, namespace|
-      qname = XSD::QName.new(namespace, name_as)
-      @proxy.add_method(qname, soapaction, name, params)
-      add_rpc_method_interface(name, params)
+    c = ::XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
+    c.def_require("soap/rpc/driver")
+    c.def_const("MappingRegistry", "::SOAP::Mapping::Registry.new")
+    c.def_const("DefaultEndpointUrl", addresses[0].dump)
+    c.def_code(mr_creator.dump(types))
+    c.def_code <<-EOD
+Methods = [
+#{ methoddef.gsub(/^/, "  ") }
+]
+    EOD
+    c.def_method("initialize", "endpoint_url = nil") do
+      <<-EOD
+        endpoint_url ||= DefaultEndpointUrl
+        super(endpoint_url, nil)
+        self.mapping_registry = MappingRegistry
+        init_methods
+      EOD
     end
-  end
-end
-__EOD__
+    c.def_privatemethod("init_methods") do
+      <<-EOD
+        Methods.each do |name_as, name, params, soapaction, namespace|
+          qname = XSD::QName.new(namespace, name_as)
+          @proxy.add_method(qname, soapaction, name, params)
+          add_rpc_method_interface(name, params)
+        end
+      EOD
+    end
+    c.dump
   end
 end
 
