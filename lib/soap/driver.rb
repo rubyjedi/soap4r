@@ -63,6 +63,7 @@ class Driver
 	SOAPMethod.createParamDef( paramArg )
       end
     @proxy.addMethod( name, paramDef, soapAction )
+    addMethodInterface( name )
   end
 
 
@@ -83,6 +84,14 @@ class Driver
   end
 
 private
+
+  def addMethodInterface( name )
+    self.instance_eval <<-EOS
+      def #{ name }( *params )
+	call( "#{ name }", *params )
+      end
+    EOS
+  end
 
   def log( sev, comment )
     @log.add( sev, "<#{ @logId }> #{ comment }", self.type ) if @log
