@@ -207,6 +207,10 @@ module RPCUtils
   end
 
   class CompoundtypeFactory_ < Factory
+    def initialize( allowUnknownObject = true )
+      @allowUnknownObject = allowUnknownObject
+    end
+
     def obj2soap( soapKlass, obj, info, map )
       if soapKlass == SOAP::SOAPArray
 	# [ [1], [2] ] is converted to Array of Array, not 2-D Array.
@@ -302,6 +306,10 @@ module RPCUtils
 	setInstanceVariables( obj, vars )
 
       rescue NameError
+	if !@allowUnknownObject
+	  raise
+	end
+
 	klass = nil
 	structName = toType( typeName )
 	members = node.members.collect { |member| RPCUtils.getNameFromElementName( member ) }
@@ -629,17 +637,20 @@ module RPCUtils
       [ ::SOAP::RPCUtils::SOAPException,
 			::SOAP::SOAPStruct,	TypedStructFactory,
 			[ RubyCustomTypeNamespace, "SOAPException" ]],
-      [ ::Struct,	::SOAP::SOAPStruct,	CompoundtypeFactory ],
-      [ ::Object,	::SOAP::SOAPStruct,	ObjectFactory ],
     ]
 
     UserMapping = [
       [ ::Hash,		::SOAP::SOAPStruct,	HashFactory ],
     ]
 
-    def initialize()
+    def initialize( allowUnknownObject = true )
       @map = Mapping.new( self )
       @map.init( SOAPBaseMapping )
+      if allowUnknownObject
+	@map.add( ::Struct, ::SOAP::SOAPStruct, CompoundtypeFactory, [] )
+      else
+	@map.add( ::Struct, ::SOAP::SOAPStruct, CompoundtypeFactory_.new( false ), [] )
+      end
       UserMapping.each do | mapData |
 	add( *mapData )
       end
