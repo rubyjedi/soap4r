@@ -23,7 +23,7 @@ require 'soap/mapping'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/streamHandler'
-require 'soap/headerhandler'
+require 'soap/headerHandler'
 
 
 module SOAP
