@@ -56,7 +56,7 @@ class QName
   end
 
   def inspect
-    sprintf("#<%s:0x%x %s>", self.class.name, object_id,
+    sprintf("#<%s:0x%x %s>", self.class.name, __id__,
       "{#{ namespace }}#{ name }")
   end
 
