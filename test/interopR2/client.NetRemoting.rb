@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-$serverName = 'White Mesa SOAP RPC'
-$serverBase = 'http://www.whitemesa.net/interop/std'
-$serverGroupB = 'http://www.whitemesa.net/interop/std/groupB'
+$serverName = '.Net Remoting Web Services'
+$serverBase = 'http://www.mssoapinterop.org/remoting/ServiceA.soap'
+$serverGroupB = 'http://www.mssoapinterop.org/remoting/ServiceB.soap'
 
 require 'clientBase'
 
