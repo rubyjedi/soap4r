@@ -44,6 +44,10 @@ class Content < Info
     @elements = []
   end
 
+  def targetNamespace
+    parent.targetNamespace
+  end
+
   AllName = Name.new( XSD::Namespace, 'all' )
   SequenceName = Name.new( XSD::Namespace, 'sequence' )
   AttributeName = Name.new( XSD::Namespace, 'attribute' )
@@ -69,8 +73,7 @@ class Content < Info
       @elements << o
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 
