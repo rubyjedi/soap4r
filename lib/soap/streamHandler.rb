@@ -1,6 +1,6 @@
 =begin
 SOAP4R - Stream handler.
-Copyright (C) 2000, 2001, 2003 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -34,7 +34,7 @@ class StreamHandler
     end
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.30 2003/08/03 10:11:43 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.31 2003/08/13 12:54:11 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
