@@ -27,24 +27,22 @@ require 'soap/encodingStyleHandlerDynamic'
 require 'soap/encodingStyleHandlerLiteral'
 require 'soap/encodingStyleHandlerASPDotNet'
 
+
 # Try to load XML processor.
-begin
-  require 'soap/xmlparser'
-rescue LoadError
+loaded = false
+[ 'soap/xmlparser', 'soap/xmlscanner', 'soap/nqxmlparser',
+    'soap/rexmlparser' ].each do | lib |
   begin
-    require 'soap/xmlscanner'
+    require lib
+    loaded = true
+    break
   rescue LoadError
-    begin
-      require 'soap/nqxmlparser'
-    rescue LoadError
-      begin
-	require 'soap/rexmlparser'
-      rescue LoadError
-	raise RuntimeError.new( "XML processor module not found.  SOAP4R now supports XMLParser, NQXML and REXML." )
-      end
-    end
   end
 end
+unless loaded
+  raise RuntimeError.new( "XML processor module not found." )
+end
+
 
 module SOAP
 
