@@ -123,10 +123,14 @@ public
   character_sjis = "(?:#{ oneByte_sjis }|#{ twoBytes_sjis })"
   SJISRegexp = Regexp.new( "\\A#{ character_sjis }*\\z", nil, "NONE" )
 
-  #ascii_utf8 = '[\0-\xFF]'
-  ascii_utf8 = '[\x9\xA\xD\x20-\xFF]'	# XML 1.0 restricted.
-  twoBytes_utf8 = '(?:[\xC0-\xFF][\x80-\xBF])'
+  # 0xxxxxxx
+  #ascii_utf8 = '[\0-\x7F]'
+  ascii_utf8 = '[\x9\xA\xD\x20-\x7F]'	# XML 1.0 restricted.
+  # 110yyyyy 10xxxxxx
+  twoBytes_utf8 = '(?:[\xC0-\xDF][\x80-\xBF])'
+  # 1110zzzz 10yyyyyy 10xxxxxx
   threeBytes_utf8 = '(?:[\xE0-\xEF][\x80-\xBF][\x80-\xBF])'
+  # 11110uuu 10uuuzzz 10yyyyyy 10xxxxxx
   fourBytes_utf8 = '(?:[\xF0-\xF7][\x80-\xBF][\x80-\xBF][\x80-\xBF])'
   character_utf8 = "(?:#{ ascii_utf8 }|#{ twoBytes_utf8 }|#{ threeBytes_utf8 }|#{ fourBytes_utf8 })"
   UTF8Regexp = Regexp.new( "\\A#{ character_utf8 }*\\z", nil, "NONE" )
