@@ -23,7 +23,7 @@ class TestRPC < Test::Unit::TestCase
   end
 
   def compare(expected, actual)
-    assert_equal(loadfile(expected), loadfile(actual))
+    assert_equal(loadfile(expected), loadfile(actual), actual)
   end
 
   def loadfile(file)
