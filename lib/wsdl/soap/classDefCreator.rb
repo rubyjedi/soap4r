@@ -29,11 +29,10 @@ class ClassDefCreator
   include MethodDefCreatorSupport
 
   attr_reader :definitions
-  attr_reader :schema
 
   def initialize( definitions )
     @definitions = definitions
-    @complexTypes = definitions.complexTypes
+    @complexTypes = definitions.collectComplexTypes
     @faultTypes = getFaultTypes( @definitions )
   end
 

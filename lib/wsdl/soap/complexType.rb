@@ -39,7 +39,7 @@ class ComplexType < Info
     end
   end
 
-  def getChildrenType( name = nil )
+  def getChildType( name = nil )
     case compoundType
     when :TYPE_STRUCT
       if ( ele = getElement( name ))
@@ -50,6 +50,13 @@ class ComplexType < Info
     when :TYPE_ARRAY
       @contentType ||= getContentType
     end
+  end
+
+  def getChildLocalTypeDef( name )
+    unless compoundType == :TYPE_STRUCT
+      raise RuntimeError.new( "Assert: not for struct" )
+    end
+    getElement( name ).localComplexType
   end
 
   def getArrayType
@@ -64,14 +71,13 @@ class ComplexType < Info
 private
 
   def getContentType
-    if compoundType == :TYPE_ARRAY
-      arrayType = getArrayType
-      contentTypeNamespace = arrayType.namespace
-      contentTypeName = arrayType.name.sub( /\[(?:,)*\]$/, '' )
-      XSD::QName.new( contentTypeNamespace, contentTypeName )
-    else
-      nil
+    unless compoundType == :TYPE_ARRAY
+      raise RuntimeError.new( "Assert: not for array" )
     end
+    arrayType = getArrayType
+    contentTypeNamespace = arrayType.namespace
+    contentTypeName = arrayType.name.sub( /\[(?:,)*\]$/, '' )
+    XSD::QName.new( contentTypeNamespace, contentTypeName )
   end
 end
 

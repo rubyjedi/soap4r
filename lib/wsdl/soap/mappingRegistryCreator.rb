@@ -29,7 +29,7 @@ class MappingRegistryCreator
 
   def initialize( definitions )
     @definitions = definitions
-    @complexTypes = @definitions.complexTypes
+    @complexTypes = @definitions.collectComplexTypes
     @types = nil
   end
 
