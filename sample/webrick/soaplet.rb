@@ -1,20 +1,23 @@
 # soaplet.rb -- SOAP handler servlet
-# Copyright (C) 2001, 2002 NAKAMURA Hiroshi.
+# Copyright (C) 2001, 2002, 2003 NAKAMURA Hiroshi.
 
 require 'webrick/httpservlet/abstract'
 require 'webrick/httpstatus'
 require 'soap/rpcRouter'
+require 'soap/streamHandler'
+
 
 module WEBrick
 
 
 class SOAPlet < WEBrick::HTTPServlet::AbstractServlet
 public
+
   attr_reader :appScopeRouter
 
   def initialize
     @routerMap = {}
-    @appScopeRouter = SOAP::RPCRouter.new( self.class.to_s )
+    @appScopeRouter = SOAP::RPCRouter.new( self.class.name )
   end
 
   # Add servant klass whose object has request scope.  A servant object is
@@ -60,18 +63,19 @@ public
     namespace = getNSFromSOAPAction( req.meta_vars[ 'HTTP_SOAPACTION' ] )
     router = lookupRouter( namespace )
 
+    charset = nil
     isFault = false
 
     begin
-      responseString, isFault = router.route( req.body )
+      charset = ::SOAP::StreamHandler.parseMediaType( req[ 'content-type' ] )
+      responseString, isFault = router.route( req.body, charset )
     rescue Exception => e
       responseString = router.createFaultResponseString( e )
       isFault = true
     end
 
     res.body = responseString
-    res[ 'content-type' ] =
-      "text/xml; charset=\"#{ SOAP::Charset.getXMLInstanceEncodingLabel }\""
+    res[ 'content-type' ] = "text/xml; charset=\"#{ charset }\""
 
     if isFault
       res.status = HTTPStatus::RC_INTERNAL_SERVER_ERROR
@@ -90,12 +94,12 @@ private
       @klass = klass
     end
 
-    def route( soapString )
+    def route( soapString, charset )
       obj = @klass.new
       namespace = self.actor
       router = SOAP::RPCRouter.new( @namespace )
       SOAPlet.addServantToRouter( router, namespace, obj )
-      router.route( soapString )
+      router.route( soapString, charset )
     end
   end
 
