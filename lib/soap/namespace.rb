@@ -115,16 +115,20 @@ public
     end
   end
 
+  def NS.normalizedName( namespace, name )
+    "{" << namespace << "}:" << name
+  end
+
 private
 
   AssigningName = [ 0 ]
 
-  def self.assign( namespace )
+  def NS.assign( namespace )
     AssigningName[ 0 ] += 1
     'n' << AssigningName[ 0 ].to_s
   end
 
-  def self.reset()
+  def NS.reset()
     AssigningName[ 0 ] = 0
   end
 end
