@@ -3,6 +3,7 @@
 $serverName = 'IDOOX WASP 1.0'
 
 require 'clientBase'
+require 'soap/XMLSchemaDatatypes1999'
 
 $server = 'http://soap.idoox.net:7080/soap/servlet/soap/ilab'
 $soapAction = 'urn:soapinterop'

@@ -5,6 +5,7 @@ $serverName = 'SOAPx4'
 # NG: xsd:struct is not supported in SOAP4R.
 
 require 'clientBase'
+require 'soap/XMLSchemaDatatypes1999'
 
 $server = 'http://dietrich.ganx4.com/soapx4/soap.php'
 $soapAction = 'urn:soapinterop'
