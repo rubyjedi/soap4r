@@ -99,44 +99,44 @@ class WSDLDriver
   __attr_proxy :generate_explicit_type, true
 
   def httpproxy
-    @servant.options["client.protocol.http.proxy"]
+    @servant.options["protocol.http.proxy"]
   end
 
   def httpproxy=(httpproxy)
-    @servant.options["client.protocol.http.proxy"] = httpproxy
+    @servant.options["protocol.http.proxy"] = httpproxy
   end
 
   def wiredump_dev
-    @servant.options["client.protocol.http.wiredump_dev"]
+    @servant.options["protocol.http.wiredump_dev"]
   end
 
   def wiredump_dev=(wiredump_dev)
-    @servant.options["client.protocol.http.wiredump_dev"] = wiredump_dev
+    @servant.options["protocol.http.wiredump_dev"] = wiredump_dev
   end
 
   def mandatorycharset
-    @servant.options["client.protocol.mandatorycharset"]
+    @servant.options["protocol.mandatorycharset"]
   end
 
   def mandatorycharset=(mandatorycharset)
-    @servant.options["client.protocol.mandatorycharset"] = mandatorycharset
+    @servant.options["protocol.mandatorycharset"] = mandatorycharset
   end
 
   def wiredump_file_base
-    @servant.options["client.protocol.wiredump_file_base"]
+    @servant.options["protocol.wiredump_file_base"]
   end
 
   def wiredump_file_base=(wiredump_file_base)
-    @servant.options["client.protocol.wiredump_file_base"] = wiredump_file_base
+    @servant.options["protocol.wiredump_file_base"] = wiredump_file_base
   end
 
   def initialize(wsdl, port, logdev)
     @servant = Servant__.new(self, wsdl, port, logdev)
     if env_httpproxy = ::SOAP::Env::HTTP_PROXY
-      @servant.options["client.protocol.http.proxy"] = env_httpproxy
+      @servant.options["protocol.http.proxy"] = env_httpproxy
     end
     if env_httpproxy = ::SOAP::Env::NO_PROXY
-      @servant.options["client.protocol.http.no_proxy"] = env_httpproxy
+      @servant.options["protocol.http.no_proxy"] = env_httpproxy
     end
   end
 
@@ -189,13 +189,14 @@ class WSDLDriver
       @doc_mapper = Mapper.new(@wsdl_elements, @wsdl_types)
       endpoint_url = @port.soap_address.location
       @streamhandler = HTTPPostStreamHandler.new(endpoint_url,
-	@options["client.protocol.http"] ||= ::SOAP::Property.new)
+	@options["protocol.http"] ||= ::SOAP::Property.new)
       # Convert a map which key is QName, to a Hash which key is String.
       @operations = {}
       @port.inputoperation_map.each do |op_name, op_info|
 	@operations[op_name.name] = op_info
 	add_method_interface(op_info)
       end
+      @options.lock
     end
 
     def endpoint_url
@@ -403,13 +404,13 @@ class WSDLDriver
     end
 
     def set_options
-      @options.add_hook("client.protocol.mandatorycharset") do |key, value|
+      @options.add_hook("protocol.mandatorycharset") do |key, value|
 	@mandatorycharset = value
       end
-      @options.add_hook("client.protocol.wiredump_file_base") do |key, value|
+      @options.add_hook("protocol.wiredump_file_base") do |key, value|
 	@wiredump_file_base = value
       end
-      @options["client.protocol.http.charset"] = XSD::Charset.encoding_label
+      @options["protocol.http.charset"] = XSD::Charset.encoding_label
     end
 
     class Mapper
