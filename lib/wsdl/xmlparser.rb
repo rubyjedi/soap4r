@@ -1,5 +1,5 @@
 =begin
-SOAP4R - WSDL xmlparser library.
+WSDL4R - WSDL xmlparser library.
 Copyright (C) 2001 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -17,7 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'wsdl/parser'
-require 'xmlparser'
+require 'xml/parser'
 
 
 module WSDL
@@ -25,8 +25,12 @@ module WSDL
 
 class WSDLXMLParser < WSDLParser
   class Listener < XML::Parser
-    # Dummy handler to get XML::Parser::XML_DECL event.
-    def xmlDecl; end
+    begin
+      require 'xml/encoding-ja'
+      include XML::Encoding_ja
+    rescue LoadError
+      # uconv may not be installed.
+    end
   end
 
   def initialize( *vars )
@@ -34,6 +38,8 @@ class WSDLXMLParser < WSDLParser
   end
 
   def doParse( stringOrReadable )
+    # XMLParser passes a String in utf-8.
+    @charset = 'utf-8'
     @parser = Listener.new
     @parser.parse( stringOrReadable ) do | type, name, data |
       case type
@@ -43,8 +49,6 @@ class WSDLXMLParser < WSDLParser
 	endElement( name )
       when XML::Parser::CDATA
 	characters( data )
-      when XML::Parser::XML_DECL
-	# ?
       else
 	raise FormatDecodeError.new( "Unexpected XML: #{ type }/#{ name }/#{ data }." )
       end

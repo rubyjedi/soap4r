@@ -18,6 +18,7 @@
 require 'wsdl/wsdl'
 require 'soap/namespace'
 require 'soap/qname'
+require 'soap/charset'
 require 'soap/XMLSchemaDatatypes'
 require 'wsdl/data'
 require 'wsdl/xmlSchema/data'
@@ -30,6 +31,7 @@ module WSDL
 class WSDLParser
   include WSDL
 
+  class ParseError < Error; end
   class FormatDecodeError < Error; end
   class UnknownElementError < FormatDecodeError; end
   class UnknownAttributeError < FormatDecodeError; end
@@ -53,7 +55,6 @@ class WSDLParser
     @@parserFactory = factory
   end
 
-private
   class ParseFrame
     attr_reader :ns
     attr_accessor :node
@@ -66,10 +67,12 @@ private
   end
 
 public
+  attr_accessor :charset
+
   def initialize( opt = {} )
     @parseStack = nil
     @lastNode = nil
-    @option = opt
+    @charset = opt[ :charset ] || 'us-ascii'
   end
 
   def parse( stringOrReadable )
@@ -171,7 +174,9 @@ private
 	  else
 	    ns.parse( key )
 	  end
-	valueEle = unless /:/ =~ value
+	valueEle = if /:/ !~ value
+	    value
+	  elsif /^http:/ =~ value and !ns.assignedTag?( 'http' )
 	    value
 	  else
 	    begin
