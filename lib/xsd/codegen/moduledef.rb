@@ -17,18 +17,27 @@ module CodeGen
 class ModuleDef
   include GenSupport
 
-  attr_accessor :name
   attr_accessor :comment
-  attr_accessor :moduleconst_def
-
-  attr_reader :requirepath
-  attr_reader :methoddef
 
   def initialize(name)
     @name = name
-    @comment = @moduleconst_def = nil
+    @comment = nil
+    @const = []
     @requirepath = []
     @methoddef = []
+  end
+
+  def defrequire(path)
+    @requirepath << path
+  end
+
+  def defconst(const, value)
+    raise ArgumentError, const unless safeconstname?(const)
+    @const << [const, value]
+  end
+
+  def defmethod(name, *params)
+    @methoddef << MethodDef.new(name, *params) { yield if block_given? }
   end
 
   def dump
@@ -41,10 +50,10 @@ class ModuleDef
     buf << dump_comment if @comment
     buf << dump_module_def
     spacer = false
-    if @moduleconst_def
+    if @const
       buf << dump_emptyline if spacer
       spacer = true
-      buf << dump_module_static(@moduleconst_def)
+      buf << dump_const
     end
     unless @methoddef.empty?
       buf << dump_emptyline if spacer
@@ -92,6 +101,18 @@ private
     end
   end
 
+  def dump_const
+    dump_static(
+      @const.sort.collect { |var, value|
+        %Q(#{var} = #{dump_value(value)})
+      }.join("\n")
+    )
+  end
+
+  def dump_static(str)
+    format(str, 2)
+  end
+
   def dump_module_def
     name = @name.to_s.split(/::/)
     format("module #{name.last}")
@@ -101,14 +122,20 @@ private
     format("end")
   end
 
-  def dump_module_static(str)
-    format(str, 2)
-  end
-
   def dump_methods
     @methoddef.collect { |m|
       format(m.dump, 2)
     }.join("\n")
+  end
+
+  def dump_value(value)
+    if value.respond_to?(:to_src)
+      value.to_src
+    elsif value.is_a?(::String)
+      value.dump
+    else
+      value
+    end
   end
 end
 
@@ -121,21 +148,21 @@ if __FILE__ == $0
   require 'xsd/codegen/moduledef'
   include XSD::CodeGen
   m = ModuleDef.new("Foo::Bar::HobbitName")
-  m.requirepath << "foo/bar"
-  m.requirepath << "baz"
-  m.comment = <<__EOD__
+  m.defrequire("foo/bar")
+  m.defrequire("baz")
+  m.comment = <<-EOD
     foo
     bar
     baz
-__EOD__
-  t = MethodDef.new("foo")
-  t.definition = <<__EOD__
-        foo.bar = 1
-\tbaz.each do |ele|
-\t  ele.1
-        end
-__EOD__
-  m.methoddef << t
-  m.methoddef << MethodDef.new("baz", "qux")
+  EOD
+  m.defmethod("foo") do
+    <<-EOD
+      foo.bar = 1
+      baz.each do |ele|
+        ele + 1
+      end
+    EOD
+  end
+  m.defmethod("baz", "qux")
   puts m.dump
 end
