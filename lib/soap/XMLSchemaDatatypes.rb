@@ -298,13 +298,13 @@ public
       hour = $4.to_i
       min = $5.to_i
       sec = $6.to_i
-      usec = $7.to_i
+      usec = $7
       zoneStr = $8
 
       @data = Date.new3( year, mon, mday, hour, min, sec )
 
-      if usec.nonzero?
-	diffDay = usec.to_r / ( 10 ** usec.size ) / 84600
+      if usec
+	diffDay = usec.to_i.to_r / ( 10 ** usec.size ) / SecInDay
 	jd = @data.jd
 	fr1 = @data.fr1 + diffDay
 	@data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
@@ -315,7 +315,16 @@ public
   end
 
   def to_s
-    @data.to_s.sub( /,.*$/, 'Z' )
+    d = @data
+    s = format('%.4d-%02d-%02dT%02d:%02d:%02d',
+      d.year, d.mon, d.mday, d.hour, d.min, d.sec )
+    if d.fr2.nonzero?
+      fr = d.fr2 * SecInDay
+      shiftSize = fr.denominator.to_s.size
+      fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
+      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.tr( '0+$', '' )
+    end
+    s
   end
 
   # Debt: collect syntax.
@@ -332,9 +341,9 @@ public
        	diffDay = 0.to_r
 	case zoneSign
 	when '+'
-	  diffDay = +( zoneHour * 3600 + zoneMin * 60 ).to_r / 86400
+	  diffDay = +( zoneHour * 3600 + zoneMin * 60 ).to_r / SecInDay
 	when '-'
-	  diffDay = -( zoneHour * 3600 + zoneMin * 60 ).to_r / 86400
+	  diffDay = -( zoneHour * 3600 + zoneMin * 60 ).to_r / SecInDay
 	end
 	jd = newDate.jd
 	fr1 = newDate.fr1 - diffDay
@@ -343,6 +352,9 @@ public
     end
     newDate
   end
+
+private
+  SecInDay = 86400	# 24 * 60 * 60
 end
 
 class XSDTime < XSDBase
