@@ -76,7 +76,6 @@ end
 module SOAPCompoundtype
   include SOAP
 
-  attr_accessor :nil
   attr_accessor :encodingStyle
 
   attr_accessor :namespace
@@ -87,8 +86,6 @@ module SOAPCompoundtype
   attr_accessor :parent
   attr_accessor :position
 
-  attr_reader :extraAttributes
-
 public
 
   def initialize( typeName )
@@ -98,9 +95,9 @@ public
     @name = nil
     @id = nil
     @precedents = []
+    @root = 0
     @parent = nil
     @position = nil
-    @extraAttributes = []
   end
 end
 
@@ -123,6 +120,7 @@ public
     @name = nil
     @id = nil
     @precedents = []
+    @root = 0
     @parent = nil
     @refId = refId
     @obj = nil
@@ -338,6 +336,110 @@ public
     s.typeNamespace = typeNamespace
     s.namespace, s.name = ns.parse( name )
     s
+  end
+
+private
+
+  def addMember( name, initMember = nil )
+    initMember = SOAPNil.new() unless initMember
+    methodName = name.dup
+
+    begin
+      instance_eval <<-EOS
+        def #{ methodName }()
+	  @data[ @array.index( '#{ methodName }' ) ]
+        end
+
+        def #{ methodName }=( newMember )
+	  @data[ @array.index( '#{ methodName }' ) ] = newMember
+        end
+      EOS
+    rescue SyntaxError
+      methodName = "var_" << methodName.gsub( /[^a-zA-Z0-9_]/, '' )
+      retry
+    end
+
+    @array.push( name )
+    initMember.name = name
+    @data.push( initMember )
+  end
+end
+
+
+# SOAPElement is not typed so it does not derive NSDBase.
+class SOAPElement
+  include SOAPCompoundtype
+  include Enumerable
+
+public
+
+  attr_accessor :qualified
+
+  def initialize( namespace, name, text = nil )
+    @encodingStyle = SOAP::EncodingStyleHandlerLiteral::Namespace
+    @namespace = namespace
+    @name = name
+
+    @id = nil
+    @precedents = []
+    @root = false
+    @parent = nil
+    @position = nil
+
+    @qualified = false
+    @array = []
+    @data = []
+    @attrs = {}		# Should I allow plural attributes?
+    @text = text
+  end
+
+  # Attribute interface.
+  def attr
+    @attrs
+  end
+
+  # Text interface.
+  attr_accessor :text
+
+  # Element interfaces.
+  def add( newMember )
+    addMember( newMember.name, newMember )
+  end
+
+  def []( idx )
+    if @array.member?( idx )
+      @data[ @array.index( idx ) ]
+    else
+      nil
+    end
+  end
+
+  def []=( idx, data )
+    if @array.member?( idx )
+      @data[ @array.index( idx ) ] = data
+    else
+      add( data )
+    end
+  end
+
+  def has_key?( name )
+    @array.member?( name )
+  end
+
+  def members
+    @array
+  end
+
+  def each
+    0.upto( @array.length - 1 ) do | i |
+      yield( @array[ i ], @data[ i ] )
+    end
+  end
+
+  def self.decode( ns, name )
+    o = SOAPElement.new
+    o.namespace, o.name = ns.parse( name )
+    o
   end
 
 private
