@@ -6,14 +6,20 @@ require 'soap/rpc/standaloneServer'
 class Echo_version_port_type
   MappingRegistry = SOAP::Mapping::Registry.new
 
-  # No mapping definition
+  MappingRegistry.set(
+    Version_struct,
+    ::SOAP::SOAPStruct,
+    ::SOAP::Mapping::Registry::TypedStructFactory,
+    { :type => XSD::QName.new("urn:example.com:simpletype-rpc-type", "version_struct") }
+  )
+
 
   Methods = [
     ["echo_version", "echo_version", [
       ["in", "version",
        [SOAP::SOAPString]],
-      ["retval", "version",
-       [SOAP::SOAPString]]], "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"]
+      ["retval", "version_struct",
+       [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]]], "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"]
   ]
 end
 

@@ -5,13 +5,18 @@ require 'soap/rpc/driver'
 class Echo_version_port_type < SOAP::RPC::Driver
   MappingRegistry = ::SOAP::Mapping::Registry.new
 
-  
+  MappingRegistry.set(
+    Version_struct,
+    ::SOAP::SOAPStruct,
+    ::SOAP::Mapping::Registry::TypedStructFactory,
+    { :type => XSD::QName.new("urn:example.com:simpletype-rpc-type", "version_struct") }
+  )
   Methods = [
     ["echo_version", "echo_version", [
       ["in", "version",
        [SOAP::SOAPString]],
-      ["retval", "version",
-       [SOAP::SOAPString]]], "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"]
+      ["retval", "version_struct",
+       [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]]], "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"]
   ]
 
   DefaultEndpointUrl = "http://localhost"
