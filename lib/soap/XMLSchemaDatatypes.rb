@@ -23,6 +23,8 @@ module XSD
   Namespace = 'http://www.w3.org/2001/XMLSchema'
   InstanceNamespace = 'http://www.w3.org/2001/XMLSchema-instance'
 
+  AttrType = 'type'
+
   AnyTypeLiteral = 'anyType'
   NilLiteral = 'nil'
   BooleanLiteral = 'boolean'
@@ -32,13 +34,6 @@ module XSD
   Base64BinaryLiteral = 'base64Binary'
   IntegerLiteral = 'integer'
   IntLiteral = 'int'
-
-  # for xsd:1999
-  # Namespace = 'http://www.w3.org/1999/XMLSchema'
-  # InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  # AnyTypeLiteral = 'ur-type'
-  # NilLiteral = 'null'
-  # DateTimeLiteral = 'timeInstant'
 end
 
 
@@ -217,6 +212,8 @@ class XSDBase64Binary < XSDBase
 
   def setEncoded( newBase64String )
     @data = String.new( newBase64String )
+    @data.sub!( /^\s*/, '' )
+    @data.sub!( /\s*$/, '' )
   end
 
   def toString
