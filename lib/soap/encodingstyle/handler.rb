@@ -23,9 +23,10 @@ require 'soap/element'
 
 
 module SOAP
+module EncodingStyle
 
 
-class EncodingStyleHandler
+class Handler
   @@handlers = {}
 
   class EncodingStyleError < Error; end
@@ -106,4 +107,5 @@ class EncodingStyleHandler
 end
 
 
+end
 end
