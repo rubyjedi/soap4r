@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 10, 2001<br />
+Last modified: July 11, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.4
+Target SOAP4R version: SOAP4R/1.3.4.2
 </p>
 
 <ol>
@@ -51,12 +51,29 @@ Target SOAP4R version: SOAP4R/1.3.4
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
+SOAP4R/1.3.4 was once packed in July 10, 2001.
+But, thanks to MNeumann and knu,
+I found I had forgotten to pack 'redist' directory with it.
+I added some fix from developing version and repack it as 1.3.4.2.
+Sorry for frequently release...
+</p>
+
+<p>
 Feedback from
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
 and Michael Neumann.  Thanks!
 </p>
 
 <ul>
+<li>Added in 1.3.4.2:
+  <ul>
+    <li>Type Decimal: Silly bug fixed.  0.0001 was converted to 0.1</li>
+    <li>CGIStub returns HTTP status 500 when returning SOAP Fault.
+        Returned 200 because I don't like this spec., but SOAP/1.2 W3C WD
+        9 July 2001 have adopted it.  Hmm...</li>
+    <li>RPC client(driver.rb): Exception#set_backtrace was omitted when transmitting exception by SOAP Fault.</li>
+  </ul>
+</li>
 <li>Types changed:
   <ul>
     <li>Array: Incomplete sparse array support.  Fixed.</li>
@@ -84,7 +101,7 @@ and Michael Neumann.  Thanks!
           <li>So far, automatic code conversion support is for XMLParser and SAXDriver.  See below.</li>
         </ul>
     </li>
-    <li>Added automatic CES conversion support: UTF-8 <-> EUC, SJIS.
+    <li>Added automatic CES conversion support: UTF-8 &lt;-&gt; EUC, SJIS.
         Requires Uconv module.  Works with XMLParser module only now.</li>
     <li>Added XMLDecl for CES.</li>
   </ul>
@@ -263,12 +280,28 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
-<dt>1.3.4 - July 10, 2001</dt>
-<dd>Feedback from
+<dt>1.3.4.2 - July 11, 2001</dt>
+<dd>SOAP4R/1.3.4 was once packed in July 10, 2001.
+But, thanks to MNeumann and knu,
+I found I had forgotten to pack 'redist' directory with it.
+I added some fix from developing version and repack it as 1.3.4.2.
+Sorry for frequently release...
+<br/><br/>
+
+Feedback from
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
 and Michael Neumann.  Thanks!
 
 <ul>
+<li>Added in 1.3.4.2:
+  <ul>
+    <li>Type Decimal: Silly bug fixed.  0.0001 was converted to 0.1</li>
+    <li>CGIStub returns HTTP status 500 when returning SOAP Fault.
+        Returned 200 because I don't like this spec., but SOAP/1.2 W3C WD
+        9 July 2001 have adopted it.  Hmm...</li>
+    <li>RPC client(driver.rb): Exception#set_backtrace was omitted when transmitting exception by SOAP Fault.</li>
+  </ul>
+</li>
 <li>Types changed:
   <ul>
     <li>Array: Incomplete sparse array support.  Fixed.</li>
@@ -296,11 +329,11 @@ and Michael Neumann.  Thanks!
           <li>So far, automatic code conversion support is for XMLParser and SAXDriver.  See below.</li>
         </ul>
     </li>
-    <li>Added automatic CES conversion support: UTF-8 <-> EUC, SJIS.
+    <li>Added automatic CES conversion support: UTF-8 &lt;-&gt; EUC, SJIS.
         Requires Uconv module.  Works with XMLParser module only now.</li>
     <li>Added XMLDecl for CES.</li>
   </ul>
-</li></dd>
+</ul></dd>
 
 <dt>1.3.3 - July 4, 2001</dt>
 <dd>Feedback from
