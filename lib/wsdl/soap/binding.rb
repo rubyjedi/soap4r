@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 class Binding < Info
@@ -51,5 +51,5 @@ class Binding < Info
 end
 
 
-  end
+end
 end

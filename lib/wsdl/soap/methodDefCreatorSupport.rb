@@ -24,7 +24,7 @@ require 'soap/mapping/typeMap'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 module MethodDefCreatorSupport
@@ -115,5 +115,5 @@ __EOD__
 end
 
 
-  end
+end
 end

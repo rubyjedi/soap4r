@@ -24,7 +24,7 @@ require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 class CGIStubCreator
@@ -84,5 +84,5 @@ __EOD__
 end
 
 
-  end
+end
 end

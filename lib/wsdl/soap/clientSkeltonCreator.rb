@@ -22,7 +22,7 @@ require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 class ClientSkeltonCreator
@@ -85,5 +85,5 @@ __EOD__
 end
 
 
-  end
+end
 end

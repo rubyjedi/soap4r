@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 class HeaderFault < Info
@@ -63,5 +63,5 @@ class HeaderFault < Info
 end
 
 
-  end
+end
 end

@@ -21,10 +21,26 @@ require 'wsdl/info'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 class Operation < Info
+  class OperationInfo
+    attr_reader :style
+    attr_reader :op_name
+    attr_reader :msg_name
+    attr_reader :param_names
+    attr_reader :soapaction
+    
+    def initialize(style, name_info, soapaction = nil)
+      @style = style
+      @op_name = name_info.op_name
+      @msg_name = name_info.msg_name
+      @param_names = name_info.param_names
+      @soapaction = soapaction
+    end
+  end
+
   attr_reader :soapaction
   attr_reader :style
 
@@ -48,8 +64,49 @@ class Operation < Info
       nil
     end
   end
+
+  def input_info
+    name_info = parent.find_operation.input_info
+    soapbody = parent.input.soapbody
+    if soapbody.encodingstyle and
+	soapbody.encodingstyle != ::SOAP::EncodingNamespace
+      raise NotImplementedError.new(
+	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
+    end
+    name_info.op_name.namespace = soapbody.namespace if soapbody.namespace
+    soapaction = parent.soapoperation.soapaction
+    style = parent.soapoperation.style
+    OperationInfo.new(style, name_info, soapaction)
+  end
+
+  def output_info
+    name_info = parent.find_operation.output_info
+    soapbody = output.soapbody
+    if soapbody.encodingstyle and
+	soapbody.encodingstyle != ::SOAP::EncodingNamespace
+      raise NotImplementedError.new(
+	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
+    end
+    name_info.op_name.namespace = soapbody.namespace if soapbody.namespace
+    style = parent.soapoperation.style
+    OperationInfo.new(style, name_info)
+  end
+
+private
+
+  def parent_binding
+    parent.parent
+  end
+
+  def retrieve_style
+    return @style if @style
+    if parent_binding.soapbinding
+      return parent_binding.soapbinding.style
+    end
+    nil
+  end
 end
 
 
-  end
+end
 end

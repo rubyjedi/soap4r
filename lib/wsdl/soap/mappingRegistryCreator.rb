@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 class MappingRegistryCreator
@@ -94,5 +94,5 @@ __EOD__
 end
 
 
-  end
+end
 end

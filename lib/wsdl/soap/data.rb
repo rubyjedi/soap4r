@@ -16,6 +16,7 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'xsd/qname'
 require 'wsdl/soap/definitions'
 require 'wsdl/soap/binding'
@@ -29,7 +30,7 @@ require 'wsdl/soap/complexType'
 
 
 module WSDL
-  module SOAP
+module SOAP
 
 
 HeaderFaultName = XSD::QName.new(SOAPBindingNamespace, 'headerfault')
@@ -47,5 +48,5 @@ NamespaceAttrName = XSD::QName.new(nil, 'namespace')
 SOAPActionAttrName = XSD::QName.new(nil, 'soapAction')
 
 
-  end
+end
 end
