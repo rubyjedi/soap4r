@@ -5,7 +5,7 @@ require 'soap/driver'
 RAAInterfaceNS = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"
 
 class Category
-  include SOAPSerializable
+  include SOAP::Marshallable
   @@typeNamespace = RAAInterfaceNS
 
   attr_reader :major, :minor
@@ -31,7 +31,7 @@ class Category
 end
 
 class Product
-  include SOAPSerializable
+  include SOAP::Marshallable
   @@typeNamespace = RAAInterfaceNS
 
   attr_reader :name
@@ -49,7 +49,7 @@ class Product
 end
 
 class Owner
-  include SOAPSerializable
+  include SOAP::Marshallable
   @@typeNamespace = RAAInterfaceNS
 
   attr_reader :id
@@ -63,7 +63,7 @@ class Owner
 end
 
 class Info
-  include SOAPSerializable
+  include SOAP::Marshallable
   @@typeNamespace = RAAInterfaceNS
 
   attr_accessor :category, :product, :owner, :update
