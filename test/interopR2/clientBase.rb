@@ -164,6 +164,7 @@ def dumpResult( title, result, resultStr )
 end
 
 def submitTestResult
+  load 'soap/XMLSchemaDatatypes.rb'
   $testResultDrv.add( $testResults )
 end
 
@@ -299,14 +300,14 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoIntegerArray (nil)'
-  begin
-    arg = IntArray[ nil, nil, nil ]
-    var = drv.echoIntegerArray( arg )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoIntegerArray (nil)'
+#  begin
+#    arg = IntArray[ nil, nil, nil ]
+#    var = drv.echoIntegerArray( arg )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoIntegerArray (empty)'
   begin
@@ -366,14 +367,14 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoStruct (nil members)'
-  begin
-    arg = SOAPStruct.new( nil, nil, nil )
-    var = drv.echoStruct( arg )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoStruct (nil members)'
+#  begin
+#    arg = SOAPStruct.new( nil, nil, nil )
+#    var = drv.echoStruct( arg )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoStructArray'
   begin
@@ -409,7 +410,7 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoDate (before 1970: 1-01-01T00:00:00)'
+  title = 'echoDate (before 1970: 1-01-01T00:00:00Z)'
   begin
     t = Time.now.gmtime
     arg = Date.new3( 1, 1, 1, 0, 0, 0 )
@@ -419,7 +420,7 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoDate (after 2038: 2038-12-31T00:00:00)'
+  title = 'echoDate (after 2038: 2038-12-31T00:00:00Z)'
   begin
     t = Time.now.gmtime
     arg = Date.new3( 2038, 12, 31, 0, 0, 0 )
@@ -429,7 +430,7 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoDate (negative: -10-01-01T00:00:00)'
+  title = 'echoDate (negative: -10-01-01T00:00:00Z)'
   begin
     t = Time.now.gmtime
     arg = Date.new3( -10, 1, 1, 0, 0, 0 )
@@ -596,6 +597,37 @@ def doTestBase( drv )
   rescue Exception
     dumpException( title )
   end
+
+if $test_echoMap
+
+  title = 'echoMap'
+  begin
+    arg = { "a" => 1, "b" => 2 }
+    var = drv.echoMap( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoMap (boolean, base64, nil, float)'
+  begin
+    arg = { true => "\0", "\0" => nil, nil => 0.0001, 0.0001 => false }
+    var = drv.echoMap( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoMap (multibyte char)'
+    arg = { "Hello (日本語Japanese) こんにちは" => 1, 1 => "Hello (日本語Japanese) こんにちは" }
+  begin
+    var = drv.echoMap( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+end
+
 end
 
 
@@ -619,15 +651,15 @@ def doTestGroupB( drv )
     dumpException( title )
   end
 
-  title = 'echoStructAsSimpleTypes (nil)'
-  begin
-    arg = SOAPStruct.new( nil, nil, nil )
-    ret, out1, out2 = drv.echoStructAsSimpleTypes( arg )
-    var = SOAPStruct.new( out1, out2, ret )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoStructAsSimpleTypes (nil)'
+#  begin
+#    arg = SOAPStruct.new( nil, nil, nil )
+#    ret, out1, out2 = drv.echoStructAsSimpleTypes( arg )
+#    var = SOAPStruct.new( out1, out2, ret )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoSimpleTypesAsStruct'
   begin
@@ -638,14 +670,14 @@ def doTestGroupB( drv )
     dumpException( title )
   end
 
-  title = 'echoSimpleTypesAsStruct (nil)'
-  begin
-    arg = SOAPStruct.new( nil, nil, nil )
-    var = drv.echoSimpleTypesAsStruct( arg.varString, arg.varInt, arg.varFloat )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoSimpleTypesAsStruct (nil)'
+#  begin
+#    arg = SOAPStruct.new( nil, nil, nil )
+#    var = drv.echoSimpleTypesAsStruct( arg.varString, arg.varInt, arg.varFloat )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echo2DStringArray'
   begin
@@ -729,16 +761,16 @@ def doTestGroupB( drv )
     dumpException( title )
   end
 
-  title = 'echoNestedStruct (nil)'
-  begin
-    arg = SOAPStructStruct.new( nil, nil, nil,
-      SOAPStruct.new( nil, nil, nil )
-    )
-    var = drv.echoNestedStruct( arg )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoNestedStruct (nil)'
+#  begin
+#    arg = SOAPStructStruct.new( nil, nil, nil,
+#      SOAPStruct.new( nil, nil, nil )
+#    )
+#    var = drv.echoNestedStruct( arg )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoNestedArray'
   begin

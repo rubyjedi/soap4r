@@ -37,6 +37,8 @@ MethodsBase = [
     ['in', 'inputBoolean'], ['retval', 'return']],
   ['echoDecimal',
     ['in', 'inputDecimal'], ['retval', 'return']],
+  ['echoMap',
+    ['in', 'inputMap'], ['retval', 'return']],
 
   ['echoDouble',
     ['in', 'inputDouble'], ['retval', 'return']],
