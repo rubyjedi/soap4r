@@ -76,8 +76,8 @@ end
 
 
 class Address
-  @typeName = 'address'
-  @namespace = 'urn:ibm-soap-address-demo'
+  @@typeName = 'address'
+  @@namespace = 'urn:ibm-soap-address-demo'
 
   attr_accessor :streetNum, :streetName, :city, :state, :zip, :phoneNumber
   def initialize( streetNum = nil, streetName = nil, city = nil, state = nil, zip = nil, phoneNumber = nil )
@@ -91,8 +91,8 @@ class Address
 end
 
 class PhoneNumber
-  @typeName = 'phone'
-  @namespace = 'urn:ibm-soap-address-demo'
+  @@typeName = 'phone'
+  @@namespace = 'urn:ibm-soap-address-demo'
 
   attr_accessor :areaCode, :exchange, :number
   def initialize( areaCode = nil, exchange = nil, number = nil )
