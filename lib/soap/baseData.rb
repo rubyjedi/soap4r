@@ -129,7 +129,6 @@ end
 ## SOAP related datatypes.
 #
 module SOAPModuleUtils
-  include SOAP
   include XML::SimpleTree
 
   public
@@ -348,6 +347,7 @@ end
 ## Compound datatypes.
 #
 class SOAPCompoundBase < NSDBase
+  include SOAP
   extend SOAPModuleUtils
 
   attr_accessor :namespace
@@ -510,6 +510,8 @@ class SOAPArray < SOAPCompoundBase
 
   attr_reader :data
 
+  ArrayEncodePostfix = 'Ary'
+
   def initialize( typeName = nil )
     super( typeName )
     @data = [ [] ]
@@ -564,7 +566,7 @@ class SOAPArray < SOAPCompoundBase
       attrs.push( datatypeAttr( ns ))
     end
 
-    childTypeName = contentTypeName().gsub( /\[,*\]/, 'Array' ) << 'Array'
+    childTypeName = contentTypeName().gsub( /\[,*\]/, ArrayEncodePostfix ) << ArrayEncodePostfix
 
     children = @data[ 0 ].collect { | child |
       child.encode( ns.clone, childTypeName, self )
