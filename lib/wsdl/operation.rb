@@ -67,11 +67,6 @@ class Operation < Info
 
   def outputname
     XSD::QName.new(targetnamespace,
-      output.name ? output.name.name : @name.name + "Response")
-  end
-
-  def outputname
-    XSD::QName.new(targetnamespace,
       output.name ? output.name.name : @name.name + 'Response')
   end
 
