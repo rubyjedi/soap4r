@@ -120,15 +120,15 @@ class XSDDecimal < XSDBase
   end
 end
 
-class XSDTimeInstant < XSDBase
+class XSDDateTime < XSDBase
   require 'date3'
   require 'parsedate3'
 
   public
 
-  def initialize( initTimeInstant = nil )
-    super( 'timeInstant' )
-    set( initTimeInstant ) if initTimeInstant
+  def initialize( initDateTime = nil )
+    super( 'dateTime' )
+    set( initDateTime ) if initDateTime
   end
 
   def set( t )
@@ -140,6 +140,28 @@ class XSDTimeInstant < XSDBase
       ( year, mon, mday, hour, min, sec, zone, wday ) = ParseDate.parsedate( t.to_s )
       @data = Date.new3( year, mon, mday, hour, min, sec )
     end
+  end
+end
+
+class XSDBase64Binary < XSDBase
+  public
+
+  # String in Ruby could be a binary.
+  def initialize( initString = nil )
+    super( 'base64Binary' )
+    set( initString ) if initString
+  end
+
+  def set( newString )
+    @data = [ newString ].pack( "m" )
+  end
+
+  def setEncoded( newBase64String )
+    @data = String.new( newBase64String )
+  end
+
+  def to_s
+    @data.unpack( "m" )[ 0 ]
   end
 end
 
