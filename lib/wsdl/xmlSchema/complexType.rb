@@ -47,14 +47,6 @@ class ComplexType < Info
     parent.targetnamespace
   end
 
-  def each_content
-    if content
-      content.each do |item|
-	yield(item)
-      end
-    end
-  end
-
   def each_element
     if @content
       @content.elements.each do |element|
@@ -64,8 +56,10 @@ class ComplexType < Info
   end
 
   def find_element(name)
-    @content.elements.each do |element|
-      return element if name == element.name
+    if @content
+      @content.elements.each do |element|
+	return element if name == element.name
+      end
     end
     nil
   end

@@ -56,6 +56,7 @@ class Schema < Info
       o
     when ElementName
       o = Element.new
+      @elements << o
       o
     when AttributeName
       o = Attribute.new
@@ -78,10 +79,16 @@ class Schema < Info
     end
   end
 
+  def collect_elements
+    result = NamedElements.new
+    result.concat(@elements)
+    result
+  end
+
   def collect_complextypes
-    types = NamedElements.new
-    types.concat(@complextypes)
-    types
+    result = NamedElements.new
+    result.concat(@complextypes)
+    result
   end
 
   def self.parse_element(element)
