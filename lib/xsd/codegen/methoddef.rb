@@ -16,16 +16,15 @@ module CodeGen
 class MethodDef
   include GenSupport
 
-  attr_reader :name
-  attr_reader :params
   attr_accessor :comment
   attr_accessor :definition
 
   def initialize(name, *params)
+    raise ArgumentError, name unless safemethodname?(name)
     @name = name
     @params = params
     @comment = nil
-    @definition = nil
+    @definition = yield if block_given?
   end
 
   def dump

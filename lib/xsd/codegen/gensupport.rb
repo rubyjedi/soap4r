@@ -32,7 +32,22 @@ module GenSupport
   end
   module_function :safeconstname
 
+  def safeconstname?(name)
+    /\A[A-Z][a-zA-Z0-9_]*\z/ =~ name
+  end
+  module_function :safeconstname?
+
   def safemethodname(name)
+    safevarname(name)
+  end
+  module_function :safemethodname
+
+  def safemethodname?(name)
+    /\A[a-zA-Z_][a-zA-Z0-9_]*[=!?]?\z/ =~ name
+  end
+  module_function :safemethodname?
+
+  def safevarname(name)
     safename = name.scan(/[a-zA-Z0-9_]+/).join('_')
     uncapitalize(safename)
     unless /^[a-z]/ =~ safename
@@ -40,7 +55,12 @@ module GenSupport
     end
     safename
   end
-  module_function :safemethodname
+  module_function :safevarname
+
+  def safevarname?(name)
+    /\A[a-z_][a-zA-Z0-9_]*\z/ =~ name
+  end
+  module_function :safevarname?
 
   def format(str, indent = nil)
     str = trim_eol(str)
