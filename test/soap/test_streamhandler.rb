@@ -80,13 +80,6 @@ class TestStreamHandler < Test::Unit::TestCase
       Thread.current.abort_on_exception = true
       server.start
     }
-    while server.status != :Running
-      sleep 0.1
-      unless t.alive?
-	t.join
-	raise
-      end
-    end
     t
   end
 

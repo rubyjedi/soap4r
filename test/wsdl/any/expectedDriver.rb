@@ -36,8 +36,8 @@ private
     Methods.each do |name_as, name, params, soapaction, namespace, style|
       qname = ::XSD::QName.new(namespace, name_as)
       if style == :document
-        @proxy.add_document_method(qname, soapaction, name, params)
-        add_document_method_interface(name, name_as)
+        @proxy.add_document_method(soapaction, name, params)
+        add_document_method_interface(name, params)
       else
         @proxy.add_rpc_method(qname, soapaction, name, params)
         add_rpc_method_interface(name, params)

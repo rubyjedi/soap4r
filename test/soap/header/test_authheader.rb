@@ -162,13 +162,6 @@ class TestAuthHeader < Test::Unit::TestCase
     @t = Thread.new {
       @server.start
     }
-    while @server.status != :Running
-      sleep 0.1
-      unless @t.alive?
-	@t.join
-	raise
-      end
-    end
   end
 
   def setup_client
