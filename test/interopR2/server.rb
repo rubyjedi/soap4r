@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
-$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
+#$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
+$KCODE = "EUC"
 
 #require 'soap/nqxmlparser'
 #require 'soap/rexmlparser'
@@ -12,6 +13,7 @@ class InteropApp < SOAP::StandaloneServer
   def initialize( *arg )
     super( *arg )
     @router.mappingRegistry = SOAPBuildersInterop::MappingRegistry
+    setSevThreshold( Devel::Logger::ERROR )
   end
 
   def methodDef
