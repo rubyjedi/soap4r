@@ -47,6 +47,7 @@ class Driver
     @mappingRegistry = nil
   end
 
+
   ###
   ## Method definition interfaces.
   #
@@ -79,11 +80,6 @@ class Driver
     @dumpFileBase = base
   end
 
-  def method_missing( msg_id, *params )
-    log( SEV_INFO ) { "method_missing: invoked '#{ msg_id.id2name }'." }
-    call( msg_id.id2name, *params )
-  end
-
 
   ###
   ## Encoding style inteface.
@@ -96,18 +92,24 @@ class Driver
     @proxy.defaultEncodingStyle
   end
 
-private
 
-  def addMethodInterface( name )
-    self.instance_eval <<-EOS
-      def #{ name }( *params )
-	call( "#{ name }", *params )
-      end
-    EOS
+  ###
+  ## Driving interface.
+  #
+  def method_missing( msg_id, *params )
+    log( SEV_INFO ) { "method_missing: invoked '#{ msg_id.id2name }'." }
+    call( msg_id.id2name, *params )
   end
 
-  def log( sev )
-    @log.add( sev, nil, self.type ) { @logIdPrefix + yield } if @log
+  def invoke( reqHeaders, reqBody )
+    log( SEV_INFO ) { "invoke: invoking message '#{ reqBody.type }'." }
+
+    if @dumpFileBase
+      @handler.dumpFileBase = @dumpFileBase + '_' << methodName
+    end
+
+    data = @proxy.invoke( reqHeaders, reqBody )
+    return data
   end
 
   def call( methodName, *params )
@@ -118,16 +120,13 @@ private
     params.collect! { |param| RPCUtils.obj2soap( param, @mappingRegistry ) }
     log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
 
-    # Prepare SOAP header.
-    headers = nil
-
     # Set dumpDev if needed.
     if @dumpFileBase
       @handler.dumpFileBase = @dumpFileBase + '_' << methodName
     end
 
     # Then, call @proxy.call like the following.
-    header, body = @proxy.call( headers, methodName, *params )
+    header, body = @proxy.call( nil, methodName, *params )
 
     # Check Fault.
     log( SEV_INFO ) { "call: checking SOAP-Fault..." }
@@ -166,6 +165,20 @@ private
     else
       return ret
     end
+  end
+
+private
+
+  def addMethodInterface( name )
+    self.instance_eval <<-EOS
+      def #{ name }( *params )
+	call( "#{ name }", *params )
+      end
+    EOS
+  end
+
+  def log( sev )
+    @log.add( sev, nil, self.type ) { @logIdPrefix + yield } if @log
   end
 end
 
