@@ -48,7 +48,7 @@ class TestWSDLMarshal < Test::Unit::TestCase
   end
 
   def test_marshal
-    marshaller = WSDLMarshaller.new(pathname('Person.wsdl'))
+    marshaller = WSDLMarshaller.new(pathname('person.wsdl'))
     obj = Person.new("NAKAMURA", "Hiroshi", 1, 1.0,  "1")
     str = marshaller.dump(obj)
     obj2 = marshaller.load(str)
