@@ -220,17 +220,16 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-# Cannot test character reference until SOAPRawString is implemented.
-#
-#  title = 'echoString (Character reference)'
-#  dumpTitle( title )
-#  begin
-#    arg = "\x7f&#x7f;"
-#    var = drv.echoString( arg )
-#    dumpNormal( title, arg, var )
-#  rescue Exception
-#    dumpException( title )
-#  end
+  title = 'echoString (Character reference)'
+  dumpTitle( title )
+  begin
+    arg = "\x20&#x20;\040&#32;\x7f&#x7f;\177&#127;"
+    tobe = "    \177\177\177\177"
+    var = drv.echoString( SOAP::SOAPRawString.new( arg ))
+    dumpNormal( title, tobe, var )
+  rescue Exception
+    dumpException( title )
+  end
 
   title = 'echoString (Leading and trailing whitespace)'
   dumpTitle( title )
