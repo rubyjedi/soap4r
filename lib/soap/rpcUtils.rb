@@ -210,6 +210,7 @@ module RPCUtils
 
     def createMethodResponse
       response = SOAPMethodResponse.new( @namespace, @name + 'Response', @paramDef )
+      response
     end
   end
 
