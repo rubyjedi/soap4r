@@ -62,7 +62,7 @@ class RubytypeFactory < Factory
       unless @allowOriginalMapping
         return nil
       end
-      arrayType = getObjType(obj)
+      arrayType = Mapping.getObjType(obj)
       if arrayType.name
         arrayType.namespace ||= RubyTypeNamespace
       else
@@ -207,9 +207,7 @@ class RubytypeFactory < Factory
       unless singleton_class.instance_variables.empty?
         raise TypeError.new("singleton can't be dumped #{ obj }")
       end
-      type = getClassType(obj.class)
-      type.name ||= Mapping.getElementNameFromName(obj.class.to_s)
-      type.namespace ||= RubyCustomTypeNamespace
+      type = Mapping.createClassType(obj.class)
       param = SOAPStruct.new(type)
       markMarshalledObj(obj, param)
       if obj.class <= Marshallable
@@ -418,7 +416,7 @@ private
     if klass.nil?
       return nil
     end
-    klassType = getClassType(klass)
+    klassType = Mapping.getClassType(klass)
     return nil unless node.type.match(klassType)
     obj = createEmptyObject(klass)
     markUnmarshalledObj(node, obj)
