@@ -54,10 +54,18 @@ class NamedElements
 
   def <<(rhs)
     @elements << rhs
+    self
+  end
+
+  def +(rhs)
+    o = NamedElements.new
+    o.elements = @elements + rhs.elements
+    o
   end
 
   def concat(rhs)
     @elements.concat(rhs.elements)
+    self
   end
 
 protected
