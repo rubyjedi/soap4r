@@ -62,23 +62,27 @@ module Processor
   end
   module_function :unmarshal
 
-  def setDefaultParser( opt = {} )
+  def Processor.setDefaultParser( opt = {} )
     DefaultParser[ 0 ] = loadParser( opt )
   end
-  module_function :setDefaultParser
 
-  def clearDefaultParser
+  def Processor.getDefaultParser
+    DefaultParser[ 0 ]
+  end
+
+  def Processor.clearDefaultParser
     DefaultParser[ 0 ] = nil
   end
-  module_function :clearDefaultParser
 
   def loadParser( opt = {} )
     if SOAP.const_defined?( "SOAPXMLParser" )
       parser = ::SOAP::SOAPXMLParser.new( opt )
-    elsif SOAP.const_defined?( "SOAPSAXDriver" )
-      parser = ::SOAP::SOAPSAXDriver.new( opt )
     elsif SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
       parser = ::SOAP::SOAPNQXMLLightWeightParser.new( opt )
+    elsif SOAP.const_defined?( "SOAPREXMLParser" )
+      parser = ::SOAP::SOAPREXMLParser.new( opt )
+    elsif SOAP.const_defined?( "SOAPSAXDriver" )
+      parser = ::SOAP::SOAPSAXDriver.new( opt )
     else
       begin
 	require 'soap/xmlparser'

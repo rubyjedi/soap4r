@@ -31,6 +31,10 @@ class SOAPNQXMLLightWeightParser < SOAPParser
     end
   end
 
+  def adjustKCode
+    true
+  end
+
   def prologue
     @charsetStrBackup = $KCODE.to_s.dup
   end
@@ -46,7 +50,7 @@ class SOAPNQXMLLightWeightParser < SOAPParser
 	  endElement( entity.name )
 	end
       when NQXML::Text
-	cdata( entity.text )
+	characters( entity.text )
       # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
       when NQXML::XMLDecl, NQXML::ProcessingInstruction
 	encoding = entity.attrs[ 'encoding' ]
@@ -94,7 +98,7 @@ class SOAPNQXMLStreamingParser < SOAPParser
 	  endElement( entity.name )
 	end
       when NQXML::Text
-	cdata( entity )
+	characters( entity )
       # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
       when NQXML::XMLDecl, NQXML::ProcessingInstruction
 	encoding = entity.attrs[ 'encoding' ]

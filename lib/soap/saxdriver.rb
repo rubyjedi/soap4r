@@ -58,7 +58,7 @@ class SOAPSAXDriver < SOAPParser
     end
 
     def characters( ch, start, length )
-      @driver.cdata( ch[ start, length ] )
+      @driver.characters( ch[ start, length ] )
     end
 
     # def processingInstruction(target, data); end

@@ -1,6 +1,6 @@
 =begin
-SOAP4R - SOAP xmlparser library.
-Copyright (C) 2001 NAKAMURA Hiroshi.
+SOAP4R - SOAP REXMLParser library.
+Copyright (C) 2002 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,31 +17,45 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/parser'
-require 'xmlparser'
+require 'rexml/streamlistener'
+require 'rexml/document'
+require 'uconv'
 
 
 module SOAP
 
 
-class SOAPXMLParser < SOAPParser
+class SOAPREXMLParser < SOAPParser
+  include REXML::StreamListener
+
   def initialize( *vars )
     super( *vars )
   end
 
-  def doParse( stringOrReadable )
-    @parser = XML::Parser.new
-    @parser.parse( stringOrReadable ) do | type, name, data |
-      case type
-      when XML::Parser::START_ELEM
-	startElement( name, data )
-      when XML::Parser::END_ELEM
-	endElement( name )
-      when XML::Parser::CDATA
-	characters( data )
-      else
-	raise FormatDecodeError.new( "Unexpected XML: #{ type }/#{ name }/#{ data }." )
-      end
-    end
+  # Regexes in REXML runs under UTF-8 mode like /foo/um.
+  def adjustKCode
+    false
+  end
+
+  def doParse( stringNotReadable )
+    str = Charset.codeConv( stringNotReadable, $KCODE, 'UTF8' )
+    REXML::Document.parse_stream( str, self )
+  end
+
+  def tag_start( name, attrs )
+    startElement( name, attrs )
+  end
+
+  def tag_end( name )
+    endElement( name )
+  end
+
+  def text( text )
+    characters( text )
+  end
+
+  def xmldecl( version, encoding, standalone )
+    # Version should be checked.
   end
 end
 Charset.setXMLInstanceEncoding( 'UTF8' )

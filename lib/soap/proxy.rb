@@ -114,11 +114,11 @@ class SOAPProxy
     receiveCharset = $1
 
     # StreamHandler returns receiveCharset to use.
+    parser = Processor.getDefaultParser
     if receiveCharset
       receiveString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
 
-      # For NQXML Parser.
-      if SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
+      if parser.adjustKCode
 	charsetStr = Charset.getCharsetStr( receiveCharset )
 	charsetStrBackup = $KCODE.to_s.dup
 	$KCODE = charsetStr
@@ -134,8 +134,7 @@ class SOAPProxy
     header, body = Processor.unmarshal( receiveString, opt )
 
     if receiveCharset
-      # For NQXML Parser.
-      if SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
+      if parser.adjustKCode
        	$KCODE = charsetStrBackup
 	Charset.setXMLInstanceEncoding( $KCODE )
       end
