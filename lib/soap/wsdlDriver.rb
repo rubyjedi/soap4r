@@ -74,6 +74,11 @@ public
   attr_accessor :mappingRegistry
   attr_accessor :wsdlMappingRegistry
   attr_reader :opt
+  attr_accessor :actor
+
+  attr_accessor :defaultEncodingStyle
+  attr_accessor :allowUnqualifiedElement
+  attr_accessor :noEncodeType
 
   def initialize( wsdl, port, logDev, opt )
     @wsdl = wsdl
@@ -81,11 +86,14 @@ public
     @logDev = logDev
     @mappingRegistry = nil	# for unmarshal
     @wsdlMappingRegistry = nil	# for marshal
+    @actor = self.class.name
+
     @opt = opt.dup
-    unless @opt.has_key? 'noEncodeType'
-      @opt[ 'noEncodeType' ] = true
-    end
     @opt[ 'decodeComplexTypes' ] = @wsdl.getComplexTypesWithMessages
+    @defaultEncodingStyle = EncodingNamespace
+    @allowUnqualifiedElement = true
+    @noEncodeType = true
+
     createHandler
     @operationMap = {}
     # Convert Map which key is QName, to aHash which key is String.
@@ -183,7 +191,7 @@ private
 
     header = body = nil
     begin
-      header, body = Processor.unmarshal( data.receiveString, @opt )
+      header, body = Processor.unmarshal( data.receiveString, getOpt )
     ensure
       if kcodeAdjusted
         $KCODE = charsetStrBackup
@@ -206,7 +214,7 @@ private
       end
     end
     body = SOAPBody.new( body )
-    marshalledString = Processor.marshal( header, body, @opt )
+    marshalledString = Processor.marshal( header, body, getOpt )
     return marshalledString
   end
 
@@ -221,6 +229,14 @@ private
 	call( "#{ name }"#{ callParamStr } )
       end
     EOS
+  end
+
+  def getOpt
+    opt = @opt.dup
+    opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
+    opt[ 'allowUnqualifiedElement' ] = @allowUnqualifiedElement
+    opt[ 'noEncodeType' ] = @noEncodeType
+    opt
   end
 
   def log( sev )
