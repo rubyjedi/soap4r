@@ -20,7 +20,8 @@ public
   attr_reader :app_scope_router
 
   def initialize
-    @router_map = {}
+    @rpc_router_map = {}
+    @document_router_map = {}
     @app_scope_router = ::SOAP::RPC::Router.new(self.class.name)
     @headerhandlerfactory = []
     @app_scope_headerhandler = nil
@@ -41,7 +42,16 @@ public
     unless factory.respond_to?(:create)
       raise TypeError.new("factory must respond to 'create'")
     end
-    router = setup_request_router(namespace)
+    router = setup_rpc_request_router(namespace)
+    router.factory = factory
+    router.mapping_registry = mapping_registry
+  end
+
+  def add_document_request_servant(factory, namespace, mapping_registry = nil)
+    unless factory.respond_to?(:create)
+      raise TypeError.new("factory must respond to 'create'")
+    end
+    router = setup_document_request_router(namespace)
     router.factory = factory
     router.mapping_registry = mapping_registry
   end
@@ -49,9 +59,16 @@ public
   # Add servant object which has application scope.
   def add_rpc_servant(obj, namespace)
     router = @app_scope_router
-    SOAPlet.add_servant_to_router(router, obj, namespace)
-    add_router(namespace, router)
+    SOAPlet.add_rpc_servant_to_router(router, obj, namespace)
+    add_rpc_router(namespace, router)
   end
+
+  def add_document_servant(obj, namespace)
+    router = @app_scope_router
+    SOAPlet.add_document_servant_to_router(router, obj, namespace)
+    add_document_router(namespace, router)
+  end
+
   alias add_servant add_rpc_servant
 
   def add_rpc_request_headerhandler(factory)
@@ -84,8 +101,8 @@ public
   end
 
   def do_POST(req, res)
-    namespace = parse_soapaction(req.meta_vars['HTTP_SOAPACTION'])
-    router = lookup_router(namespace)
+    soapaction = parse_soapaction(req.meta_vars['HTTP_SOAPACTION'])
+    router = lookup_router(soapaction)
     with_headerhandler(router) do |router|
       begin
 	conn_data = ::SOAP::StreamHandler::ConnectionData.new
@@ -115,8 +132,9 @@ private
   class RequestRouter < ::SOAP::RPC::Router
     attr_accessor :factory
 
-    def initialize(namespace = nil)
+    def initialize(style = :rpc, namespace = nil)
       super(namespace)
+      @style = style
       @namespace = namespace
       @factory = nil
     end
@@ -125,19 +143,33 @@ private
       obj = @factory.create
       namespace = self.actor
       router = ::SOAP::RPC::Router.new(@namespace)
-      SOAPlet.add_servant_to_router(router, obj, namespace)
+      if @style == :rpc
+        SOAPlet.add_rpc_servant_to_router(router, obj, namespace)
+      else
+        SOAPlet.add_document_servant_to_router(router, obj, namespace)
+      end
       router.route(soap_string)
     end
   end
 
-  def setup_request_router(namespace)
-    router = @router_map[namespace] || RequestRouter.new(namespace)
-    add_router(namespace, router)
+  def setup_rpc_request_router(namespace)
+    router = @rpc_router_map[namespace] || RequestRouter.new(:rpc, namespace)
+    add_rpc_router(namespace, router)
     router
   end
 
-  def add_router(namespace, router)
-    @router_map[namespace] = router
+  def setup_document_request_router(namespace)
+    router = @document_router_map[namespace] || RequestRouter.new(:document, namespace)
+    add_rpc_router(namespace, router)
+    router
+  end
+
+  def add_rpc_router(namespace, router)
+    @rpc_router_map[namespace] = router
+  end
+
+  def add_document_router(namespace, router)
+    @document_router_map[namespace] = router
   end
 
   def parse_soapaction(soapaction)
@@ -152,7 +184,8 @@ private
 
   def lookup_router(namespace)
     if namespace
-      @router_map[namespace] || @app_scope_router
+      @rpc_router_map[namespace] || @document_router_map[namespace] ||
+        @app_scope_router
     else
       @app_scope_router
     end
@@ -174,23 +207,47 @@ private
 
   class << self
   public
-    def add_servant_to_router(router, obj, namespace)
+    def add_rpc_servant_to_router(router, obj, namespace)
       ::SOAP::RPC.defined_methods(obj).each do |name|
         begin
-          add_servant_method_to_router(router, obj, namespace, name)
+          add_rpc_servant_method_to_router(router, obj, namespace, name)
         rescue SOAP::RPC::MethodDefinitionError => e
           p e if $DEBUG
         end
       end
     end
 
-    def add_servant_method_to_router(router, obj, namespace, name)
+    def add_document_servant_to_router(router, obj, namespace)
+      ::SOAP::RPC.defined_methods(obj).each do |name|
+        begin
+          add_document_servant_method_to_router(router, obj, namespace, name)
+        rescue SOAP::RPC::MethodDefinitionError => e
+          p e if $DEBUG
+        end
+      end
+    end
+
+    def add_rpc_servant_method_to_router(router, obj, namespace, name,
+        style = :rpc, use = :encoded)
       qname = XSD::QName.new(namespace, name)
       soapaction = nil
       method = obj.method(name)
       param_def = ::SOAP::RPC::SOAPMethod.create_param_def(
 	(1..method.arity.abs).collect { |i| "p#{ i }" })
-      router.add_method(obj, qname, soapaction, name, param_def)
+      opt = {}
+      opt[:request_style] = opt[:response_style] = style
+      opt[:request_use] = opt[:response_use] = use
+      router.add_operation(qname, soapaction, obj, name, param_def, opt)
+    end
+
+    def add_document_servant_method_to_router(router, obj, namespace, name,
+        style = :document, use = :literal)
+      qname = XSD::QName.new(namespace, name)
+      soapaction = nil
+      opt = {}
+      opt[:request_style] = opt[:response_style] = style
+      opt[:request_use] = opt[:response_use] = use
+      router.add_operation(qname, soapaction, obj, name, nil, opt)
     end
   end
 end
