@@ -1,20 +1,35 @@
 = ToDo
 
+
+mappingRegistryCreator: do not dump a type which is in default mappingRegistry.
+
+
+wsdlRouter
+  return value must be converted to the specified element name, not "fooResponse" style.
+
+Strict check
+  order of sequence
+  unbound
+
+Support literal/document
+
+子供要素を指定する場合は、新たに宣言する場合と、既存の要素を参照する場合があります。既存の要素を参 照する際は、ref属性を使用します
+
+simplify original driver
+
+* encoding/decoding based on type information in WSDL.
+  * Support untyped response.
+* Support SwA.
+* Parse XML Namespace with xmlscan, not by itself.
 * RAA exception
 * RAA uri-fy
-* Support SwA.
-* Rewrite the interop test client with runit?
 * Support all derived built-in types in XML Schema Part2 Sec. 3.2.
 * Design and implement SOAPHeader handler API.
   * Support actor and mustUnderstand.
   * Implement message router: lib/soap/msgRouter.rb.
     * Messaging sample.
-* Support untyped response.
-  does lib/soap/encodingStyleHandlerASPDotNet.rb is enough?
-* Follow SOAP/1.2.  I heard it is going to be Last Call soon without Candidate
-  Recommendation phase...
-* encoding/decoding based on type information in WSDL.
-* Create unit tests.
+* Rewrite the interop test client with runit?
+* Follow SOAP/1.2.
 
 
 = Done
