@@ -104,8 +104,10 @@ module Mapping
   def self._obj2soap(obj, registry, type = nil)
     if referent = Thread.current[:SOAPMarshalDataKey][obj.__id__]
       SOAPReference.new(referent)
-    else
+    elsif registry
       registry.obj2soap(obj, type)
+    else
+      raise MappingError.new("No mapping registry given.")
     end
   end
 

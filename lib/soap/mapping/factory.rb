@@ -220,12 +220,12 @@ class ArrayFactory_ < Factory
     else
       arytype = XSD::AnyTypeName
     end
-    param = SOAPArray.new(ValueArrayName, 1, arytype)
-    mark_marshalled_obj(obj, param)
-    obj.each do |var|
-      param.add(Mapping._obj2soap(var, map))
+    soap_obj = SOAPArray.new(ValueArrayName, 1, arytype)
+    mark_marshalled_obj(obj, soap_obj)
+    obj.each do |item|
+      soap_obj.add(Mapping._obj2soap(item, map))
     end
-    param
+    soap_obj
   end
 
   def soap2obj(obj_class, node, info, map)
@@ -249,12 +249,12 @@ class TypedArrayFactory_ < Factory
       return nil
     end
     arytype = info[:type] || info[0]
-    param = SOAPArray.new(ValueArrayName, 1, arytype)
-    mark_marshalled_obj(obj, param)
+    soap_obj = SOAPArray.new(ValueArrayName, 1, arytype)
+    mark_marshalled_obj(obj, soap_obj)
     obj.each do |var|
-      param.add(Mapping._obj2soap(var, map))
+      soap_obj.add(Mapping._obj2soap(var, map))
     end
-    param
+    soap_obj
   end
 
   def soap2obj(obj_class, node, info, map)
@@ -277,14 +277,14 @@ end
 class TypedStructFactory_ < Factory
   def obj2soap(soap_class, obj, info, map)
     type = info[:type] || info[0]
-    param = soap_class.new(type)
-    mark_marshalled_obj(obj, param)
+    soap_obj = soap_class.new(type)
+    mark_marshalled_obj(obj, soap_obj)
     if obj.class <= SOAP::Marshallable
-      setiv2soap(param, obj, map)
+      setiv2soap(soap_obj, obj, map)
     else
-      setiv2soap(param, obj, map)
+      setiv2soap(soap_obj, obj, map)
     end
-    param
+    soap_obj
   end
 
   def soap2obj(obj_class, node, info, map)
@@ -314,16 +314,16 @@ class HashFactory_ < Factory
 	(obj.respond_to?(:default_proc) and obj.default_proc)
       return nil
     end
-    param = SOAPStruct.new(MapQName)
-    mark_marshalled_obj(obj, param)
+    soap_obj = SOAPStruct.new(MapQName)
+    mark_marshalled_obj(obj, soap_obj)
     obj.each do |key, value|
       elem = SOAPStruct.new
       elem.add("key", Mapping._obj2soap(key, map))
       elem.add("value", Mapping._obj2soap(value, map))
       # ApacheAxis allows only 'item' here.
-      param.add("item", elem)
+      soap_obj.add("item", elem)
     end
-    param
+    soap_obj
   end
 
   def soap2obj(obj_class, node, info, map)
