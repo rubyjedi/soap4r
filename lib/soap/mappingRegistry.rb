@@ -147,7 +147,12 @@ module RPCUtils
 
     def setInstanceVariables( obj, values )
       values.each do | name, value |
-	obj.instance_eval( "@#{ name } = value" )
+	setter = name + "="
+	if obj.respond_to?( setter )
+	  obj.__send__( setter, value )
+	else
+	  obj.instance_eval( "@#{ name } = value" )
+	end
       end
     end
 
@@ -947,10 +952,11 @@ module RPCUtils
 
     attr_reader :complexTypes
 
-    def initialize( wsdl, config = {} )
+    def initialize( wsdl, portType, config = {} )
       @wsdl = wsdl
+      @portType = portType
       @config = config
-      @complexTypes = @wsdl.getComplexTypesWithMessages
+      @complexTypes = @wsdl.getComplexTypesWithMessages( portType )
       @obj2soapExceptionHandler = nil
     end
 
