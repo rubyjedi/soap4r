@@ -33,12 +33,12 @@ class SOAPXMLScanner < SOAPParser
 
   def doParse( stringOrReadable )
     @scanner = XMLScan::XMLScanner.new( Visitor.new( self ))
-    @scanner.kcode = Charset.getCharsetStr( charset )
+    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset )
     @scanner.parse( stringOrReadable )
   end
 
   def setScannerKCode( charset )
-    @scanner.kcode = Charset.getCharsetStr( charset )
+    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset )
     setXMLDeclEncoding( charset )
   end
 
@@ -61,7 +61,7 @@ class SOAPXMLScanner < SOAPParser
     end
 
     def parse_error( msg )
-      raise ParseError.new( msg )
+      raise SOAPParser::ParseError.new( msg )
     end
 
     def wellformed_error( msg )

@@ -38,7 +38,7 @@ class SOAPREXMLParser < SOAPParser
     source = nil
     if REXML::VERSION_MAJOR < 2 or
 	( REXML::VERSION_MAJOR == 2 and REXML::VERSION_MINOR <= 4 )
-      source = Charset.codeConv( stringOrReadable, charset, 'UTF8' )
+      source = ::SOAP::Charset.codeConv( stringOrReadable, charset, 'UTF8' )
     else
       source = REXML::SourceFactory.create_from( stringOrReadable )
       source.encoding = charset
