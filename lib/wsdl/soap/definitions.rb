@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'soap/rpcUtils'
 
 
 module WSDL
@@ -25,7 +26,7 @@ module WSDL
 
 class Definitions < Info
   def getComplexTypesWithMessages
-    types = complexTypes
+    types = collectComplexTypes
     messages.each do | message |
       type = createComplexType( message.name )
       elements = message.parts.collect { | part |
@@ -36,6 +37,7 @@ class Definitions < Info
     end
     types << arrayComplexType
     types << faultComplexType
+    types << exceptionComplexType
     types
   end
 
@@ -47,7 +49,7 @@ private
     type.complexContent.base = ::SOAP::ValueArrayName
     attr = XMLSchema::Attribute.new
     attr.ref = ::SOAP::AttrArrayTypeName
-    anyTypeArray = XSD::XSDAnyType::Type.dup
+    anyTypeArray = XSD::AnyTypeName.dup
     anyTypeArray.name += '[]'
     attr.arrayType = anyTypeArray
     type.complexContent.attributes << attr
@@ -74,10 +76,22 @@ private
       XSD::XSDAnyURI::Type )
     faultactor.minOccurs = 0
     detail = XMLSchema::Element.new( ::SOAP::EleFaultDetailName.name,
-      XSD::XSDAnyType::Type )
+      XSD::AnyTypeName )
     detail.minOccurs = 0
-    type.setSequenceElements( [ faultcode, faultstring, faultactor, detail ] )
+    type.setAllElements( [ faultcode, faultstring, faultactor, detail ] )
     type.content.final = 'extension'
+    type
+  end
+
+  def exceptionComplexType
+    type = createComplexType( XSD::QName.new(
+      ::SOAP::RPCUtils::RubyCustomTypeNamespace, 'SOAPException' ))
+    exceptionTypeName = XMLSchema::Element.new( 'exceptionTypeName',
+      XSD::XSDString::Type )
+    cause = XMLSchema::Element.new( 'cause', XSD::AnyTypeName )
+    backtrace = XMLSchema::Element.new( 'backtrace', ::SOAP::ValueArrayName )
+    message = XMLSchema::Element.new( 'message', XSD::XSDString::Type )
+    type.setAllElements( [ exceptionTypeName, cause, backtrace, message ] )
     type
   end
 
