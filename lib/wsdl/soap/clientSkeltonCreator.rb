@@ -70,12 +70,12 @@ __EOD__
   def dumpOperation( operation )
     name = operation.name.name
     input = operation.input
-    "puts obj.#{ name }#{ dumpInputParam( input ) }"
+    "puts obj.#{ createMethodName( name ) }#{ dumpInputParam( input ) }"
   end
 
   def dumpInputInitialize( input )
     result = input.getMessage.parts.collect { | part |
-      "#{ part.name }"
+      "#{ uncapitalize( part.name ) }"
     }.join( " = " )
     if result.empty?
       ""

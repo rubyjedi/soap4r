@@ -72,7 +72,7 @@ MappingRegistry.set(
   #{ ele.name },
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ "#{ ele.namespace }", "#{ ele.name }" ]
+  [ XSD::QName.new( "#{ ele.namespace }", "#{ ele.name }" ) ]
 )
 __EOD__
   end
@@ -88,7 +88,7 @@ MappingRegistry.set(
   #{ ele.name },
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ "#{ contentType.namespace }", "#{ contentType.name }" ]
+  [ XSD::QName.new( "#{ contentType.namespace }", "#{ contentType.name }" ) ]
 )
 __EOD__
   end

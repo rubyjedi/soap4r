@@ -25,8 +25,30 @@ module WSDL
 
 
 class Definitions < Info
-  def getComplexTypesWithMessages
+  def getComplexTypesWithMessages( portType )
     types = collectComplexTypes
+    portType.operations.each do | operation |
+      if operation.input
+	message  = messages[ operation.input.message ]
+	type = createComplexType( operation.input.name || operation.name )
+	elements = message.parts.collect { | part |
+	    XMLSchema::Element.new( part.name, part.type )
+	  }
+	type.setSequenceElements( elements )
+	types << type
+      end
+      if operation.output
+	message  = messages[ operation.output.message ]
+	type = createComplexType( operation.output.name ||
+	  XSD::QName.new( operation.name.namespace, operation.name.name + "Response" ))
+	elements = message.parts.collect { | part |
+	    XMLSchema::Element.new( part.name, part.type )
+	  }
+	type.setSequenceElements( elements )
+	types << type
+      end
+    end
+=begin
     messages.each do | message |
       type = createComplexType( message.name )
       elements = message.parts.collect { | part |
@@ -35,6 +57,7 @@ class Definitions < Info
       type.setSequenceElements( elements )
       types << type
     end
+=end
     types << arrayComplexType
     types << faultComplexType
     types << exceptionComplexType
