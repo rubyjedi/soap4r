@@ -29,8 +29,6 @@ class RPCRouter
   include SOAP
   include RPCUtils
 
-  class RPCRoutingError < Error; end
-
   attr_reader :actor
   attr_accessor :allowUnqualifiedElement, :defaultEncodingStyle
   attr_accessor :mappingRegistry
