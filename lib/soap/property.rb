@@ -95,7 +95,7 @@ class Property
   # name: a Symbol, String or an Array
   # value: an Object
   def []=(name, value)
-    name_pair = name_to_a(name)
+    name_pair = name_to_a(name).freeze
     hooks = assign(name_pair, value)
     hooks.each do |hook|
       hook.call(name_pair, value)

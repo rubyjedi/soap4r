@@ -126,6 +126,19 @@ __EOP__
     end
   end
 
+  def test_hook_name
+    tag = Object.new
+    tested = false
+    @prop.add_hook("foo.bar") do |key, value|
+      assert_raise(TypeError) do
+	key << "baz"
+      end
+      tested = true
+    end
+    @prop["foo.bar"] = tag
+    assert(tested)
+  end
+
   def test_value_hook
     tag = Object.new
     tested = false
