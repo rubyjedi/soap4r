@@ -28,7 +28,7 @@ module SOAPProcessor
   #
   def marshal( ns, header, body )
 
-    # Namespace preloading.
+    # Namespace preparing.
     ns.assign( SOAP::EnvelopeNamespace, SOAPNamespaceTag )
     ns.assign( XSD::Namespace, XSDNamespaceTag )
     ns.assign( XSD::InstanceNamespace, XSINamespaceTag )
@@ -43,12 +43,10 @@ module SOAPProcessor
   ###
   ## SOAP unmarshaling
   #
-  def unmarshal( method, stream )
+  def unmarshal( stream )
 
-    # Namespace preloading.
+    # Namespace preparing.
     ns = SOAPNS.new()
-    ns.assign( SOAP::EnvelopeNamespace, SOAPNamespaceTag )
-    ns.assign( XSD::Namespace, XSDNamespaceTag )
 
     # XML tree parsing.
     builder = XML::SimpleTreeBuilder.new()
@@ -56,7 +54,7 @@ module SOAPProcessor
     tree.documentElement.normalize
 
     # Parse SOAP envelope.
-    env = SOAPEnvelope.decode( ns, tree, method )
+    env = SOAPEnvelope.decode( ns, tree )
 
     return ns, env.header, env.body
   end
