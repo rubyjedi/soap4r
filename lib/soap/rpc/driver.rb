@@ -94,23 +94,23 @@ public
     addMethodWithSOAPActionAs(name, name, nil, *paramArg)
   end
 
-  def addMethodAs(elementName, name, *paramArg)
-    addMethodWithSOAPActionAs(elementName, name, nil, *paramArg)
+  def addMethodAs(methodName, elementName, *paramArg)
+    addMethodWithSOAPActionAs(methodName, elementName, nil, *paramArg)
   end
 
   def addMethodWithSOAPAction(name, soapAction, *paramArg)
     addMethodWithSOAPActionAs(name, name, soapAction, *paramArg)
   end
 
-  def addMethodWithSOAPActionAs(elementName, name, soapAction, *paramArg)
+  def addMethodWithSOAPActionAs(methodName, elementName, soapAction, *paramArg)
     paramDef = if paramArg.size == 1 and paramArg[0].is_a?(Array)
         paramArg[0]
       else
         SOAPMethod.createParamDef(paramArg)
       end
     qname = XSD::QName.new(@namespace, elementName)
-    @proxy.addMethod(qname, soapAction, name, paramDef)
-    addMethodInterface(name, paramDef)
+    @proxy.addMethod(qname, soapAction, methodName, paramDef)
+    addMethodInterface(methodName, paramDef)
   end
 
 
