@@ -164,9 +164,9 @@ private
       cfg = @client.ssl_config
       case key
       when 'client_cert'
-	cfg.client_cert = value
+	cfg.client_cert = cert_from_file(value)
       when 'client_key'
-	cfg.client_key = value
+	cfg.client_key = key_from_file(value)
       when 'client_ca'
 	cfg.client_ca = value
       when 'ca_path'
@@ -176,21 +176,41 @@ private
       when 'crl'
 	cfg.set_crl(value)
       when 'verify_mode'
-	cfg.verify_mode = value
+	cfg.verify_mode = ssl_config_int(value)
       when 'verify_depth'
-	cfg.verify_depth = value
-      when 'verify_callback'
-	cfg.verify_callback = value
+	cfg.verify_depth = ssl_config_int(value)
       when 'options'
 	cfg.options = value
       when 'ciphers'
 	cfg.ciphers = value
+      when 'verify_callback'
+	cfg.verify_callback = value
       when 'cert_store'
 	cfg.cert_store = value
       else
 	raise ArgumentError.new("unknown ssl_config property #{key}")
       end
     end
+  end
+
+  def ssl_config_int(value)
+    if value.nil? or value.empty?
+      nil
+    else
+      begin
+        Integer(value)
+      rescue ArgumentError
+        ::SOAP::Property::Util.const_from_name(value)
+      end
+    end
+  end
+
+  def cert_from_file(filename)
+    OpenSSL::X509::Certificate.new(File.open(filename) { |f| f.read })
+  end
+
+  def key_from_file(filename)
+    OpenSSL::PKey::RSA.new(File.open(filename) { |f| f.read })
   end
 
   def send_post(conn_data, soapaction, charset)
