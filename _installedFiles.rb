@@ -1,3 +1,5 @@
+require 'rbconfig'
+
 class InstalledFile
   attr_reader :path
   attr_reader :mtime
@@ -21,7 +23,8 @@ class InstalledFile
 end
 
 class InstalledFiles < Array
-  Repository = '__installedFiles.db'
+  RV = Config::CONFIG["MAJOR"] + "_" + Config::CONFIG["MINOR"]
+  Repository = "__installedFiles_#{RV}.db"
 
   def initialize( dir = '.' )
     load( dir ) if dir
