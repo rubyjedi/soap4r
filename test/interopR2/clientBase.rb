@@ -264,6 +264,17 @@ def doTestBase( drv )
     dumpException( title )
   end
 
+  title = 'echoStringArray (sparse)'
+  begin
+    arg = [ nil, "SOAP4R\n", nil, " Interoperability ", nil, "\tTest\t", nil ]
+    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral )
+    soapAry.sparse = true
+    var = drv.echoStringArray( soapAry )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
   title = 'echoInteger (Int: 123)'
   begin
     arg = 123
@@ -319,6 +330,17 @@ def doTestBase( drv )
     dumpException( title )
   end
 
+  title = 'echoIntegerArray (sparse)'
+  begin
+    arg = [ nil, 1, nil, 2, nil, 3, nil ]
+    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::IntLiteral )
+    soapAry.sparse = true
+    var = drv.echoIntegerArray( soapAry )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
   title = 'echoFloat'
   begin
     arg = 3.14159265358979
@@ -331,6 +353,33 @@ def doTestBase( drv )
   title = 'echoFloat (scientific notation)'
   begin
     arg = 12.34e36
+    var = drv.echoFloat( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (special values: NaN)'
+  begin
+    arg = 0.0/0.0
+    var = drv.echoFloat( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (special values: INF)'
+  begin
+    arg = 1.0/0.0
+    var = drv.echoFloat( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (special values: -INF)'
+  begin
+    arg = -1.0/0.0
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
   rescue Exception
@@ -353,6 +402,17 @@ def doTestBase( drv )
     inf_ = -1.0/0.0
     arg = FloatArray[ nan, inf, inf_ ]
     var = drv.echoFloatArray( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloatArray (sparse)'
+  begin
+    arg = [ nil, nil, 0.0001, 1000.0, 0.0, nil, nil ]
+    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::FloatLiteral ) 
+    soapAry.sparse = true
+    var = drv.echoFloatArray( soapAry )
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -395,6 +455,73 @@ def doTestBase( drv )
     s3 = SOAPStruct.new( 3, 3.3, "c" )
     arg = [ s1, s2, s3 ]
     var = drv.echoStructArray( arg )
+    dumpNormal( title, arg, var ) 
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoStructArray (sparse)'
+  begin
+    s1 = SOAPStruct.new( 1, 1.1, "a" )
+    s2 = SOAPStruct.new( 2, 2.2, "b" )
+    s3 = SOAPStruct.new( 3, 3.3, "c" )
+    arg = [ s1, s2, s3 ]
+    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct" ) 
+    soapAry.sparse = true
+    var = drv.echoStructArray( soapAry )
+    dumpNormal( title, arg, var ) 
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoStructArray (2D Array)'
+  begin
+    s1 = SOAPStruct.new( 1, 1.1, "a" )
+    s2 = SOAPStruct.new( 2, 2.2, "b" )
+    s3 = SOAPStruct.new( 3, 3.3, "c" )
+    arg = [
+      [ s1, nil, s2 ],
+      [ nil, s2, s3 ],
+    ]
+    md = SOAP::RPCUtils.ary2md( arg, 2 )
+
+    var = drv.echoStructArray( md )
+    dumpNormal( title, arg, var ) 
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoStructArray (2D Array, sparse)'
+  begin
+    s1 = SOAPStruct.new( 1, 1.1, "a" )
+    s2 = SOAPStruct.new( 2, 2.2, "b" )
+    s3 = SOAPStruct.new( 3, 3.3, "c" )
+    arg = [
+      [ s1, nil, s2 ],
+      [ nil, s2, s3 ],
+    ]
+    md = SOAP::RPCUtils.ary2md( arg, 2, TypeNS, "SOAPStruct" )
+    md.sparse = true
+
+    var = drv.echoStructArray( md )
+    dumpNormal( title, arg, var ) 
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoStructArray (anyType, 2D Array, sparse)'
+  begin
+    s1 = SOAPStruct.new( 1, 1.1, "a" )
+    s2 = SOAPStruct.new( 2, 2.2, "b" )
+    s3 = SOAPStruct.new( 3, 3.3, "c" )
+    arg = [
+      [ s1, nil, s2 ],
+      [ nil, s2, s3 ],
+    ]
+    md = SOAP::RPCUtils.ary2md( arg, 2 )
+    md.sparse = true
+
+    var = drv.echoStructArray( md )
     dumpNormal( title, arg, var ) 
   rescue Exception
     dumpException( title )
@@ -619,9 +746,51 @@ if $test_echoMap
   end
 
   title = 'echoMap (multibyte char)'
-    arg = { "Hello (日本語Japanese) こんにちは" => 1, 1 => "Hello (日本語Japanese) こんにちは" }
   begin
+    arg = { "Hello (日本語Japanese) こんにちは" => 1, 1 => "Hello (日本語Japanese) こんにちは" }
     var = drv.echoMap( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoMapArray'
+  begin
+    map = { "a" => 1, "b" => 2 }
+    arg = [ map, map, map ]
+    var = drv.echoMapArray( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoMapArray (boolean, base64, nil, float)'
+  begin
+    map = { true => "\0", "\0" => nil, nil => 0.0001, 0.0001 => false }
+    arg = [ map, map, map ]
+    var = drv.echoMapArray( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoMapArray (sparse)'
+  begin
+    map = { "a" => 1, "b" => 2 }
+    arg = [ nil, nil, map, nil, map, nil, map, nil, nil ]
+    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map" ) 
+    soapAry.sparse = true
+    var = drv.echoMapArray( soapAry )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoMapArray (multibyte char)'
+  begin
+    map = { "Hello (日本語Japanese) こんにちは" => 1, 1 => "Hello (日本語Japanese) こんにちは" }
+    arg = [ map, map, map ]
+    var = drv.echoMapArray( arg )
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -735,6 +904,22 @@ def doTestGroupB( drv )
   end
 
   title = 'echo2DStringArray (sparse)'
+  begin
+    # ary2md converts Arry ((of Array)...) into M-D anyType Array
+    arg = [
+      [ 'r0c0', nil,    'r0c2' ],
+      [ nil,    'r1c1', 'r1c2' ],
+    ]
+    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral )
+    md.sparse = true
+
+    var = drv.echo2DStringArray( md )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echo2DStringArray (anyType, sparse)'
   begin
     # ary2md converts Arry ((of Array)...) into M-D anyType Array
     arg = [
