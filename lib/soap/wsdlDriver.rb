@@ -105,6 +105,7 @@ class WSDLDriver
   __attr_proxy :wiredump_dev, true
   __attr_proxy :wiredump_file_base, true
   __attr_proxy :httpproxy, true
+  __attr_proxy :mandatorycharset, true		# force using charset
 
   __attr_proxy :default_encodingstyle, true
   __attr_proxy :allow_unqualified_element, true
@@ -129,6 +130,7 @@ class WSDLDriver
     attr_reader :wiredump_dev
     attr_reader :wiredump_file_base
     attr_reader :httpproxy
+    attr_accessor :mandatorycharset
 
     attr_accessor :default_encodingstyle
     attr_accessor :allow_unqualified_element
@@ -225,6 +227,7 @@ class WSDLDriver
       @wiredump_file_base = nil
       name = 'http_proxy'
       @httpproxy = ENV[name] || ENV[name.upcase]
+      @mandatorycharset = nil
 
       @wsdl_elements = @wsdl.collect_elements
       @wsdl_types = @wsdl.collect_complextypes
@@ -361,8 +364,8 @@ class WSDLDriver
       if data.receive_string.empty?
 	return nil, nil
       end
-      res_charset = StreamHandler.parse_media_type(data.receive_contenttype)
-      opt[:charset] = res_charset
+      opt[:charset] = @mandatorycharset ||
+	StreamHandler.parse_media_type(data.receive_contenttype)
       res_header, res_body = Processor.unmarshal(data.receive_string, opt)
       return res_header, res_body
     end
