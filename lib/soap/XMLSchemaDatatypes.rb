@@ -486,7 +486,7 @@ private
       @data = t
     elsif ( t.is_a?( Time ))
       gt = t.dup.gmtime
-      @data = Date.new3( gt.year, gt.mon, gt.mday )
+      @data = DateTime.new3( gt.year, gt.mon, gt.mday )
     else
       /^([+-]?\d\d\d\d)-(\d\d)-(\d\d)$/ =~ trim( t.to_s )
       unless Regexp.last_match
@@ -497,7 +497,7 @@ private
       mon = $2.to_i
       mday = $3.to_i
 
-      @data = Date.new3( year, mon, mday )
+      @data = DateTime.new3( year, mon, mday )
     end
   end
 
