@@ -126,8 +126,12 @@ private
   end
 
   def local_assign(key, value)
-    if @locked and propkey?(value)
-      raise TypeError.new("cannot add any key to locked property")
+    if @locked
+      if propkey?(value)
+	raise TypeError.new("cannot add any key to locked property")
+      elsif propkey?(@store[key])
+	raise TypeError.new("cannot override any key in locked property")
+      end
     end
     @store[key] = value
   end

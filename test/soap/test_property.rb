@@ -152,9 +152,8 @@ class TestProperty < Test::Unit::TestCase
       end
     end
     assert_nil(@prop["a.a"])
-    @prop["a.b"] = nil
-    assert_nil(@prop["a.b"])
     @prop["a.a"] = 2
+    assert_equal(2, @prop["a.a"])
     #
     @prop.unlock
     assert_nil(@prop["c"])
@@ -200,16 +199,23 @@ class TestProperty < Test::Unit::TestCase
     assert_equal(branch, @prop["a.b.d"])
     assert_equal(branch, @prop[:a][:b][:d])
     @prop.lock
+    # split error 1
     assert_raises(TypeError) do
       @prop["a.b"]
     end
+    # split error 2
     assert_raises(TypeError) do
       @prop["a"]
     end
     @prop["a.b.c"] = 2
     assert_equal(2, @prop["a.b.c"])
+    # replace error
     assert_raises(TypeError) do
       @prop["a.b.c"] = ::SOAP::Property.new
+    end
+    # override error
+    assert_raises(TypeError) do
+      @prop["a.b"] = 1
     end
   end
 end
