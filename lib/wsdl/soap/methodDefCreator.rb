@@ -84,8 +84,8 @@ __EOD__
 	collectTypes( part.type )
 	result << paramSet( 'out', typeDef( part.type ), part.name )
       }
-      result
     end
+    result
   end
 
   def typeDef( type )
