@@ -145,7 +145,7 @@ class Registry
       @registry = registry
     end
 
-    def obj2soap(klass, obj)
+    def obj2soap(klass, obj, type_qname = nil)
       @map.each do |obj_class, soap_class, factory, info|
         if klass == obj_class or
             (info[:derived_class] and klass <= obj_class)
@@ -330,8 +330,8 @@ class Registry
   alias :set :add
 
   # This mapping registry ignores type hint.
-  def obj2soap(klass, obj, type = nil)
-    soap = _obj2soap(klass, obj, type)
+  def obj2soap(klass, obj, type_qname = nil)
+    soap = _obj2soap(klass, obj, type_qname)
     if @allow_original_mapping
       addextend2soap(soap, obj)
     end
@@ -369,7 +369,7 @@ class Registry
 
 private
 
-  def _obj2soap(klass, obj, type)
+  def _obj2soap(klass, obj, type_qname)
     ret = nil
     if obj.is_a?(SOAPStruct) or obj.is_a?(SOAPArray)
       obj.replace do |ele|
@@ -380,7 +380,7 @@ private
       return obj
     end
     begin 
-      ret = @map.obj2soap(klass, obj) ||
+      ret = @map.obj2soap(klass, obj, type_qname) ||
         @default_factory.obj2soap(klass, obj, nil, self)
     rescue MappingError
     end
