@@ -1,7 +1,11 @@
 require 'test/unit'
-require 'http-access2'
+begin
+  require 'http-access2'
+rescue LoadError
+end
 require 'soap/rpc/driver'
 
+if defined?(HTTPAccess2)
 
 module SOAP; module SSL
 
@@ -204,3 +208,5 @@ end
 
 
 end; end
+
+end
