@@ -229,24 +229,25 @@ class RubytypeFactory < Factory
 private
 
   def check_singleton(obj)
-=begin
-      singleton_class = class << obj; self; end
-      unless singleton_class.instance_methods(false).empty?
-        raise TypeError.new("singleton can't be dumped #{ obj }")
-      end
-      unless singleton_class.instance_variables.empty?
-        raise TypeError.new("singleton can't be dumped #{ obj }")
-      end
-=end
-    unless obj.singleton_methods(true).empty?
+    unless singleton_methods_true(obj).empty?
       return true
     end
     singleton_class = class << obj; self; end
-    unless singleton_class.instance_variables.empty? or
-	(singleton_class.ancestors - obj.class.ancestors).empty?
+    if !singleton_class.instance_variables.empty? or
+	!(singleton_class.ancestors - obj.class.ancestors).empty?
       return true
     end
     false
+  end
+
+  if RUBY_VERSION >= '1.8.0'
+    def singleton_methods_true(obj)
+      obj.singleton_methods(true)
+    end
+  else
+    def singleton_methods_true(obj)
+      obj.singleton_methods
+    end
   end
 
   def rubytype2obj(node, map, rubytype)
