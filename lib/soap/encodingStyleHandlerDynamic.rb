@@ -23,9 +23,10 @@ module SOAP
 
 
 class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
+  Namespace = SOAP::EncodingNamespace
+  addHandler
 
   def initialize
-    super( EncodingNamespace )
     @referencePool = []
     @idPool = []
     @textBuf = ''
