@@ -17,13 +17,14 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'soap/encodingStyleHandler'
+require 'soap/encodingstyle/handler'
 
 
 module SOAP
+module EncodingStyle
 
 
-class EncodingStyleHandlerLiteral < EncodingStyleHandler
+class LiteralHandler < Handler
   Namespace = SOAP::LiteralNamespace
   add_handler
 
@@ -210,7 +211,8 @@ private
   end
 end
 
-EncodingStyleHandlerLiteral.new
+LiteralHandler.new
 
 
+end
 end

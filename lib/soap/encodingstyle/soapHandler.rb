@@ -1,5 +1,5 @@
 =begin
-SOAP4R - SOAP Dynamic EncodingStyle handler library
+SOAP4R - SOAP EncodingStyle handler library
 Copyright (C) 2001, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -17,13 +17,14 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'soap/encodingStyleHandler'
+require 'soap/encodingstyle/handler'
 
 
 module SOAP
+module EncodingStyle
 
 
-class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
+class SOAPHandler < Handler
   Namespace = SOAP::EncodingNamespace
   add_handler
 
@@ -542,7 +543,8 @@ private
   end
 end
 
-SOAPEncodingStyleHandlerDynamic.new
+SOAPHandler.new
 
 
+end
 end

@@ -17,13 +17,14 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'soap/encodingStyleHandler'
+require 'soap/encodingstyle/handler'
 
 
 module SOAP
+module EncodingStyle
 
 
-class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
+class ASPDotNetHandler < Handler
   Namespace = 'http://tempuri.org/ASP.NET'
   add_handler
 
@@ -224,7 +225,8 @@ private
   end
 end
 
-EncodingStyleHandlerASPDotNet.new
+ASPDotNetHandler.new
 
 
+end
 end
