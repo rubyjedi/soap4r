@@ -117,7 +117,7 @@ private
     responseString  = createFaultResponseString( $! )
     response.body   = responseString
     response.status = 500
-    response.header['Content-Type'] = 'text/xml'
+    response.header['Content-Type']   = "text/xml; charset=#{ Charset.getXMLInstanceEncodingLabel }"
 
   end
   
