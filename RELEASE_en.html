@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.2
+Target SOAP4R version: SOAP4R/1.3.3
 </p>
 
 <ol>
@@ -53,17 +53,40 @@ Target SOAP4R version: SOAP4R/1.3.2
 <p>
 Feedback from
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+and Michael Neumann.  Thanks!
 </p>
 
 <ul>
-<li>&quot;nil='1'&quot; should be &quot;nil='true'&quot; in 2001 schema
-whereas &quot;null='1'&quot; in 1999 schema.  Fixed.</li>
-<li>SOAP Array was not typed with xsi:type.</li>
-<li>Fixed serialization root handling algorithm.</li>
-<li>Supported kind of SOAP-ENC:String style typed element.</li>
-<li>Default namespace was not derived to child element.  Fixed.</li>
-<li>Support default encodingStyle.</li>
-<li>Added support for void type (SOAP::RPCUtils::SOAPVoid).</li>
+<li>Added SOAP4R Installer by Michael Neumann.  Thanks!</li>
+<li>Types changed:
+  <ul>
+    <li>Boolean: Accepts 1 and 0 in addition to true and falue.</li>
+    <li>Float: handles single-precision 32-bit floating point.
+        Ruby's float is doule-precision.</li>
+    <li>Double: Added.  Mapped to Ruby's Float.</li>
+    <li>DateTime: Added TZ support.</li>
+    <li>Long: Added.</li>
+    <li>Int: Changed class hierarchy; derived from Long now.</li>
+    <li>Array: Added 'position' and 'offset' support.</li>
+    <li>Array: Added M-D Array support.</li>
+    <li>Decimal: Added but it's incomplete now.</li>
+  </ul>
+</li>
+<li>Illegal error message when a type not found in SOAP-ENC.</li>
+<li>Tries to transmit \r safely.  To be checked...</li>
+<li>Parse Fault items like 'faultcode' as same as Body ie. href/id.</li>
+<li>rpcUtils.rb was completely re-written.
+  <ul>
+    <li>Added mappingRegistry interface.</li>
+    <li>Changed soap2obj and obj2soap's interface.</li>
+    <li>Bignum might be int or integer.  It's dependent on platform.
+        Changed to check range  -2147483648~+2147483647 itself.</li>
+    <li>ary2md: Added.  Converting Array ((of Array)...) to M-D Array.</li>
+    <li>struct2obj: Illegal dependency on ordering of Struct#members.  Fixed.</li>
+    <li>Ruby's Array should be converted to SOAP's Array of anyType.  Fixed.</li>
+  </ul>
+</li>
+<li>Dump HTTP header even when an error was raised.</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -202,7 +225,6 @@ spec are <strong>NOT</strong> currently supported:
 <ul>
 <li>encoding/decoding using XML Schema;
 Only xsi:type in SOAP Encoding is checked</li>
-<li>Arrays which has two or more dimensions (rank), Partially Transmitted Arrays, and Sparse Arrays</li>
 <li>Marshalling references to href/id (Unmarshalling is OK)</li>
 </ul></li>
 <li style="margin-top: 2ex;">Othres
@@ -218,6 +240,43 @@ Does not support 'charset='.
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.3 - July 4, 2001</dt>
+<dd>Feedback from
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+and Michael Neumann.  Thanks!
+<ul>
+<li>Added SOAP4R Installer by Michael Neumann.  Thanks!</li>
+<li>Types changed:
+  <ul>
+    <li>Boolean: Accepts 1 and 0 in addition to true and falue.</li>
+    <li>Float: handles single-precision 32-bit floating point.
+        Ruby's float is doule-precision.</li>
+    <li>Double: Added.  Mapped to Ruby's Float.</li>
+    <li>DateTime: Added TZ support.</li>
+    <li>Long: Added.</li>
+    <li>Int: Changed class hierarchy; derived from Long now.</li>
+    <li>Array: Added 'position' and 'offset' support.</li>
+    <li>Array: Added M-D Array support.</li>
+    <li>Decimal: Added but it's incomplete now.</li>
+  </ul>
+</li>
+<li>Illegal error message when a type not found in SOAP-ENC.</li>
+<li>Tries to transmit \r safely.  To be checked...</li>
+<li>Parse Fault items like 'faultcode' as same as Body ie. href/id.</li>
+<li>rpcUtils.rb was completely re-written.
+  <ul>
+    <li>Added mappingRegistry interface.</li>
+    <li>Changed soap2obj and obj2soap's interface.</li>
+    <li>Bignum might be int or integer.  It's dependent on platform.
+        Changed to check range  -2147483648~+2147483647 itself.</li>
+    <li>ary2md: Added.  Converting Array ((of Array)...) to M-D Array.</li>
+    <li>struct2obj: Illegal dependency on ordering of Struct#members.  Fixed.</li>
+    <li>Ruby's Array should be converted to SOAP's Array of anyType.  Fixed.</li>
+  </ul>
+</li>
+<li>Dump HTTP header even when an error was raised.</li>
+</ul></dd>
+
 <dt>1.3.2 - June 21, 2001</dt>
 <dd>Feedback from
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
