@@ -103,7 +103,7 @@ end
 
 
 ###
-## Basic datatypes.
+## Convenience datatypes.
 #
 class SOAPReference < NSDBase
   include SOAPBasetype
@@ -181,13 +181,17 @@ private
 end
 
 # SOAPRawString is for sending raw string.  In contrast to SOAPString,
-# SOAP4R does not do XML encoding and does not covert its CES.  The string it
-# holds is embedded to XML instance directly as 'xsd:string'.
+# SOAP4R does not do XML encoding and does not convert its CES.  The string it
+# holds is embedded to XML instance directly as a 'xsd:string'.
 class SOAPRawString < XSDString
   include SOAPBasetype
   extend SOAPModuleUtils
 end
 
+
+###
+## Basic datatypes.
+#
 class SOAPString < XSDString
   include SOAPBasetype
   extend SOAPModuleUtils
