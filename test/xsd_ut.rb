@@ -20,33 +20,21 @@ public
   end
 
   def test_NSDBase
-    o = XSD::NSDBase.new( 'name', 'ns' )
-    assert_equal( 'name', o.typeName )
-    assert_equal( 'ns', o.typeNamespace )
-    o.typeName = 'name2'
-    o.typeNamespace = 'ns2'
-    assert_equal( 'name2', o.typeName )
-    assert_equal( 'ns2', o.typeNamespace )
-    assert( o.typeEqual( 'ns2', 'name2' ))
-    assert( !o.typeEqual( 'ns', 'name2' ))
-    assert( !o.typeEqual( 'ns2', 'name' ))
-    assert( !o.typeEqual( 'ns', 'name' ))
+    o = XSD::NSDBase.new
+    assert_equal( nil, o.type )
   end
 
   def test_XSDBase
-    o = XSD::XSDBase.new( 'typeName' )
+    o = XSD::XSDAnySimpleType.new
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
     assert_equal( '', o.to_s )
-    assert_exception( NotImplementError ) do
-      o.set( 'newData' )
-    end
   end
 
   def test_XSDNil
     o = XSD::XSDNil.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::NilLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::NilLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -62,8 +50,8 @@ public
 
   def test_XSDString
     o = XSD::XSDString.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::StringLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::StringLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -80,8 +68,8 @@ public
 
   def test_XSDBoolean
     o = XSD::XSDBoolean.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::BooleanLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::BooleanLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -103,8 +91,8 @@ public
 
   def test_XSDDecimal
     o = XSD::XSDDecimal.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DecimalLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DecimalLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -170,8 +158,8 @@ public
 
   def test_XSDFloat
     o = XSD::XSDFloat.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::FloatLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::FloatLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -235,8 +223,8 @@ public
 
   def test_XSDDouble
     o = XSD::XSDDouble.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DoubleLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DoubleLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -300,8 +288,8 @@ public
 
   def test_XSDDuration
     o = XSD::XSDDuration.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DurationLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DurationLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -356,8 +344,8 @@ public
 
   def test_XSDDateTime
     o = XSD::XSDDateTime.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DateTimeLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DateTimeLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -418,8 +406,8 @@ public
 
   def test_XSDTime
     o = XSD::XSDTime.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::TimeLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::TimeLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -457,8 +445,8 @@ public
 
   def test_XSDDate
     o = XSD::XSDDate.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DateLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DateLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -502,8 +490,8 @@ public
 
   def test_XSDGYearMonth
     o = XSD::XSDGYearMonth.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GYearMonthLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GYearMonthLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -547,8 +535,8 @@ public
 
   def test_XSDGYear
     o = XSD::XSDGYear.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GYearLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GYearLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -592,8 +580,8 @@ public
 
   def test_XSDGMonthDay
     o = XSD::XSDGMonthDay.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GMonthDayLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GMonthDayLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -626,8 +614,8 @@ public
 
   def test_XSDGDay
     o = XSD::XSDGDay.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GDayLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GDayLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -660,8 +648,8 @@ public
 
   def test_XSDGMonth
     o = XSD::XSDGMonth.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GMonthLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GMonthLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -694,8 +682,8 @@ public
 
   def test_XSDHexBinary
     o = XSD::XSDHexBinary.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::HexBinaryLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::HexBinaryLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -731,8 +719,8 @@ public
 
   def test_XSDBase64Binary
     o = XSD::XSDBase64Binary.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::Base64BinaryLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::Base64BinaryLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -765,8 +753,8 @@ public
 
   def test_XSDAnyURI
     o = XSD::XSDAnyURI.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::AnyURILiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::AnyURILiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -786,8 +774,8 @@ public
 
   def test_XSDQName
     o = XSD::XSDQName.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::QNameLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::QNameLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -810,8 +798,8 @@ public
 
   def test_XSDInteger
     o = XSD::XSDInteger.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::IntegerLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::IntegerLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -869,8 +857,8 @@ public
 
   def test_XSDLong
     o = XSD::XSDLong.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::LongLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::LongLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -923,8 +911,8 @@ public
 
   def test_XSDInt
     o = XSD::XSDInt.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::IntLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::IntLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
