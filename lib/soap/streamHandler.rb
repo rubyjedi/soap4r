@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.21 2002/09/07 07:19:23 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.22 2002/09/17 16:50:26 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -61,7 +61,7 @@ public
   end
 
   def self.parseMediaType( str )
-    if /^#{ MediaType }(?:;\s*charset=([^"]+|"[^"]+"))?$/i !~ str
+    if /^#{ MediaType }(?:\s*;\s*charset=([^"]+|"[^"]+"))?$/i !~ str
       raise StreamError.new( "Illegal media type." );
     end
     charset = $1
