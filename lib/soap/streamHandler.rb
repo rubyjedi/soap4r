@@ -19,7 +19,7 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/charset'
 
-require 'uri'
+require 'urb'
 require 'socket'
 require 'timeout'
 
@@ -76,12 +76,15 @@ public
   private
 
   def sendPOST( soapString, soapAction, charset )
-    server = URI.create( @server )
+    server = URb.parse( @server )
     dumpDev = if @dumpDev && @dumpDev.respond_to?( "<<" )
 	@dumpDev
       else
 	nil
       end
+
+    receiveString = ''
+    receiveCharset = nil
 
     if @dumpFileBase
       fileName = @dumpFileBase + '_request.xml'
@@ -93,7 +96,7 @@ public
     retryNo = NofRetry
     begin
       if @proxy
-	proxy = URI.create( @proxy )
+	proxy = URb.parse( @proxy )
 	s = TCPSocket.new( proxy.host, proxy.port )
       else
 	s = TCPSocket.new( server.host, server.port )
@@ -187,15 +190,17 @@ EOS
           delayedError = HTTPStreamError.new( "#{ status }: #{ reason }" )
         elsif ( !header.has_key?( 'content-type' ))
           delayedError = HTTPStreamError.new( 'Content-type not found.' )
-	elsif ( /^#{ MediaType }(?:;.*)?/ !~ header[ 'content-type' ] )
-          delayedError = HTTPStreamError.new( 'Illegal content-type: ' << header[ 'content-type' ] )
+	end
+
+	unless /^#{ MediaType }(?:;\s*charset=(.*))?/i =~ header[ 'content-type' ]
+          delayedError = HTTPStreamError.new( "Illegal content-type: #{ header[ 'content-type' ] }" )
         end
+	receiveCharset = $1
       end
     rescue TimeoutError
       raise HTTPStreamError.new( 'Call timeout' )
     end
 
-    receiveString = ''
     begin
       timeout( ReadTimeout ) do
 	while !s.eof
@@ -220,7 +225,7 @@ EOS
       raise delayedError
     end
 
-    receiveString
+    return receiveString, receiveCharset
   end
 
   def sendMPOST( soapString, soapAction, charset )
