@@ -4,28 +4,57 @@
  */
 
 body {
-    background: #EEEEEE;
+    background: white;
     color: black;
     margin-left: 2%;
     margin-right: 2%;
-    font-family: Georgia, "Times New Roman", "Times Roman", Times;
+    font-family: Verdana, Arial, Helvetica, Sans-Serif;
+}
+
+a:link, a:visited {
+    text-decoration: none;
+    font-weight: bold;
+    color: #c00;
+    background: white;
+}
+
+a:link:hover, a:visited:hover {
+    font-weight: bold;
+    color: #fff;
+    background: black;
 }
 
 h1 {
-    font-family: "comic sans ms", verdana, sans-serif; 
+    color: #666;
+    background: white;
     text-align: right;
-    margin-top: 5%;
+    font-family: "comic sans ms", verdana, sans-serif; 
+    margin-top: 1em;
     margin-right: 10%;
 }
 
 h2, h3, h4, h5, h6 {
+    color: #666;
+    background: white;
+    margin-top: 1em;
     font-family: "Impact", verdana, sans-serif;
 }
 
-h2 {
-    color: #FFFFFF;
-    background: #CC3333;
+h2 span.content {
+    border-style: solid solid dashed solid;
+    border-width: 0px 0px 1px 20px;
+    border-color: #666;
+    padding-left: 1ex;
+    padding-right: 5ex;
 }
+
+h3 span.content {
+    border-style: solid;
+    border-width: 0px 0px 0px 10px;
+    border-color: #999;
+    padding-left: 1ex;
+}
+
 
 div.header p.status { text-align: right; }
 div.header p.last-modified { text-align: left; }
@@ -38,7 +67,7 @@ dt {
 
 address {
     color: gray;
-    background: #EEEEEE;
+    background: white;
     text-align: right;
     font-family: Times, serif;
     font-style: normal;
