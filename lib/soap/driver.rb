@@ -37,7 +37,6 @@ public
 
   attr_accessor :logDev
   attr_accessor :mappingRegistry
-  attr_reader :opt
   attr_reader :endPointUrl
   attr_reader :wireDumpDev
   attr_reader :wireDumpFileBase
@@ -182,8 +181,10 @@ private
 
   def addMethodInterface( name, paramDef )
     paramNames = []
+    i = 0
     @proxy.method[ name ].eachParamName( RPCUtils::SOAPMethod::IN, RPCUtils::SOAPMethod::INOUT ) do | paramName |
-      paramNames << paramName
+      i += 1
+      paramNames << "arg#{ i }"
     end
     callParamStr = if paramNames.empty?
 	""
