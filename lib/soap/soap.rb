@@ -56,14 +56,14 @@ module SOAP
     attr_reader :detail
 
     def initialize( fault )
-      @faultCode = fault.faultCode
-      @faultString = fault.faultString
-      @faultActor = fault.faultActor
+      @faultCode = fault.faultcode
+      @faultString = fault.faultstring
+      @faultActor = fault.faultactor
       @detail = fault.detail
     end
 
     def to_s
-      @faultString.data
+      @faultString ? @faultString.data : ''
     end
   end
 
