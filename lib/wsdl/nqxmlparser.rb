@@ -35,7 +35,7 @@ class WSDLNQXMLLightWeightParser < WSDLParser
 
   def prologue
     @charsetBackup = $KCODE
-    $KCODE = ::SOAP::Charset.getCharsetStr( charset )
+    $KCODE = ::SOAP::Charset.getCharsetStr( charset ) if charset
   end
 
   def epilogue
@@ -45,7 +45,7 @@ class WSDLNQXMLLightWeightParser < WSDLParser
   def setXMLDeclEncoding( charset )
     if self.charset.nil?
       @charsetBackup = $KCODE
-      $KCODE = ::SOAP::Charset.getCharsetStr( charset )
+      $KCODE = ::SOAP::Charset.getCharsetStr( charset ) if charset
     end
     super
   end

@@ -38,10 +38,14 @@ class WSDLREXMLParser < WSDLParser
     source = nil
     if REXML::VERSION_MAJOR < 2 or
 	( REXML::VERSION_MAJOR == 2 and REXML::VERSION_MINOR <= 4 )
-      source = ::SOAP::Charset.codeConv( stringOrReadable, charset, 'UTF8' )
+      source = if charset
+	  ::SOAP::Charset.codeConv( stringOrReadable, charset, 'UTF8' )
+	else
+	  stringOrReadable
+	end
     else
       source = REXML::SourceFactory.create_from( stringOrReadable )
-      source.encoding = charset
+      source.encoding = charset if charset
     end
     # Listener passes a String in utf-8.
     @charset = 'utf-8'
