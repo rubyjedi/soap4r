@@ -24,11 +24,8 @@ module SOAP
 
 
 class SOAPXMLScanner < SOAPParser
-  attr_accessor :charsetStrBackup
-
   def initialize( *vars )
     super( *vars )
-    @charsetStrBackup = nil
   end
 
   def self.adjustKCode
@@ -36,59 +33,152 @@ class SOAPXMLScanner < SOAPParser
   end
 
   def prologue
-    @charsetStrBackup = $KCODE.to_s.dup
   end
 
   def doParse( stringOrReadable )
-    Scanner.new( self ).parse( stringOrReadable )
+    XMLScan::XMLScanner.new( Visitor.new( self )).parse( stringOrReadable )
   end
 
-  class Scanner < XMLScan::XMLScanner
+  def epilogue
+  end
+
+  class Visitor; include XMLScan::Visitor
+    ENTITY_REF_MAP = {
+      'lt' => '<',
+      'gt' => '>',
+      'amp' => '&',
+      'quot' => '"',
+      'apos' => '\''
+    }
+
     def initialize( dest )
-      super()
       @dest = dest
+      @attrs = {}
+      @currentAttr = nil
+      @charsetStrBackup = nil
     end
 
-    def on_stag( name, attr )
-      @dest.startElement( name, attr )
+    def parse_error( msg )
+      raise ParseError.new( msg )
     end
-  
-    def on_etag( name )
-      @dest.endElement( name )
+
+    def wellformed_error( msg )
+      raise NotWellFormedError.new( msg )
+    end
+
+    def valid_error( msg )
+      raise NotValidError.new( msg )
+    end
+
+    def warning( msg )
+      p msg if $DEBUG
+    end
+
+    def on_xmldecl
+    end
+
+    def on_xmldecl_version( str )
+      # 1.0 expected.
+    end
+
+    def on_xmldecl_encoding( str )
+      charsetStr = Charset.getCharsetStr( str )
+      $KCODE = charsetStr
+      Charset.setXMLInstanceEncoding( charsetStr )
+    end
+
+    def on_xmldecl_standalone( str )
+    end
+
+    def on_xmldecl_other( name, value )
+    end
+
+    def on_xmldecl_end
+    end
+
+    def on_doctype( root, pubid, sysid )
+      raise FormatDecodeError.new( "SOAP does not allow doctype." )
+    end
+
+    def on_prolog_space( str )
+    end
+
+    def on_comment( str )
+      raise FormatDecodeError.new( "SOAP does not allow comment." )
+    end
+
+    def on_pi( target, pi )
+      raise FormatDecodeError.new( "SOAP does not allow PI." )
     end
 
     def on_chardata( str )
       @dest.characters( str )
     end
 
-    ENTITY_REF_MAP = {
-      'lt' => '<',
-      'gt' => '>',
-      'amp' => '&',
-      'quot' => '"',
-      'apos' => '\'' }
+    def on_cdata( str )
+      raise FormatDecodeError.new( "SOAP does not allow CDATA." )
+    end
+
+    def on_etag( name )
+      @dest.endElement( name )
+    end
+
     def on_entityref( ref )
       @dest.characters( ENTITY_REF_MAP[ ref ] )
     end
 
     def on_charref( code )
-      @dest.characters( [ Integer( code ) ].pack( "U*" ))
+      @dest.characters( [ code ].pack( 'U' ))
     end
 
-    def on_xmldecl( decls )
-      encTag = decls.find { | decl | decl[ 0 ] == 'encoding' }
-      if encTag
-	charsetStr = Charset.getCharsetStr( encTag[ 1 ] )
-     	@dest.charsetStrBackup = $KCODE.to_s.dup
-  	$KCODE = charsetStr
-	Charset.setXMLInstanceEncoding( charsetStr )
-      end
+    def on_charref_hex( code )
+      on_charref( code )
     end
-  end
 
-  def epilogue
-    $KCODE = @charsetStrBackup
-    Charset.setXMLInstanceEncoding( $KCODE )
+    def on_start_document
+      @charsetStrBackup = $KCODE.to_s.dup
+    end
+
+    def on_end_document
+      $KCODE = @charsetStrBackup
+      Charset.setXMLInstanceEncoding( $KCODE )
+    end
+
+    def on_stag( name )
+      @attrs = {}
+    end
+
+    def on_attribute( name )
+      @attrs[ name ] = @currentAttr = ''
+    end
+
+    def on_attr_value( str )
+      @currentAttr << str
+    end
+
+    def on_attr_entityref( ref )
+      @currentAttr << ENTITY_REF_MAP[ ref ]
+    end
+
+    def on_attr_charref( code )
+      @currentAttr << [ code ].pack( 'U' )
+    end
+
+    def on_attr_charref_hex( code )
+      on_attr_charref( code )
+    end
+
+    def on_attribute_end( name )
+    end
+
+    def on_stag_end_empty( name )
+      on_stag_end( name )
+      on_etag( name )
+    end
+
+    def on_stag_end( name )
+      @dest.startElement( name, @attrs )
+    end
   end
 
   setFactory( self )
