@@ -293,7 +293,9 @@ class WSDLDriver
       end
 
       begin
-	res_header, res_body = invoke(req_header, req_body, op_info)
+	opt = create_options
+	opt[:decode_typemap] = @rpc_decode_typemap
+	res_header, res_body = invoke(req_header, req_body, op_info, opt)
 	if res_body.fault
 	  raise SOAP::FaultError.new(res_body.fault)
 	end
@@ -321,8 +323,14 @@ class WSDLDriver
       op_info = @operations[name]
       req_header = header_from_obj(header_obj, op_info)
       req_body = body_from_obj(body_obj, op_info)
-      res_header, res_body = invoke(req_header, req_body, op_info)
-      return res_header, res_body
+      opt = create_options
+      res_header, res_body = invoke(req_header, req_body, op_info, opt)
+      if res_body.fault
+	raise SOAP::FaultError.new(res_body.fault)
+      end
+      res_body_obj = res_body.response ?
+	Mapping.soap2obj(res_body.response, @mapping_registry) : nil
+      return res_header, res_body_obj
     end
 
   private
@@ -342,15 +350,13 @@ class WSDLDriver
       o
     end
 
-    def invoke(req_header, req_body, op_info)
-      opt = create_options
+    def invoke(req_header, req_body, op_info, opt)
       send_string = Processor.marshal(req_header, req_body, opt)
       data = @handler.send(send_string, op_info.soapaction)
       if data.receive_string.empty?
 	return nil, nil
       end
       res_charset = StreamHandler.parse_media_type(data.receive_contenttype)
-      opt = create_options
       opt[:charset] = res_charset
       res_header, res_body = Processor.unmarshal(data.receive_string, opt)
       return res_header, res_body
@@ -458,7 +464,6 @@ class WSDLDriver
 
     def create_options
       opt = @opt.dup
-      opt[:decode_typemap] = @rpc_decode_typemap
       opt[:default_encodingstyle] = @default_encodingstyle
       opt[:allow_unqualified_element] = @allow_unqualified_element
       opt[:generate_explicit_type] = @generate_explicit_type
