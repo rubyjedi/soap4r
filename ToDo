@@ -1,6 +1,17 @@
 = ToDo
 
-remove wsdl/namedElements.rb
+* remove wsdl/namedElements.rb
+* https connection with net/http
+* service name?
+* http layer option
+* add bookshelf sample
+
+* return element name
+* maxOccurs for sequence element?
+* Axis array parsing?
+* REXML Parser problem?
+* add axisArray test
+
 
 == Header handler API
 
