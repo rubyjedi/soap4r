@@ -79,12 +79,19 @@ public
     @lastNode = nil
 
     prologue
+    SOAP::EncodingStyleHandler.each do | handler |
+      handler.decodePrologue
+    end
 
     doParse( stringOrReadable )
+
     unless @parseStack.empty?
       raise FormatDecodeError.new( "Unbalanced tag in XML." )
     end
 
+    SOAP::EncodingStyleHandler.each do | handler |
+      handler.decodeEpilogue
+    end
     epilogue
 
     @lastNode
@@ -228,15 +235,9 @@ private
   end
 
   def prologue
-    SOAP::EncodingStyleHandler.each do | handler |
-      handler.decodePrologue
-    end
   end
 
   def epilogue
-    SOAP::EncodingStyleHandler.each do | handler |
-      handler.decodeEpilogue
-    end
   end
 end
 
@@ -261,13 +262,23 @@ class SOAPNQXMLLightWeightParser < SOAPParser
 	cdata( entity.text )
       when NQXML::ProcessingInstruction
 	encoding = entity.attrs[ 'encoding' ]
-	Charset.setXMLInstanceEncoding( Charset.getCharsetStr( encoding )) if encoding
+	if encoding
+	  charsetStr = Charset.getCharsetStr( encoding )
+	  @charsetStrBackup = $KCODE.to_s.dup
+	  $KCODE = charsetStr
+	  Charset.setXMLInstanceEncoding( charsetStr )
+	end
       when NQXML::Comment
 	# Nothing to do.
       else
 	raise FormatDecodeError.new( "Unexpected XML: #{ entity }." )
       end
     end
+  end
+
+  def epilogue
+    $KCODE = @charsetStrBackup
+    Charset.setXMLInstanceEncoding( $KCODE )
   end
 end
 
@@ -291,13 +302,23 @@ class SOAPNQXMLStreamingParser < SOAPParser
 	cdata( entity )
       when NQXML::ProcessingInstruction
 	encoding = entity.attrs[ 'encoding' ]
-	Charset.setXMLInstanceEncoding( Charset.getCharsetStr( encoding )) if encoding
+	if encoding
+	  charsetStr = Charset.getCharsetStr( encoding )
+	  @charsetStrBackup = $KCODE.to_s.dup
+	  $KCODE = charsetStr
+	  Charset.setXMLInstanceEncoding( charsetStr )
+	end
       when NQXML::Comment
 	# Nothing to do.
       else
 	raise FormatDecodeError.new( "Unexpected XML: #{ entity }." )
       end
     end
+  end
+
+  def epilogue
+    $KCODE = @charsetStrBackup
+    Charset.setXMLInstanceEncoding( $KCODE )
   end
 end
 
