@@ -75,8 +75,6 @@ class RPCRouter
 
       # Is this right?
       soapString = soapString.dup
-      soapString.gsub!( "\r\n", "\n" )
-      soapString.gsub!( "\r", "\n" )
       header, body = unmarshal( soapString )
 
       # So far, header is omitted...
