@@ -153,7 +153,8 @@ public
   def characters( text )
     lastFrame = @parseStack.last
     if lastFrame
-      ns = lastFrame.ns.clone
+      # Need not to be cloned because character does not have attr.
+      ns = lastFrame.ns
       parent = lastFrame.node
       encodingStyle = lastFrame.encodingStyle
       decodeText( ns, text, encodingStyle )

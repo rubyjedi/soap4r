@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.18 2002/01/25 14:52:46 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.19 2002/06/29 03:38:22 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -125,7 +125,9 @@ private
     end
 
     extra = {}
-    extra[ 'Content-Type' ] = "#{ SendMediaType }; charset=#{ Charset.getCharsetLabel( charset || Charset.getXMLInstanceEncoding ) }"
+    charsetLabel = Charset.getCharsetLabel( charset ||
+      Charset.getXMLInstanceEncoding )
+    extra[ 'Content-Type' ] = "#{ SendMediaType }; charset=#{ charsetLabel }"
     extra[ 'SOAPAction' ] = "\"#{ soapAction }\""
 
     dumpDev << "Wire dump:\n\n" if dumpDev
