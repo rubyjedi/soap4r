@@ -16,15 +16,11 @@ module XMLSchema
 
 class SimpleType < Info
   attr_accessor :name
-  attr_reader :derivetype
   attr_reader :restriction
 
   def check_lexical_format(value)
     if @restriction
       check_restriction(value)
-    elsif @extension
-      raise NotImplementedError
-      # ToDo
     else
       raise ArgumentError.new("incomplete simpleType")
     end
@@ -33,8 +29,6 @@ class SimpleType < Info
   def base
     if @restriction
       @restriction.base
-    elsif @extension
-      @extension.base
     else
       raise ArgumentError.new("incomplete simpleType")
     end
@@ -43,7 +37,6 @@ class SimpleType < Info
   def initialize(name = nil)
     super()
     @name = name
-    @derivetype = nil
     @restriction = nil
   end
 
@@ -55,7 +48,6 @@ class SimpleType < Info
     case element
     when RestrictionName
       @restriction = SimpleRestriction.new
-      @derivetype = element.name
       @restriction
     end
   end
