@@ -434,7 +434,6 @@ public
   def initialize( typeName = nil )
     super( typeName )
     @data = [ [] ]
-    @variant = false
     @rank = 1
   end
 
@@ -455,9 +454,6 @@ public
 	newMember.typeName = @typeName
 	newMember.typeNamespace = @typeNamespace
       end
-    end
-    if ( @typeName != newMember.typeName )
-      @variant = true
     end
     @data[ 0 ] << newMember
   end
@@ -490,13 +486,7 @@ public
   def encode( ns, name, parentArray = nil )
     attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
     createNS( attrs, ns )
-    if parentArray and parentArray.typeNamespace == @typeNamespace and
-	parentArray.baseTypeName == @typeName
-      # No need to add.
-    else
-      attrs.push( arrayTypeAttr( ns ))
-    end
-
+    attrs.push( arrayTypeAttr( ns ))
     attrs.push( datatypeAttr( ns ))
 
     childTypeName = contentTypeName().gsub( /\[,*\]/, ArrayEncodePostfix ) << ArrayEncodePostfix
@@ -507,10 +497,6 @@ public
 
     # Element.new( name, attrs, children )
     Node.initializeWithChildren( name, attrs, children )
-  end
-
-  def isVariant?
-    @variant
   end
 
   def contentTypeName()
