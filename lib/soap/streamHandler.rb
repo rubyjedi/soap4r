@@ -37,8 +37,6 @@ class StreamHandler
     end
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.36 2003/09/20 13:28:57 nahi Exp $ =~ /: (\S+),v (\S+)/
-  RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
     attr_accessor :send_string
