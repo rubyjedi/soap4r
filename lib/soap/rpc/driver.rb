@@ -150,7 +150,6 @@ private
 	@options["protocol.http"] ||= ::SOAP::Property.new)
       @proxy = Proxy.new(@streamhandler, @soapaction)
       @proxy.allow_unqualified_element = true
-      @options.lock
     end
 
     def endpoint_url
