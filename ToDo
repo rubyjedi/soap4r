@@ -1,16 +1,23 @@
 = ToDo
 
-* remove wsdl/namedElements.rb
-* https connection with net/http
-* service name?
-* http layer option
-* add bookshelf sample
+* header handler.
+* mappingRegistryCreator: do not dump a type which is in default
+  mappingRegistry.
+* RAA exception
+* wsdlRouter: return value must be converted to the specified element name,
+  not "fooResponse" style.
+* Implement message router: lib/soap/msgRouter.rb.
+  * Messaging sample.
+* Follow SOAP/1.2.
 
-* return element name
-* maxOccurs for sequence element?
-* Axis array parsing?
-* REXML Parser problem?
-* add axisArray test
+* WSDL Strict check; order of sequence, unbound, etc.
+* WSDL ref support
+  子供要素を指定する場合は、新たに宣言する場合と、
+  既存の要素を参照する場合があります。既存の要素を参 照する際は、
+  ref属性を使用します
+* Parse XML Namespace with xmlscan, not by itself.
+* Support all derived built-in types in XML Schema Part2 Sec. 3.2.
+* Support actor and mustUnderstand.
 
 
 == Header handler API
@@ -28,9 +35,7 @@ drv.with_header(headers) do |d|
   ...
 end
 
-
 header_handler ?
-
 
 class MyHeaderHandler < HeaderHandler
   MyHeaderName = XSD::QName.new("foo", "bar")
@@ -87,27 +92,6 @@ end
 
 
 
-
-* mappingRegistryCreator: do not dump a type which is in default
-  mappingRegistry.
-* RAA exception
-* wsdlRouter: return value must be converted to the specified element name,
-  not "fooResponse" style.
-* Implement message router: lib/soap/msgRouter.rb.
-  * Messaging sample.
-* Follow SOAP/1.2.
-* Support SwA.
-
-* WSDL Strict check; order of sequence, unbound, etc.
-* WSDL ref support
-  子供要素を指定する場合は、新たに宣言する場合と、
-  既存の要素を参照する場合があります。既存の要素を参 照する際は、
-  ref属性を使用します
-* Parse XML Namespace with xmlscan, not by itself.
-* Support all derived built-in types in XML Schema Part2 Sec. 3.2.
-* Support actor and mustUnderstand.
-
-
 = Done
 
 * Support all primitive built-in types in XML Schema Part2 Sec. 3.2.
@@ -125,3 +109,4 @@ end
 * Support literal/document
 * Design and implement SOAPHeader handler API.
 * Rewrite the interop test client with test/unit.
+* merge SwA patch.
