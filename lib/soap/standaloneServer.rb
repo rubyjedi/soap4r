@@ -132,7 +132,7 @@ private
     @server.stdlog = @log
 
     begin
-      trap( 'HUP' ) { @server.shutdown }
+      trap( 'INT' ) { @server.shutdown }
     rescue ArgumentError
       # mswin32 ruby cannot handle SIGHUP because of Windows' restriction.
     end
