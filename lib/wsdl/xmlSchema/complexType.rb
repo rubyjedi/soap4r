@@ -40,7 +40,7 @@ class ComplexType < Info
   def each_element
     if @content
       @content.elements.each do |element|
-        yield(element.name, element)
+        yield(element)
       end
     end
   end
@@ -48,7 +48,7 @@ class ComplexType < Info
   def find_element(name)
     if @content
       @content.elements.each do |element|
-        return element if name == element.name
+        return element if element.respond_to?(:name) and name == element.name
       end
     end
     nil
@@ -57,7 +57,7 @@ class ComplexType < Info
   def find_element_by_name(name)
     if @content
       @content.elements.each do |element|
-        return element if name == element.name.name
+        return element if element.respond_to?(:name) and name == element.name.name
       end
     end
     nil
