@@ -152,7 +152,8 @@ private
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
       @response.body.type = 'text/xml'
-      @response.body.charset = requestCharset || Charset.getXMLInstanceEncoding
+      @response.body.charset = Charset.getCharsetStr( requestCharset ) ||
+	Charset.getXMLInstanceEncoding
       unless isFault
 	@response.status = 200
       else
