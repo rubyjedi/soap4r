@@ -56,6 +56,7 @@ class Schema < Info
       o
     when AttributeName
       o = Attribute.new
+      @attributes << o
       o
     else
       nil
