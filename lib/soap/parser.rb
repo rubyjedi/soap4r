@@ -280,8 +280,9 @@ private
 
   def getHandler( encodingStyle )
     unless @handlers.has_key?( encodingStyle )
-      handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new(
-	@charset )
+      handlerFactory = SOAP::EncodingStyleHandler.getHandler( encodingStyle ) ||
+	SOAP::EncodingStyleHandler.getHandler( EncodingNamespace )
+      handler = handlerFactory.new( @charset )
       handler.decodeComplexTypes = @decodeComplexTypes
       handler.decodePrologue
       @handlers[ encodingStyle ] = handler
