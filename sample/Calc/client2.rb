@@ -6,10 +6,10 @@ server = 'http://localhost:7000/'
 var = SOAP::Driver.new( nil, nil, 'http://tempuri.org/calcService', server )
 var.addMethod( 'set', 'newValue' )
 var.addMethod( 'get' )
-var.addMethodAs( 'add', '+', 'rhs' )
-var.addMethodAs( 'sub', '-', 'rhs' )
-var.addMethodAs( 'multi', '*', 'rhs' )
-var.addMethodAs( 'div', '/', 'rhs' )
+var.addMethodAs( '+', 'add', 'rhs' )
+var.addMethodAs( '-', 'sub', 'rhs' )
+var.addMethodAs( '*', 'multi', 'rhs' )
+var.addMethodAs( '/', 'div', 'rhs' )
 
 puts 'var.set( 1 )'
 puts '# Bare in mind that another client set another value to this service.'
