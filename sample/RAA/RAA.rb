@@ -24,6 +24,11 @@ class Driver
     @drv.setWireDumpDev( dev )
   end
 
+  def setHttpProxy( httpProxy )
+    @drv = createDriver unless @drv
+    @drv.setHttpProxy( httpProxy )
+  end
+
   def setLogDev( logDev )
     @logDev = logDev
     @log = nil
