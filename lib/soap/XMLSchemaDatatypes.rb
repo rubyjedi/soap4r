@@ -322,7 +322,7 @@ end
 
 require 'rational'
 require 'date3'
-module XSDDateTimeToTime
+module XSDDateTimeImpl
   def to_time
     begin
       Time.gm( @data.year, @data.month, @data.mday, @data.hour, @data.min,
@@ -334,7 +334,7 @@ module XSDDateTimeToTime
 end
 
 class XSDDateTime < XSDBase
-  include XSDDateTimeToTime
+  include XSDDateTimeImpl
 
 public
   def initialize( initDateTime = nil )
@@ -430,7 +430,7 @@ private
 end
 
 class XSDTime < XSDBase
-  include XSDDateTimeToTime
+  include XSDDateTimeImpl
 
 public
   def initialize( initTime = nil )
@@ -492,7 +492,7 @@ private
 end
 
 class XSDDate < XSDBase
-  include XSDDateTimeToTime
+  include XSDDateTimeImpl
 
 public
   def initialize( initDate = nil )

@@ -210,6 +210,10 @@ module RPCUtils
     def soap2obj( objKlass, node, info, map )
       obj = nil
       if objKlass == Time
+	if node.data.fr2.nonzero?
+	  # Time can have usec but it may not have sufficient precision.
+	  raise FactoryError.new( "Time does not have enough precision." )
+	end
 	obj = node.to_time
 	if obj.nil?
 	  raise FactoryError.new( "#{ node.data } is out of range as a Time." )
