@@ -27,23 +27,34 @@ class WSDLLiteralRegistry
     )
   end
 
-  def obj2ele(obj, name)
-    if !@definedelements.nil? && ele = @definedelements[name]
-      _obj2ele(obj, ele)
-    elsif !@definedtypes.nil? && type = @definedtypes[name]
+  #def obj2ele(obj, name)
+  def obj2soap(klass, obj, qname)
+    if !@definedelements.nil? && ele = @definedelements[qname]
+      _obj2soap(obj, ele)
+    elsif !@definedtypes.nil? && type = @definedtypes[qname]
       obj2type(obj, type)
     else
-      unknownobj2ele(obj, name)
+      unknownobj2soap(obj, qname)
     end
   end
 
   def ele2obj(ele, *arg)
-    raise RuntimeError.new("#{ self } is for obj2ele only.")
+    raise RuntimeError.new("#{ self } is for obj2soap only.")
+  end
+
+  def soap2obj(klass, node)
+    # assert(klass == ::SOAP::SOAPElement)
+    obj = _soap2obj(klass, node)
+    if @allow_original_mapping
+      addextend2obj(obj, node.extraattr[RubyExtendName])
+      addiv2obj(obj, node.extraattr[RubyIVarName])
+    end
+    obj
   end
 
 private
 
-  def _obj2ele(obj, ele)
+  def _obj2soap(obj, ele)
     o = nil
     if ele.type
       if type = @definedtypes[ele.type]
@@ -57,7 +68,7 @@ private
     elsif ele.local_complextype
       o = SOAPElement.new(ele.name)
       ele.local_complextype.each_element do |child_ele|
-        o.add(_obj2ele(Mapping.find_attribute(obj, child_ele.name.name),
+        o.add(_obj2soap(Mapping.find_attribute(obj, child_ele.name.name),
           child_ele))
       end
     else
@@ -88,13 +99,13 @@ private
   def complex2soap(obj, type)
     o = SOAPElement.new(type.name)
     type.each_element do |child_ele|
-      o.add(_obj2ele(Mapping.find_attribute(obj, child_ele.name.name),
+      o.add(_obj2soap(Mapping.find_attribute(obj, child_ele.name.name),
         child_ele))
     end
     o
   end
 
-  def unknownobj2ele(obj, name)
+  def unknownobj2soap(obj, name)
     if obj.class.class_variables.include?("@@schema_element")
       ele = SOAPElement.new(name)
       add_elements(obj, ele)
@@ -114,10 +125,10 @@ private
       name = ::XSD::QName.new(nil, elename)
       if child.is_a?(::Array)
         child.each do |item|
-          ele.add(obj2ele(item, name))
+          ele.add(obj2soap(nil, item, name))
         end
       else
-        ele.add(obj2ele(child, name))
+        ele.add(obj2soap(nil, child, name))
       end
     end
   end
