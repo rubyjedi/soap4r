@@ -63,12 +63,14 @@ class RPCRouter
   end
 
   # Routing...
-  def route( soapString )
+  def route( soapString, charset = nil )
+    opt = getOpt
+    opt[ :charset ] = charset
     isFault = false
     begin
       # Is this right?
       soapString = soapString.dup
-      header, body = Processor.unmarshal( soapString, getOpt )
+      header, body = Processor.unmarshal( soapString, opt )
 
       # So far, header is omitted...
       soapRequest = body.request
@@ -84,18 +86,20 @@ class RPCRouter
 
     header = SOAPHeader.new
     body = SOAPBody.new( soapResponse )
-    responseString = Processor.marshal( header, body, getOpt )
+    responseString = Processor.marshal( header, body, opt )
 
     return responseString, isFault
   end
 
   # Create fault response string.
-  def createFaultResponseString( e )
+  def createFaultResponseString( e, charset = nil )
+    opt = getOpt
+    opt[ :charset ] = charset
     soapResponse = fault( e )
 
     header = SOAPHeader.new
     body = SOAPBody.new( soapResponse )
-    responseString = Processor.marshal( header, body, getOpt )
+    responseString = Processor.marshal( header, body, opt )
 
     responseString
   end
@@ -174,11 +178,9 @@ private
 
   def getOpt
     opt = {}
-    if @defaultEncodingStyle
-      opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
-    end
+    opt[ :defaultEncodingStyle ] = @defaultEncodingStyle
     if @allowUnqualifiedElement
-      opt[ 'allowUnqualifiedElement' ] = true
+      opt[ :allowUnqualifiedElement ] = true
     end
     opt
   end
