@@ -283,7 +283,7 @@ private
     end
 
     def document_response(result, literal_mapping_registry)
-      literal_mapping_registry.obj2soap(nil, result, @document_response_qname)
+      literal_mapping_registry.obj2soap(result, @document_response_qname)
     end
   end
 end
