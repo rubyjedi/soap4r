@@ -34,22 +34,24 @@ module SOAP
 class Property
   include Enumerable
 
+  module Util
+    def const_from_name(fqname)
+      fqname.split("::").inject(Kernel) { |klass, name| klass.const_get(name) }
+    end
+    module_function :const_from_name
+
+    def require_from_name(fqname)
+      require File.join(fqname.split("::").collect { |ele| ele.downcase })
+    end
+    module_function :require_from_name
+  end
+
   def self.load(stream)
     new.load(stream)
   end
 
-  def self.open(filename)
-    File.open(filename) { |f| load(f) }
-  end
-
-  # find property from $:.
   def self.loadproperty(propname)
-    $:.each do |path|
-      if File.file?(file = File.join(path, propname))
-	return open(file)
-      end
-    end
-    nil
+    new.loadproperty(propname)
   end
 
   def initialize
@@ -85,6 +87,19 @@ class Property
       end
     end
     self
+  end
+
+  # find property from $:.
+  def loadproperty(propname)
+    $:.each do |path|
+      if File.file?(file = File.join(path, propname))
+        puts "find property at #{file}" if $DEBUG
+	File.open(file) do |f|
+          return load(f)
+        end
+      end
+    end
+    nil
   end
 
   # name: a Symbol, String or an Array
