@@ -177,11 +177,13 @@ class Registry
     end
 
     def find_mapped_soap_class(target_obj_class)
-      @obj2soap[target_obj_class][0]
+      map = @obj2soap[target_obj_class]
+      map.empty? ? nil : map[0][1]
     end
 
     def find_mapped_obj_class(target_soap_class)
-      @soap2obj[target_soap_class][0]
+      map = @soap2obj[target_soap_class]
+      map.empty? ? nil : map[0][0]
     end
   end
 
