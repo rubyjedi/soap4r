@@ -336,7 +336,7 @@ class Registry
   def add(obj_class, soap_class, factory, info = nil)
     @map.add(obj_class, soap_class, factory, info)
   end
-  alias :set :add
+  alias set add
 
   # This mapping registry ignores type hint.
   def obj2soap(klass, obj, type_qname = nil)
