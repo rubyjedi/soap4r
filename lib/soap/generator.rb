@@ -39,6 +39,7 @@ public
   attr_accessor :charset
   attr_accessor :defaultEncodingStyle
   attr_accessor :generateEncodeType
+  attr_accessor :pretty
 
   def initialize( opt = {} )
     @refTarget = nil
@@ -50,6 +51,7 @@ public
       else
 	true
       end
+    @pretty = true # opt[ :pretty ]
   end
 
   def generate( obj, io = nil )
@@ -63,7 +65,7 @@ public
     NS.reset
     ns = NS.new
     io << xmlDecl
-    encodeData( io, ns, true, obj, nil )
+    encodeData( io, ns, true, obj, nil, 0 )
 
     @handlers.each do | uri, handler |
       handler.encodeEpilogue
@@ -73,9 +75,9 @@ public
     io
   end
 
-  def encodeData( buf, ns, qualified, obj, parent )
+  def encodeData( buf, ns, qualified, obj, parent, indent )
     if obj.is_a?( SOAPEnvelopeElement )
-      encodeElement( buf, ns, qualified, obj, parent )
+      encodeElement( buf, ns, qualified, obj, parent, indent )
       return
     end
 
@@ -105,29 +107,37 @@ public
       raise FormatEncodeError.new( "Element name not defined: #{ obj }." )
     end
 
-    handler.encodeData( buf, ns, qualified, obj, parent ) do | child, childQualified |
-      encodeData( buf, ns.clone, childQualified, child, obj )
+    indentStr = ' ' * indent
+    handler.encodeData( buf, ns, qualified, obj, parent, indentStr ) do | child, childQualified |
+      encodeData( buf, ns.clone, childQualified, child, obj,
+        ( @pretty ? indent + 2 : indent ))
     end
-    handler.encodeDataEnd( buf, ns, qualified, obj, parent )
+    handler.encodeDataEnd( buf, ns, qualified, obj, parent, indentStr )
   end
 
-  def encodeElement( buf, ns, qualified, obj, parent )
+  def encodeElement( buf, ns, qualified, obj, parent, indent )
+    indentStr = ' ' * indent
+    attrs = {}
     if obj.is_a?( SOAPBody )
       @refTarget = obj
-      obj.encode( buf, ns ) do | child, childQualified |
-        encodeData( buf, ns.clone, childQualified, child, obj )
+      obj.encode( buf, ns, attrs, indentStr ) do | child, childQualified |
+        encodeData( buf, ns.clone, childQualified, child, obj,
+          ( @pretty ? indent + 2 : indent ))
       end
       @refTarget = nil
     else
-      attrs = {}
-      if obj.is_a?( SOAPEnvelope ) and @generateEncodeType
-        SOAPGenerator.assignNamespace( attrs, ns, XSD::Namespace,
-          XSDNamespaceTag )
+      if obj.is_a?( SOAPEnvelope )
+        # xsi:nil="true" can appear even if dumping without explicit type.
         SOAPGenerator.assignNamespace( attrs, ns, XSD::InstanceNamespace,
           XSINamespaceTag )
+        if @generateEncodeType
+          SOAPGenerator.assignNamespace( attrs, ns, XSD::Namespace,
+            XSDNamespaceTag )
+        end
       end
-      obj.encode( buf, ns, attrs ) do | child, childQualified |
-        encodeData( buf, ns.clone, childQualified, child, obj )
+      obj.encode( buf, ns, attrs, indentStr ) do | child, childQualified |
+        encodeData( buf, ns.clone, childQualified, child, obj,
+          ( @pretty ? indent + 2 : indent ))
       end
     end
   end
@@ -139,22 +149,24 @@ public
     end
   end
 
-  def self.encodeTag( buf, elementName, attrs = nil, pretty = nil )
+  def self.encodeTag( buf, elementName, attrs = nil, indent = '' )
     if attrs
-      buf << "<#{ elementName }"
-      attrs.each do | key, value |
-        buf << %Q[ #{ key }="#{ value }"]
-      end
-      buf << '>'
+      buf << "\n#{ indent }<#{ elementName }" <<
+        attrs.collect { | key, value |
+          %Q[ #{ key }="#{ value }"]
+        }.join <<
+        '>'
     else
-      buf << "<#{ elementName }>"
+      buf << "\n#{ indent }<#{ elementName }>"
     end
-    buf << "\n" if pretty
   end
 
-  def self.encodeTagEnd( buf, elementName, pretty = nil )
-    buf << "</#{ elementName }>"
-    buf << "\n" if pretty
+  def self.encodeTagEnd( buf, elementName, indent = '', cr = nil )
+    if cr
+      buf << "\n#{ indent }</#{ elementName }>"
+    else
+      buf << "</#{ elementName }>"
+    end
   end
 
   EncodeMap = {
@@ -191,9 +203,9 @@ private
 
   def xmlDecl
     if @charset
-      %Q[<?xml version="1.0" encoding="#{ @charset }" ?>\n]
+      %Q[<?xml version="1.0" encoding="#{ @charset }" ?>]
     else
-      %Q[<?xml version="1.0" ?>\n]
+      %Q[<?xml version="1.0" ?>]
     end
   end
 end
