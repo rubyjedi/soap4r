@@ -23,11 +23,9 @@ class WSDLLiteralRegistry
   attr_accessor :excn_handler_obj2soap
   attr_accessor :excn_handler_soap2obj
 
-  Empty = XSD::NamedElements.new.freeze
-
-  def initialize(definedelements = Empty, definedtypes = Empty)
-    @definedelements = definedelements
+  def initialize(definedtypes = XSD::NamedElements::Empty, definedelements = XSD::NamedElements::Empty)
     @definedtypes = definedtypes
+    @definedelements = definedelements
     @excn_handler_obj2soap = nil
     @excn_handler_soap2obj = nil
     @rubytype_factory = RubytypeFactory.new(:allow_original_mapping => false)
@@ -90,7 +88,7 @@ private
           child_ele))
       end
     else
-      raise MappingError.new('Illegal schema?')
+      raise MappingError.new('illegal schema?')
     end
     o
   end

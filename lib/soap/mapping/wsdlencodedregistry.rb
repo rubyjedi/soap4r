@@ -18,13 +18,14 @@ module Mapping
 class WSDLEncodedRegistry
   include TraverseSupport
 
+  attr_reader :definedelements
   attr_reader :definedtypes
   attr_accessor :excn_handler_obj2soap
   attr_accessor :excn_handler_soap2obj
 
-  def initialize(definedtypes, config = {})
+  def initialize(definedtypes = XSD::NamedElements::Empty)
     @definedtypes = definedtypes
-    @config = config
+    # @definedelements = definedelements  needed?
     @excn_handler_obj2soap = nil
     @excn_handler_soap2obj = nil
     # For mapping AnyType element.
@@ -54,7 +55,11 @@ class WSDLEncodedRegistry
       }
       return soap_obj if soap_obj
     end
-    raise MappingError.new("cannot map #{obj.class.name} to SOAP/OM")
+    if type_qname
+      raise MappingError.new("cannot map #{obj.class.name} as #{type_qname}")
+    else
+      raise MappingError.new("cannot map #{obj.class.name} to SOAP/OM")
+    end
   end
 
   # map anything for now: must refer WSDL while mapping.  [ToDo]
@@ -95,10 +100,6 @@ private
 
   def simple2soap(obj, type)
     o = base2soap(obj, TypeMap[type.base])
-    if type.restriction.enumeration.empty?
-      STDERR.puts("#{type.name}: simpleType which is not enum type not supported")
-      return o
-    end
     type.check_lexical_format(obj)
     o
   end
@@ -111,6 +112,8 @@ private
       array2soap(obj, type.name, type)
     when :TYPE_MAP
       map2soap(obj, type.name, type)
+    when :TYPE_SIMPLE
+      simple2soap(obj, type.simplecontent)
     else
       raise MappingError.new("unknown compound type: #{type.compoundtype}")
     end
@@ -166,7 +169,8 @@ private
     elements.each do |element|
       name = element.name.name
       child_obj = obj.instance_variable_get('@' + name)
-      soap_obj.add(name, Mapping._obj2soap(child_obj, self, element.type))
+      soap_obj.add(name,
+        Mapping._obj2soap(child_obj, self, element.type || element.name))
     end
   end
 end
