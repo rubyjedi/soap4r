@@ -162,31 +162,27 @@ class SOAPHeaderItem < NSDBase
 
 public
 
-  attr_reader :namespace
-  attr_reader :name
   attr_accessor :content
   attr_accessor :mustUnderstand
   attr_accessor :encodingStyle
 
-  def initialize( namespace, name, content, mustUnderstand = false, encodingStyle = nil )
+  def initialize( content, mustUnderstand = true, encodingStyle = nil )
     super( self.type.to_s )
-    @namespace = namespace
-    @name = name
-    @encodingStyle = nil
     @content = content
     @mustUnderstand = mustUnderstand
-    @encodingStyle = encodingStyle
+    @encodingStyle = encodingStyle ||
+      SOAP::EncodingStyleHandlerLiteral::Namespace
   end
 
   def encode( buf, ns )
-    attrs = {}
-    attrs[ ns.name( EnvelopeNamespace, AttrMustUnderstand ) ] = ( @mustUnderstand ? '1' : '0' )
-    attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] = @encodingStyle if @encodingStyle
-
-    name = ns.name( @namespace, @name )
-    SOAPGenerator.encodeTag( buf, name, attrs, true )
-    yield( @content, false )
-    SOAPGenerator.encodeTagEnd( buf, name, true )
+    @content.attr[ ns.name( EnvelopeNamespace, AttrMustUnderstand ) ] =
+      ( @mustUnderstand ? '1' : '0' )
+    if @encodingStyle
+      @content.attr[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
+      	@encodingStyle
+    end
+    @content.encodingStyle = @encodingStyle if !@content.encodingStyle
+    yield( @content, true )
   end
 
   # Module function
@@ -208,15 +204,8 @@ public
     	# raise FormatDecodeError.new( 'Unknown attribute: ' << name )
       end
     end
-    elemNamespace, elemName = ns.parse( elem.nodeName )
 
-    # Convert NodeList to simple Array.
-    childArray = []
-    elem.childNodes.each do | child |
-      childArray.push( child )
-    end
-
-    SOAPHeaderItem.new( elemNamespace, elemName, childArray, mustUnderstand, encodingStyle )
+    SOAPHeaderItem.new( elem, mustUnderstand, encodingStyle )
   end
 end
 
