@@ -322,7 +322,7 @@ public
       fr = d.fr2 * SecInDay
       shiftSize = fr.denominator.to_s.size
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
-      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.tr( '0+$', '' )
+      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
     end
     s
   end
