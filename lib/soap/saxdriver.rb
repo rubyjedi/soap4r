@@ -90,7 +90,6 @@ class SOAPSAXDriver < SOAPParser
     # 
   end
 end
-Charset.setXMLInstanceEncoding( 'UTF8' )
 
 
 end
