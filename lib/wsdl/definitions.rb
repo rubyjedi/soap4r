@@ -59,13 +59,15 @@ class Definitions < Info
     end
   end
 
-  def complexTypes
+  def collectComplexTypes
     result = @anonymousTypes.dup
     if @types
-      result.concat( @types.schema.complexTypes )
+      @types.schemas.each do | schema |
+	result.concat( schema.complexTypes )
+      end
     end
     @imports.each do | import |
-      result.concat( import.content.complexTypes )
+      result.concat( import.content.collectComplexTypes )
     end
     result
   end
