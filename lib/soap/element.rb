@@ -17,22 +17,26 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/baseData'
-require 'xmltreebuilder'
+
+
+module SOAP
 
 
 ###
 ## SOAP elements
 #
-class SOAPFault < SOAPCompoundBase
-  public
+class SOAPFault < SOAPStruct
+  include SOAPCompoundtype
 
-  attr_reader :faultCode
-  attr_reader :faultString
-  attr_reader :faultActor
-  attr_reader :detail
+public
+
+  attr_accessor :faultCode
+  attr_accessor :faultString
+  attr_accessor :faultActor
+  attr_accessor :detail
   attr_reader :options
 
-  def initialize( faultCode, faultString, faultActor, detail = nil, options = [] )
+  def initialize( faultCode = nil, faultString = nil, faultActor = nil, detail = nil, options = [] )
     super( self.type.to_s )
     @faultCode = faultCode
     @faultString = faultString
@@ -49,12 +53,14 @@ class SOAPFault < SOAPCompoundBase
     @options.each do | opt |
       paramElem.push( opt.encode( ns ))
     end
-    Element.new( ns.name( EnvelopeNamespace, 'Fault' ), nil, faultElems )
+
+    # Element.new( ns.name( EnvelopeNamespace, 'Fault' ), nil, faultElems )
+    Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Fault' ), nil, faultElems )
   end
 
   # Module function
 
-  public
+public
 
   def self.decode( ns, elem )
     faultCode = nil
@@ -93,34 +99,15 @@ class SOAPFault < SOAPCompoundBase
 end
 
 
-class SOAPBody < SOAPCompoundBase
-  public
+class SOAPBody < SOAPStruct
 
-  def initialize( data, isFault = false )
+public
+
+  def initialize( data = nil, isFault = false )
     super( self.type.to_s )
-    @data = data
+    @data = []
+    @data << data if data
     @isFault = isFault
-  end
-
-  def request
-    @data
-  end
-
-  def response
-    unless @isFault
-      # Initial element is [retVal].
-      @data[ 0 ]
-    else
-      @data
-    end
-  end
-
-  def fault
-    if @isFault
-      @data
-    else
-      nil
-    end
   end
 
   def encode( ns )
@@ -130,72 +117,19 @@ class SOAPBody < SOAPCompoundBase
       contents = @data.encode( ns )
     else
       attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), EncodingNamespace ))
-      contents = @data.encode( ns )
+      contents = @data.collect { | item | item.encode( ns ) }
     end
 
-    Element.new( ns.name( EnvelopeNamespace, 'Body' ), attrs, contents )
-  end
-
-  # Module function
-
-  public
-
-  def self.decode( ns, elem )
-    data = nil
-    isFault = false
-    result = []
-
-    elem.childNodes.each do | child |
-      childNS = ns.clone
-      parseNS( childNS, child )
-      if ( isEmptyText( child ))
-	# Nothing to do.
-      elsif ( childNS.compare( EnvelopeNamespace, 'Fault', child.nodeName ))
-	data = SOAPFault.decode( childNS, child )
-	isFault = true
-      elsif !data
-	data = SOAPStruct.decode( childNS, child )
-      else
-	# May be a pointer...
-	result.push( decodeChild( childNS, child ))
-	# raise FormatDecodeError.new( 'Unknown node name: ' << child.nodeName )
-      end
-    end
-
-    SOAPBody.resolveId( data, result )
-    SOAPBody.new( data, isFault )
-  end
-
-  private
-
-  def SOAPBody.resolveId( node, pool )
-    case node
-    when SOAPReference
-      pool.find { | item |
-	# Quick hack...
-	item.id && ( '#' << item.id == node.refId )
-      }
-    when SOAPStruct
-      node.map! do | ele |
-	SOAPBody.resolveId( ele, pool )
-      end
-      node
-    when SOAPArray
-      node.map! do | array |
-	array.map! do | item |
-	  SOAPBody.resolveId( item, pool )
-	end
-      end
-      node
-    else
-      node
-    end
+    # Element.new( ns.name( EnvelopeNamespace, 'Body' ), attrs, contents )
+    Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Body' ), attrs, contents )
   end
 end
 
 
-class SOAPHeaderItem < SOAPCompoundBase
-  public
+class SOAPHeaderItem < NSDBase
+  include SOAPCompoundtype
+
+public
 
   attr_reader :namespace
   attr_reader :name
@@ -217,12 +151,14 @@ class SOAPHeaderItem < SOAPCompoundBase
     attrs = []
     attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrMustUnderstand ), ( @mustUnderstand ? '1' : '0' )))
     attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), @encodingStyle )) if @encodingStyle
-    Element.new( ns.name( @namespace, @name ), attrs, @content )
+
+    # Element.new( ns.name( @namespace, @name ), attrs, @content )
+    Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, @content )
   end
 
   # Module function
 
-  public
+public
 
   def self.decode( ns, elem )
     mustUnderstand = nil
@@ -253,8 +189,6 @@ end
 
 
 class SOAPHeader < SOAPArray
-  public
-
   def initialize()
     super( self.type.to_s )
   end
@@ -263,94 +197,52 @@ class SOAPHeader < SOAPArray
     children = @data.collect { | child |
       child.encode( ns.clone )
     }
-    Element.new( ns.name( EnvelopeNamespace, 'Header' ), nil, children )
+
+    # Element.new( ns.name( EnvelopeNamespace, 'Header' ), nil, children )
+    Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Header' ), nil, children )
   end
 
   def length
     @data[ 0 ].length
   end
-
-  # Module function
-
-  public
-
-  def self.decode( ns, elem )
-    s = SOAPHeader.new()
-    elem.childNodes.each do | child |
-      childNS = ns.clone
-      parseNS( childNS, child )
-      next if ( isEmptyText( child ))
-      s.add( SOAPHeaderItem.decode( childNS, child ))
-    end
-    s
-  end
 end
 
 
-class SOAPEnvelope < SOAPCompoundBase
-  public
+class SOAPEnvelope < NSDBase
+  include SOAPCompoundtype
 
-  attr_reader :header
-  attr_reader :body
+  attr_accessor :header
+  attr_accessor :body
+  attr_reader :refPool
+  attr_reader :idPool
 
-  def initialize( initHeader, initBody )
+  def initialize( initHeader = nil, initBody = nil )
     super( self.type.to_s )
     @header = initHeader
     @body = initBody
+    @refPool = []
+    @idPool = []
   end
 
   def encode( ns )
     # Namespace preloading.
-    attrs = ns.namespaceTag.collect { | namespace, tag |
+    attrs = []
+    ns.eachNamespace do | namespace, tag |
       if ( tag == '' )
-	Attr.new( 'xmlns' , namespace )
+	attrs << Attr.new( 'xmlns' , namespace )
       else
-	Attr.new( 'xmlns:' << tag, namespace )
+	attrs << Attr.new( 'xmlns:' << tag, namespace )
       end
-    }
+    end
 
     contents = []
     contents.push( @header.encode( ns )) if @header and @header.length > 0
     contents.push( @body.encode( ns ))
 
-    Element.new( ns.name( EnvelopeNamespace, 'Envelope' ), attrs, contents )
+    # Element.new( ns.name( EnvelopeNamespace, 'Envelope' ), attrs, contents )
+    Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Envelope' ), attrs, contents )
   end
+end
 
-  # Module function
 
-  public
-
-  def self.decode( ns, elem, allowUnqualifiedElement = false )
-    parseNS( ns, elem )
-    if ( ns.compare( EnvelopeNamespace, 'Envelope', elem.nodeName ))
-      # OK
-    elsif ( allowUnqualifiedElement and ( elem.nodeName == 'Envelope' ))
-      # OK
-    else
-      raise FormatDecodeError.new( 'Envelope not found.' )
-    end
-
-    header = nil
-    body = nil
-    elem.childNodes.each do | child |
-      childNS = ns.clone
-      parseNS( childNS, child )
-      name = child.nodeName
-      if ( isEmptyText( child ))
-	# Nothing to do.
-      elsif (( childNS.compare( EnvelopeNamespace, 'Header', name )) ||
-	  ( allowUnqualifiedElement and ( name == 'Header' )))
-	raise FormatDecodeError.new( 'Duplicated Header in Envelope' ) if header
-	header = SOAPHeader.decode( childNS, child )
-      elsif (( childNS.compare( EnvelopeNamespace, 'Body', name )) ||
-	  ( allowUnqualifiedElement and ( name == 'Body' )))
-	raise FormatDecodeError.new( 'Duplicated Body in Envelope' ) if body
-	body = SOAPBody.decode( childNS, child )
-      else
-	raise FormatDecodeError.new( 'Unknown scoping element: ' << name )
-      end
-    end
-
-    SOAPEnvelope.new( header, body )
-  end
 end
