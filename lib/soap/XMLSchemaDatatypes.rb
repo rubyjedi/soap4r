@@ -89,8 +89,13 @@ end
 ## Basic datatypes.
 #
 class XSDNil < XSDBase
-  def initialize()
+  def initialize( initNil = nil )
     super( XSD::NilLiteral )
+    set( initNil )
+  end
+
+  def set( newNil )
+    @data = newNil
   end
 end
 
@@ -104,10 +109,12 @@ public
 
   def set( newBoolean )
     if newBoolean.is_a?( String )
-      if newBoolean.downcase == 'true'
+      if newBoolean == 'true' || newBoolean == '1'
 	@data = true
-      else
+      elsif newBoolean == 'false' || newBoolean == '0'
 	@data = false
+      else
+	raise ValueSpaceError.new( "Boolean: #{ newBoolean } is not acceptable." )
       end
     else
       @data = newBoolean ? true : false
@@ -162,6 +169,9 @@ public
       else
         newFloat.to_f
       end
+
+    # Convert to single-precision 32-bit floating point value.
+    @data = sprintf( "%f", @data ).to_f
   end
 
   # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
@@ -178,11 +188,48 @@ public
   end
 end
 
+# Ruby's Float is double-precision 64-bit floating point value.
+class XSDDouble < XSDBase
+public
+
+  def initialize( initDouble = nil )
+    super( DoubleLiteral )
+    set( initDouble ) if initDouble
+  end
+
+  def set( newDouble )
+    # "NaN".to_f => 0 in some environment.  libc?
+    @data = if newDouble.is_a?( Float )
+	newDouble
+      elsif newDouble == 'NaN'
+        0.0/0.0
+      elsif newDouble == 'INF'
+        1.0/0.0
+      elsif newDouble == '-INF'
+        -1.0/0.0
+      else
+        newDouble.to_f
+      end
+  end
+
+  # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
+  def to_s
+    if @data.nan?
+      'NaN'
+    elsif @data.infinite? == 1
+      'INF'
+    elsif @data.infinite? == -1
+      '-INF'
+    else
+      @data.to_s
+    end
+  end
+end
+
+require 'rational'
 class XSDDateTime < XSDBase
   require 'date3'
   require 'parsedate3'
-
-  TimeZoneParseRegexp = Regexp.new( '^([+-])(\d\d):(\d\d)$' )
 
 public
 
@@ -198,34 +245,37 @@ public
       gt = t.dup.gmtime
       @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
     else
-      ( year, mon, mday, hour, min, sec, zone, wday ) = ParseDate.parsedate( t.to_s )
+      tStr = t.to_s.sub( 'Z([-+]\d\d:?\d\d)?$' ) { $1 }
+      ( year, mon, mday, hour, min, sec, zone, wday ) = ParseDate.parsedate( tStr )
       @data = Date.new3( year, mon, mday, hour, min, sec )
 
       if zone
-	TimeZoneParseRegexp =~ zone
+	/^([-+])(\d\d):(\d\d)$/ =~ zone
 	zoneSign = $1
 	zoneHour = $2.to_i
 	zoneMin = $3.to_i
-	diffDay = 0
-	case zoneSign
-	when '+'
-	  diffDay = +( zoneHour * 3600 + zoneMin * 60 ).to_f / 86400
-	when '-'
-	  diffDay = -( zoneHour * 3600 + zoneMin * 60 ).to_f / 86400
-	when nil
-	  raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
-	else
-	  raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
+	if !zoneHour.zero? || !zoneMin.zero?
+	  diffDay = 0
+	  case zoneSign
+	  when '+'
+	    diffDay = +( zoneHour * 3600 + zoneMin * 60 ).to_r / 86400
+	  when '-'
+	    diffDay = -( zoneHour * 3600 + zoneMin * 60 ).to_r / 86400
+	  when nil
+	    raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
+	  else
+	    raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
+	  end
+	  jd = @data.jd
+	  fr1 = @data.fr1 + diffDay
+	  @data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
 	end
-	jd = @data.jd
-	fr1 = @data.fr1 + diffDay
-	@data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
       end
     end
   end
 
   def to_s
-    @data.to_s.sub( /,.*$/, '' )
+    @data.to_s.sub( /,.*$/, 'Z' )
   end
 end
 
