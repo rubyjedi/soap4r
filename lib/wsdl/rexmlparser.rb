@@ -1,6 +1,6 @@
 =begin
-SOAP4R - WSDL REXMLParser library.
-Copyright (C) 2002 NAKAMURA Hiroshi.
+WSDL4R - WSDL REXMLParser library.
+Copyright (C) 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -31,8 +31,24 @@ class WSDLREXMLParser < WSDLParser
     super( *vars )
   end
 
+  def prologue
+  end
+
   def doParse( stringOrReadable )
-    REXML::Document.parse_stream( stringOrReadable, self )
+    source = nil
+    if REXML::VERSION_MAJOR < 2 or
+	( REXML::VERSION_MAJOR == 2 and REXML::VERSION_MINOR <= 4 )
+      source = ::SOAP::Charset.codeConv( stringOrReadable, charset, 'UTF8' )
+    else
+      source = REXML::SourceFactory.create_from( stringOrReadable )
+      source.encoding = charset
+    end
+    # Listener passes a String in utf-8.
+    @charset = 'utf-8'
+    REXML::Document.parse_stream( source, self )
+  end
+
+  def epilogue
   end
 
   def tag_start( name, attrs )

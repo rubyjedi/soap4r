@@ -1,6 +1,6 @@
 =begin
-SOAP4R - WSDL NQXMLParser library.
-Copyright (C) 2001 NAKAMURA Hiroshi.
+WSDL4R - WSDL NQXMLParser library.
+Copyright (C) 2001, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -30,6 +30,24 @@ class WSDLNQXMLLightWeightParser < WSDLParser
     unless NQXML.const_defined?( "XMLDecl" )
       NQXML.const_set( "XMLDecl", NilClass )
     end
+    @charsetBackup = nil
+  end
+
+  def prologue
+    @charsetBackup = $KCODE
+    $KCODE = ::SOAP::Charset.getCharsetStr( charset )
+  end
+
+  def epilogue
+    $KCODE = @charsetBackup
+  end
+
+  def setXMLDeclEncoding( charset )
+    if self.charset.nil?
+      @charsetBackup = $KCODE
+      $KCODE = ::SOAP::Charset.getCharsetStr( charset )
+    end
+    super
   end
 
   def doParse( stringOrReadable )
@@ -46,7 +64,10 @@ class WSDLNQXMLLightWeightParser < WSDLParser
 	characters( entity.text )
       # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
       when NQXML::XMLDecl, NQXML::ProcessingInstruction
-	#?
+	charset = entity.attrs[ 'encoding' ]
+	if charset
+	  setXMLDeclEncoding( charset )
+	end
       when NQXML::Comment
 	# Nothing to do.
       else

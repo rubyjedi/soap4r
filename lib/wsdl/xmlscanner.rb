@@ -1,6 +1,6 @@
 =begin
-SOAP4R - WSDL XMLScan parser library.
-Copyright (C) 2002 NAKAMURA Hiroshi.
+WSDL4R - WSDL XMLScan parser library.
+Copyright (C) 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -16,10 +16,8 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-
 require 'wsdl/parser'
 require 'xmlscan/scanner'
-require 'soap/charset'
 
 
 module WSDL
@@ -30,15 +28,18 @@ class WSDLXMLScanner < WSDLParser
     super( *vars )
   end
 
-  def self.adjustKCode
-    true
-  end
-
   def prologue
   end
 
   def doParse( stringOrReadable )
-    XMLScan::XMLScanner.new( Visitor.new( self )).parse( stringOrReadable )
+    @scanner = XMLScan::XMLScanner.new( Visitor.new( self ))
+    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset )
+    @scanner.parse( stringOrReadable )
+  end
+
+  def setScannerKCode( charset )
+    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset )
+    setXMLDeclEncoding( charset )
   end
 
   def epilogue
@@ -57,11 +58,10 @@ class WSDLXMLScanner < WSDLParser
       @dest = dest
       @attrs = {}
       @currentAttr = nil
-      @charsetStrBackup = nil
     end
 
     def parse_error( msg )
-      raise ParseError.new( msg )
+      raise WSDLParser::ParseError.new( msg )
     end
 
     def wellformed_error( msg )
@@ -84,8 +84,7 @@ class WSDLXMLScanner < WSDLParser
     end
 
     def on_xmldecl_encoding( str )
-      charsetStr = Charset.getCharsetStr( str )
-      $KCODE = charsetStr
+      @dest.setScannerKCode( str )
     end
 
     def on_xmldecl_standalone( str )
@@ -133,11 +132,9 @@ class WSDLXMLScanner < WSDLParser
     end
 
     def on_start_document
-      @charsetStrBackup = $KCODE.to_s.dup
     end
 
     def on_end_document
-      $KCODE = @charsetStrBackup
     end
 
     def on_stag( name )
