@@ -1,4 +1,4 @@
-require 'uconv'
+#require 'uconv'
 require 'soap/wsdlDriver'
 
 word = ARGV.shift

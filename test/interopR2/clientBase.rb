@@ -1,6 +1,6 @@
 $KCODE = 'EUC'
 
-require 'devel/logger'
+require 'logger'
 require 'soap/rpc/driver'
 require 'soap/mapping'
 require 'base'

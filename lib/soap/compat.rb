@@ -106,7 +106,7 @@ end
 
 
 class Driver < RPC::Driver
-  include Devel::Logger::Severity
+  include Logger::Severity
 
   attr_accessor :logdev
   alias logDev= logdev=
@@ -122,18 +122,18 @@ class Driver < RPC::Driver
     @logid = logid
     @logid_prefix = "<#{ @logid }> "
     self.httpproxy = httpproxy if httpproxy
-    log(SEV_INFO) { 'initialize: initializing SOAP driver...' }
+    log(INFO) { 'initialize: initializing SOAP driver...' }
   end
 
   def invoke(headers, body)
-    log(SEV_INFO) { "invoke: invoking message '#{ body.type }'." }
+    log(INFO) { "invoke: invoking message '#{ body.type }'." }
     super
   end
 
   def call(name, *params)
-    log(SEV_INFO) { "call: calling method '#{ name }'." }
-    log(SEV_DEBUG) { "call: parameters '#{ params.inspect }'." }
-    log(SEV_DEBUG) {
+    log(INFO) { "call: calling method '#{ name }'." }
+    log(DEBUG) { "call: parameters '#{ params.inspect }'." }
+    log(DEBUG) {
       params = Mapping.obj2soap(params, @mapping_registry).to_a
       "call: parameters '#{ params.inspect }'."
     }
@@ -163,7 +163,7 @@ class Driver < RPC::Driver
 private
 
   def log(sev)
-    @logdev.add(sev, nil, self.class) { @logid_prefix + yield } if @logdev
+    @logdev.add(sev, nil, self.class) { @logid_prefix + yield }
   end
 end
 

@@ -73,7 +73,7 @@ class App < SOAP::RPC::CGIStub
     end
 
     self.mapping_registry = #{ class_name }::MappingRegistry
-    self.sev_threshold = Devel::Logger::ERROR
+    self.level = Logger::Severity::ERROR
   end
 end
 

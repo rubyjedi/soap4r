@@ -28,7 +28,7 @@ require 'soap/mapping/wsdlRegistry'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/processor'
-require 'devel/logger'
+require 'logger'
 
 
 module SOAP
@@ -110,7 +110,7 @@ class WSDLDriver
   __attr_proxy :allow_unqualified_element, true
   __attr_proxy :generate_explicit_type, true
 
-  def reset_streadm
+  def reset_stream
     @servant.reset_stream
   end
 
@@ -118,7 +118,7 @@ class WSDLDriver
   alias generateEncodeType= generate_explicit_type=
 
   class Servant__
-    include Devel::Logger::Severity
+    include Logger::Severity
     include SOAP
 
     attr_reader :opt
@@ -193,8 +193,8 @@ class WSDLDriver
       def base2soap(obj, type)
 	soap_obj = nil
 	if type <= XSD::XSDString
-	  soap_obj = type.new(Charset.is_ces(obj, $KCODE) ?
-	    Charset.encoding_conv(obj, $KCODE, Charset.encoding) : obj)
+	  soap_obj = type.new(XSD::Charset.is_ces(obj, $KCODE) ?
+	    XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding) : obj)
 	else
 	  soap_obj = type.new(obj)
 	end
@@ -249,6 +249,7 @@ class WSDLDriver
 	@handler.endpoint_url = @endpoint_url
 	@handler.reset
       end
+      log(DEBUG) { "endpoint_url=: set endpoint_url #{ @endpoint_url }." }
     end
 
     def wiredump_dev=(dev)
@@ -269,6 +270,7 @@ class WSDLDriver
 	@handler.proxy = @httpproxy
 	@handler.reset
       end
+      log(DEBUG) { "httpproxy=: set httpproxy #{ @httpproxy }." }
     end
 
     def reset_stream
@@ -276,8 +278,8 @@ class WSDLDriver
     end
 
     def rpc_send(method_name, *params)
-      log(SEV_INFO) { "call: calling method '#{ method_name }'." }
-      log(SEV_DEBUG) { "call: parameters '#{ params.inspect }'." }
+      log(INFO) { "call: calling method '#{ method_name }'." }
+      log(DEBUG) { "call: parameters '#{ params.inspect }'." }
 
       op_info = @operations[method_name]
       parts_names = op_info.bodyparts.collect { |part| part.name }
@@ -319,7 +321,7 @@ class WSDLDriver
     # req_header: [[element, mustunderstand, encodingstyle(QName/String)], ...]
     # req_body: SOAPBasetype/SOAPCompoundtype
     def document_send(name, header_obj, body_obj)
-      log(SEV_INFO) { "send: sending document '#{ name }'." }
+      log(INFO) { "document_send: sending document '#{ name }'." }
       op_info = @operations[name]
       req_header = header_from_obj(header_obj, op_info)
       req_body = body_from_obj(body_obj, op_info)
@@ -338,7 +340,7 @@ class WSDLDriver
     def create_handler
       endpoint_url = @endpoint_url || @port.soap_address.location
       @handler = HTTPPostStreamHandler.new(endpoint_url, @httpproxy,
-      	Charset.encoding_label)
+	XSD::Charset.encoding_label)
       @handler.wiredump_dev = @wiredump_dev
     end
 
@@ -352,7 +354,9 @@ class WSDLDriver
 
     def invoke(req_header, req_body, op_info, opt)
       send_string = Processor.marshal(req_header, req_body, opt)
+      log(DEBUG) { "invoke: sending string #{ send_string }" }
       data = @handler.send(send_string, op_info.soapaction)
+      log(DEBUG) { "invoke: received string #{ data.receive_string }" }
       if data.receive_string.empty?
 	return nil, nil
       end
@@ -471,7 +475,7 @@ class WSDLDriver
     end
 
     def log(sev)
-      @logdev.add(sev, nil, self.type) { yield } if @logdev
+      @logdev.add(sev, nil, self.type) { yield }
     end
   end
 

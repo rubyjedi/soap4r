@@ -11,9 +11,9 @@ require 'wsdl/soap/clientSkeltonCreator'
 require 'wsdl/soap/standaloneServerStubCreator'
 require 'wsdl/soap/cgiStubCreator'
 
-require 'devel/logger'
+require 'logger'
 
-class WSDL2RubyApp < Devel::Application
+class WSDL2RubyApp < Logger::Application
 private
 
   OptSet = [
@@ -131,7 +131,7 @@ __EOU__
   end
 
   def create_classdef
-    log(SEV_INFO) { "Creating class definition." }
+    log(INFO) { "Creating class definition." }
     @classdef_filename = @name + '.rb'
     check_file(@classdef_filename) or return
     File.open(@classdef_filename, "w") do |f|
@@ -140,7 +140,7 @@ __EOU__
   end
 
   def create_client_skelton(servicename)
-    log(SEV_INFO) { "Creating client skelton." }
+    log(INFO) { "Creating client skelton." }
     servicename ||= @wsdl.services[0].name.name
     @client_skelton_filename = servicename + 'Client.rb'
     check_file(@client_skelton_filename) or return
@@ -153,7 +153,7 @@ __EOU__
   end
 
   def create_servant_skelton(porttypename)
-    log(SEV_INFO) { "Creating servant skelton." }
+    log(INFO) { "Creating servant skelton." }
     @servant_skelton_filename = (porttypename || @name + 'Servant') + '.rb'
     check_file(@servant_skelton_filename) or return
     File.open(@servant_skelton_filename, "w") do |f|
@@ -164,7 +164,7 @@ __EOU__
   end
 
   def create_cgi_stub(servicename)
-    log(SEV_INFO) { "Creating CGI stub." }
+    log(INFO) { "Creating CGI stub." }
     servicename ||= @wsdl.services[0].name.name
     @cgi_stubFilename = servicename + '.cgi'
     check_file(@cgi_stubFilename) or return
@@ -178,7 +178,7 @@ __EOU__
   end
 
   def create_standalone_server_stub(servicename)
-    log(SEV_INFO) { "Creating standalone stub." }
+    log(INFO) { "Creating standalone stub." }
     servicename ||= @wsdl.services[0].name.name
     @standalone_server_stub_filename = servicename + '.rb'
     check_file(@standalone_server_stub_filename) or return
@@ -191,7 +191,7 @@ __EOU__
   end
 
   def create_driver(porttypename)
-    log(SEV_INFO) { "Creating driver." }
+    log(INFO) { "Creating driver." }
     @driver_filename = (porttypename || @name) + 'Driver.rb'
     check_file(@driver_filename) or return
     File.open(@driver_filename, "w") do |f|
@@ -204,18 +204,18 @@ __EOU__
   def check_file(filename)
     if FileTest.exist?(filename)
       if @opt.key?('force')
-	log(SEV_WARN) {
+	log(WARN) {
 	  "File '#{ filename }' exists but overrides it."
 	}
 	true
       else
-	log(SEV_WARN) {
+	log(WARN) {
 	  "File '#{ filename }' exists.  #{ $0 } did not override it."
 	}
 	false
       end
     else
-      log(SEV_INFO) { "Creates file '#{ filename }'." }
+      log(INFO) { "Creates file '#{ filename }'." }
       true
     end
   end

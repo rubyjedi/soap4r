@@ -1,5 +1,4 @@
 require 'soap/rpc/driver'
-require 'devel/logger'
 
 require 'iSampleStruct'
 

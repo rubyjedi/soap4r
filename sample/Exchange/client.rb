@@ -9,7 +9,7 @@ server = ARGV.shift || "http://localhost:7000/"
 
 logger = nil
 wiredump_dev = nil
-# logger = Devel::Logger.new(STDERR)
+# logger = Logger.new(STDERR)
 # wiredump_dev = STDERR
 
 drv = SOAP::RPC::Driver.new(server, ExchangeServiceNamespace)

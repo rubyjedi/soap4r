@@ -2,7 +2,7 @@ require 'soap/rpc/standaloneServer'
 
 class HelloWorldServer < SOAP::RPC::StandaloneServer
   def on_init
-    @log.sev_threshold = Devel::Logger::SEV_DEBUG
+    @log.level = Logger::Severity::DEBUG
     add_method(self, 'hello_world', 'from')
   end
 
