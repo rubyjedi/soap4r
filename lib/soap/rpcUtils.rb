@@ -147,8 +147,8 @@ module RPCUtils
     end
 
     def eachParamName( *type )
-      @paramSignature.each do | paramType, paramName |
-	if type.include?( paramType )
+      @paramSignature.each do | ioType, paramName |
+	if type.include?( ioType )
 	  yield( paramName )
 	end
       end
@@ -179,11 +179,11 @@ module RPCUtils
 	# attrs.push( datatypeAttr( ns ))
 
 	elems = []
-        ( @inParamNames + @inoutParamNames ).each do | param |
-	  unless @inParam[ param ]
-	    raise ParameterError.new( "Parameter: #{ param } was not given." )
+	eachParamName( 'in', 'inout' ) do | paramName |
+	  unless @inParam[ paramName ]
+	    raise ParameterError.new( "Parameter: #{ paramName } was not given." )
 	  end
-      	  elems << @inParam[ param ].encode( ns.clone, param, EncodingNamespace )
+      	  elems << @inParam[ paramName ].encode( ns.clone, paramName, EncodingNamespace )
 	end
 
 	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, elems )
@@ -193,14 +193,15 @@ module RPCUtils
 
 	elems = []
 	if @retName and !retVal.is_a?( SOAPVoid )
-	  elems << retVal.encode( ns.clone, @retName || 'return', EncodingNamespace )
+	  elems << retVal.encode( ns.clone, @retName, EncodingNamespace )
 	end
 
-	@outParamNames.each do | param |
-	  unless @outParam[ param ]
-	    raise ParameterError.new( "Parameter: #{ param } was not given." )
+	eachParamName( 'out', 'inout' ) do | paramName |
+	  unless @outParam[ paramName ]
+	    raise ParameterError.new( "Parameter: #{ paramName } was not given." )
 	  end
-	  elems << @outParam[ param ].encode( ns.clone, param, EncodingNamespace )
+	  elems << @outParam[ paramName ].encode( ns.clone, paramName, EncodingNamespace )
+	  
 	end
 
         Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, elems )
@@ -234,10 +235,10 @@ module RPCUtils
     end
 
     def setParamDef
-      @paramDef.each do | pair |
-        type, name = pair
-        type.scan( /[^,\s]+/ ).each do | typeToken |
-  	case typeToken
+      @paramDef.each do | definition |
+	ioType, name = definition
+
+  	case ioType
   	when 'in'
 	  @paramSignature.push( [ 'in', name ] )
 	  @inParamNames.push( name )
@@ -253,9 +254,8 @@ module RPCUtils
   	  end
   	  @retName = name
   	else
-  	  raise MethodDefinitionError.new( 'Unknown type: ' << typeToken )
+  	  raise MethodDefinitionError.new( "Unknown type: #{ ioType }" )
   	end
-        end
       end
     end
   
@@ -756,12 +756,12 @@ module RPCUtils
       def init( initMapping = [] )
 	clear
 	initMapping.reverse_each do | objKlass, soapKlass, factory, info |
-  	  set( objKlass, soapKlass, factory, info )
+  	  add( objKlass, soapKlass, factory, info )
    	end
       end
 
       # Give priority to latter entry.
-      def set( objKlass, soapKlass, factory, info )
+      def add( objKlass, soapKlass, factory, info )
 	@map.unshift( [ objKlass, soapKlass, factory, info ] )
       end
 
@@ -809,14 +809,15 @@ module RPCUtils
       @map = Mapping.new( self )
       @map.init( SOAPBaseMapping )
       UserMapping.each do | mapData |
-	set( *mapData )
+	add( *mapData )
       end
       @defaultFactory = UnknownKlassFactory
     end
 
-    def set( objKlass, soapKlass, factory, info = nil )
-      @map.set( objKlass, soapKlass, factory, info )
+    def add( objKlass, soapKlass, factory, info = nil )
+      @map.add( objKlass, soapKlass, factory, info )
     end
+    alias :set :add
 
     def obj2soap( klass, obj )
       @map.obj2soap( klass, obj ) ||
