@@ -25,20 +25,23 @@ module Processor
   class << self
   public
 
-    def marshal(header, body, opt = {}, io = nil)
-      env = SOAPEnvelope.new(header, body)
+    def marshal(env, opt = {}, io = nil)
       generator = create_generator(opt)
-      generator.generate(env, io)
+      marshalled_str = generator.generate(env, io)
+      unless env.external_content.empty?
+	opt[:mimemessage] = mime = MIMEMessage.new
+	env.external_content.each do |k, v|
+	  mime.add_attachment(v.data)
+	end
+	mime.add_part(marshalled_str + "\r\n")
+	mime.close
+      end
+      marshalled_str
     end
 
     def unmarshal(stream, opt = {})
       parser = create_parser(opt)
-      env = parser.parse(stream)
-      if env
-	return env.header, env.body
-      else
-	return nil, nil
-      end
+      parser.parse(stream)
     end
 
     def default_parser_option=(rhs)
