@@ -2,18 +2,19 @@
 
 require 'rbconfig'
 require 'ftools'
-require '_installedFiles'
 
 include Config
 
 RV = CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
 DSTPATH = CONFIG["sitedir"] + "/" +  RV 
-
-$installed = InstalledFiles.new
+SRCPATH = File.dirname( $0 )
 
 def join( *arg )
   File.join( *arg )
 end
+
+require join( SRCPATH, '_installedFiles' )
+$installed = InstalledFiles.new( SRCPATH )
 
 def install( from, to )
   toPath = File.catname( from, to )
@@ -34,14 +35,16 @@ def installDir( from, to )
 end
 
 begin
-  installDir( join( 'lib', 'soap' ), join( DSTPATH, 'soap' ))
-  installDir( join( 'lib', 'wsdl' ), join( DSTPATH, 'wsdl' ))
-  installDir( join( 'lib', 'wsdl', 'xmlSchema' ), join( DSTPATH, 'wsdl', 'xmlSchema' ))
-  installDir( join( 'lib', 'wsdl', 'soap' ), join( DSTPATH, 'wsdl', 'soap' ))
-  installDir( "redist", DSTPATH )
-  installDir( join( 'redist', 'soap' ), join( DSTPATH, 'soap' ))
+  installDir( join( SRCPATH, 'lib', 'soap' ), join( DSTPATH, 'soap' ))
+  installDir( join( SRCPATH, 'lib', 'wsdl' ), join( DSTPATH, 'wsdl' ))
+  installDir( join( SRCPATH, 'lib', 'wsdl', 'xmlSchema' ),
+    join( DSTPATH, 'wsdl', 'xmlSchema' ))
+  installDir( join( SRCPATH, 'lib', 'wsdl', 'soap' ),
+    join( DSTPATH, 'wsdl', 'soap' ))
+  installDir( join( SRCPATH, "redist" ), DSTPATH )
+  installDir( join( SRCPATH, 'redist', 'soap' ), join( DSTPATH, 'soap' ))
 
-  $installed.dump
+  $installed.dump( SRCPATH )
 
   puts "install succeed!"
 

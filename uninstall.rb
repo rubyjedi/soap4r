@@ -2,18 +2,19 @@
 
 require 'rbconfig'
 require 'ftools'
-require '_installedFiles'
 
 include Config
 
 RV = CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
 DSTPATH = CONFIG["sitedir"] + "/" +  RV 
-
-$installed = InstalledFiles.new
+SRCPATH = File.dirname( $0 )
 
 def join( *arg )
   File.join( *arg )
 end
+
+require join( SRCPATH, '_installedFiles' )
+$installed = InstalledFiles.new( SRCPATH )
 
 def uninstall( name, path )
   filePath = join( path, File.basename( name ))
@@ -22,6 +23,15 @@ def uninstall( name, path )
     if $installed.uninstall( target )
       STDERR.puts "File: #{ target.path } uninstalled."
     end
+  end
+end
+
+def uninstallDir( targetDir, from )
+  unless FileTest.directory?( targetDir )
+    raise RuntimeError.new( "'#{ targetDir }' not found." )
+  end
+  Dir[ join( targetDir, '*.rb' ) ].each do | name |
+    uninstall( name, from )
   end
 end
 
@@ -38,31 +48,21 @@ def delPath( dirPath )
 end
 
 begin
-  Dir[ 'lib/soap/*.rb' ].each do | name |
-    uninstall( name, join( DSTPATH, 'soap' ))
-  end
-  Dir[ 'lib/wsdl/*.rb' ].each do | name |
-    uninstall( name, join( DSTPATH, 'wsdl' ))
-  end
-  Dir[ 'lib/wsdl/soap/*.rb' ].each do | name |
-    uninstall( name, join( DSTPATH, 'wsdl', 'soap' ))
-  end
-  Dir[ 'lib/wsdl/xmlSchema/*.rb' ].each do | name |
-    uninstall( name, join( DSTPATH, 'wsdl', 'xmlSchema' ))
-  end
-  Dir[ 'redist/soap/*.rb' ].each do | name |
-    uninstall( name, join( DSTPATH, 'soap' ))
-  end
-  Dir[ 'redist/*.rb' ].each do | name |
-    uninstall( name, DSTPATH )
-  end
+  uninstallDir( join( SRCPATH, 'lib', 'soap' ), join( DSTPATH, 'soap' ))
+  uninstallDir( join( SRCPATH, 'lib', 'wsdl', 'soap' ),
+    join( DSTPATH, 'wsdl', 'soap' ))
+  uninstallDir( join( SRCPATH, 'lib', 'wsdl', 'xmlSchema' ),
+    join( DSTPATH, 'wsdl', 'xmlSchema' ))
+  uninstallDir( join( SRCPATH, 'lib', 'wsdl' ), join( DSTPATH, 'wsdl' ))
+  uninstallDir( join( SRCPATH, 'redist', 'soap' ), join( DSTPATH, 'soap' ))
+  uninstallDir( join( SRCPATH, 'redist' ), join( DSTPATH ))
 
   delPath( join( DSTPATH, 'soap' ))
   delPath( join( DSTPATH, 'wsdl', 'xmlSchema' ))
   delPath( join( DSTPATH, 'wsdl', 'soap' ))
   delPath( join( DSTPATH, 'wsdl' ))
 
-  $installed.dump
+#  $installed.dump( SRCPATH )
 
   puts "uninstall succeed!"
 
