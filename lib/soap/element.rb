@@ -138,7 +138,6 @@ public
     end
 
     raise FormatDecodeError.new( 'No root element.' )
-    # @data[0]
   end
 end
 
@@ -207,7 +206,7 @@ end
 
 class SOAPHeader < SOAPArray
   def initialize()
-    super( self.type.to_s )
+    super( self.type.to_s, 1 )	# rank == 1
   end
 
   def encode( ns )
@@ -220,7 +219,7 @@ class SOAPHeader < SOAPArray
   end
 
   def length
-    @data[ 0 ].length
+    @data.length
   end
 end
 
