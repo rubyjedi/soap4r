@@ -79,19 +79,20 @@ public
   end
 
   def add_rpc_method(qname, soapaction, name, param_def, opt = {})
+    opt[:request_qname] = qname
     opt[:request_style] ||= :rpc
     opt[:response_style] ||= :rpc
     opt[:request_use] ||= :encoded
     opt[:response_use] ||= :encoded
-    @operation[name] = Operation.new(qname, soapaction, name, param_def, opt)
+    @operation[name] = Operation.new(soapaction, name, param_def, opt)
   end
 
-  def add_document_method(qname, soapaction, name, param_def, opt = {})
+  def add_document_method(soapaction, name, param_def, opt = {})
     opt[:request_style] ||= :document
     opt[:response_style] ||= :document
     opt[:request_use] ||= :literal
     opt[:response_use] ||= :literal
-    @operation[name] = Operation.new(qname, soapaction, name, param_def, opt)
+    @operation[name] = Operation.new(soapaction, name, param_def, opt)
   end
 
   # add_method is for shortcut of typical rpc/encoded method definition.
@@ -217,7 +218,7 @@ private
     attr_reader :request_use
     attr_reader :response_use
 
-    def initialize(qname, soapaction, name, param_def, opt)
+    def initialize(soapaction, name, param_def, opt)
       @soapaction = soapaction
       @request_style = opt[:request_style]
       @response_style = opt[:response_style]
@@ -227,8 +228,9 @@ private
       check_style(@request_style)
       check_style(@response_style)
       if @request_style == :rpc
-        @rpc_method_factory = SOAPMethodRequest.new(qname, param_def,
-          @soapaction)
+        request_qname = opt[:request_qname] or raise
+        @rpc_method_factory =
+          RPC::SOAPMethodRequest.new(request_qname, param_def, @soapaction)
       else
         @document_method_name = {}
         param_def.each do |inout, paramname, typeinfo|
