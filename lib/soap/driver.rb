@@ -18,12 +18,10 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/proxy'
 require 'soap/rpcUtils'
-require 'xmltree'
 require 'application'
 
 
 class SOAPDriver
-  include XML::SimpleTree
   include Log::Severity
   include SOAPRPCUtils
 
