@@ -55,6 +55,11 @@ class QName
     "{#{ namespace }}#{ name }"
   end
 
+  def inspect
+    sprintf("#<%s:0x%x %s>", self.class.name, object_id,
+      "{#{ namespace }}#{ name }")
+  end
+
   NormalizedNameRegexp = /^\{([^}]*)\}(.*)$/
   def parse(str)
     NormalizedNameRegexp =~ str
