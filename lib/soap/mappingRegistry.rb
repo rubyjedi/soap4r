@@ -792,6 +792,24 @@ module RPCUtils
       def clear
 	@map.clear
       end
+
+      def searchMappedSOAPClass( targetRubyClass )
+	@map.each do | objKlass, soapKlass, factory, info |
+	  if objKlass == targetRubyClass
+	    return soapKlass
+	  end
+	end
+	nil
+      end
+
+      def searchMappedRubyClass( targetSOAPClass )
+	@map.each do | objKlass, soapKlass, factory, info |
+	  if soapKlass == targetSOAPClass
+	    return objKlass
+	  end
+	end
+	nil
+      end
     end
 
     BasetypeFactory = BasetypeFactory_.new
@@ -902,6 +920,14 @@ module RPCUtils
 
     def soap2objExceptionHandler=( newHandler )
       @soap2objExceptionHandler = newHandler
+    end
+
+    def searchMappedSOAPClass( rubyClass )
+      @map.searchMappedSOAPClass( rubyClass )
+    end
+
+    def searchMappedRubyClass( soapClass )
+      @map.searchMappedRubyClass( soapClass )
     end
   end
 end
