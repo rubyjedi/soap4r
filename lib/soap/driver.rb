@@ -43,6 +43,29 @@ class Driver
     @mappingRegistry = nil
   end
 
+  ###
+  ## Method definition interfaces.
+  #
+  # paramArg: [ [ paramDef... ] ] or [ paramName, paramName, ... ]
+  # paramDef: See proxy.rb.  Sorry.
+
+  def addMethod( name, *paramArg )
+    addMethodWithSOAPAction( name, nil, *paramArg )
+  end
+
+  def addMethodWithSOAPAction( name, soapAction, *paramArg )
+    paramDef = if paramArg.size == 1 and paramArg[ 0 ].is_a?( Array )
+	paramArg[ 0 ]
+      else
+	createParamDef( paramArg )
+      end
+    @proxy.addMethod( name, paramDef, soapAction )
+  end
+
+
+  ###
+  ## Wiredump inteface.
+  #
   def setWireDumpDev( dumpDev )
     @handler.dumpDev = dumpDev
   end
@@ -51,26 +74,25 @@ class Driver
     @dumpFileBase = base
   end
 
-  def addMethod( name, *paramNames )
-    addMethodWithSOAPAction( name, nil, *paramNames )
-  end
-
-  def addMethodWithSOAPAction( name, soapAction, *paramNames )
-    log( SEV_DEBUG, "addMethod: method '#{ name }', param '#{ paramNames.join( ',' ) }'." )
-    paramDef = []
-    paramNames.each do | paramName |
-      paramDef.push( [ 'in', paramName ] )
-    end
-    paramDef.push( [ 'retval', 'return' ] )
-    @proxy.addMethod( name, paramDef, soapAction )
-  end
-
   def method_missing( msg_id, *params )
     log( SEV_INFO, "method_missing: invoked '#{ msg_id.id2name }'." )
     call( msg_id.id2name, *params )
   end
 
-  private
+private
+
+  def createParamDef( paramNames )
+    paramDef = []
+    paramNames.each do | paramName |
+      paramDef.push( [ 'in', paramName ] )
+    end
+    paramDef.push( [ 'out, retval', 'return' ] )
+    paramDef
+  end
+
+  def addProxyMethod( name, paramDef, soapAction )
+    @proxy.addMethod( name, paramDef, soapAction )
+  end
 
   def log( sev, comment )
     @log.add( sev, "<#{ @logId }> #{ comment }", self.type ) if @log
@@ -122,8 +144,15 @@ class Driver
       end
     end
 
-    obj = RPCUtils.soap2obj( body.response, @mappingRegistry )
-    return obj
+    ret = RPCUtils.soap2obj( body.response, @mappingRegistry )
+    if body.outParams
+      outParams = body.outParams.collect { | outParam |
+	RPCUtils.soap2obj( outParam )
+      }
+      return [ ret ].concat( outParams )
+    else
+      return ret
+    end
   end
 end
 
