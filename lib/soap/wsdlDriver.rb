@@ -89,11 +89,10 @@ private
   end
 
   def add_operation(drv, port)
-    # Convert a map which key is QName, to a Hash which key is String.
     port.find_binding.operations.each do |op_bind|
-      op = op_bind.find_operation
-      soapaction = op_bind.soapoperation ? op_bind.soapoperation.soapaction : ''
-      orgname = op.name.name
+      op_name = op_bind.soapoperation_name
+      soapaction = op_bind.soapaction || ''
+      orgname = op_name.name
       name = XSD::CodeGen::GenSupport.safemethodname(orgname)
       param_def = create_param_def(op_bind)
       opt = {}
@@ -101,8 +100,7 @@ private
       opt[:request_use] = (op_bind.input.soapbody.use || 'literal').intern
       opt[:response_use] = (op_bind.output.soapbody.use || 'literal').intern
       if op_bind.soapoperation_style == :rpc
-        qname = op.inputname
-        drv.add_rpc_operation(qname, soapaction, name, param_def, opt)
+        drv.add_rpc_operation(op_name, soapaction, name, param_def, opt)
       else
         drv.add_document_operation(soapaction, name, param_def, opt)
       end
@@ -405,7 +403,7 @@ class WSDLDriver
     def create_method_struct(op_info, *params)
       parts_names = op_info.bodyparts.collect { |part| part.name }
       obj = create_method_obj(parts_names, params)
-      method = Mapping.obj2soap(obj, @wsdl_mapping_registry, op_info.optype_name)
+      method = Mapping.obj2soap(obj, @wsdl_mapping_registry, op_info.op_name)
       if method.members.size != parts_names.size
 	new_method = SOAPStruct.new
 	method.each do |key, value|

@@ -48,7 +48,6 @@ private
     name = safemethodname(operation.name.name)
     name_as = operation.name.name
     style = binding.soapoperation_style
-    soapaction = binding.soapoperation.soapaction
     namespace = binding.input.soapbody.namespace
     if style == :rpc
       paramstr = param2str(collect_rpcparameter(operation))
@@ -63,7 +62,7 @@ private
     return <<__EOD__
 [#{dq(name_as)}, #{dq(name)},
   #{paramstr},
-  #{ndq(soapaction)}, #{ndq(namespace)}, #{sym(style.id2name)}
+  #{ndq(binding.soapaction)}, #{ndq(namespace)}, #{sym(style.id2name)}
 ]
 __EOD__
   end
