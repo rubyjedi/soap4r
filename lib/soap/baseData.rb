@@ -30,20 +30,10 @@ end
 
 
 ###
-## Marker of SOAP/DM types.
+## for SOAP type(base and compound)
 #
-module SOAPType; end
-
-
-###
-## Mix-in module for SOAP base type instances.
-#
-module SOAPBasetype
-  include SOAPType
-  include SOAP
-
+module SOAPType
   attr_accessor :encodingstyle
-
   attr_accessor :elename
   attr_accessor :id
   attr_reader :precedents
@@ -51,8 +41,7 @@ module SOAPBasetype
   attr_accessor :parent
   attr_accessor :position
   attr_reader :extraattr
-
-public
+  attr_accessor :definedtype
 
   def initialize(*arg)
     super(*arg)
@@ -60,8 +49,10 @@ public
     @elename = XSD::QName.new
     @id = nil
     @precedents = []
+    @root = false
     @parent = nil
     @position = nil
+    @definedtype = nil
     @extraattr = {}
   end
 
@@ -76,37 +67,27 @@ end
 
 
 ###
-## Mix-in module for SOAP compound type instances.
+## for SOAP base type
+#
+module SOAPBasetype
+  include SOAPType
+  include SOAP
+
+  def initialize(*arg)
+    super(*arg)
+  end
+end
+
+
+###
+## for SOAP compound type
 #
 module SOAPCompoundtype
   include SOAPType
   include SOAP
 
-  attr_accessor :encodingstyle
-
-  attr_accessor :elename
-  attr_accessor :id
-  attr_reader :precedents
-  attr_accessor :root
-  attr_accessor :parent
-  attr_accessor :position
-  attr_reader :extraattr
-
-  attr_accessor :definedtype
-
-public
-
   def initialize(*arg)
     super(*arg)
-    @encodingstyle = nil
-    @elename = XSD::QName.new
-    @id = nil
-    @precedents = []
-    @root = false
-    @parent = nil
-    @position = nil
-    @definedtype = nil
-    @extraattr = {}
   end
 end
 
@@ -544,7 +525,7 @@ class SOAPElement
     if hash_or_string.is_a?(Hash)
       hash_or_string.each do |k, v|
 	child = self.from_obj(v)
-	child.elename = XSD::QName.new(nil, k.to_s)
+	child.elename = k.is_a?(XSD::QName) ? k : XSD::QName.new(nil, k.to_s)
 	o.add(child)
       end
     else
