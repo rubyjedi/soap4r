@@ -295,7 +295,7 @@ public
       end
       @data[ idx ]
     else
-      if @array.member?( idx )
+      if @array.include?( idx )
 	@data[ @array.index( idx ) ]
       else
 	nil
@@ -304,7 +304,7 @@ public
   end
 
   def []=( idx, data )
-    if @array.member?( idx )
+    if @array.include?( idx )
       @data[ @array.index( idx ) ] = data
     else
       add( idx, data )
@@ -312,7 +312,7 @@ public
   end
 
   def has_key?( name )
-    @array.member?( name )
+    @array.include?( name )
   end
 
   def members
@@ -342,23 +342,6 @@ private
 
   def addMember( name, initMember = nil )
     initMember = SOAPNil.new() unless initMember
-    methodName = name.dup
-
-    begin
-      instance_eval <<-EOS
-        def #{ methodName }()
-	  @data[ @array.index( '#{ methodName }' ) ]
-        end
-
-        def #{ methodName }=( newMember )
-	  @data[ @array.index( '#{ methodName }' ) ] = newMember
-        end
-      EOS
-    rescue SyntaxError
-      methodName = "var_" << methodName.gsub( /[^a-zA-Z0-9_]/, '' )
-      retry
-    end
-
     @array.push( name )
     initMember.name = name
     @data.push( initMember )
@@ -376,7 +359,7 @@ public
   attr_accessor :qualified
 
   def initialize( namespace, name, text = nil )
-    @encodingStyle = SOAP::EncodingStyleHandlerLiteral::Namespace
+    @encodingStyle = LiteralNamespace
     @namespace = namespace
     @name = name
 
@@ -407,7 +390,7 @@ public
   end
 
   def []( idx )
-    if @array.member?( idx )
+    if @array.include?( idx )
       @data[ @array.index( idx ) ]
     else
       nil
@@ -415,7 +398,7 @@ public
   end
 
   def []=( idx, data )
-    if @array.member?( idx )
+    if @array.include?( idx )
       @data[ @array.index( idx ) ] = data
     else
       add( data )
@@ -423,7 +406,7 @@ public
   end
 
   def has_key?( name )
-    @array.member?( name )
+    @array.include?( name )
   end
 
   def members
@@ -446,26 +429,35 @@ private
 
   def addMember( name, initMember = nil )
     initMember = SOAPNil.new() unless initMember
-    methodName = name.dup
-
-    begin
-      instance_eval <<-EOS
-        def #{ methodName }()
-	  @data[ @array.index( '#{ methodName }' ) ]
-        end
-
-        def #{ methodName }=( newMember )
-	  @data[ @array.index( '#{ methodName }' ) ] = newMember
-        end
-      EOS
-    rescue SyntaxError
-      methodName = "var_" << methodName.gsub( /[^a-zA-Z0-9_]/, '' )
-      retry
-    end
-
+    addAccessor( name )
     @array.push( name )
     initMember.name = name
     @data.push( initMember )
+  end
+
+  def addAccessor( name )
+    methodName = name
+    if self.methods.include?( methodName )
+      methodName = safeAccessorName( methodName )
+    end
+    begin
+      instance_eval <<-EOS
+        def #{ methodName }()
+	  @data[ @array.index( '#{ name }' ) ]
+        end
+
+        def #{ methodName }=( newMember )
+	  @data[ @array.index( '#{ name }' ) ] = newMember
+        end
+      EOS
+    rescue SyntaxError
+      methodName = safeAccessorName( methodName )
+      retry
+    end
+  end
+
+  def safeAccessorName( name )
+    "var_" << name.gsub( /[^a-zA-Z0-9_]/, '' )
   end
 end
 
