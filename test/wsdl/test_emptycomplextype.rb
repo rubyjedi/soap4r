@@ -11,7 +11,7 @@ class TestWSDL < Test::Unit::TestCase
   end
 
   def test_wsdl
-    @wsdl = WSDL::Parser.new.parse(File.open(@@filename).read)
+    @wsdl = WSDL::Parser.new.parse(File.open(@@filename) { |f| f.read })
   end
 end
 

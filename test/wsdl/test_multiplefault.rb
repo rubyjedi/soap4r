@@ -12,7 +12,7 @@ class TestMultipleFault < Test::Unit::TestCase
   end
 
   def test_multiplefault
-    @wsdl = WSDL::Parser.new.parse(File.open(@@filename).read)
+    @wsdl = WSDL::Parser.new.parse(File.open(@@filename) { |f| f.read })
     classdefstr = WSDL::SOAP::ClassDefCreator.new(@wsdl).dump
     yield_eval_binding(classdefstr) do |b|
       assert_equal(
