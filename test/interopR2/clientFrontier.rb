@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-$serverName = 'kSOAP 0.8'
+$serverName = 'Frontier'
 
-$serverBase = 'http://kissen.cs.uni-dortmund.de:8008'
+$serverBase = 'http://www.soapware.org:80/xmethodsInterop'
 #$serverGroupB = ''
 
 require 'clientBase'

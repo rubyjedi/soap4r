@@ -1,12 +1,11 @@
 #!/usr/bin/env ruby
 
-$serverName = 'ZSI'
+$serverName = 'WASP'
 
-$serverBase = 'http://63.142.188.184:1122/'
-$serverGroupB = 'http://63.142.188.184:1122/'
+$serverBase =   'http://soap.systinet.net:6060/InteropService/'
+$serverGroupB = 'http://soap.systinet.net:6060/InteropBService/'
 
 require 'clientBase'
-#$soapAction = 'urn:soapinterop'
 
 drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
 methodDef( drvBase )

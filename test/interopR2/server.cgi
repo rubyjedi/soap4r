@@ -25,6 +25,14 @@ class InteropApp < SOAP::CGIStub
   def prologue
     @log.sevThreshold = SEV_DEBUG
   end
+
+  def clone( obj )
+    if obj.nil?
+      nil
+    else
+      obj.clone
+    end
+  end
   
   # In echoVoid, 'retval' is not defined.  So nothing will be returned.
   def echoVoid
@@ -33,19 +41,19 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoString( inputString )
-    inputString.clone
+    clone( inputString )
   end
 
   def echoStringArray( inputStringArray )
-    inputStringArray.clone
+    clone( inputStringArray )
   end
 
   def echoInteger( inputInteger )
-    SOAP::SOAPInt.new( inputInteger.clone )
+    SOAP::SOAPInt.new( clone( inputInteger ))
   end
 
   def echoIntegerArray( inputIntegerArray )
-    inputIntegerArray.clone
+    clone( inputIntegerArray )
   end
 
   def echoFloat( inputFloat )
@@ -61,25 +69,25 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoStruct( inputStruct )
-    inputStruct.clone
+    clone( inputStruct )
   end
 
   def echoStructArray( inputStructArray )
-    inputStructArray.clone
+    clone( inputStructArray )
   end
 
   def echoDate( inputDate )
-    inputDate.clone
+    clone( inputDate )
   end
 
   def echoBase64( inputBase64 )
-    o = SOAP::SOAPBase64.new( inputBase64.clone )
+    o = SOAP::SOAPBase64.new( clone( inputBase64 ))
     o.asXSD
     o
   end
 
   def echoHexBinary( inputHexBinary )
-    SOAP::SOAPHexBinary.new( inputHexBinary.clone )
+    SOAP::SOAPHexBinary.new( clone( inputHexBinary ))
   end
 
   def echoDouble( inputDouble )
@@ -108,11 +116,11 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoNestedStruct( inputStruct )
-    inputStruct.clone
+    clone( inputStruct )
   end
 
   def echoNestedArray( inputStruct )
-    inputStruct.clone
+    clone( inputStruct )
   end
 
   def echoBoolean( inputBoolean )
@@ -121,7 +129,7 @@ class InteropApp < SOAP::CGIStub
 
   def echoDouble( inputDouble )
     # inputDouble.is_a? Float
-    inputDouble.clone
+    clone( inputDouble )
   end
 
   def echoDecimal( inputDecimal )
@@ -130,23 +138,23 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoMap( inputMap )
-    inputMap.clone
+    clone( inputMap )
   end
 
   def echoMapArray( inputMapArray )
-    inputMapArray.clone
+    clone( inputMapArray )
   end
 
   def echoXSDDateTime( inputXSDDateTime )
-    inputXSDDateTime.clone
+    clone( inputXSDDateTime )
   end
 
   def echoXSDDate( inputXSDDate )
-    SOAP::SOAPDate.new( inputXSDDate.clone )
+    SOAP::SOAPDate.new( clone( inputXSDDate ))
   end
 
   def echoXSDTime( inputXSDTime )
-    SOAP::SOAPTime.new( inputXSDTime.clone )
+    SOAP::SOAPTime.new( clone( inputXSDTime ))
   end
 end
 

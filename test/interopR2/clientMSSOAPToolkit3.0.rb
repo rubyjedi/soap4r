@@ -1,15 +1,13 @@
 #!/usr/bin/env ruby
 
-$serverName = 'ZSI'
-
-$serverBase = 'http://63.142.188.184:1122/'
-$serverGroupB = 'http://63.142.188.184:1122/'
+$serverName = 'Microsoft Soap Toolkit 3.0 pre-beta'
+$serverBase = 'http://mssoapinterop.org/stkV3/InteropTyped.wsdl'
+$serverGroupB = 'http://mssoapinterop.org/stkV3/InteropBtyped.wsdl'
 
 require 'clientBase'
-#$soapAction = 'urn:soapinterop'
 
 drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
-methodDef( drvBase )
+methodDefBase( drvBase )
 
 drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
 methodDefGroupB( drvGroupB )

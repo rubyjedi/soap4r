@@ -55,7 +55,7 @@ MethodsBase = [
 
 MethodsGroupB = [
   ['echoStructAsSimpleTypes',
-    ['in', 'inputStruct'], ['retval', 'outputString'], ['out', 'outputInteger'], ['out', 'outputFloat']],
+    ['in', 'inputStruct'], ['out', 'outputString'], ['out', 'outputInteger'], ['out', 'outputFloat']],
   ['echoSimpleTypesAsStruct',
     ['in', 'inputString'], ['in', 'inputInteger'], ['in', 'inputFloat'], ['retval', 'return']],
   ['echo2DStringArray',

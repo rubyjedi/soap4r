@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-$serverName = 'eSOAP'
+$serverName = 'eSoap'
 
-$serverBase = 'http://212.177.97.8:8080/rpcrouter'
+$serverBase = 'http://www.quakersoft.net/cgi-bin/interop2_server.cgi'
 #$serverGroupB = ''
 
 require 'clientBase'

@@ -1,12 +1,11 @@
 #!/usr/bin/env ruby
 
-$serverName = 'ZSI'
+$serverName = 'Phalanx'
 
-$serverBase = 'http://63.142.188.184:1122/'
-$serverGroupB = 'http://63.142.188.184:1122/'
+$serverBase =   'http://www.phalanxsys.com/ilabA/typed/target.asp'
+$serverGroupB = 'http://www.phalanxsys.com/ilabB/typed/target.asp'
 
 require 'clientBase'
-#$soapAction = 'urn:soapinterop'
 
 drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
 methodDef( drvBase )
