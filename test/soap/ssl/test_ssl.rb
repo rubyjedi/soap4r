@@ -33,12 +33,8 @@ class TestSSL < Test::Unit::TestCase
     teardown_server
   end
 
-  def streamhandler
-    @client.instance_eval("@servant").instance_eval("@streamhandler").client
-  end
-
   def test_options
-    cfg = streamhandler.ssl_config
+    cfg = @client.streamhandler.client.ssl_config
     assert_nil(cfg.client_cert)
     assert_nil(cfg.client_key)
     assert_nil(cfg.client_ca)
