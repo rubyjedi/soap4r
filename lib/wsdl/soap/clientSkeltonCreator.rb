@@ -8,7 +8,6 @@
 
 require 'wsdl/info'
 require 'wsdl/soap/classDefCreatorSupport'
-require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
@@ -17,7 +16,6 @@ module SOAP
 
 class ClientSkeltonCreator
   include ClassDefCreatorSupport
-  include MethodDefCreatorSupport
 
   attr_reader :definitions
 
@@ -49,7 +47,7 @@ obj = #{ drv_name }.new(endpoint_url)
 
 __EOD__
     @definitions.porttype(name).operations.each do |operation|
-      result << dump_signature(operation)
+      result << dump_method_signature(operation)
       result << dump_input_init(operation.input) << "\n"
       result << dump_operation(operation) << "\n\n"
     end
@@ -59,7 +57,7 @@ __EOD__
   def dump_operation(operation)
     name = operation.name
     input = operation.input
-    "puts obj.#{ create_method_name(name) }#{ dump_inputparam(input) }"
+    "puts obj.#{ safemethodname(name.name) }#{ dump_inputparam(input) }"
   end
 
   def dump_input_init(input)

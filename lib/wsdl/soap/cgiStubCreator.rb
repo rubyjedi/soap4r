@@ -10,7 +10,6 @@ require 'wsdl/info'
 require 'wsdl/soap/mappingRegistryCreator'
 require 'wsdl/soap/methodDefCreator'
 require 'wsdl/soap/classDefCreatorSupport'
-require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
@@ -19,7 +18,6 @@ module SOAP
 
 class CGIStubCreator
   include ClassDefCreatorSupport
-  include MethodDefCreatorSupport
 
   attr_reader :definitions
 
@@ -39,38 +37,34 @@ private
 
   def dump_porttype(name)
     class_name = create_class_name(name)
-    method_def, types = MethodDefCreator.new(@definitions).dump(name)
+    methoddef, types = MethodDefCreator.new(@definitions).dump(name)
     mr_creator = MappingRegistryCreator.new(@definitions)
-
-    return <<__EOD__
-require 'soap/rpc/cgistub'
-
-class #{ class_name }
-  require 'soap/rpcUtils'
-  MappingRegistry = SOAP::Mapping::Registry.new
-
-#{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
-  Methods = [
-#{ method_def.gsub(/^/, "    ").chomp }
-  ]
-end
-
-class #{name}App < SOAP::RPC::CGIStub
-  def initialize(*arg)
-    super(*arg)
-    servant = #{ class_name }.new
-    #{ class_name }::Methods.each do |name_as, name, params, soapaction, namespace|
-      add_method_with_namespace_as(namespace, servant, name, name_as, params, soapaction)
+    c1 = ::XSD::CodeGen::ClassDef.new(class_name)
+    c1.def_require("soap/rpc/cgistub")
+    c1.def_require("soap/mapping/registry")
+    c1.def_const("MappingRegistry", "::SOAP::Mapping::Registry.new")
+    c1.def_code(mr_creator.dump(types))
+    c1.def_code <<-EOD
+Methods = [
+#{ methoddef.gsub(/^/, "  ") }
+]
+    EOD
+    c2 = ::XSD::CodeGen::ClassDef.new(class_name + "App",
+      "::SOAP::RPC::CGIStub")
+    c2.def_method("initialize", "*arg") do
+      <<-EOD
+        super(*arg)
+        servant = #{class_name}.new
+        #{class_name}::Methods.each do |name_as, name, params, soapaction, ns|
+          add_method_with_namespace_as(ns, servant, name, name_as, params, soapaction)
+        end
+        self.mapping_registry = #{class_name}::MappingRegistry
+        self.level = Logger::Severity::ERROR
+      EOD
     end
-
-    self.mapping_registry = #{ class_name }::MappingRegistry
-    self.level = Logger::Severity::ERROR
-  end
-end
-
-# Change listen port.
-#{name}App.new('app', nil).start
-__EOD__
+    c1.dump + "\n" + c2.dump + format(<<-EOD)
+      #{class_name}App.new('app', nil).start
+    EOD
   end
 end
 

@@ -9,6 +9,7 @@
 require 'wsdl/info'
 require 'soap/mapping'
 require 'soap/mapping/typeMap'
+require 'xsd/codegen/gensupport'
 
 
 module WSDL
@@ -16,28 +17,87 @@ module SOAP
 
 
 module ClassDefCreatorSupport
+  include XSD::CodeGen::GenSupport
+
   def create_class_name(qname)
     if klass = basetype_mapped_class(qname)
       ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass.name)
     else
-      classname = qname.name.scan(/[a-zA-Z0-9_]+/).collect { |ele|
-        capitalize(ele)
-      }.join
-      #classname = capitalize(qname.name).gsub(/[^a-zA-Z0-9_]/, '_')
-      if /^[A-Z]/ =~ classname
-        classname
-      else
-	"C_#{ classname }"
-      end
+      safeconstname(qname.name)
     end
-  end
-
-  def capitalize(target)
-    target.sub(/^([a-z])/) { $1.tr!('[a-z]', '[A-Z]') }
   end
 
   def basetype_mapped_class(name)
     ::SOAP::TypeMap[name]
+  end
+
+  def dump_method_signature(operation)
+    name = operation.name.name
+    input = operation.input
+    output = operation.output
+    fault = operation.fault
+    signature = "#{ name }#{ dump_inputparam(input) }"
+    str = <<__EOD__
+# SYNOPSIS
+#   #{name}#{dump_inputparam(input)}
+#
+# ARGS
+#{dump_inout_type(input).chomp}
+#
+# RETURNS
+#{dump_inout_type(output).chomp}
+#
+__EOD__
+    unless fault.empty?
+      faultstr = (fault.collect { |f| dump_inout_type(f).chomp }).join(', ')
+      str <<<<__EOD__
+# RAISES
+#   #{faultstr}
+#
+__EOD__
+    end
+    str
+  end
+
+private
+
+  def dump_inout_type(param)
+    if param
+      message = param.find_message
+      params = ""
+      message.parts.each do |part|
+        next unless part.type
+        name = safevarname(part.name)
+        typename = safeconstname(part.type.name)
+        params << add_at("#   #{name}", "#{typename} - #{part.type}\n", 20)
+      end
+      unless params.empty?
+        return params
+      end
+    end
+    "#   N/A\n"
+  end
+
+  def dump_inputparam(input)
+    message = input.find_message
+    params = ""
+    message.parts.each do |part|
+      params << ", " unless params.empty?
+      params << safevarname(part.name)
+    end
+    if params.empty?
+      ""
+    else
+      "(#{ params })"
+    end
+  end
+
+  def add_at(base, str, pos)
+    if base.size >= pos
+      base + ' ' + str
+    else
+      base + ' ' * (pos - base.size) + str
+    end
   end
 end
 

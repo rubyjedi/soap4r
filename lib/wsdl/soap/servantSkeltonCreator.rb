@@ -8,7 +8,7 @@
 
 require 'wsdl/info'
 require 'wsdl/soap/classDefCreatorSupport'
-require 'wsdl/soap/methodDefCreatorSupport'
+require 'xsd/codegen'
 
 
 module WSDL
@@ -17,7 +17,7 @@ module SOAP
 
 class ServantSkeltonCreator
   include ClassDefCreatorSupport
-  include MethodDefCreatorSupport
+  include ::XSD::CodeGen::GenSupport
 
   attr_reader :definitions
 
@@ -40,32 +40,23 @@ class ServantSkeltonCreator
 
 private
 
-  def dump_porttype(porttype)
-    operations = @definitions.porttype(porttype).operations
-    dump_op = ""
-    dump_op = operations.collect { |operation|
-      dump_operation(operation)
-    }.join("\n")
-    return <<__EOD__
-class #{ create_class_name(porttype) }
-#{ dump_op.gsub(/^/, "  ").chomp }
-end
-__EOD__
-  end
-
-  def dump_operation(operation)
-    name = operation.name.name
-    input = operation.input
-    output = operation.output
-    fault = operation.fault
-    signature = "#{ name }#{ dump_inputparam(input) }"
-    result = ""
-    result << dump_signature(operation)
-    result << <<__EOD__
-def #{ name }#{ dump_inputparam(input) }
-  raise NotImplementedError.new
-end
-__EOD__
+  def dump_porttype(name)
+    class_name = create_class_name(name)
+    c = ::XSD::CodeGen::ClassDef.new(class_name)
+    operations = @definitions.porttype(name).operations
+    operations.each do |operation|
+      name = operation.name.name
+      input = operation.input
+      m = ::XSD::CodeGen::MethodDef.new(name,
+        input.find_message.parts.collect { |part| safevarname(part.name) }) do
+        <<-EOD
+          raise NotImplementedError.new
+        EOD
+      end
+      m.comment = dump_method_signature(operation)
+      c.add_method(m)
+    end
+    c.dump
   end
 end
 

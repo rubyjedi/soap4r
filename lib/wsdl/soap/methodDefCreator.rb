@@ -7,7 +7,7 @@
 
 
 require 'wsdl/info'
-require 'wsdl/soap/methodDefCreatorSupport'
+require 'wsdl/soap/classDefCreatorSupport'
 
 
 module WSDL
@@ -15,7 +15,7 @@ module SOAP
 
 
 class MethodDefCreator
-  include MethodDefCreatorSupport
+  include ClassDefCreatorSupport
 
   attr_reader :definitions
 
@@ -43,7 +43,7 @@ class MethodDefCreator
 private
 
   def dump_method(operation, binding)
-    name = create_method_name(operation.name)
+    name = safemethodname(operation.name.name)
     name_as = operation.name.name
     params = collect_parameter(operation)
     soapaction = binding.soapoperation.soapaction
