@@ -81,7 +81,7 @@ class SOAPNQXMLStreamingParser < SOAPParser
     parser.each do | entity |
       case entity
       when NQXML::Tag
-	unless entity.isTagEnd?
+	unless entity.isTagEnd
 	  startElement( entity.name, entity.attrs )
 	else
 	  endElement( entity.name )
