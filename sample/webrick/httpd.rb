@@ -1,6 +1,6 @@
 #!/usr/local/bin/ruby
 
-require 'webrick'
+require './webrick'
 require 'getopts'
 
 getopts nil, 'p:'
@@ -24,6 +24,13 @@ soapsrv.addServant( ExchangeServiceNamespace, Exchange.new )
 
 require 'sampleStruct'
 soapsrv.addServant( SampleStructServiceNamespace, SampleStructService.new )
+
+$:.push( '../../test/sm11' )
+require 'servant'
+servant = Sm11PortType.new
+Sm11PortType::Methods.each do | nameAs, name, params, soapAction, ns |
+  soapsrv.appScopeRouter.addMethodAs( ns, servant, name, nameAs, params )
+end
 
 wwwsvr.mount( '/soapsrv', soapsrv )
 wwwsvr.start
