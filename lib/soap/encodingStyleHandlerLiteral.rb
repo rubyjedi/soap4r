@@ -50,6 +50,9 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
     case data
     when SOAPString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
+      buf << data.to_s
+    when SOAPString
+      SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))
     when SOAPBasetype
       SOAPGenerator.encodeTag( buf, name, attrs, false )
