@@ -79,6 +79,8 @@ class NamedElements
     self
   end
 
+  Empty = NamedElements.new.freeze
+
 protected
 
   def elements=(rhs)

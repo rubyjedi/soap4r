@@ -85,7 +85,7 @@ private
     drv.proxy.mapping_registry =
       Mapping::WSDLEncodedRegistry.new(rpc_decode_typemap)
     drv.proxy.literal_mapping_registry =
-      Mapping::WSDLLiteralRegistry.new(wsdl_elements, wsdl_types)
+      Mapping::WSDLLiteralRegistry.new(wsdl_types, wsdl_elements)
   end
 
   def add_operation(drv, port)
@@ -271,8 +271,10 @@ class WSDLDriver
       @wsdl_types = @wsdl.collect_complextypes + @wsdl.collect_simpletypes
       @rpc_decode_typemap = @wsdl_types +
 	@wsdl.soap_rpc_complextypes(port.find_binding)
-      @wsdl_mapping_registry = Mapping::WSDLEncodedRegistry.new(@rpc_decode_typemap)
-      @doc_mapper = Mapping::WSDLLiteralRegistry.new(@wsdl_elements, @wsdl_types)
+      @wsdl_mapping_registry = Mapping::WSDLEncodedRegistry.new(
+        @rpc_decode_typemap, @wsdl_elements)
+      @doc_mapper = Mapping::WSDLLiteralRegistry.new(
+        @wsdl_types, @wsdl_elements)
       endpoint_url = @port.soap_address.location
       # Convert a map which key is QName, to a Hash which key is String.
       @operation = {}
