@@ -23,6 +23,9 @@ require 'wsdl/xmlSchema/complexType'
 require 'wsdl/xmlSchema/complexContent'
 require 'wsdl/xmlSchema/any'
 require 'wsdl/xmlSchema/element'
+require 'wsdl/xmlSchema/all'
+require 'wsdl/xmlSchema/choice'
+require 'wsdl/xmlSchema/sequence'
 require 'wsdl/xmlSchema/attribute'
 
 
@@ -49,6 +52,7 @@ AttributeFormDefaultAttrName = XSD::QName.new(nil, 'attributeFormDefault')
 BaseAttrName = XSD::QName.new(nil, 'base')
 ElementFormDefaultAttrName = XSD::QName.new(nil, 'elementFormDefault')
 FinalAttrName = XSD::QName.new(nil, 'final')
+IdAttrName = XSD::QName.new(nil, 'id')
 MaxOccursAttrName = XSD::QName.new(nil, 'maxOccurs')
 MinOccursAttrName = XSD::QName.new(nil, 'minOccurs')
 MixedAttrName = XSD::QName.new(nil, 'mixed')

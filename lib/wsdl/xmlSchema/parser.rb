@@ -144,8 +144,13 @@ private
 	    value
 	  end
 	end
-      unless o.parse_attr(attr, value_ele)
-	raise UnknownAttributeError.new("Unknown attr #{ attr }.")
+      if attr == IdAttrName
+	o.id = value_ele
+      else
+	unless o.parse_attr(attr, value_ele)
+	  warn("Unknown attr #{ attr }.")
+	  # raise UnknownAttributeError.new("Unknown attr #{ attr }.")
+   	end
       end
     end
     o
