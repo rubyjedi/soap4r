@@ -79,7 +79,7 @@ __EOD__
 
   def dumpTypeMapArray( typeDef )
     ele = typeDef.name
-    arrayType = typeDef.complexContent.getRefAttribute( ::SOAP::AttrArrayTypeName ).arrayType
+    arrayType = typeDef.getArrayType
     contentType = XSD::QName.new( arrayType.namespace,
       arrayType.name.sub( /\[(?:,)*\]$/, '' ))
     @types << contentType

@@ -53,7 +53,12 @@ class ComplexType < Info
   end
 
   def getArrayType
-    complexContent.getRefAttribute( ::SOAP::AttrArrayTypeName ).arrayType
+    complexContent.attributes.each do | attribute |
+      if attribute.ref == ::SOAP::AttrArrayTypeName
+	return attribute.arrayType
+      end
+    end
+    nil
   end
 
 private
