@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'nqxml/document'
+require 'nqxml/utils'
 
 
 module NQXML
