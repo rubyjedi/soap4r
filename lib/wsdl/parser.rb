@@ -202,10 +202,10 @@ end
 # Try to load XML processor.
 loaded = false
 [
-  'wsdl/xmlparser',
-  'wsdl/nqxmlparser',
-  'wsdl/rexmlparser',
   'wsdl/xmlscanner',
+  'wsdl/xmlparser',
+  'wsdl/rexmlparser',
+  'wsdl/nqxmlparser',
 ].each do | lib |
   begin
     require lib
