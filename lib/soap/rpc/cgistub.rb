@@ -18,8 +18,9 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'soap/streamHandler'
-require 'http-access2/http'
-require 'devel/logger'
+require 'webrick/httpresponse'
+require 'webrick/httpstatus'
+require 'logger'
 require 'soap/rpc/router'
 
 
@@ -34,7 +35,7 @@ module RPC
 # DESCRIPTION
 #   To be written...
 #
-class CGIStub < Devel::Application
+class CGIStub < Logger::Application
   include SOAP
 
   # There is a client which does not accept the media-type which is defined in
@@ -94,8 +95,10 @@ class CGIStub < Devel::Application
 
   def initialize(appname, default_namespace)
     super(appname)
+    set_log(STDERR)
+    self.level = INFO
     @default_namespace = default_namespace
-    @router = SOAP::RPC::Router.new(app_name)
+    @router = SOAP::RPC::Router.new(appname)
     @remote_user = ENV['REMOTE_USER'] || 'anonymous'
     @remote_host = ENV['REMOTE_HOST'] || ENV['REMOTE_ADDR'] || 'unknown'
     @request = nil
@@ -163,48 +166,40 @@ private
   def run
     prologue
 
+    httpversion = WEBrick::HTTPVersion.new('1.0')
+    @response = WEBrick::HTTPResponse.new({:HTTPVersion => httpversion})
     begin
-      log(SEV_INFO) { "Received a request from '#{ @remote_user }@#{ @remote_host }'." }
-    
+      log(INFO) { "Received a request from '#{ @remote_user }@#{ @remote_host }'." }
       # SOAP request parsing.
       @request = SOAPRequest.new.init
       req_charset = @request.charset
       req_string = @request.dump
-      log(SEV_DEBUG) { "XML Request: #{req_string}" }
-
+      log(DEBUG) { "XML Request: #{req_string}" }
       res_string, is_fault = route(req_string, req_charset)
-      log(SEV_DEBUG) { "XML Response: #{res_string}" }
+      log(DEBUG) { "XML Response: #{res_string}" }
 
-      @response = HTTP::Message.new_response(res_string)
-      unless is_fault
-	@response.status = 200
+      @response['Cache-Control'] = 'private'
+      if req_charset
+	@response['content-type'] = "#{@mediatype}; charset=\"#{req_charset}\""
       else
-	@response.status = 500
+	@response['content-type'] = @mediatype
       end
-      @response.header.set('Cache-Control', 'private')
-      @response.body.type = @mediatype
-      @response.body.charset = if req_charset
-	  ::SOAP::Charset.charset_str(req_charset)
-	else
-	  nil
-	end
-      str = @response.dump
-      log(SEV_DEBUG) { "SOAP CGI Response:\n#{ str }" }
-      print str
-
-      epilogue
-
+      if is_fault
+	@response.status = WEBrick::HTTPStatus::RC_INTERNAL_SERVER_ERROR
+      end
+      @response.body = res_string
     rescue Exception
       res_string = create_fault_response($!)
-      @response = HTTP::Message.new_response(res_string)
-      @response.header.set('Cache-Control', 'private')
-      @response.body.type = @mediatype
-      @response.body.charset = nil
-      @response.status = 500
-      str = @response.dump
-      log(SEV_DEBUG) { "SOAP CGI Response:\n#{ str }" }
-      print str
-
+      @response['Cache-Control'] = 'private'
+      @response['content-type'] = @mediatype
+      @response.status = WEBrick::HTTPStatus::RC_INTERNAL_SERVER_ERROR
+    ensure
+      buf = ''
+      @response.send_response(buf)
+      buf.sub!(/^[^\r]+\r\n/, '')       # Trim status line.
+      log(DEBUG) { "SOAP CGI Response:\n#{ buf }" }
+      print buf
+      epilogue
     end
 
     0
