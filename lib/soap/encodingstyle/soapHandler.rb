@@ -156,7 +156,6 @@ class SOAPHandler < Handler
   end
 
   def decode_tag(ns, elename, attrs, parent)
-    # ToDo: check if @textbuf is empty...
     @textbuf = ''
     is_nil, type, arytype, root, offset, position, href, id, extraattr =
       decode_attrs(ns, attrs)
