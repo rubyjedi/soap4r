@@ -10,6 +10,7 @@ module WEBrick
 
 class SOAPlet < WEBrick::HTTPServlet::AbstractServlet
 public
+  attr_reader :appScopeRouter
 
   def initialize
     @routerMap = {}
