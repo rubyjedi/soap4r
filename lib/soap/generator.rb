@@ -19,7 +19,7 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/charset'
 require 'soap/baseData'
-require 'soap/encoding'
+require 'soap/encodingStyleHandler'
 require 'soap/namespace'
 
 
