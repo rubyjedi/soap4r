@@ -25,44 +25,44 @@ module WSDL
 
 
 class ComplexType < Info
-  def compoundType
-    @compoundType ||= checkType
+  def compoundtype
+    @compoundtype ||= check_type
   end
 
-  def checkType
+  def check_type
     if content
       :TYPE_STRUCT
-    elsif complexContent and complexContent.base == ::SOAP::ValueArrayName
+    elsif complexcontent and complexcontent.base == ::SOAP::ValueArrayName
       :TYPE_ARRAY
     else
-      raise NotImplementedError.new( "Unknown kind of complexType." )
+      raise NotImplementedError.new("Unknown kind of complexType.")
     end
   end
 
-  def getChildType( name = nil )
-    case compoundType
+  def child_type(name = nil)
+    case compoundtype
     when :TYPE_STRUCT
-      if ( ele = getElement( name ))
+      if (ele = find_element(name))
         ele.type
       else
         nil
       end
     when :TYPE_ARRAY
-      @contentType ||= getContentType
+      @contenttype ||= content_arytype
     end
   end
 
-  def getChildLocalTypeDef( name )
-    unless compoundType == :TYPE_STRUCT
-      raise RuntimeError.new( "Assert: not for struct" )
+  def child_defined_complextype(name)
+    unless compoundtype == :TYPE_STRUCT
+      raise RuntimeError.new("Assert: not for struct")
     end
-    getElement( name ).localComplexType
+    find_element(name).local_complextype
   end
 
-  def getArrayType
-    complexContent.attributes.each do | attribute |
+  def find_arytype
+    complexcontent.attributes.each do |attribute|
       if attribute.ref == ::SOAP::AttrArrayTypeName
-	return attribute.arrayType
+	return attribute.arytype
       end
     end
     nil
@@ -70,14 +70,14 @@ class ComplexType < Info
 
 private
 
-  def getContentType
-    unless compoundType == :TYPE_ARRAY
-      raise RuntimeError.new( "Assert: not for array" )
+  def content_arytype
+    unless compoundtype == :TYPE_ARRAY
+      raise RuntimeError.new("Assert: not for array")
     end
-    arrayType = getArrayType
-    contentTypeNamespace = arrayType.namespace
-    contentTypeName = arrayType.name.sub( /\[(?:,)*\]$/, '' )
-    XSD::QName.new( contentTypeNamespace, contentTypeName )
+    arytype = find_arytype
+    ns = arytype.namespace
+    name = arytype.name.sub(/\[(?:,)*\]$/, '')
+    XSD::QName.new(ns, name)
   end
 end
 

@@ -47,20 +47,20 @@ AttrOffset = 'offset'
 AttrPosition = 'position'
 ValueArray = 'Array'
 
-EleEnvelopeName = XSD::QName.new( EnvelopeNamespace, EleEnvelope )
-EleHeaderName = XSD::QName.new( EnvelopeNamespace, EleHeader )
-EleBodyName = XSD::QName.new( EnvelopeNamespace, EleBody )
-EleFaultName = XSD::QName.new( EnvelopeNamespace, EleFault )
-EleFaultStringName = XSD::QName.new( nil, EleFaultString )
-EleFaultActorName = XSD::QName.new( nil, EleFaultActor )
-EleFaultCodeName = XSD::QName.new( nil, EleFaultCode )
-EleFaultDetailName = XSD::QName.new( nil, EleFaultDetail )
-AttrEncodingStyleName = XSD::QName.new( EnvelopeNamespace, AttrEncodingStyle )
-AttrRootName = XSD::QName.new( EncodingNamespace, AttrRoot )
-AttrArrayTypeName = XSD::QName.new( EncodingNamespace, AttrArrayType )
-AttrOffsetName = XSD::QName.new( EncodingNamespace, AttrOffset )
-AttrPositionName = XSD::QName.new( EncodingNamespace, AttrPosition )
-ValueArrayName = XSD::QName.new( EncodingNamespace, ValueArray )
+EleEnvelopeName = XSD::QName.new(EnvelopeNamespace, EleEnvelope)
+EleHeaderName = XSD::QName.new(EnvelopeNamespace, EleHeader)
+EleBodyName = XSD::QName.new(EnvelopeNamespace, EleBody)
+EleFaultName = XSD::QName.new(EnvelopeNamespace, EleFault)
+EleFaultStringName = XSD::QName.new(nil, EleFaultString)
+EleFaultActorName = XSD::QName.new(nil, EleFaultActor)
+EleFaultCodeName = XSD::QName.new(nil, EleFaultCode)
+EleFaultDetailName = XSD::QName.new(nil, EleFaultDetail)
+AttrEncodingStyleName = XSD::QName.new(EnvelopeNamespace, AttrEncodingStyle)
+AttrRootName = XSD::QName.new(EncodingNamespace, AttrRoot)
+AttrArrayTypeName = XSD::QName.new(EncodingNamespace, AttrArrayType)
+AttrOffsetName = XSD::QName.new(EncodingNamespace, AttrOffset)
+AttrPositionName = XSD::QName.new(EncodingNamespace, AttrPosition)
+ValueArrayName = XSD::QName.new(EncodingNamespace, ValueArray)
 
 Base64Literal = 'base64'
 
@@ -83,25 +83,25 @@ class ArrayStoreError < Error; end
 class RPCRoutingError < Error; end
 
 class FaultError < Error
-  attr_reader :faultCode
-  attr_reader :faultString
-  attr_reader :faultActor
+  attr_reader :faultcode
+  attr_reader :faultstring
+  attr_reader :faultactor
   attr_accessor :detail
 
-  def initialize( fault )
-    @faultCode = fault.faultcode
-    @faultString = fault.faultstring
-    @faultActor = fault.faultactor
+  def initialize(fault)
+    @faultcode = fault.faultcode
+    @faultstring = fault.faultstring
+    @faultactor = fault.faultactor
     @detail = fault.detail
-    super( self.to_s )
+    super(self.to_s)
   end
 
   def to_s
     str = nil
-    if @faultString && @faultString.respond_to?( 'data' )
-      str = @faultString.data
+    if @faultstring && @faultstring.respond_to?('data')
+      str = @faultstring.data
     end
-    str || '(No faultString)'
+    str || '(No faultstring)'
   end
 end
 

@@ -33,12 +33,11 @@ class Message < Info
     @parts = []
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  PartName = XSD::QName.new( Namespace, 'part' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when PartName
       o = Part.new
@@ -52,13 +51,12 @@ class Message < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( parent.targetNamespace, value )
+      @name = XSD::QName.new(parent.targetnamespace, value)
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

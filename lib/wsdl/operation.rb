@@ -25,7 +25,7 @@ module WSDL
 
 class Operation < Info
   attr_reader :name		# required
-  attr_reader :parameterOrder	# optional
+  attr_reader :parameter_order	# optional
   attr_reader :input
   attr_reader :output
   attr_reader :fault
@@ -35,41 +35,38 @@ class Operation < Info
     super
     @name = nil
     @type = nil
-    @parameterOrder = nil
+    @parameter_order = nil
     @input = nil
     @output = nil
     @fault = nil
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  def getInputParts
-    sortParts( input.getMessage.parts )
+  def inputparts
+    sort_parts(input.find_message.parts)
   end
 
-  def getOutputParts
-    sortParts( output.getMessage.parts )
+  def outputparts
+    sort_parts(output.find_message.parts)
   end
 
-  def getFaultParts
-    sortParts( fault.getMessage.parts )
+  def faultparts
+    sort_parts(fault.find_message.parts)
   end
 
-  def inputName
-    XSD::QName.new( targetNamespace, input.name ? input.name.name : @name.name )
+  def inputname
+    XSD::QName.new(targetnamespace, input.name ? input.name.name : @name.name)
   end
 
-  def outputName
-    XSD::QName.new( targetNamespace,
-      output.name ? output.name.name : @name.name + 'Response' )
+  def outputname
+    XSD::QName.new(targetnamespace,
+      output.name ? output.name.name : @name.name + 'Response')
   end
 
-  InputName = XSD::QName.new( Namespace, 'input' )
-  OutputName = XSD::QName.new( Namespace, 'output' )
-  FaultName = XSD::QName.new( Namespace, 'fault' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when InputName
       o = Param.new
@@ -91,29 +88,26 @@ class Operation < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  TypeAttrName = XSD::QName.new( nil, 'type' )
-  ParameterOrderName = XSD::QName.new( nil, 'parameterOrder' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( targetNamespace, value )
+      @name = XSD::QName.new(targetnamespace, value)
     when TypeAttrName
       @type = value
-    when ParameterOrderName
-      @parameterOrder = value.split( /\s+/ )
+    when ParameterOrderAttrName
+      @parameter_order = value.split(/\s+/)
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 
 private
 
-  def sortParts( parts )
-    return parts.dup unless parameterOrder
+  def sort_parts(parts)
+    return parts.dup unless parameter_order
     result = []
-    parameterOrder.each do | orderItem |
-      if ( ele = parts.find { | part | part.name == orderItem } )
+    parameter_order.each do |orderitem|
+      if (ele = parts.find { |part| part.name == orderitem })
 	result << ele
       end
     end
@@ -121,7 +115,7 @@ private
       return parts.dup
     end
     if parts.length != result.length
-      raise RuntimeError.new( "Incomplete prarmeterOrder list." )
+      raise RuntimeError.new("Incomplete prarmeterOrder list.")
     end
     result
   end

@@ -26,33 +26,30 @@ module WSDL
 
 class Body < Info
   attr_reader :use
-  attr_reader :encodingStyle
+  attr_reader :encodingstyle
   attr_reader :namespace
 
   def initialize
     super
     @use = nil
-    @encodingStyle = nil
+    @encodingstyle = nil
     @namespace = nil
   end
 
-  def parseElement( element )
-    raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
+  def parse_element(element)
+    raise WSDLParser::UnknownElementError.new("Unknown element #{ element }.")
   end
 
-  UseAttrName = XSD::QName.new( nil, 'use' )
-  EncodingStyleAttrName = XSD::QName.new( nil, 'encodingStyle' )
-  NamespaceAttrName = XSD::QName.new( nil, 'namespace' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when UseAttrName
       @use = value
     when EncodingStyleAttrName
-      @encodingStyle = value
+      @encodingstyle = value
     when NamespaceAttrName
       @namespace = value
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

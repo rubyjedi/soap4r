@@ -1,5 +1,6 @@
 require 'soap/driver'
-require 'iExchange'
+
+ExchangeServiceNamespace = 'http://tempuri.org/exchangeService'
 
 class Exchange
   ForeignServer = "http://services.xmethods.net/soap"
@@ -7,11 +8,11 @@ class Exchange
   Proxy = nil
 
   def initialize
-    @drv = SOAP::Driver.new( nil, nil, Namespace, ForeignServer, Proxy )
-    @drv.addMethod( "getRate", "country1", "country2" )
+    @drv = SOAP::Driver.new(nil, nil, Namespace, ForeignServer, Proxy)
+    @drv.add_method("getRate", "country1", "country2")
   end
 
-  def getRate( country1, country2 )
-    return @drv.getRate( country1, country2 )
+  def rate(country1, country2)
+    return @drv.getRate(country1, country2)
   end
 end

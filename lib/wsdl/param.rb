@@ -26,30 +26,28 @@ module WSDL
 class Param < Info
   attr_reader :message	# required
   attr_reader :name	# optional but required for fault.
-  attr_reader :soapBody
+  attr_reader :soap_body
 
   def initialize
     super
     @message = nil
     @name = nil
-    @soapBody = nil
+    @soap_body = nil
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  def getMessage
-    root.getMessage( @message )
+  def find_message
+    root.message(@message)
   end
 
-  SOAPBodyName = XSD::QName.new( SOAPBindingNamespace, 'body' )
-  SOAPFaultName = XSD::QName.new( SOAPBindingNamespace, 'fault' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when SOAPBodyName, SOAPFaultName
       o = WSDL::SOAP::Body.new
-      @soapBody = o
+      @soap_body = o
       o
     when DocumentationName
       o = Documentation.new
@@ -59,16 +57,14 @@ class Param < Info
     end
   end
 
-  MessageAttrName = XSD::QName.new( nil, 'message' )
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when MessageAttrName
       @message = value
     when NameAttrName
-      @name = XSD::QName.new( targetNamespace, value )
+      @name = XSD::QName.new(targetnamespace, value)
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

@@ -9,7 +9,6 @@ require 'wsdl/soap/driverCreator'
 require 'wsdl/soap/clientSkeltonCreator'
 require 'wsdl/soap/standaloneServerStubCreator'
 require 'wsdl/soap/cgiStubCreator'
-require 'wsdl/soap/webrickStubCreator'
 
 require 'devel/logger'
 
@@ -19,73 +18,70 @@ private
   OptSet = [
     ['--wsdl','-w', GetoptLong::REQUIRED_ARGUMENT],
     ['--type','-t', GetoptLong::REQUIRED_ARGUMENT],
-    ['--classDef','-e', GetoptLong::NO_ARGUMENT],
-    ['--clientSkelton','-c', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--servantSkelton','-s', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--cgiStub','-g', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--webrickStub','-b', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--standaloneServerStub','-a', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--classdef','-e', GetoptLong::NO_ARGUMENT],
+    ['--client_skelton','-c', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--servant_skelton','-s', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--cgi_stub','-g', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--standalone_server_stub','-a', GetoptLong::OPTIONAL_ARGUMENT],
     ['--driver','-d', GetoptLong::OPTIONAL_ARGUMENT],
     ['--force','-f', GetoptLong::NO_ARGUMENT],
-  ]
+ ]
 
   def initialize
-    super( 'app' )
+    super('app')
     STDERR.sync = true
-    @wsdlLocation = nil
+    @wsdl_location = nil
     @opt = {}
     @wsdl = nil
     @name = nil
   end
 
   def run
-    @wsdlLocation, @opt = parseOpt( GetoptLong.new( *OptSet ))
-    usageExit unless @wsdlLocation
-    @wsdl = import(@wsdlLocation)
+    @wsdl_location, @opt = parse_opt(GetoptLong.new(*OptSet))
+    usage_exit unless @wsdl_location
+    @wsdl = import(@wsdl_location)
     @name = @wsdl.name.name || 'default'
-    createFile
+    create_file
     0
   end
 
-  def createFile
-    createClassDef if @opt.has_key?( 'classDef' )
-    createServantSkelton( @opt[ 'servantSkelton' ] ) if @opt.has_key?( 'servantSkelton' )
-    createCgiStub( @opt[ 'cgiStub' ] ) if @opt.has_key?( 'cgiStub' )
-    createWebrickStub( @opt[ 'webrickStub' ] ) if @opt.has_key?( 'webrickStub' )
-    createStandaloneServerStub( @opt[ 'standaloneServerStub' ] ) if @opt.has_key?( 'standaloneServerStub' )
-    createDriver( @opt[ 'driver' ] ) if @opt.has_key?( 'driver' )
-    createClientSkelton( @opt[ 'clientSkelton' ] ) if @opt.has_key?( 'clientSkelton' )
+  def create_file
+    create_classdef if @opt.key?('classdef')
+    create_servant_skelton(@opt['servant_skelton']) if @opt.key?('servant_skelton')
+    create_cgi_stub(@opt['cgi_stub']) if @opt.key?('cgi_stub')
+    create_standalone_server_stub(@opt['standalone_server_stub']) if @opt.key?('standalone_server_stub')
+    create_driver(@opt['driver']) if @opt.key?('driver')
+    create_client_skelton(@opt['client_skelton']) if @opt.key?('client_skelton')
   end
 
-  def usageExit
+  def usage_exit
     puts <<__EOU__
-Usage: #{ $0 } --wsdl wsdlLocation [options]
-  wsdlLocation: filename or URL
+Usage: #{ $0 } --wsdl wsdl_location [options]
+  wsdl_location: filename or URL
 
 Example:
   For server side:
-    #{ $0 } --wsdl myApp.wsdl --type server
+    #{ $0 } --wsdl myapp.wsdl --type server
   For client side:
-    #{ $0 } --wsdl myApp.wsdl --type client
+    #{ $0 } --wsdl myapp.wsdl --type client
 
 Options:
-  --wsdl wsdlLocation
+  --wsdl wsdl_location
   --type server|client
     --type server implies;
-  	--classDef
-   	--servantSkelton
-    	--standaloneServerStub
+  	--classdef
+   	--servant_skelton
+    	--standalone_server_stub
     --type client implies;
-     	--classDef
-      	--clientSkelton
+     	--classdef
+      	--client_skelton
        	--driver
-  --classDef
-  --clientSkelton [serviceName]
-  --servantSkelton [portTypeName]
-  --cgiStub [serviceName]
-  --webrickStub [serviceName]
-  --standaloneServerStub [serviceName]
-  --driver [portTypeName]
+  --classdef
+  --client_skelton [servicename]
+  --servant_skelton [porttypename]
+  --cgi_stub [servicename]
+  --standalone_server_stub [servicename]
+  --driver [porttypename]
   --force
 
 Terminology:
@@ -97,140 +93,128 @@ __EOU__
     exit 1
   end
 
-  def parseOpt( getOpt )
+  def parse_opt(getoptlong)
     opt = {}
     wsdl = nil
     begin
-      getOpt.each do | name, arg |
+      getoptlong.each do |name, arg|
        	case name
 	when "--wsdl"
 	  wsdl = arg
 	when "--type"
   	  case arg
   	  when "server"
-  	    opt[ 'classDef' ] = nil
-  	    opt[ 'servantSkelton' ] = nil
-  	    opt[ 'standaloneServerStub' ] = nil
+  	    opt['classdef'] = nil
+  	    opt['servant_skelton'] = nil
+  	    opt['standalone_server_stub'] = nil
   	  when "client"
-  	    opt[ 'classDef' ] = nil
-  	    opt[ 'driver' ] = nil
-  	    opt[ 'clientSkelton' ] = nil
+  	    opt['classdef'] = nil
+  	    opt['driver'] = nil
+  	    opt['client_skelton'] = nil
   	  else
-  	    raise ArgumentError.new( "Unknown type #{ arg }" )
+  	    raise ArgumentError.new("Unknown type #{ arg }")
   	  end
-   	when "--classDef", "--clientSkelton", "--servantSkelton", "--cgiStub",
-    	    "--webrickStub", "--standaloneServerStub", "--driver"
-  	  opt[ name.sub( /^--/, '' ) ] = arg.empty? ? nil : arg
+   	when "--classdef", "--client_skelton", "--servant_skelton",
+	    "--cgi_stub", "--standalone_server_stub", "--driver"
+  	  opt[name.sub(/^--/, '')] = arg.empty? ? nil : arg
 	when "--force"
-	  opt[ 'force' ] = true
+	  opt['force'] = true
    	else
-  	  raise ArgumentError.new( "Unknown type #{ arg }" )
+  	  raise ArgumentError.new("Unknown type #{ arg }")
    	end
       end
     rescue
-      usageExit
+      usage_exit
     end
     return wsdl, opt
   end
 
-  def createClassDef
-    log( SEV_INFO ) { "Creating class definition." }
-    @classDefFilename = @name + '.rb'
-    checkFile( @classDefFilename ) or return
-    File.open( @classDefFilename, "w" ) do | f |
-      f << WSDL::SOAP::ClassDefCreator.new( @wsdl ).dump
+  def create_classdef
+    log(SEV_INFO) { "Creating class definition." }
+    @classdef_filename = @name + '.rb'
+    check_file(@classdef_filename) or return
+    File.open(@classdef_filename, "w") do |f|
+      f << WSDL::SOAP::ClassDefCreator.new(@wsdl).dump
     end
   end
 
-  def createClientSkelton( serviceName )
-    log( SEV_INFO ) { "Creating client skelton." }
-    serviceName ||= @wsdl.services[ 0 ].name.name
-    @clientSkeltonFilename = serviceName + 'Client.rb'
-    checkFile( @clientSkeltonFilename ) or return
-    File.open( @clientSkeltonFilename, "w" ) do | f |
+  def create_client_skelton(servicename)
+    log(SEV_INFO) { "Creating client skelton." }
+    servicename ||= @wsdl.services[0].name.name
+    @client_skelton_filename = servicename + 'Client.rb'
+    check_file(@client_skelton_filename) or return
+    File.open(@client_skelton_filename, "w") do |f|
       f << shbang << "\n"
-      f << "require '#{ @driverFilename }'\n\n" if @driverFilename
-      f << WSDL::SOAP::ClientSkeltonCreator.new( @wsdl ).dump(
-	createName( serviceName ))
+      f << "require '#{ @driver_filename }'\n\n" if @driver_filename
+      f << WSDL::SOAP::ClientSkeltonCreator.new(@wsdl).dump(
+	create_name(servicename))
     end
   end
 
-  def createServantSkelton( portTypeName )
-    log( SEV_INFO ) { "Creating servant skelton." }
-    @servantSkeltonFilename = ( portTypeName || @name + 'Servant' ) + '.rb'
-    checkFile( @servantSkeltonFilename ) or return
-    File.open( @servantSkeltonFilename, "w" ) do | f |
-      f << "require '#{ @classDefFilename }'\n\n" if @classDefFilename
-      f << WSDL::SOAP::ServantSkeltonCreator.new( @wsdl ).dump(
-	createName( portTypeName ))
+  def create_servant_skelton(porttypename)
+    log(SEV_INFO) { "Creating servant skelton." }
+    @servant_skelton_filename = (porttypename || @name + 'Servant') + '.rb'
+    check_file(@servant_skelton_filename) or return
+    File.open(@servant_skelton_filename, "w") do |f|
+      f << "require '#{ @classdef_filename }'\n\n" if @classdef_filename
+      f << WSDL::SOAP::ServantSkeltonCreator.new(@wsdl).dump(
+	create_name(porttypename))
     end
   end
 
-  def createCgiStub( serviceName )
-    log( SEV_INFO ) { "Creating CGI stub." }
-    serviceName ||= @wsdl.services[ 0 ].name.name
-    @cgiStubFilename = serviceName + '.cgi'
-    checkFile( @cgiStubFilename ) or return
-    File.open( @cgiStubFilename, "w" ) do | f |
+  def create_cgi_stub(servicename)
+    log(SEV_INFO) { "Creating CGI stub." }
+    servicename ||= @wsdl.services[0].name.name
+    @cgi_stubFilename = servicename + '.cgi'
+    check_file(@cgi_stubFilename) or return
+    File.open(@cgi_stubFilename, "w") do |f|
       f << shbang << "\n"
-      f << "require '#{ @servantSkeltonFilename }'\n\n" if @servantSkeltonFilename
-      f << WSDL::SOAP::CGIStubCreator.new( @wsdl ).dump(
-	createName( serviceName ))
+      if @servant_skelton_filename
+	f << "require '#{ @servant_skelton_filename }'\n\n"
+      end
+      f << WSDL::SOAP::CGIStubCreator.new(@wsdl).dump(create_name(servicename))
     end
   end
 
-  def createWebrickStub( serviceName )
-    log( SEV_INFO ) { "Creating WEBrick SOAPlet stub." }
-    serviceName ||= @wsdl.services[ 0 ].name.name
-    @webrickStubFilename = 'httpd.rb'
-    checkFile( @webrickStubFilename ) or return
-    File.open( @webrickStubFilename, "w" ) do | f |
+  def create_standalone_server_stub(servicename)
+    log(SEV_INFO) { "Creating standalone stub." }
+    servicename ||= @wsdl.services[0].name.name
+    @standalone_server_stub_filename = servicename + '.rb'
+    check_file(@standalone_server_stub_filename) or return
+    File.open(@standalone_server_stub_filename, "w") do |f|
       f << shbang << "\n"
-      f << "require '#{ @servantSkeltonFilename }'\n\n" if @servantSkeltonFilename
-      f << WSDL::SOAP::WEBrickStubCreator.new( @wsdl ).dump(
-	createName( serviceName ))
+      f << "require '#{ @servant_skelton_filename }'\n\n" if @servant_skelton_filename
+      f << WSDL::SOAP::StandaloneServerStubCreator.new(@wsdl).dump(
+	create_name(servicename))
     end
   end
 
-  def createStandaloneServerStub( serviceName )
-    log( SEV_INFO ) { "Creating standalone stub." }
-    serviceName ||= @wsdl.services[ 0 ].name.name
-    @standaloneServerStubFilename = serviceName + '.rb'
-    checkFile( @standaloneServerStubFilename ) or return
-    File.open( @standaloneServerStubFilename, "w" ) do | f |
-      f << shbang << "\n"
-      f << "require '#{ @servantSkeltonFilename }'\n\n" if @servantSkeltonFilename
-      f << WSDL::SOAP::StandaloneServerStubCreator.new( @wsdl ).dump(
-	createName( serviceName ))
+  def create_driver(porttypename)
+    log(SEV_INFO) { "Creating driver." }
+    @driver_filename = (porttypename || @name) + 'Driver.rb'
+    check_file(@driver_filename) or return
+    File.open(@driver_filename, "w") do |f|
+      f << "require '#{ @classdef_filename }'\n\n" if @classdef_filename
+      f << WSDL::SOAP::DriverCreator.new(@wsdl).dump(
+	create_name(porttypename))
     end
   end
 
-  def createDriver( portTypeName )
-    log( SEV_INFO ) { "Creating driver." }
-    @driverFilename = ( portTypeName || @name ) + 'Driver.rb'
-    checkFile( @driverFilename ) or return
-    File.open( @driverFilename, "w" ) do | f |
-      f << "require '#{ @classDefFilename }'\n\n" if @classDefFilename
-      f << WSDL::SOAP::DriverCreator.new( @wsdl ).dump(
-	createName( portTypeName ))
-    end
-  end
-
-  def checkFile( filename )
-    if FileTest.exist?( filename )
-      if @opt.has_key?( 'force' )
-	log( SEV_WARN ) {
+  def check_file(filename)
+    if FileTest.exist?(filename)
+      if @opt.key?('force')
+	log(SEV_WARN) {
 	  "File '#{ filename }' exists but overrides it."
 	}
 	true
       else
-	log( SEV_WARN ) {
+	log(SEV_WARN) {
 	  "File '#{ filename }' exists.  #{ $0 } did not override it."
 	}
 	false
       end
     else
-      log( SEV_INFO ) { "Creates file '#{ filename }'." }
+      log(SEV_INFO) { "Creates file '#{ filename }'." }
       true
     end
   end
@@ -239,8 +223,8 @@ __EOU__
     "#!/usr/bin/env ruby"
   end
 
-  def createName( name )
-    name ? XSD::QName.new( @wsdl.targetNamespace, name ) : nil
+  def create_name(name)
+    name ? XSD::QName.new(@wsdl.targetnamespace, name) : nil
   end
 
   def import(location)
@@ -249,10 +233,10 @@ __EOU__
       content = File.open(location).read
     else
       require 'http-access2'
-      c = HTTPAccess2::Client.new(ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ])
-      content = c.getContent(location)
+      c = HTTPAccess2::Client.new(ENV['http_proxy'] || ENV['HTTP_PROXY'])
+      content = c.get_content(location)
     end
-    WSDL::WSDLParser.createParser.parse(content)
+    WSDL::WSDLParser.create_parser.parse(content)
   end
 end
 

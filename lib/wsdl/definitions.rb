@@ -25,7 +25,7 @@ module WSDL
 
 class Definitions < Info
   attr_reader :name
-  attr_reader :targetNamespace
+  attr_reader :targetnamespace
   attr_reader :imports
 
   # Overrides Info#root
@@ -33,138 +33,132 @@ class Definitions < Info
     @root
   end
 
-  def root=( newRoot )
-    @root = newRoot
+  def root=(root)
+    @root = root
   end
 
   def initialize
     super
     @name = nil
-    @targetNamespace = nil
+    @targetnamespace = nil
     @types = nil
     @imports = []
     @messages = NamedElements.new
-    @portTypes = NamedElements.new
+    @porttypes = NamedElements.new
     @bindings = NamedElements.new
     @services = NamedElements.new
 
-    @anonymousTypes = NamedElements.new
+    @anontypes = NamedElements.new
     @root = self
   end
 
-  def setTargetNamespace( targetNamespace )
-    @targetNamespace = targetNamespace
+  def targetnamespace=(targetnamespace)
+    @targetnamespace = targetnamespace
     if @name
-      @name = XSD::QName.new( @targetNamespace, @name.name )
+      @name = XSD::QName.new(@targetnamespace, @name.name)
     end
   end
 
-  def collectComplexTypes
-    result = @anonymousTypes.dup
+  def collect_complextypes
+    result = @anontypes.dup
     if @types
-      @types.schemas.each do | schema |
-	result.concat( schema.complexTypes )
+      @types.schemas.each do |schema|
+	result.concat(schema.complextypes)
       end
     end
-    @imports.each do | import |
-      result.concat( import.content.collectComplexTypes )
+    @imports.each do |import|
+      result.concat(import.content.collect_complextypes)
     end
     result
   end
 
-  def addType( complexType )
-    @anonymousTypes << complexType
+  def add_type(complextype)
+    @anontypes << complextype
   end
 
   def messages
     result = @messages.dup
-    @imports.each do | import |
-      result.concat( import.content.messages )
+    @imports.each do |import|
+      result.concat(import.content.messages)
     end
     result
   end
 
-  def portTypes
-    result = @portTypes.dup
-    @imports.each do | import |
-      result.concat( import.content.portTypes )
+  def porttypes
+    result = @porttypes.dup
+    @imports.each do |import|
+      result.concat(import.content.porttypes)
     end
     result
   end
 
   def bindings
     result = @bindings.dup
-    @imports.each do | import |
-      result.concat( import.content.bindings )
+    @imports.each do |import|
+      result.concat(import.content.bindings)
     end
     result
   end
 
   def services
     result = @services.dup
-    @imports.each do | import |
-      result.concat( import.content.services )
+    @imports.each do |import|
+      result.concat(import.content.services)
     end
     result
   end
 
-  def getMessage( name )
-    message = @messages[ name ]
+  def message(name)
+    message = @messages[name]
     return message if message
-    @imports.each do | import |
-      message = import.content.getMessage( name )
+    @imports.each do |import|
+      message = import.content.message(name)
       return message if message
     end
     nil
   end
 
-  def getPortType( name )
-    portType = @portTypes[ name ]
-    return portType if portType
-    @imports.each do | import |
-      portType = import.content.getPortType( name )
-      return portType if portType
+  def porttype(name)
+    porttype = @porttypes[name]
+    return porttype if porttype
+    @imports.each do |import|
+      porttype = import.content.porttype(name)
+      return porttype if porttype
     end
     nil
   end
 
-  def getBinding( name )
-    binding = @bindings[ name ]
+  def binding(name)
+    binding = @bindings[name]
     return binding if binding
-    @imports.each do | import |
-      binding = import.content.getBinding( name )
+    @imports.each do |import|
+      binding = import.content.binding(name)
       return binding if binding
     end
     nil
   end
 
-  def getService( name )
-    service = @services[ name ]
+  def service(name)
+    service = @services[name]
     return service if service
-    @imports.each do | import |
-      service = import.content.getService( name )
+    @imports.each do |import|
+      service = import.content.service(name)
       return service if service
     end
     nil
   end
 
-  def getPortTypeBinding( portTypeName )
-    binding = @bindings.find { | item | item.type == portTypeName }
+  def porttype_binding(name)
+    binding = @bindings.find { |item| item.type == name }
     return binding if binding
-    @imports.each do | import |
-      binding = import.content.getPortTypeBinding( portTypeName )
+    @imports.each do |import|
+      binding = import.content.porttype_binding(name)
       return binding if binding
     end
     nil
   end
 
-  TypesName = XSD::QName.new( Namespace, 'types' )
-  MessageName = XSD::QName.new( Namespace, 'message' )
-  PortTypeName = XSD::QName.new( Namespace, 'portType' )
-  BindingName = XSD::QName.new( Namespace, 'binding' )
-  ServiceName = XSD::QName.new( Namespace, 'service' )
-  ImportName = XSD::QName.new( Namespace, 'import' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when ImportName
       o = Import.new
@@ -180,7 +174,7 @@ class Definitions < Info
       o
     when PortTypeName
       o = PortType.new
-      @portTypes << o
+      @porttypes << o
       o
     when BindingName
       o = Binding.new
@@ -198,21 +192,18 @@ class Definitions < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  TargetNamespaceAttrName = XSD::QName.new( nil, 'targetNamespace' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( @targetNamespace, value )
+      @name = XSD::QName.new(@targetnamespace, value)
     when TargetNamespaceAttrName
-      setTargetNamespace( value )
+      self.targetnamespace = value
     else
-      raise UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 
-  DefinitionsName = XSD::QName.new( Namespace, 'definitions' )
-  def self.parseElement( element )
+  def self.parse_element(element)
     if element == DefinitionsName
       Definitions.new
     else

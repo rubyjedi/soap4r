@@ -27,70 +27,70 @@ module WSDL
 
 class ComplexType < Info
   attr_accessor :name
-  attr_accessor :complexContent
+  attr_accessor :complexcontent
   attr_accessor :content
   attr_reader :attributes
 
-  def initialize( name = nil )
+  def initialize(name = nil)
     super()
     @name = name
-    @complexContent = nil
+    @complexcontent = nil
     @content = nil
     @attributes = NamedElements.new
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  def eachContent
+  def each_content
     if content
-      content.each do | item |
-	yield( item )
+      content.each do |item|
+	yield(item)
       end
     end
   end
 
-  def eachElement
+  def each_element
     if content
-      content.elements.each do | name, element |
-	yield( name, element )
+      content.elements.each do |name, element|
+	yield(name, element)
       end
     end
   end
 
-  def getElement( name )
-    @content.elements.each do | key, element |
+  def find_element(name)
+    @content.elements.each do |key, element|
       return element if name == key
     end
     nil
   end
 
-  def setSequenceElements( elements )
+  def sequence_elements=(elements)
     @content = Content.new
     @content.type = 'sequence'
-    elements.each do | element |
+    elements.each do |element|
       @content << element
     end
   end
 
-  def setAllElements( elements )
+  def all_elements=(elements)
     @content = Content.new
     @content.type = 'all'
-    elements.each do | element |
+    elements.each do |element|
       @content << element
     end
   end
 
-  def parseElement( element )
+  def parse_element(element)
     case element
     when AllName, SequenceName, ChoiceName
       @content = Content.new
       @content.type = element.name
       @content
     when ComplexContentName
-      @complexContent = ComplexContent.new
-      @complexContent
+      @complexcontent = ComplexContent.new
+      @complexcontent
     when AttributeName
       o = Attribute.new
       @attributes << o
@@ -100,12 +100,12 @@ class ComplexType < Info
     end
   end
 
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( targetNamespace, value )
+      @name = XSD::QName.new(targetnamespace, value)
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

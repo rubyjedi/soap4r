@@ -30,25 +30,25 @@ class ClassDefCreator
 
   attr_reader :definitions
 
-  def initialize( definitions )
+  def initialize(definitions)
     @definitions = definitions
-    @complexTypes = definitions.collectComplexTypes
-    @faultTypes = getFaultTypes( @definitions )
+    @complextypes = definitions.collect_complextypes
+    @faulttypes = collect_faulttype(@definitions)
   end
 
-  def dump( className = nil )
+  def dump(class_name = nil)
     result = ""
-    if className
-      result = dumpClassDef( className )
+    if class_name
+      result = dump_classdef(class_name)
     else
-      @complexTypes.each do | complexType |
-	case complexType.compoundType
+      @complextypes.each do |type|
+	case type.compoundtype
 	when :TYPE_STRUCT
-	  result << dumpClassDef( complexType.name )
+	  result << dump_classdef(type.name)
 	when :TYPE_ARRAY
-	  result << dumpArrayDef( complexType.name )
+	  result << dump_arraydef(type.name)
        	else
-	  raise RuntimeError.new( "Unknown complexContent definition..." )
+	  raise RuntimeError.new("Unknown complexContent definition...")
 	end
 	result << "\n"
       end
@@ -58,30 +58,30 @@ class ClassDefCreator
 
 private
 
-  def dumpAttrLine( name )
-    varName = uncapitalize( name )
+  def dump_attrline(name)
+    var_name = uncapitalize(name)
     return <<__EOD__
   def #{ name }
-    @#{ varName }
+    @#{ var_name }
   end
 
   def #{ name }=(new_#{ name })
-    @#{ varName } = new_#{ name }
+    @#{ var_name } = new_#{ name }
   end
 
 __EOD__
   end
 
-  def dumpClassDef( className )
-    complexType = @complexTypes[ className ]
+  def dump_classdef(class_name)
+    complextype = @complextypes[class_name]
     attr_lines = ""
     var_lines = ""
     init_lines = ""
-    complexType.eachElement do | elementName, element |
-      name = createMethodName( elementName )
+    complextype.each_element do |ele_name, element|
+      name = create_method_name(ele_name)
       type = element.type
       #attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
-      attr_lines << dumpAttrLine( elementName )
+      attr_lines << dump_attrline(ele_name)
       init_lines << "    @#{ name } = #{ name }\n"
       unless var_lines.empty?
 	var_lines << ",\n      "
@@ -92,10 +92,10 @@ __EOD__
     init_lines.chomp!
 
     return <<__EOD__
-# #{ className.namespace }
-class #{ dumpClassName( className ) }
-  @@typeName = "#{ className.name }"
-  @@typeNamespace = "#{ className.namespace }"
+# #{ class_name.namespace }
+class #{ safe_class_name(class_name) }
+  @@schema_type = "#{ class_name.name }"
+  @@schema_ns = "#{ class_name.namespace }"
 
 #{ attr_lines }
   def initialize(#{ var_lines })
@@ -105,43 +105,44 @@ end
 __EOD__
   end
 
-  def dumpArrayDef( arrayName )
+  def dump_arraydef(name)
     return <<__EOD__
-# #{ arrayName.namespace }
-class #{ arrayName.name } < Array
-  @@typeName = "#{ arrayName.name }"
-  @@typeNamespace = "#{ arrayName.namespace }"
+# #{ name.namespace }
+class #{ name.name } < Array
+  # Contents type should be dumped here...
+  #@@schema_type = "#{ name.name }"
+  @@schema_ns = "#{ name.namespace }"
 end
 __EOD__
   end
 
-  def dumpClassName( className )
-    if @faultTypes.index( className )
-      "#{ className.name } < StandardError"
+  def safe_class_name(name)
+    if @faulttypes.index(name)
+      "#{ name.name } < StandardError"
     else
-      "#{ className.name }"
+      "#{ name.name }"
     end
   end
 
-  def getFaultTypes( definitions )
+  def collect_faulttype(definitions)
     result = []
-    getFaultMessages( definitions ).each do | message |
-      parts = definitions.getMessage( message ).parts
+    collect_fault_messages(definitions).each do |message|
+      parts = definitions.message(message).parts
       if parts.size != 1
-	raise RuntimeError.new( "Expects fault message to have 1 part." )
+	raise RuntimeError.new("Expects fault message to have 1 part.")
       end
-      if result.index( parts[0].type ).nil?
+      if result.index(parts[0].type).nil?
 	result << parts[0].type
       end
     end
     result
   end
 
-  def getFaultMessages( definitions )
+  def collect_fault_messages(definitions)
     result = []
-    definitions.portTypes.each do | portType |
-      portType.operations.each do | operation |
-	if operation.fault && result.index( operation.fault.message ).nil?
+    definitions.porttypes.each do |porttype|
+      porttype.operations.each do |operation|
+	if operation.fault && result.index(operation.fault.message).nil?
 	  result << operation.fault.message
 	end
       end

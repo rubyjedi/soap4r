@@ -25,57 +25,57 @@ module WSDL
 
 
 class Definitions < Info
-  def getComplexTypesWithMessages( portType )
-    types = collectComplexTypes
-    portType.operations.each do | operation |
+  def soap_complextypes(porttype)
+    types = collect_complextypes
+    porttype.operations.each do |operation|
       if operation.input
-	message  = messages[ operation.input.message ]
-	type = createComplexType( operation.input.name || operation.name )
-	elements = message.parts.collect { | part |
-	    XMLSchema::Element.new( part.name, part.type )
+	message  = messages[operation.input.message]
+	type = XMLSchema::ComplexType.new(operation.input.name || operation.name)
+	elements = message.parts.collect { |part|
+	    XMLSchema::Element.new(part.name, part.type)
 	  }
-	type.setSequenceElements( elements )
+	type.sequence_elements = elements
 	types << type
       end
       if operation.output
-	message  = messages[ operation.output.message ]
-	type = createComplexType( operation.output.name ||
-	  XSD::QName.new( operation.name.namespace, operation.name.name + "Response" ))
-	elements = message.parts.collect { | part |
-	    XMLSchema::Element.new( part.name, part.type )
+	message  = messages[operation.output.message]
+	type = XMLSchema::ComplexType.new(operation.output.name ||
+	  XSD::QName.new(operation.name.namespace, operation.name.name + "Response"))
+	elements = message.parts.collect { |part|
+	    XMLSchema::Element.new(part.name, part.type)
 	  }
-	type.setSequenceElements( elements )
+	type.sequence_elements = elements
 	types << type
       end
     end
 =begin
-    messages.each do | message |
-      type = createComplexType( message.name )
-      elements = message.parts.collect { | part |
-	  XMLSchema::Element.new( part.name, part.type )
+    messages.each do |message|
+      type = XMLSchema::ComplexType.new(message.name)
+      elements = message.parts.collect { |part|
+	  XMLSchema::Element.new(part.name, part.type)
 	}
-      type.setSequenceElements( elements )
+      type.sequence_elements = elements
       types << type
     end
 =end
-    types << arrayComplexType
-    types << faultComplexType
-    types << exceptionComplexType
+    types << array_complextype
+    types << fault_complextype
+    types << exception_complextype
     types
   end
 
 private
 
-  def arrayComplexType
-    type = createComplexType( ::SOAP::ValueArrayName )
-    type.complexContent = XMLSchema::ComplexContent.new
-    type.complexContent.base = ::SOAP::ValueArrayName
+  def array_complextype
+    type = XMLSchema::ComplexType.new(::SOAP::ValueArrayName)
+    type.complexcontent = XMLSchema::ComplexContent.new
+    type.complexcontent.base = ::SOAP::ValueArrayName
     attr = XMLSchema::Attribute.new
     attr.ref = ::SOAP::AttrArrayTypeName
-    anyTypeArray = XSD::AnyTypeName.dup
-    anyTypeArray.name += '[]'
-    attr.arrayType = anyTypeArray
-    type.complexContent.attributes << attr
+    anytype = XSD::AnyTypeName.dup
+    anytype.name += '[]'
+    attr.arytype = anytype
+    type.complexcontent.attributes << attr
     type
   end
 
@@ -89,37 +89,32 @@ private
   </xs:sequence>
 </xs:complexType>
 =end
-  def faultComplexType
-    type = createComplexType( ::SOAP::EleFaultName )
-    faultcode = XMLSchema::Element.new( ::SOAP::EleFaultCodeName.name,
-      XSD::XSDQName::Type )
-    faultstring = XMLSchema::Element.new( ::SOAP::EleFaultStringName.name,
-      XSD::XSDString::Type )
-    faultactor = XMLSchema::Element.new( ::SOAP::EleFaultActorName.name,
-      XSD::XSDAnyURI::Type )
-    faultactor.minOccurs = 0
-    detail = XMLSchema::Element.new( ::SOAP::EleFaultDetailName.name,
-      XSD::AnyTypeName )
-    detail.minOccurs = 0
-    type.setAllElements( [ faultcode, faultstring, faultactor, detail ] )
+  def fault_complextype
+    type = XMLSchema::ComplexType.new(::SOAP::EleFaultName)
+    faultcode = XMLSchema::Element.new(::SOAP::EleFaultCodeName.name,
+      XSD::XSDQName::Type)
+    faultstring = XMLSchema::Element.new(::SOAP::EleFaultStringName.name,
+      XSD::XSDString::Type)
+    faultactor = XMLSchema::Element.new(::SOAP::EleFaultActorName.name,
+      XSD::XSDAnyURI::Type)
+    faultactor.minoccurs = 0
+    detail = XMLSchema::Element.new(::SOAP::EleFaultDetailName.name,
+      XSD::AnyTypeName)
+    detail.minoccurs = 0
+    type.all_elements = [faultcode, faultstring, faultactor, detail]
     type.content.final = 'extension'
     type
   end
 
-  def exceptionComplexType
-    type = createComplexType( XSD::QName.new(
-      ::SOAP::RPCUtils::RubyCustomTypeNamespace, 'SOAPException' ))
-    exceptionTypeName = XMLSchema::Element.new( 'exceptionTypeName',
-      XSD::XSDString::Type )
-    cause = XMLSchema::Element.new( 'cause', XSD::AnyTypeName )
-    backtrace = XMLSchema::Element.new( 'backtrace', ::SOAP::ValueArrayName )
-    message = XMLSchema::Element.new( 'message', XSD::XSDString::Type )
-    type.setAllElements( [ exceptionTypeName, cause, backtrace, message ] )
+  def exception_complextype
+    type = XMLSchema::ComplexType.new(XSD::QName.new(
+	::SOAP::RPCUtils::RubyCustomTypeNamespace, 'SOAPException'))
+    excn_name = XMLSchema::Element.new('exceptionTypeName', XSD::XSDString::Type)
+    cause = XMLSchema::Element.new('cause', XSD::AnyTypeName)
+    backtrace = XMLSchema::Element.new('backtrace', ::SOAP::ValueArrayName)
+    message = XMLSchema::Element.new('message', XSD::XSDString::Type)
+    type.all_elements = [excn_name, cause, backtrace, message]
     type
-  end
-
-  def createComplexType( typeQName )
-    XMLSchema::ComplexType.new( typeQName )
   end
 end
 

@@ -35,7 +35,7 @@ loaded = false
   'soap/xmlparser',
   'soap/rexmlparser',
   'soap/nqxmlparser',
-].each do | lib |
+].each do |lib|
   begin
     require lib
     loaded = true
@@ -44,7 +44,7 @@ loaded = false
   end
 end
 unless loaded
-  raise RuntimeError.new( "XML processor module not found." )
+  raise RuntimeError.new("XML processor module not found.")
 end
 
 
@@ -52,42 +52,42 @@ module SOAP
 
 
 module Processor
-  @@defaultParserOption = {}
+  @@default_parser_option = {}
 
   class << self
   public
 
-    def marshal( header, body, opt = {}, io = nil )
-      env = SOAPEnvelope.new( header, body )
-      generator = createGenerator( opt )
-      generator.generate( env, io )
+    def marshal(header, body, opt = {}, io = nil)
+      env = SOAPEnvelope.new(header, body)
+      generator = create_generator(opt)
+      generator.generate(env, io)
     end
 
-    def unmarshal( stream, opt = {} )
-      parser = createParser( opt )
-      env = parser.parse( stream )
+    def unmarshal(stream, opt = {})
+      parser = create_parser(opt)
+      env = parser.parse(stream)
       return env.header, env.body
     end
 
-    def defaultParserOption=( rhs )
-      @@defaultParserOption = rhs
+    def default_parser_option=(rhs)
+      @@default_parser_option = rhs
     end
 
-    def defaultParserOption
-      @@defaultParserOption
+    def default_parser_option
+      @@default_parser_option
     end
 
   private
 
-    def createGenerator( opt )
-      SOAPGenerator.new( opt )
+    def create_generator(opt)
+      SOAPGenerator.new(opt)
     end
 
-    def createParser( opt )
+    def create_parser(opt)
       if opt.empty?
-	opt = @@defaultParserOption
+	opt = @@default_parser_option
       end
-      SOAPParser.createParser( opt )
+      SOAPParser.create_parser(opt)
     end
   end
 end

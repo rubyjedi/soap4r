@@ -14,7 +14,7 @@ class RAADiv < Div::Div
   attr_accessor :proxy
   attr_accessor :size
 
-  DefaultRAAServer = 'http://www.ruby-lang.org/~nahi/soap/raa/'
+  DefaultRAAServer = 'http://raa.ruby-lang.org/soap/1.0/'
 
   InitialCoverSec = 7 * 24 * 3600	# 1 week
   CoverSec = 30 * 60			# 30 min

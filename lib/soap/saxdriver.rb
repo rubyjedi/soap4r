@@ -25,23 +25,23 @@ module SOAP
 
 
 class SOAPSAXDriver < SOAPParser
-  def initialize( *vars )
-    super( *vars )
+  def initialize(*vars)
+    super(*vars)
     @parser = XML::Parser::SAXDriver.new
-    handler = Handler.new( self )
-    @parser.setDocumentHandler( handler )
-    @parser.setErrorHandler( handler )
+    handler = Handler.new(self)
+    @parser.setDocumentHandler(handler)
+    @parser.setErrorHandler(handler)
   end
 
   class Handler < XML::SAX::HandlerBase
-    def initialize( driver )
+    def initialize(driver)
       @driver = driver
     end
 
     def getAttrs(attrs)
       ret = {}
       for i in 0...attrs.getLength
-	ret[ attrs.getName( i ) ] = attrs.getValue( i )
+	ret[attrs.getName(i)] = attrs.getValue(i)
       end
       ret
     end
@@ -49,16 +49,16 @@ class SOAPSAXDriver < SOAPParser
     # def startDocument; end
     # def endDocument; end
 
-    def startElement( name, attr )
-      @driver.startElement( name, getAttrs( attr ))
+    def start_element(name, attr)
+      @driver.start_element(name, getAttrs(attr))
     end
 
-    def endElement( name )
-      @driver.endElement( name )
+    def end_element(name)
+      @driver.end_element(name)
     end
 
-    def characters( ch, start, length )
-      @driver.characters( ch[ start, length ] )
+    def characters(ch, start, length)
+      @driver.characters(ch[start, length])
     end
 
     # def processingInstruction(target, data); end
@@ -73,20 +73,20 @@ class SOAPSAXDriver < SOAPParser
     # end
     # loc.getSystemId and loc.getLineNumber might be useful.
 
-    def fatalError( e )
+    def fatalError(e)
       raise e
     end
   end
 
-  def doParse( stringOrReadable )
-    f = Tempfile.new( "SOAP4R_SOAPSAXDriver" )
-    if stringOrReadable.is_a?( String )
-      f.write( stringOrReadable )
+  def do_parse(string_or_readable)
+    f = Tempfile.new("SOAP4R_SOAPSAXDriver")
+    if string_or_readable.is_a?(String)
+      f.write(string_or_readable)
     else
-      f.write( stringOrReadable.read )
+      f.write(string_or_readable.read)
     end
-    f.close( false )	# Close but not removed
-    @parser.parse( f.path )
+    f.close(false)	# Close but not removed
+    @parser.parse(f.path)
     # 
   end
 end

@@ -38,31 +38,31 @@ class NamedElements
     @elements.size
   end
 
-  def []( idx )
-    if idx.is_a?( Numeric )
-      @elements[ idx ]
+  def [](idx)
+    if idx.is_a?(Numeric)
+      @elements[idx]
     else
-      @cache[ idx ] ||= @elements.find { | item | item.name == idx }
+      @cache[idx] ||= @elements.find { |item| item.name == idx }
     end
   end
 
   def each
-    @elements.each do | element |
-      yield( element )
+    @elements.each do |element|
+      yield(element)
     end
   end
 
-  def <<( rhs )
+  def <<(rhs)
     @elements << rhs
   end
 
-  def concat( rhs )
-    @elements.concat( rhs.elements )
+  def concat(rhs)
+    @elements.concat(rhs.elements)
   end
 
 protected
 
-  def elements=( rhs )
+  def elements=(rhs)
     @elements = rhs
   end
 

@@ -32,16 +32,16 @@ class Proxy
 
 public
 
-  attr_accessor :soapAction
-  attr_accessor :allowUnqualifiedElement, :defaultEncodingStyle
+  attr_accessor :soapaction
+  attr_accessor :allow_unqualified_element, :default_encodingstyle
   attr_reader :method
 
-  def initialize(streamHandler, soapAction = nil)
-    @handler = streamHandler
-    @soapAction = soapAction
+  def initialize(stream_handler, soapaction = nil)
+    @handler = stream_handler
+    @soapaction = soapaction
     @method = {}
-    @allowUnqualifiedElement = false
-    @defaultEncodingStyle = nil
+    @allow_unqualified_element = false
+    @default_encodingstyle = nil
   end
 
   class Request
@@ -53,10 +53,10 @@ public
     attr_reader :namespace
     attr_reader :name
 
-    def initialize(modelMethod, values)
-      @method = modelMethod.dup
-      @namespace = @method.elementName.namespace
-      @name = @method.elementName.name
+    def initialize(model, values)
+      @method = model.dup
+      @namespace = @method.elename.namespace
+      @name = @method.elename.name
 
       params = {}
     
@@ -64,52 +64,48 @@ public
         params = values[0]
       else
         i = 0
-        @method.eachParamName(SOAPMethod::IN, SOAPMethod::INOUT) do |paramName|
-          params[paramName] = values[i] || SOAPNil.new
+        @method.each_param_name(SOAPMethod::IN, SOAPMethod::INOUT) do |name|
+          params[name] = values[i] || SOAPNil.new
           i += 1
         end
       end
-      @method.setParams(params)
+      @method.set_param(params)
     end
   end
 
-  def addMethod(qname, soapAction, methodName, paramDef)
-    @method[methodName] = SOAPMethodRequest.new(qname, paramDef, soapAction)
+  def add_method(qname, soapaction, name, param_def)
+    @method[name] = SOAPMethodRequest.new(qname, param_def, soapaction)
   end
 
-  def createRequest(methodName, *values)
-    if (@method.has_key?(methodName))
-      method = @method[methodName]
-      method.encodingStyle = @defaultEncodingStyle if @defaultEncodingStyle
+  def create_request(name, *values)
+    if (@method.key?(name))
+      method = @method[name]
+      method.encodingstyle = @default_encodingstyle if @default_encodingstyle
     else
-      raise SOAP::RPC::MethodDefinitionError.new('Method: ' <<
-        methodName << ' not defined.')
+      raise SOAP::RPC::MethodDefinitionError.new(
+	"Method: #{ name } not defined.")
     end
 
     Request.new(method, values)
   end
 
-  def invoke(headers, body, soapAction = nil)
-    # Get sending string.
-    sendString = marshal(headers, body)
-
-    # Send request.
-    data = @handler.send(sendString, soapAction)
-    return data
+  def invoke(headers, body, soapaction = nil)
+    send_str = marshal(headers, body)
+    @handler.send(send_str, soapaction)
   end
 
-  def call(headers, methodName, *values)
-    req = createRequest(methodName, *values)
-    data = invoke(headers, req.method, req.method.soapAction || @soapAction)
-    if data.receiveString.empty?
+  def call(headers, name, *values)
+    req = create_request(name, *values)
+    data = invoke(headers, req.method, req.method.soapaction || @soapaction)
+    if data.receive_string.empty?
       return nil, nil
     end
 
     # Received charset might be different from request.
-    receiveCharset = StreamHandler.parseMediaType(data.receiveContentType)
-    opt = getOpt
-    opt[:charset] = receiveCharset
-    header, body = Processor.unmarshal(data.receiveString, opt)
+    receive_charset = StreamHandler.parse_media_type(data.receive_contenttype)
+    opt = options
+    opt[:charset] = receive_charset
+    header, body = Processor.unmarshal(data.receive_string, opt)
     return header, body
   end
 
@@ -117,9 +113,8 @@ public
     # Preparing headers.
     header = SOAPHeader.new()
     if headers
-      headers.each do |content, mustUnderstand, encodingStyle|
-        header.add(SOAPHeaderItem.new(content, mustUnderstand,
-          encodingStyle))
+      headers.each do |content, mu, encodingstyle|
+        header.add(SOAPHeaderItem.new(content, mu, encodingstyle))
       end
     end
 
@@ -127,22 +122,20 @@ public
     body = SOAPBody.new(body)
 
     # Marshal.
-    marshalledString = Processor.marshal(header, body, getOpt)
-
-    return marshalledString
+    Processor.marshal(header, body, options)
   end
 
-  def checkFault(body)
+  def check_fault(body)
     if (body.fault)
       raise SOAP::FaultError.new(body.fault)
     end
   end
 
-  def getOpt
+  def options
     opt = {}
-    opt[:defaultEncodingStyle] = @defaultEncodingStyle
-    if @allowUnqualifiedElement
-      opt[:allowUnqualifiedElement] = true
+    opt[:default_encodingstyle] = @default_encodingstyle
+    if @allow_unqualified_element
+      opt[:allow_unqualified_element] = true
     end
     opt
   end

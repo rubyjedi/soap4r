@@ -40,22 +40,22 @@ class Content < Info
     @elements = []
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  def <<( content )
+  def <<(content)
     @contents << content
-    updateElements
+    update_elements
   end
 
   def each
-    @contents.each do | content |
+    @contents.each do |content|
       yield content
     end
   end
 
-  def parseElement( element )
+  def parse_element(element)
     case element
     when AllName, SequenceName, ChoiceName
       o = Content.new
@@ -71,28 +71,28 @@ class Content < Info
     end
   end
 
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when FinalAttrName
       @final = value
     when MixedAttrName
-      @mixed = ( value == 'true' )
+      @mixed = (value == 'true')
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 
-  def postParse
-    updateElements
+  def parse_epilogue
+    update_elements
   end
 
 private
 
-  def updateElements
+  def update_elements
     @elements = []
-    @contents.each do | content |
-      if content.is_a?( Element )
-	@elements << [ content.name, content ]
+    @contents.each do |content|
+      if content.is_a?(Element)
+	@elements << [content.name, content]
       end
     end
   end

@@ -34,20 +34,20 @@ class StreamHandler
     end
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.29 2003/06/01 05:29:42 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.30 2003/08/03 10:11:43 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
-    attr_accessor :sendString
-    attr_accessor :sendContentType
-    attr_accessor :receiveString
-    attr_accessor :receiveContentType
+    attr_accessor :send_string
+    attr_accessor :send_contenttype
+    attr_accessor :receive_string
+    attr_accessor :receive_contenttype
 
     def initialize
-      @sendData = nil
-      @sendContentType = nil
-      @receiveData = nil
-      @receiveContentType = nil
+      @send_string = nil
+      @send_contenttype = nil
+      @receive_string = nil
+      @receive_contenttype = nil
       @bag = {}
     end
 
@@ -60,13 +60,13 @@ class StreamHandler
     end
   end
 
-  attr_accessor :endpointUrl
+  attr_accessor :endpoint_url
 
-  def initialize(endpointUrl)
-    @endpointUrl = endpointUrl
+  def initialize(endpoint_url)
+    @endpoint_url = endpoint_url
   end
 
-  def self.parseMediaType(str)
+  def self.parse_media_type(str)
     if /^#{ MediaType }(?:\s*;\s*charset=([^"]+|"[^"]+"))?$/i !~ str
       raise StreamError.new("Illegal media type.");
     end
@@ -75,8 +75,8 @@ class StreamHandler
     charset
   end
 
-  def self.createMediaType(charsetLabel)
-    "#{ MediaType }; charset=#{ charsetLabel }"
+  def self.create_media_type(charset)
+    "#{ MediaType }; charset=#{ charset }"
   end
 end
 
@@ -86,8 +86,8 @@ class HTTPPostStreamHandler < StreamHandler
 
 public
   
-  attr_accessor :dumpDev
-  attr_accessor :dumpFileBase
+  attr_accessor :wiredump_dev
+  attr_accessor :wiredump_file_base
   attr_accessor :charset
   
   NofRetry = 10       	# [times]
@@ -95,80 +95,71 @@ public
   SendTimeout = 60	# [sec]
   ReceiveTimeout = 60   # [sec]
 
-  def initialize(endpointUrl, proxy = nil, charset = nil)
-    super(endpointUrl)
+  def initialize(endpoint_url, proxy = nil, charset = nil)
+    super(endpoint_url)
     @proxy = proxy || ENV['http_proxy'] || ENV['HTTP_PROXY']
-    @charset = charset || Charset.getCharsetLabel($KCODE)
-    @dumpDev = nil	# Set an IO to get wiredump.
-    @dumpFileBase = nil
+    @charset = charset || Charset.charset_label($KCODE)
+    @wiredump_dev = nil	# Set an IO to get wiredump.
+    @wiredump_file_base = nil
     @client = Client.new(@proxy, "SOAP4R/#{ Version }")
     @client.session_manager.connect_timeout = ConnectTimeout
     @client.session_manager.send_timeout = SendTimeout
     @client.session_manager.receive_timeout = ReceiveTimeout
   end
 
-  def proxy=(newProxy)
-    @proxy = newProxy
+  def proxy=(proxy)
+    @proxy = proxy
     @client.proxy = @proxy
   end
 
-  def send(soapString, soapAction = nil, charset = @charset)
-    begin
-      sendPOST(soapString, soapAction, charset)
-    rescue PostUnavailableError
-#      begin
-#        sendMPOST(soapString, soapAction, charset)
-#      rescue MPostUnavailableError
-#        raise HTTPStreamError.new($!)
-#      end
-      raise
-    end
+  def send(soap_string, soapaction = nil, charset = @charset)
+    send_post(soap_string, soapaction, charset)
   end
 
   def reset
-    @client.reset(@endpointUrl)
+    @client.reset(@endpoint_url)
   end
 
 private
 
-  def sendPOST(soapString, soapAction, charset)
+  def send_post(soap_string, soapaction, charset)
     data = ConnectionData.new
-    data.sendString = soapString
-    data.sendContentType = StreamHandler.createMediaType(charset)
+    data.send_string = soap_string
+    data.send_contenttype = StreamHandler.create_media_type(charset)
 
-    dumpDev = if @dumpDev && @dumpDev.respond_to?("<<")
-	@dumpDev
+    wiredump_dev = if @wiredump_dev && @wiredump_dev.respond_to?("<<")
+	@wiredump_dev
       else
 	nil
       end
-    @client.debug_dev = dumpDev
+    @client.debug_dev = wiredump_dev
 
-    if @dumpFileBase
-      fileName = @dumpFileBase + '_request.xml'
-      f = File.open(fileName, "w")
-      f << soapString
+    if @wiredump_file_base
+      filename = @wiredump_file_base + '_request.xml'
+      f = File.open(filename, "w")
+      f << soap_string
       f.close
     end
 
     extra = {}
-    extra['Content-Type'] = data.sendContentType
-    extra['SOAPAction'] = "\"#{ soapAction }\""
+    extra['Content-Type'] = data.send_contenttype
+    extra['SOAPAction'] = "\"#{ soapaction }\""
 
-    dumpDev << "Wire dump:\n\n" if dumpDev
+    wiredump_dev << "Wire dump:\n\n" if wiredump_dev
     begin
-      res = @client.post(@endpointUrl, soapString, extra)
+      res = @client.post(@endpoint_url, soap_string, extra)
     rescue
-      @client.reset(@endpointUrl)
+      @client.reset(@endpoint_url)
       raise
     end
-    dumpDev << "\n\n" if dumpDev
+    wiredump_dev << "\n\n" if wiredump_dev
 
-    receiveString = res.content
+    receive_string = res.content
 
-    if @dumpFileBase
-      fileName = @dumpFileBase + '_response.xml'
-      f = File.open(fileName, "w")
-      f << receiveString
+    if @wiredump_file_base
+      filename = @wiredump_file_base + '_response.xml'
+      f = File.open(filename, "w")
+      f << receive_string
       f.close
     end
 
@@ -181,26 +172,11 @@ private
       raise HTTPStreamError.new("#{ res.status }: #{ res.reason }")
     end
 
-    data.receiveString = receiveString
-    data.receiveContentType = res.content_type
+    data.receive_string = receive_string
+    data.receive_contenttype = res.contenttype
 
     return data
   end
-
-  def sendMPOST(soapString, soapAction, charset)
-    raise NotImplementError.new()
-
-    s = nil
-    if ((status == '501') or (status == '510'))
-      # 501: Not Implemented
-      # 510: Not Extended
-      raise MPostUnavailableError.new("Status: #{ status }, Reason-phrase: #{ reason }")
-    elsif (status != '200')
-      raise HTTPStreamError.new("#{ status }: #{ reason }")
-    end
-  end
-
-  private
 
   CRLF = "\r\n"
 end

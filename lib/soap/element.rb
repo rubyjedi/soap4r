@@ -31,116 +31,116 @@ module SOAPEnvelopeElement; end
 class SOAPFault < SOAPStruct
   include SOAPEnvelopeElement
   include SOAPCompoundtype
-  Name = XSD::QName.new( EnvelopeNamespace, 'Fault' )
+  Name = XSD::QName.new(EnvelopeNamespace, 'Fault')
 
 public
 
   def faultcode
-    self[ 'faultcode' ]
+    self['faultcode']
   end
 
   def faultstring
-    self[ 'faultstring' ]
+    self['faultstring']
   end
 
   def faultactor
-    self[ 'faultactor' ]
+    self['faultactor']
   end
 
   def detail
-    self[ 'detail' ]
+    self['detail']
   end
 
-  def faultcode=( rhs )
-    self[ 'faultcode' ] = rhs
+  def faultcode=(rhs)
+    self['faultcode'] = rhs
   end
 
-  def faultstring=( rhs )
-    self[ 'faultstring' ] = rhs
+  def faultstring=(rhs)
+    self['faultstring'] = rhs
   end
 
-  def faultactor=( rhs )
-    self[ 'faultactor' ] = rhs
+  def faultactor=(rhs)
+    self['faultactor'] = rhs
   end
 
-  def detail=( rhs )
-    self[ 'detail' ] = rhs
+  def detail=(rhs)
+    self['detail'] = rhs
   end
 
-  def initialize( faultCode = nil, faultString = nil, faultActor = nil, detail = nil )
-    super( EleFaultName )
-    @elementName = Name
-    @encodingStyle = EncodingNamespace
+  def initialize(faultcode = nil, faultstring = nil, faultactor = nil, detail = nil)
+    super(EleFaultName)
+    @elename = Name
+    @encodingstyle = EncodingNamespace
 
-    if faultCode
-      self.faultcode = faultCode
-      self.faultstring = faultString
-      self.faultactor = faultActor
+    if faultcode
+      self.faultcode = faultcode
+      self.faultstring = faultstring
+      self.faultactor = faultactor
       self.detail = detail
-      self.faultcode.elementName.name = 'faultcode' if self.faultcode
-      self.faultstring.elementName.name = 'faultstring' if self.faultstring
-      self.faultactor.elementName.name = 'faultactor' if self.faultactor
-      self.detail.elementName.name = 'detail' if self.detail
+      self.faultcode.elename.name = 'faultcode' if self.faultcode
+      self.faultstring.elename.name = 'faultstring' if self.faultstring
+      self.faultactor.elename.name = 'faultactor' if self.faultactor
+      self.detail.elename.name = 'detail' if self.detail
     end
   end
 
-  def encode( buf, ns, attrs = {}, indent = '' )
-    SOAPGenerator.assignNamespace( attrs, ns, EnvelopeNamespace )
-    SOAPGenerator.assignNamespace( attrs, ns, EncodingNamespace )
-    attrs[ ns.name( AttrEncodingStyleName ) ] = EncodingNamespace
-    name = ns.name( @elementName )
-    SOAPGenerator.encodeTag( buf, name, attrs, indent )
-    yield( self.faultcode, false )
-    yield( self.faultstring, false)
-    yield( self.faultactor, false )
-    yield( self.detail, false ) if self.detail
-    SOAPGenerator.encodeTagEnd( buf, name, indent, true )
+  def encode(buf, ns, attrs = {}, indent = '')
+    SOAPGenerator.assign_ns(attrs, ns, EnvelopeNamespace)
+    SOAPGenerator.assign_ns(attrs, ns, EncodingNamespace)
+    attrs[ns.name(AttrEncodingStyleName)] = EncodingNamespace
+    name = ns.name(@elename)
+    SOAPGenerator.encode_tag(buf, name, attrs, indent)
+    yield(self.faultcode, false)
+    yield(self.faultstring, false)
+    yield(self.faultactor, false)
+    yield(self.detail, false) if self.detail
+    SOAPGenerator.encode_tag_end(buf, name, indent, true)
   end
 end
 
 
 class SOAPBody < SOAPStruct
   include SOAPEnvelopeElement
-  Name = XSD::QName.new( EnvelopeNamespace, 'Body' )
+  Name = XSD::QName.new(EnvelopeNamespace, 'Body')
 
 public
 
-  def initialize( data = nil, isFault = false )
-    super( nil )
-    @elementName = Name
-    @encodingStyle = nil
+  def initialize(data = nil, is_fault = false)
+    super(nil)
+    @elename = Name
+    @encodingstyle = nil
     @data = []
     @data << data if data
-    @isFault = isFault
+    @is_fault = is_fault
   end
 
-  def encode( buf, ns, attrs = {}, indent = '' )
-    name = ns.name( @elementName )
-    SOAPGenerator.encodeTag( buf, name, attrs, indent )
-    if @isFault
-      yield( @data, true )
+  def encode(buf, ns, attrs = {}, indent = '')
+    name = ns.name(@elename)
+    SOAPGenerator.encode_tag(buf, name, attrs, indent)
+    if @is_fault
+      yield(@data, true)
     else
-      @data.each do | data |
-	yield( data, true )
+      @data.each do |data|
+	yield(data, true)
       end
     end
-    SOAPGenerator.encodeTagEnd( buf, name, indent, true )
+    SOAPGenerator.encode_tag_end(buf, name, indent, true)
   end
 
-  def rootNode
-    @data.each do | node |
+  def root_node
+    @data.each do |node|
       if node.root == 1
 	return node
       end
     end
     # No specified root...
-    @data.each do | node |
+    @data.each do |node|
       if node.root != 0
 	return node
       end
     end
 
-    raise SOAPParser::FormatDecodeError.new( 'No root element.' )
+    raise SOAPParser::FormatDecodeError.new('No root element.')
   end
 end
 
@@ -152,49 +152,49 @@ class SOAPHeaderItem < NSDBase
 public
 
   attr_accessor :content
-  attr_accessor :mustUnderstand
-  attr_accessor :encodingStyle
+  attr_accessor :must_understand
+  attr_accessor :encodingstyle
 
-  def initialize( content, mustUnderstand = true, encodingStyle = nil )
-    super( nil )
+  def initialize(content, must_understand = true, encodingstyle = nil)
+    super(nil)
     @content = content
-    @mustUnderstand = mustUnderstand
-    @encodingStyle = encodingStyle || LiteralNamespace
+    @must_understand = must_understand
+    @encodingstyle = encodingstyle || LiteralNamespace
   end
 
-  def encode( buf, ns, attrs = {}, indent = '' )
-    attrs.each do | key, value |
-      @content.attr[ key ] = value
+  def encode(buf, ns, attrs = {}, indent = '')
+    attrs.each do |key, value|
+      @content.attr[key] = value
     end
-    @content.attr[ ns.name( EnvelopeNamespace, AttrMustUnderstand ) ] =
-      ( @mustUnderstand ? '1' : '0' )
-    if @encodingStyle
-      @content.attr[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
-      	@encodingStyle
+    @content.attr[ns.name(EnvelopeNamespace, AttrMustUnderstand)] =
+      (@must_understand ? '1' : '0')
+    if @encodingstyle
+      @content.attr[ns.name(EnvelopeNamespace, AttrEncodingStyle)] =
+      	@encodingstyle
     end
-    @content.encodingStyle = @encodingStyle if !@content.encodingStyle
-    yield( @content, true )
+    @content.encodingstyle = @encodingstyle if !@content.encodingstyle
+    yield(@content, true)
   end
 end
 
 
 class SOAPHeader < SOAPArray
   include SOAPEnvelopeElement
-  Name = XSD::QName.new( EnvelopeNamespace, 'Header' )
+  Name = XSD::QName.new(EnvelopeNamespace, 'Header')
 
   def initialize()
-    super( nil, 1 )	# rank == 1
-    @elementName = Name
-    @encodingStyle = nil
+    super(nil, 1)	# rank == 1
+    @elename = Name
+    @encodingstyle = nil
   end
 
-  def encode( buf, ns, attrs = {}, indent = '' )
-    name = ns.name( @elementName )
-    SOAPGenerator.encodeTag( buf, name, attrs, indent )
-    @data.each do | data |
-      yield( data, true )
+  def encode(buf, ns, attrs = {}, indent = '')
+    name = ns.name(@elename)
+    SOAPGenerator.encode_tag(buf, name, attrs, indent)
+    @data.each do |data|
+      yield(data, true)
     end
-    SOAPGenerator.encodeTagEnd( buf, name, indent, true )
+    SOAPGenerator.encode_tag_end(buf, name, indent, true)
   end
 
   def length
@@ -206,33 +206,29 @@ end
 class SOAPEnvelope < NSDBase
   include SOAPEnvelopeElement
   include SOAPCompoundtype
-  Name = XSD::QName.new( EnvelopeNamespace, 'Envelope' )
+  Name = XSD::QName.new(EnvelopeNamespace, 'Envelope')
 
   attr_accessor :header
   attr_accessor :body
-  attr_reader :refPool
-  attr_reader :idPool
 
-  def initialize( initHeader = nil, initBody = nil )
-    super( nil )
-    @elementName = Name
-    @encodingStyle = nil
-    @header = initHeader
-    @body = initBody
-    @refPool = []
-    @idPool = []
+  def initialize(header = nil, body = nil)
+    super(nil)
+    @elename = Name
+    @encodingstyle = nil
+    @header = header
+    @body = body
   end
 
-  def encode( buf, ns, attrs = {}, indent = '' )
-    SOAPGenerator.assignNamespace( attrs, ns, EnvelopeNamespace,
-      SOAPNamespaceTag )
-    name = ns.name( @elementName )
-    SOAPGenerator.encodeTag( buf, name, attrs, indent )
+  def encode(buf, ns, attrs = {}, indent = '')
+    SOAPGenerator.assign_ns(attrs, ns, EnvelopeNamespace,
+      SOAPNamespaceTag)
+    name = ns.name(@elename)
+    SOAPGenerator.encode_tag(buf, name, attrs, indent)
 
-    yield( @header, true ) if @header and @header.length > 0
-    yield( @body, true )
+    yield(@header, true) if @header and @header.length > 0
+    yield(@body, true)
 
-    SOAPGenerator.encodeTagEnd( buf, name, indent, true )
+    SOAPGenerator.encode_tag_end(buf, name, indent, true)
   end
 end
 

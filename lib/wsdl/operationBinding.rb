@@ -28,7 +28,7 @@ class OperationBinding < Info
   attr_reader :input
   attr_reader :output
   attr_reader :fault
-  attr_reader :soapOperation
+  attr_reader :soap_operation
 
   def initialize
     super
@@ -36,65 +36,61 @@ class OperationBinding < Info
     @input = nil
     @output = nil
     @fault = nil
-    @soapOperation = nil
+    @soap_operation = nil
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  def getPortType
-    root.getPortType( parent.type )
+  def porttype
+    root.porttype(parent.type)
   end
 
-  def getOperation
-    getPortType.operations[ @name ]
+  def find_operation
+    porttype.operations[@name]
   end
 
-  def inputOperationInfo
-    operation = getOperation
-    soapBody = input.soapBody
+  def inputoperation_sig
+    operation = find_operation
+    soap_body = input.soap_body
 
-    if soapBody.use != "encoded"
-      raise NotImplementedError.new( "Use '#{ soapBody.use }' not supported." )
+    if soap_body.use != "encoded"
+      raise NotImplementedError.new("Use '#{ soap_body.use }' not supported.")
     end
-    if soapBody.encodingStyle != ::SOAP::EncodingNamespace
+    if soap_body.encodingstyle != ::SOAP::EncodingNamespace
       raise NotImplementedError.new(
-	"EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
+	"EncodingStyle '#{ soap_body.encodingstyle }' not supported.")
     end
 
-    operationName = operation.name.dup
-    operationName.namespace = soapBody.namespace if soapBody.namespace
-    messageName = operation.inputName
-    paramNames = operation.getInputParts.collect { | part | part.name }
-    soapAction = soapOperation.soapAction
-    return operationName, messageName, paramNames, soapAction
+    op_name = operation.name.dup
+    op_name.namespace = soap_body.namespace if soap_body.namespace
+    msg_name = operation.inputname
+    param_names = operation.inputparts.collect { |part| part.name }
+    soapaction = soap_operation.soapaction
+    return op_name, msg_name, param_names, soapaction
   end
 
-  def outputOperationInfo
-    operation = getOperation
-    soapBody = output.soapBody
+  def outputoperation_sig
+    operation = find_operation
+    soap_body = output.soap_body
 
-    if soapBody.use != "encoded"
-      raise NotImplementedError.new( "Use '#{ soapBody.use }' not supported." )
+    if soap_body.use != "encoded"
+      raise NotImplementedError.new("Use '#{ soap_body.use }' not supported.")
     end
-    if soapBody.encodingStyle != ::SOAP::EncodingNamespace
+    if soap_body.encodingstyle != ::SOAP::EncodingNamespace
       raise NotImplementedError.new(
-	"EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
+	"EncodingStyle '#{ soap_body.encodingstyle }' not supported.")
     end
 
-    operationName = operation.name.dup
-    operationName.namespace = soapBody.namespace if soapBody.namespace
-    messageName = operation.outputName
-    paramNames = operation.getOutputParts.collect { | part | part.name }
-    return operationName, messageName, paramNames
+    op_name = operation.name.dup
+    op_name.namespace = soap_body.namespace if soap_body.namespace
+    msg_name = operation.outputname
+    param_names = operation.outputparts.collect { |part| part.name }
+    return op_name, msg_name, param_names
   end
 
-  InputName = XSD::QName.new( Namespace, 'input' )
-  OutputName = XSD::QName.new( Namespace, 'output' )
-  FaultName = XSD::QName.new( Namespace, 'fault' )
-  SOAPOperationName = XSD::QName.new( SOAPBindingNamespace, 'operation' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when InputName
       o = Param.new
@@ -110,7 +106,7 @@ class OperationBinding < Info
       o
     when SOAPOperationName
       o = WSDL::SOAP::Operation.new
-      @soapOperation = o
+      @soap_operation = o
       o
     when DocumentationName
       o = Documentation.new
@@ -120,13 +116,12 @@ class OperationBinding < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( targetNamespace, value )
+      @name = XSD::QName.new(targetnamespace, value)
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

@@ -38,7 +38,7 @@ module RPC
   def self.ary2md(*arg); Mapping.ary2md(*arg); end
   def self.fault2exception(*arg); Mapping.fault2exception(*arg); end
 
-  def self.retrieveDefinedMethod(obj)
+  def self.defined_methods(obj)
     if obj.is_a?(Module)
       obj.methods - Module.methods
     else

@@ -27,14 +27,16 @@ module SOAP
 class Driver < RPC::Driver
   include Devel::Logger::Severity
 
-  attr_accessor :logDev
+  attr_accessor :logdev
+  alias logDev= logdev=
+  alias logDev logdev
 
-  def initialize(log, logId, namespace, endpointUrl, httpProxy = nil, soapAction = nil)
-    super(endpointUrl, namespace, soapAction)
-    @logDev = log
-    @logId = logId
-    @logIdPrefix = "<#{ @logId }> "
-    setHttpProxy(httpProxy)
+  def initialize(log, logid, namespace, endpoint_url, httpproxy = nil, soapaction = nil)
+    super(endpoint_url, namespace, soapaction)
+    @logdev = log
+    @logid = logid
+    @logid_prefix = "<#{ @logid }> "
+    self.httpproxy = httpproxy
     log(SEV_INFO) { 'initialize: initializing SOAP driver...' }
   end
 
@@ -42,16 +44,16 @@ class Driver < RPC::Driver
   ###
   ## Driving interface.
   #
-  def invoke(reqHeaders, reqBody)
-    log(SEV_INFO) { "invoke: invoking message '#{ reqBody.type }'." }
+  def invoke(headers, body)
+    log(SEV_INFO) { "invoke: invoking message '#{ body.type }'." }
     super
   end
 
-  def call(methodName, *params)
-    log(SEV_INFO) { "call: calling method '#{ methodName }'." }
+  def call(name, *params)
+    log(SEV_INFO) { "call: calling method '#{ name }'." }
     log(SEV_DEBUG) { "call: parameters '#{ params.inspect }'." }
     log(SEV_DEBUG) {
-      params = RPC.obj2soap(params, @mappingRegistry).to_a
+      params = RPC.obj2soap(params, @mapping_registry).to_a
       "call: parameters '#{ params.inspect }'."
     }
     super
@@ -60,7 +62,7 @@ class Driver < RPC::Driver
 private
 
   def log(sev)
-    @logDev.add(sev, nil, self.class) { @logIdPrefix + yield } if @logDev
+    @logdev.add(sev, nil, self.class) { @logid_prefix + yield } if @logdev
   end
 end
 

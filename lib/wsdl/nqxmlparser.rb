@@ -25,58 +25,58 @@ module WSDL
 
 
 class WSDLNQXMLLightWeightParser < WSDLParser
-  def initialize( *vars )
-    super( *vars )
-    unless NQXML.const_defined?( "XMLDecl" )
-      NQXML.const_set( "XMLDecl", NilClass )
+  def initialize(*vars)
+    super(*vars)
+    unless NQXML.const_defined?("XMLDecl")
+      NQXML.const_set("XMLDecl", NilClass)
     end
-    @charsetBackup = nil
+    @charset_backup = nil
   end
 
   def prologue
-    @charsetBackup = $KCODE
-    $KCODE = ::SOAP::Charset.getCharsetStr( charset ) if charset
+    @charset_backup = $KCODE
+    $KCODE = ::SOAP::Charset.charset_str(charset) if charset
   end
 
   def epilogue
-    $KCODE = @charsetBackup
+    $KCODE = @charset_backup
   end
 
-  def setXMLDeclEncoding( charset )
+  def xmldecl_encoding=(charset)
     if self.charset.nil?
-      @charsetBackup = $KCODE
-      $KCODE = ::SOAP::Charset.getCharsetStr( charset ) if charset
+      @charset_backup = $KCODE
+      $KCODE = ::SOAP::Charset.charset_str(charset) if charset
     end
     super
   end
 
-  def doParse( stringOrReadable )
-    tokenizer = NQXML::Tokenizer.new( stringOrReadable )
-    tokenizer.each do | entity |
+  def do_parse(string_or_readable)
+    tokenizer = NQXML::Tokenizer.new(string_or_readable)
+    tokenizer.each do |entity|
       case entity
       when NQXML::Tag
 	unless entity.isTagEnd
-	  startElement( entity.name, entity.attrs )
+	  start_element(entity.name, entity.attrs)
 	else
-	  endElement( entity.name )
+	  end_element(entity.name)
 	end
       when NQXML::Text
-	characters( entity.text )
+	characters(entity.text)
       # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
       when NQXML::XMLDecl, NQXML::ProcessingInstruction
-	charset = entity.attrs[ 'encoding' ]
+	charset = entity.attrs['encoding']
 	if charset
-	  setXMLDeclEncoding( charset )
+	  self.xmldecl_encoding = charset
 	end
       when NQXML::Comment
 	# Nothing to do.
       else
-	raise FormatDecodeError.new( "Unexpected XML: #{ entity }." )
+	raise FormatDecodeError.new("Unexpected XML: #{ entity }.")
       end
     end
   end
 
-  setFactory( self )
+  add_factory(self)
 end
 
 

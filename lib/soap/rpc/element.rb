@@ -27,25 +27,25 @@ class SOAPBody < SOAPStruct
   public
 
   def request
-    rootNode
+    root_node
   end
 
   def response
-    if !@isFault
+    if !@is_fault
       if void?
         nil
       else
-        # Initial element is [retVal].
-        rootNode[0]
+        # Initial element is [retval].
+        root_node[0]
       end
     else
-      rootNode
+      root_node
     end
   end
 
-  def outParams
-    if !@isFault and !void?
-      op = rootNode[1..-1]
+  def outparams
+    if !@is_fault and !void?
+      op = root_node[1..-1]
       op = nil if op && op.empty?
       op
     else
@@ -54,20 +54,20 @@ class SOAPBody < SOAPStruct
   end
 
   def void?
-    rootNode.nil? # || rootNode.is_a?(SOAPNil)
+    root_node.nil? # || root_node.is_a?(SOAPNil)
   end
 
   def fault
-    if @isFault
+    if @is_fault
       self['fault']
     else
       nil
     end
   end
 
-  def setFault(faultData)
-    @isFault = true
-    addMember('fault', faultData)
+  def fault=(fault)
+    @is_fault = true
+    add_member('fault', fault)
   end
 end
 
@@ -85,99 +85,85 @@ class SOAPMethod < SOAPStruct
   OUT = 'out'
   INOUT = 'inout'
 
-  attr_reader :paramDef
-  attr_reader :inParam
-  attr_reader :outParam
+  attr_reader :param_def
+  attr_reader :inparam
+  attr_reader :outparam
 
-  def initialize(qname, paramDef = nil)
+  def initialize(qname, param_def = nil)
     super(nil)
-    @elementName = qname
-    @encodingStyle = nil
+    @elename = qname
+    @encodingstyle = nil
 
-    @paramDef = paramDef
+    @param_def = param_def
 
-    @paramSignature = []
-    @inParamNames = []
-    @inoutParamNames = []
-    @outParamNames = []
+    @signature = []
+    @inparam_names = []
+    @inoutparam_names = []
+    @outparam_names = []
 
-    @inParam = {}
-    @outParam = {}
-    @retName = nil
+    @inparam = {}
+    @outparam = {}
+    @retval_name = nil
 
-    setParamDef if @paramDef
+    init_param(@param_def) if @param_def
   end
 
-  def outParam?
-    @outParamNames.size > 0
+  def have_outparam?
+    @outparam_names.size > 0
   end
 
-  def eachParamName(*type)
-    @paramSignature.each do |ioType, name, paramType|
-      if type.include?(ioType)
+  def each_param_name(*type)
+    @signature.each do |io_type, name, param_type|
+      if type.include?(io_type)
         yield(name)
       end
     end
   end
 
-  def setParams(params)
+  def set_param(params)
     params.each do |param, data|
-      @inParam[param] = data
-      data.elementName.name = param
+      @inparam[param] = data
+      data.elename.name = param
     end
   end
 
-  def setOutParams(params)
+  def set_outparam(params)
     params.each do |param, data|
-      @outParam[param] = data
-      data.elementName.name = param
+      @outparam[param] = data
+      data.elename.name = param
     end
   end
 
-# Defined in derived class.
-#    def each
-#      eachParamName(IN, INOUT) do |name|
-#       unless @inParam[name]
-#         raise ParameterError.new("Parameter: #{ name } was not given.")
-#       end
-#       yield(name, @inParam[name])
-#      end
-#    end
-
-  def SOAPMethod.createParamDef(paramNames)
-    paramDef = []
-    paramNames.each do |paramName|
-      paramDef.push([IN, paramName, nil])
+  def SOAPMethod.create_param_def(param_names)
+    param_def = []
+    param_names.each do |param_name|
+      param_def.push([IN, param_name, nil])
     end
-    paramDef.push([RETVAL, 'return', nil])
-    paramDef
-  end
-
-  def SOAPMethod.getParamNames(paramDef)
-    paramDef.collect { |ioType, name, type| name }
+    param_def.push([RETVAL, 'return', nil])
+    param_def
   end
 
 private
 
-  def setParamDef
-    @paramDef.each do |ioType, name, paramType|
-      case ioType
+  def init_param(param_def)
+    param_def.each do |io_type, name, param_type|
+      case io_type
       when IN
-        @paramSignature.push([IN, name, paramType])
-        @inParamNames.push(name)
+        @signature.push([IN, name, param_type])
+        @inparam_names.push(name)
       when OUT
-        @paramSignature.push([OUT, name, paramType])
-        @outParamNames.push(name)
+        @signature.push([OUT, name, param_type])
+        @outparam_names.push(name)
       when INOUT
-        @paramSignature.push([INOUT, name, paramType])
-        @inoutParamNames.push(name)
+        @signature.push([INOUT, name, param_type])
+        @inoutparam_names.push(name)
       when RETVAL
-        if (@retName)
+        if (@retval_name)
           raise MethodDefinitionError.new('Duplicated retval')
         end
-        @retName = name
+        @retval_name = name
       else
-        raise MethodDefinitionError.new("Unknown type: #{ ioType }")
+        raise MethodDefinitionError.new("Unknown type: #{ io_type }")
       end
     end
   end
@@ -185,89 +171,91 @@ end
 
 
 class SOAPMethodRequest < SOAPMethod
-  attr_accessor :soapAction
+  attr_accessor :soapaction
 
-  def SOAPMethodRequest.createRequest(qname, *params)
-    paramDef = []
-    paramValue = []
+  def SOAPMethodRequest.create_request(qname, *params)
+    param_def = []
+    param_value = []
     i = 0
     params.each do |param|
-      paramName = "p#{ i }"
+      param_name = "p#{ i }"
       i += 1
-      paramDef << [IN, nil, paramName]
-      paramValue << [paramName, param]
+      param_def << [IN, nil, param_name]
+      param_value << [param_name, param]
     end
-    paramDef << [RETVAL, nil, 'return']
-    o = new(qname, paramDef)
-    o.setParams(paramValue)
+    param_def << [RETVAL, nil, 'return']
+    o = new(qname, param_def)
+    o.set_param(param_value)
     o
   end
 
-  def initialize(qname, paramDef = nil, soapAction = nil)
-    checkElementName(qname)
-    super(qname, paramDef)
-    @soapAction = soapAction
-  end
-
-  def checkElementName(qname)
-    # NCName & ruby's method name
-    unless /\A[\w_][\w\d_\-]*\z/ =~ qname.name
-      raise MethodDefinitionError.new("Element name '#{qname.name}' not allowed")
-    end
+  def initialize(qname, param_def = nil, soapaction = nil)
+    check_elename(qname)
+    super(qname, param_def)
+    @soapaction = soapaction
   end
 
   def each
-    eachParamName(IN, INOUT) do |name|
-      unless @inParam[name]
+    each_param_name(IN, INOUT) do |name|
+      unless @inparam[name]
         raise ParameterError.new("Parameter: #{ name } was not given.")
       end
-      yield(name, @inParam[name])
+      yield(name, @inparam[name])
     end
   end
 
   def dup
-    req = self.class.new(@elementName.dup, @paramDef, @soapAction)
-    req.encodingStyle = @encodingStyle
+    req = self.class.new(@elename.dup, @param_def, @soapaction)
+    req.encodingstyle = @encodingstyle
     req
   end
 
-  def createMethodResponse
+  def create_method_response
     SOAPMethodResponse.new(
-      XSD::QName.new(@elementName.namespace, @elementName.name + 'Response'),
-      @paramDef)
+      XSD::QName.new(@elename.namespace, @elename.name + 'Response'),
+      @param_def)
+  end
+
+private
+
+  def check_elename(qname)
+    # NCName & ruby's method name
+    unless /\A[\w_][\w\d_\-]*\z/ =~ qname.name
+      raise MethodDefinitionError.new("Element name '#{qname.name}' not allowed")
+    end
   end
 end
 
 
 class SOAPMethodResponse < SOAPMethod
 
-  def initialize(qname, paramDef = nil)
-    super(qname, paramDef)
-    @retVal = nil
+  def initialize(qname, param_def = nil)
+    super(qname, param_def)
+    @retval = nil
   end
 
-  def setRetVal(retVal)
-    @retVal = retVal
-    @retVal.elementName.name = 'return'
+  def retval=(retval)
+    @retval = retval
+    @retval.elename.name = 'return'
   end
 
   def each
-    if @retName and !@retVal.is_a?(SOAPVoid)
-      yield(@retName, @retVal)
+    if @retval_name and !@retval.is_a?(SOAPVoid)
+      yield(@retval_name, @retval)
     end
 
-    eachParamName(OUT, INOUT) do |paramName|
-      unless @outParam[paramName]
-        raise ParameterError.new("Parameter: #{ paramName } was not given.")
+    each_param_name(OUT, INOUT) do |param_name|
+      unless @outparam[param_name]
+        raise ParameterError.new("Parameter: #{ param_name } was not given.")
       end
-      yield(paramName, @outParam[paramName])
+      yield(param_name, @outparam[param_name])
     end
   end
 end
 
 
 # To return(?) void explicitly.
-#  def foo(inputVar)
+#  def foo(input_var)
 #    ...
 #    return SOAP::RPC::SOAPVoid.new
 #  end
@@ -278,7 +266,7 @@ class SOAPVoid < XSDAnySimpleType
 
 public
   def initialize()
-    @elementName = Name
+    @elename = Name
     @id = nil
     @precedents = []
     @parent = nil

@@ -7,7 +7,7 @@
 */
 
 var uri = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1";
-var endPoint = "http://www.ruby-lang.org/~nahi/soap/raa/";
+var endPoint = "http://raa.ruby-lang.org/soap/1.0/";
 var proxySvr = "myProxyServer";
 var proxyPort = 8080;
 

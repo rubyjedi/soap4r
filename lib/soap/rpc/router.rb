@@ -30,96 +30,94 @@ class Router
   include SOAP
 
   attr_reader :actor
-  attr_accessor :allowUnqualifiedElement, :defaultEncodingStyle
-  attr_accessor :mappingRegistry
+  attr_accessor :allow_unqualified_element
+  attr_accessor :default_encodingstyle
+  attr_accessor :mapping_registry
 
   def initialize(actor)
     @actor = actor
     @receiver = {}
-    @methodName = {}
+    @method_name = {}
     @method = {}
-    @allowUnqualifiedElement = false
-    @defaultEncodingStyle = nil
-    @mappingRegistry = nil
+    @allow_unqualified_element = false
+    @default_encodingstyle = nil
+    @mapping_registry = nil
   end
 
-  def addMethod(receiver, qname, soapAction, methodName, paramDef)
-    name = fqName(qname)
-    @receiver[name] = receiver
-    @methodName[name] = methodName
-    @method[name] = RPC::SOAPMethodRequest.new(qname, paramDef, soapAction)
+  def add_method(receiver, qname, soapaction, name, param_def)
+    fqname = fqname(qname)
+    @receiver[fqname] = receiver
+    @method_name[fqname] = name
+    @method[fqname] = RPC::SOAPMethodRequest.new(qname, param_def, soapaction)
   end
 
-  def addHeaderHandler
+  def add_header_handler
     raise NotImplementedError.new
   end
 
   # Routing...
-  def route(soapString, charset = nil)
-    opt = getOpt
+  def route(soap_string, charset = nil)
+    opt = options
     opt[:charset] = charset
-    isFault = false
+    is_fault = false
     begin
-      header, body = Processor.unmarshal(soapString, opt)
+      header, body = Processor.unmarshal(soap_string, opt)
       # So far, header is omitted...
-      soapRequest = body.request
-      unless soapRequest.is_a?(SOAPStruct)
+      soap_request = body.request
+      unless soap_request.is_a?(SOAPStruct)
 	raise RPCRoutingError.new("Not an RPC style.")
       end
-      soapResponse = dispatch(soapRequest)
+      soap_response = dispatch(soap_request)
     rescue Exception
-      soapResponse = fault($!)
-      isFault = true
+      soap_response = fault($!)
+      is_fault = true
     end
 
     header = SOAPHeader.new
-    body = SOAPBody.new(soapResponse)
-    responseString = Processor.marshal(header, body, opt)
+    body = SOAPBody.new(soap_response)
+    response_string = Processor.marshal(header, body, opt)
 
-    return responseString, isFault
+    return response_string, is_fault
   end
 
   # Create fault response string.
-  def createFaultResponseString(e, charset = nil)
-    opt = getOpt
-    opt[:charset] = charset
-    soapResponse = fault(e)
-
+  def create_fault_response(e, charset = nil)
     header = SOAPHeader.new
-    body = SOAPBody.new(soapResponse)
-    responseString = Processor.marshal(header, body, opt)
-
-    responseString
+    soap_response = fault(e)
+    body = SOAPBody.new(soap_response)
+    opt = options
+    opt[:charset] = charset
+    Processor.marshal(header, body, opt)
   end
 
 private
 
   # Create new response.
-  def createResponse(qname, result)
-    name = fqName(qname)
-    if (@method.has_key?(name))
+  def create_response(qname, result)
+    name = fqname(qname)
+    if (@method.key?(name))
       method = @method[name]
     else
       raise RPCRoutingError.new("Method: #{ name } not defined.")
     end
 
-    soapResponse = method.createMethodResponse
-    if soapResponse.outParam?
+    soap_response = method.create_method_response
+    if soap_response.have_outparam?
       unless result.is_a?(Array)
 	raise RPCRoutingError.new("Out parameter was not returned.")
       end
-      outParams = {}
+      outparams = {}
       i = 1
-      soapResponse.eachParamName('out', 'inout') do |outParam|
-	outParams[outParam] = RPC.obj2soap(result[i], @mappingRegistry)
+      soap_response.each_param_name('out', 'inout') do |outparam|
+	outparams[outparam] = RPC.obj2soap(result[i], @mapping_registry)
 	i += 1
       end
-      soapResponse.setOutParams(outParams)
-      soapResponse.setRetVal(RPC.obj2soap(result[0], @mappingRegistry))
+      soap_response.set_outparam(outparams)
+      soap_response.retval = RPC.obj2soap(result[0], @mapping_registry)
     else
-      soapResponse.setRetVal(RPC.obj2soap(result, @mappingRegistry))
+      soap_response.retval = RPC.obj2soap(result, @mapping_registry)
     end
-    soapResponse
+    soap_response
   end
 
   # Create fault response.
@@ -129,43 +127,43 @@ private
       SOAPString.new('Server'),
       SOAPString.new(e.to_s),
       SOAPString.new(@actor),
-      RPC.obj2soap(detail, @mappingRegistry))
+      RPC.obj2soap(detail, @mapping_registry))
   end
 
   # Dispatch to defined method.
-  def dispatch(soapMethod)
-    requestStruct = RPC.soap2obj(soapMethod, @mappingRegistry)
-    values = soapMethod.collect { |key, value| requestStruct[key] }
-    method = lookup(soapMethod.elementName, values)
+  def dispatch(soap_method)
+    request_struct = RPC.soap2obj(soap_method, @mapping_registry)
+    values = soap_method.collect { |key, value| request_struct[key] }
+    method = lookup(soap_method.elename, values)
     unless method
       raise RPCRoutingError.new(
-	"Method: #{ soapMethod.elementName } not supported.")
+	"Method: #{ soap_method.elename } not supported.")
     end
 
     result = method.call(*values)
-    createResponse(soapMethod.elementName, result)
+    create_response(soap_method.elename, result)
   end
 
   # Method lookup
   def lookup(qname, values)
-    name = fqName(qname)
+    name = fqname(qname)
     # It may be necessary to check all part of method signature...
     if @method.member?(name)
-      @receiver[name].method(@methodName[name].intern)
+      @receiver[name].method(@method_name[name].intern)
     else
       nil
     end
   end
 
-  def fqName(qname)
+  def fqname(qname)
     "#{ qname.namespace }:#{ qname.name }"
   end
 
-  def getOpt
+  def options
     opt = {}
-    opt[:defaultEncodingStyle] = @defaultEncodingStyle
-    if @allowUnqualifiedElement
-      opt[:allowUnqualifiedElement] = true
+    opt[:default_encodingstyle] = @default_encodingstyle
+    if @allow_unqualified_element
+      opt[:allow_unqualified_element] = true
     end
     opt
   end

@@ -24,19 +24,19 @@ module SOAP
 
 
 class SOAPXMLScanner < SOAPParser
-  def initialize( *vars )
-    super( *vars )
+  def initialize(*vars)
+    super(*vars)
   end
 
-  def doParse( stringOrReadable )
-    @scanner = XMLScan::XMLScanner.new( Visitor.new( self ))
-    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset ) if charset
-    @scanner.parse( stringOrReadable )
+  def do_parse(string_or_readable)
+    @scanner = XMLScan::XMLScanner.new(Visitor.new(self))
+    @scanner.kcode = ::SOAP::Charset.charset_str(charset) if charset
+    @scanner.parse(string_or_readable)
   end
 
-  def setScannerKCode( charset )
-    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset ) if charset
-    setXMLDeclEncoding( charset )
+  def scanner_kcode=(charset)
+    @scanner.kcode = ::SOAP::Charset.charset_str(charset) if charset
+    self.xmldecl_encoding = charset
   end
 
   class Visitor; include XMLScan::Visitor
@@ -48,115 +48,115 @@ class SOAPXMLScanner < SOAPParser
       'apos' => '\''
     }
 
-    def initialize( dest )
+    def initialize(dest)
       @dest = dest
       @attrs = {}
-      @currentAttr = nil
+      @curattr = nil
     end
 
-    def parse_error( msg )
-      raise SOAPParser::ParseError.new( msg )
+    def parse_error(msg)
+      raise SOAPParser::ParseError.new(msg)
     end
 
-    def wellformed_error( msg )
-      raise NotWellFormedError.new( msg )
+    def wellformed_error(msg)
+      raise NotWellFormedError.new(msg)
     end
 
-    def valid_error( msg )
-      raise NotValidError.new( msg )
+    def valid_error(msg)
+      raise NotValidError.new(msg)
     end
 
-    def warning( msg )
+    def warning(msg)
       p msg if $DEBUG
     end
 
     # def on_xmldecl; end
 
-    def on_xmldecl_version( str )
+    def on_xmldecl_version(str)
       # 1.0 expected.
     end
 
-    def on_xmldecl_encoding( str )
-      @dest.setScannerKCode( str )
+    def on_xmldecl_encoding(str)
+      @dest.scanner_kcode = str
     end
 
-    # def on_xmldecl_standalone( str ); end
+    # def on_xmldecl_standalone(str); end
 
-    # def on_xmldecl_other( name, value ); end
+    # def on_xmldecl_other(name, value); end
 
     # def on_xmldecl_end; end
 
-    # def on_doctype( root, pubid, sysid ); end
+    # def on_doctype(root, pubid, sysid); end
 
-    # def on_prolog_space( str ); end
+    # def on_prolog_space(str); end
 
-    # def on_comment( str ); end
+    # def on_comment(str); end
 
-    # def on_pi( target, pi ); end
+    # def on_pi(target, pi); end
 
-    def on_chardata( str )
-      @dest.characters( str )
+    def on_chardata(str)
+      @dest.characters(str)
     end
 
-    # def on_cdata( str ); end
+    # def on_cdata(str); end
 
-    def on_etag( name )
-      @dest.endElement( name )
+    def on_etag(name)
+      @dest.end_element(name)
     end
 
-    def on_entityref( ref )
-      @dest.characters( ENTITY_REF_MAP[ ref ] )
+    def on_entityref(ref)
+      @dest.characters(ENTITY_REF_MAP[ref])
     end
 
-    def on_charref( code )
-      @dest.characters( [ code ].pack( 'U' ))
+    def on_charref(code)
+      @dest.characters([code].pack('U'))
     end
 
-    def on_charref_hex( code )
-      on_charref( code )
+    def on_charref_hex(code)
+      on_charref(code)
     end
 
     # def on_start_document; end
 
     # def on_end_document; end
 
-    def on_stag( name )
+    def on_stag(name)
       @attrs = {}
     end
 
-    def on_attribute( name )
-      @attrs[ name ] = @currentAttr = ''
+    def on_attribute(name)
+      @attrs[name] = @curattr = ''
     end
 
-    def on_attr_value( str )
-      @currentAttr << str
+    def on_attr_value(str)
+      @curattr << str
     end
 
-    def on_attr_entityref( ref )
-      @currentAttr << ENTITY_REF_MAP[ ref ]
+    def on_attr_entityref(ref)
+      @curattr << ENTITY_REF_MAP[ref]
     end
 
-    def on_attr_charref( code )
-      @currentAttr << [ code ].pack( 'U' )
+    def on_attr_charref(code)
+      @curattr << [code].pack('U')
     end
 
-    def on_attr_charref_hex( code )
-      on_attr_charref( code )
+    def on_attr_charref_hex(code)
+      on_attr_charref(code)
     end
 
-    # def on_attribute_end( name ); end
+    # def on_attribute_end(name); end
 
-    def on_stag_end_empty( name )
-      on_stag_end( name )
-      on_etag( name )
+    def on_stag_end_empty(name)
+      on_stag_end(name)
+      on_etag(name)
     end
 
-    def on_stag_end( name )
-      @dest.startElement( name, @attrs )
+    def on_stag_end(name)
+      @dest.start_element(name, @attrs)
     end
   end
 
-  setFactory( self )
+  add_factory(self)
 end
 
 

@@ -27,68 +27,67 @@ module WSDL
 class MappingRegistryCreator
   attr_reader :definitions
 
-  def initialize( definitions )
+  def initialize(definitions)
     @definitions = definitions
-    @complexTypes = @definitions.collectComplexTypes
+    @complextypes = @definitions.collect_complextypes
     @types = nil
   end
 
-  def dump( types )
+  def dump(types)
     @types = types
-    typeMapCache = []
-    typeMap = ""
-    @types.each do | type |
-      if typeMapCache.index( type ).nil?
-	typeMapCache << type
+    map_cache = []
+    map = ""
+    @types.each do |type|
+      if map_cache.index(type).nil?
+	map_cache << type
 	if type.namespace != XSD::Namespace
-	  typeMap << dumpTypeMap( type )
+	  map << dump_typemap(type)
 	end
       end
     end
 
     return <<__EOD__
-#{ typeMap }
+#{ map }
 __EOD__
   end
 
 private
 
-  def dumpTypeMap( type )
-    typeDef = @complexTypes[ type ]
-    case typeDef.compoundType
+  def dump_typemap(type)
+    definedtype = @complextypes[type]
+    case definedtype.compoundtype
     when :TYPE_STRUCT
-      dumpTypeMapStruct( typeDef )
+      dump_struct_typemap(definedtype)
     when :TYPE_ARRAY
-      dumpTypeMapArray( typeDef )
+      dump_array_typemap(definedtype)
     else
-      raise NotImplementedError.new( "Must not reach here." )
+      raise NotImplementedError.new("Must not reach here.")
     end
   end
 
-  def dumpTypeMapStruct( typeDef )
-    ele = typeDef.name
+  def dump_struct_typemap(definedtype)
+    ele = definedtype.name
     return <<__EOD__
 MappingRegistry.set(
   #{ ele.name },
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  { :type => XSD::QName.new( "#{ ele.namespace }", "#{ ele.name }" ) }
+  { :type => XSD::QName.new("#{ ele.namespace }", "#{ ele.name }") }
 )
 __EOD__
   end
 
-  def dumpTypeMapArray( typeDef )
-    ele = typeDef.name
-    arrayType = typeDef.getArrayType
-    contentType = XSD::QName.new( arrayType.namespace,
-      arrayType.name.sub( /\[(?:,)*\]$/, '' ))
-    @types << contentType
+  def dump_array_typemap(definedtype)
+    ele = definedtype.name
+    arytype = definedtype.find_arytype
+    type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
+    @types << type
     return <<__EOD__
 MappingRegistry.set(
   #{ ele.name },
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  { :type => XSD::QName.new( "#{ contentType.namespace }", "#{ contentType.name }" ) }
+  { :type => XSD::QName.new("#{ type.namespace }", "#{ type.name }") }
 )
 __EOD__
   end

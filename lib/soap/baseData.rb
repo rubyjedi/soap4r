@@ -32,9 +32,9 @@ module SOAPModuleUtils
 
 public
 
-  def decode( elementName )
+  def decode(elename)
     d = self.new
-    d.elementName = elementName
+    d.elename = elename
     d
   end
 end
@@ -46,27 +46,27 @@ end
 module SOAPBasetype
   include SOAP
 
-  attr_accessor :encodingStyle
+  attr_accessor :encodingstyle
 
-  attr_accessor :elementName
+  attr_accessor :elename
   attr_accessor :id
   attr_reader :precedents
   attr_accessor :root
   attr_accessor :parent
   attr_accessor :position
-  attr_reader :extraAttrs
+  attr_reader :extraattr
 
 public
 
-  def initialize( *vars )
-    super( *vars )
-    @encodingStyle = nil
-    @elementName = XSD::QName.new
+  def initialize(*vars)
+    super(*vars)
+    @encodingstyle = nil
+    @elename = XSD::QName.new
     @id = nil
     @precedents = []
     @parent = nil
     @position = nil
-    @extraAttrs = {}
+    @extraattr = {}
   end
 end
 
@@ -77,32 +77,32 @@ end
 module SOAPCompoundtype
   include SOAP
 
-  attr_accessor :encodingStyle
+  attr_accessor :encodingstyle
 
-  attr_accessor :elementName
+  attr_accessor :elename
   attr_accessor :id
   attr_reader :precedents
   attr_accessor :root
   attr_accessor :parent
   attr_accessor :position
-  attr_reader :extraAttrs
+  attr_reader :extraattr
 
-  attr_accessor :typeDef
+  attr_accessor :definedtype
 
 public
 
-  def initialize( type )
+  def initialize(type)
     super()
     @type = type
-    @encodingStyle = nil
-    @elementName = XSD::QName.new
+    @encodingstyle = nil
+    @elename = XSD::QName.new
     @id = nil
     @precedents = []
     @root = false
     @parent = nil
     @position = nil
-    @typeDef = nil
-    @extraAttrs = {}
+    @definedtype = nil
+    @extraattr = {}
   end
 end
 
@@ -116,20 +116,20 @@ class SOAPReference < NSDBase
 
 public
 
-  attr_accessor :refId
-  attr_accessor :elementName
+  attr_accessor :refid
+  attr_accessor :elename
 
   # Override the definition in SOAPBasetype.
-  def initialize( refId = nil )
+  def initialize(refid = nil)
     super()
     @type = XSD::QName.new
-    @encodingStyle = nil
-    @elementName = XSD::QName.new
+    @encodingstyle = nil
+    @elename = XSD::QName.new
     @id = nil
     @precedents = []
     @root = false
     @parent = nil
-    @refId = refId
+    @refid = refid
     @obj = nil
   end
 
@@ -137,10 +137,10 @@ public
     @obj
   end
 
-  def __setobj__( obj )
+  def __setobj__(obj)
     @obj = obj
-    @refId = SOAPReference.createId( @obj )
-    @obj.id = @refId unless @obj.id
+    @refid = SOAPReference.create_refid(@obj)
+    @obj.id = @refid unless @obj.id
     @obj.precedents << self
     # Copies NSDBase information
     @obj.type = @type unless @obj.type
@@ -154,21 +154,21 @@ public
   # ToDo: Maybe I should use forwardable.rb and give it a methods list like
   # delegate.rb...
   #
-  def method_missing( msg_id, *params )
+  def method_missing(msg_id, *params)
     if @obj
-      @obj.send( msg_id, *params )
+      @obj.send(msg_id, *params)
     else
       nil
     end
   end
 
-  def self.decode( elementName, refId )
-    d = super( elementName )
-    d.refId = refId
+  def self.decode(elename, refid)
+    d = super(elename)
+    d.refid = refid
     d
   end
 
-  def SOAPReference.createId( obj )
+  def SOAPReference.create_refid(obj)
     'id' << obj.__id__.to_s
   end
 end
@@ -176,13 +176,6 @@ end
 class SOAPNil < XSDNil
   include SOAPBasetype
   extend SOAPModuleUtils
-
-private
-
-  # Override the definition in SOAPBasetype.
-  def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::InstanceNamespace, Literal ), Value )
-  end
 end
 
 # SOAPRawString is for sending raw string.  In contrast to SOAPString,
@@ -280,16 +273,16 @@ end
 class SOAPBase64 < XSDBase64Binary
   include SOAPBasetype
   extend SOAPModuleUtils
-  Type = QName.new( EncodingNamespace, Base64Literal )
+  Type = QName.new(EncodingNamespace, Base64Literal)
 
 public
   # Override the definition in SOAPBasetype.
-  def initialize( initString = nil )
-    super( initString )
+  def initialize(value = nil)
+    super(value)
     @type = Type
   end
 
-  def asXSD
+  def as_xsd
     @type = XSD::XSDBase64Binary::Type
   end
 end
@@ -335,51 +328,51 @@ class SOAPStruct < NSDBase
 
 public
 
-  def initialize( type = nil )
-    super( type || XSD::QName.new )
+  def initialize(type = nil)
+    super(type || XSD::QName.new)
     @array = []
     @data = []
   end
 
   def to_s()
     str = ''
-    self.each do | key, data |
+    self.each do |key, data|
       str << "#{ key }: #{ data }\n"
     end
     str
   end
 
-  def add( name, newMember )
-    addMember( name, newMember )
+  def add(name, value)
+    add_member(name, value)
   end
 
-  def []( idx )
-    if idx.is_a?( Range )
-      @data[ idx ]
-    elsif idx.is_a?( Integer )
-      if ( idx > @array.size )
-        raise ArrayIndexOutOfBoundsError.new( 'In ' << @type.name )
+  def [](idx)
+    if idx.is_a?(Range)
+      @data[idx]
+    elsif idx.is_a?(Integer)
+      if (idx > @array.size)
+        raise ArrayIndexOutOfBoundsError.new('In ' << @type.name)
       end
-      @data[ idx ]
+      @data[idx]
     else
-      if @array.include?( idx )
-	@data[ @array.index( idx ) ]
+      if @array.include?(idx)
+	@data[@array.index(idx)]
       else
 	nil
       end
     end
   end
 
-  def []=( idx, data )
-    if @array.include?( idx )
-      @data[ @array.index( idx ) ] = data
+  def []=(idx, data)
+    if @array.include?(idx)
+      @data[@array.index(idx)] = data
     else
-      add( idx, data )
+      add(idx, data)
     end
   end
 
-  def has_key?( name )
-    @array.include?( name )
+  def key?(name)
+    @array.include?(name)
   end
 
   def members
@@ -387,30 +380,30 @@ public
   end
 
   def each
-    for i in 0..( @array.length - 1 )
-      yield( @array[ i ], @data[ i ] )
+    for i in 0..(@array.length - 1)
+      yield(@array[i], @data[i])
     end
   end
 
   def replace
-    members.each do | member |
-      self[ member ] = yield( self[ member ] )
+    members.each do |member|
+      self[member] = yield(self[member])
     end
   end
 
-  def self.decode( elementName, type )
-    s = SOAPStruct.new( type )
-    s.elementName = elementName
+  def self.decode(elename, type)
+    s = SOAPStruct.new(type)
+    s.elename = elename
     s
   end
 
 private
 
-  def addMember( name, initMember = nil )
-    initMember = SOAPNil.new() unless initMember
-    @array.push( name )
-    initMember.elementName.name = name
-    @data.push( initMember )
+  def add_member(name, value = nil)
+    value = SOAPNil.new() unless value
+    @array.push(name)
+    value.elename.name = name
+    @data.push(value)
   end
 end
 
@@ -423,12 +416,12 @@ class SOAPElement
 public
 
   attr_accessor :qualified
-  attr_accessor :elementName
+  attr_accessor :elename
 
-  def initialize( namespace, name, text = nil )
-    super( nil )
-    @encodingStyle = LiteralNamespace
-    @elementName = XSD::QName.new( namespace, name )
+  def initialize(namespace, name, text = nil)
+    super(nil)
+    @encodingstyle = LiteralNamespace
+    @elename = XSD::QName.new(namespace, name)
 
     @id = nil
     @precedents = []
@@ -446,28 +439,28 @@ public
   attr_accessor :text
 
   # Element interfaces.
-  def add( newMember )
-    addMember( newMember.name, newMember )
+  def add(value)
+    add_member(value.name, value)
   end
 
-  def []( idx )
-    if @array.include?( idx )
-      @data[ @array.index( idx ) ]
+  def [](idx)
+    if @array.include?(idx)
+      @data[@array.index(idx)]
     else
       nil
     end
   end
 
-  def []=( idx, data )
-    if @array.include?( idx )
-      @data[ @array.index( idx ) ] = data
+  def []=(idx, data)
+    if @array.include?(idx)
+      @data[@array.index(idx)] = data
     else
-      add( data )
+      add(data)
     end
   end
 
-  def has_key?( name )
-    @array.include?( name )
+  def key?(name)
+    @array.include?(name)
   end
 
   def members
@@ -475,50 +468,50 @@ public
   end
 
   def each
-    for i in 0..( @array.length - 1 )
-      yield( @array[ i ], @data[ i ] )
+    for i in 0..(@array.length - 1)
+      yield(@array[i], @data[i])
     end
   end
 
-  def self.decode( elementName )
+  def self.decode(elename)
     o = SOAPElement.new
-    o.elementName = elementName
+    o.elename = elename
     o
   end
 
 private
 
-  def addMember( name, initMember = nil )
-    initMember = SOAPNil.new() unless initMember
-    addAccessor( name )
-    @array.push( name )
-    initMember.name = name
-    @data.push( initMember )
+  def add_member(name, value = nil)
+    value = SOAPNil.new() unless value
+    add_accessor(name)
+    @array.push(name)
+    value.name = name
+    @data.push(value)
   end
 
-  def addAccessor( name )
-    methodName = name
-    if self.methods.include?( methodName )
-      methodName = safeAccessorName( methodName )
+  def add_accessor(name)
+    methodname = name
+    if self.methods.include?(methodname)
+      methodname = safe_accessor_name(methodname)
     end
     begin
       instance_eval <<-EOS
-        def #{ methodName }()
-	  @data[ @array.index( '#{ name }' ) ]
+        def #{ methodname }()
+	  @data[@array.index('#{ name }')]
         end
 
-        def #{ methodName }=( newMember )
-	  @data[ @array.index( '#{ name }' ) ] = newMember
+        def #{ methodname }=(value)
+	  @data[@array.index('#{ name }')] = value
         end
       EOS
     rescue SyntaxError
-      methodName = safeAccessorName( methodName )
+      methodname = safe_accessor_name(methodname)
       retry
     end
   end
 
-  def safeAccessorName( name )
-    "var_" << name.gsub( /[^a-zA-Z0-9_]/, '' )
+  def safe_accessor_name(name)
+    "var_" << name.gsub(/[^a-zA-Z0-9_]/, '')
   end
 end
 
@@ -534,61 +527,61 @@ public
   attr_accessor :sparse
 
   attr_reader :offset, :rank
-  attr_accessor :size, :sizeFixed
-  attr_reader :arrayType
+  attr_accessor :size, :size_fixed
+  attr_reader :arytype
 
-  def initialize( type = nil, rank = 1, arrayType = nil )
-    super( type || XSD::QName.new )
+  def initialize(type = nil, rank = 1, arytype = nil)
+    super(type || XSD::QName.new)
     @rank = rank
     @data = Array.new
     @sparse = false
-    @offset = Array.new( rank, 0 )
-    @size = Array.new( rank, 0 )
-    @sizeFixed = false
+    @offset = Array.new(rank, 0)
+    @size = Array.new(rank, 0)
+    @size_fixed = false
     @position = nil
-    @arrayType = arrayType
+    @arytype = arytype
   end
 
-  def offset=( var )
+  def offset=(var)
     @offset = var
     @sparse = true
   end
 
-  def add( newMember )
-    self[ *( @offset ) ] = newMember
+  def add(value)
+    self[*(@offset)] = value
   end
 
-  def []( *idxAry )
-    if idxAry.size != @rank
-      raise ArgumentError.new( "Given #{ idxAry.size } params does not match rank: #{ @rank }" )
+  def [](*idxary)
+    if idxary.size != @rank
+      raise ArgumentError.new("Given #{ idxary.size } params does not match rank: #{ @rank }")
     end
 
-    retrieve( idxAry )
+    retrieve(idxary)
   end
 
-  def []=( *idxAry )
-    value = idxAry.slice!( -1 )
+  def []=(*idxary)
+    value = idxary.slice!(-1)
 
-    if idxAry.size != @rank
-      raise ArgumentError.new( "Given #{ idxAry.size } params(#{ idxAry }) does not match rank: #{ @rank }" )
+    if idxary.size != @rank
+      raise ArgumentError.new("Given #{ idxary.size } params(#{ idxary }) does not match rank: #{ @rank }")
     end
 
-    for i in 0..( idxAry.size - 1 )
-      if idxAry[ i ] + 1 > @size[ i ]
-	@size[ i ] = idxAry[ i ] + 1
+    for i in 0..(idxary.size - 1)
+      if idxary[i] + 1 > @size[i]
+	@size[i] = idxary[i] + 1
       end
     end
 
-    data = retrieve( idxAry[ 0..-2 ] )
-    data[ idxAry.last ] = value
+    data = retrieve(idxary[0, idxary.size - 1])
+    data[idxary.last] = value
 
-    if value.is_a?( SOAPBasetype ) || value.is_a?( SOAPCompoundtype )
-      value.elementName.name = 'item'
+    if value.is_a?(SOAPBasetype) || value.is_a?(SOAPCompoundtype)
+      value.elename.name = 'item'
       
       # Sync type
       unless @type.name
-	@type = XSD::QName.new( value.type.namespace,
-	  SOAPArray.getAtype( value.type.name, @rank ))
+	@type = XSD::QName.new(value.type.namespace,
+	  SOAPArray.create_arytype(value.type.name, @rank))
       end
 
       unless value.type
@@ -596,13 +589,13 @@ public
       end
     end
 
-    @offset = idxAry
-    offsetNext
+    @offset = idxary
+    offsetnext
   end
 
   def each
-    @data.each do | data |
-      yield( data )
+    @data.each do |data|
+      yield(data)
     end
   end
 
@@ -611,26 +604,26 @@ public
   end
 
   def replace
-    @data = doDeepMap( @data ) do | ele |
-      yield( ele )
+    @data = deep_map(@data) do |ele|
+      yield(ele)
     end
   end
 
-  def doDeepMap( ary, &block )
-    ary.collect do | ele |
-      if ele.is_a?( Array )
-	doDeepMap( ele, &block )
+  def deep_map(ary, &block)
+    ary.collect do |ele|
+      if ele.is_a?(Array)
+	deep_map(ele, &block)
       else
-	newObj = block.call( ele )
-	newObj.elementName.name = 'item'
-	newObj
+	new_obj = block.call(ele)
+	new_obj.elename.name = 'item'
+	new_obj
       end
     end
   end
 
-  def include?( var )
-    traverseData( @data ) do | v, *rank |
-      if v.is_a?( SOAPBasetype ) && v.data == var
+  def include?(var)
+    traverse_data(@data) do |v, *rank|
+      if v.is_a?(SOAPBasetype) && v.data == var
 	return true
       end
     end
@@ -638,37 +631,33 @@ public
   end
 
   def traverse
-    traverseData( @data ) do | v, *rank |
+    traverse_data(@data) do |v, *rank|
       unless @sparse
-       yield( v )
+       yield(v)
       else
-       yield( v, *rank ) if v && !v.is_a?( SOAPNil )
+       yield(v, *rank) if v && !v.is_a?(SOAPNil)
       end
     end
   end
 
-  def soap2array( ary )
-    traverseData( @data ) do | v, *position |
-      iteAry = ary
-      for rank in 1..( position.size - 1 )
-	idx = position[ rank - 1 ]
-	if iteAry[ idx ].nil?
-	  iteAry = iteAry[ idx ] = Array.new
+  def soap2array(ary)
+    traverse_data(@data) do |v, *position|
+      iteary = ary
+      for rank in 1..(position.size - 1)
+	idx = position[rank - 1]
+	if iteary[idx].nil?
+	  iteary = iteary[idx] = Array.new
 	else
-	  iteAry = iteAry[ idx ]
+	  iteary = iteary[idx]
 	end
       end
       if block_given?
-	iteAry[ position.last ] = yield( v )
+	iteary[position.last] = yield(v)
       else
-	iteAry[ position.last ] = v
+	iteary[position.last] = v
       end
     end
   end
-
-#  def baseTypeName()
-#    @type.name ?  @type.name.sub( /(?:\[,*\])+$/, '' ) : ''
-#  end
 
   def position
     @position
@@ -676,46 +665,46 @@ public
 
 private
 
-  def retrieve( idxAry )
+  def retrieve(idxary)
     data = @data
-    for rank in 1..( idxAry.size )
-      idx = idxAry[ rank - 1 ]
-      if data[ idx ].nil?
-	data = data[ idx ] = Array.new
+    for rank in 1..(idxary.size)
+      idx = idxary[rank - 1]
+      if data[idx].nil?
+	data = data[idx] = Array.new
       else
-	data = data[ idx ]
+	data = data[idx]
       end
     end
     data
   end
 
-  def traverseData( data, rank = 1 )
-    for idx in 0..( rankSize( rank ) - 1 )
+  def traverse_data(data, rank = 1)
+    for idx in 0..(ranksize(rank) - 1)
       if rank < @rank
-	traverseData( data[ idx ], rank + 1 ) do | *v |
-	  v[ 1, 0 ] = idx
-       	  yield( *v )
+	traverse_data(data[idx], rank + 1) do |*v|
+	  v[1, 0] = idx
+       	  yield(*v)
 	end
       else
-	yield( data[ idx ], idx )
+	yield(data[idx], idx)
       end
     end
   end
 
-  def rankSize( rank )
-    @size[ rank - 1 ]
+  def ranksize(rank)
+    @size[rank - 1]
   end
 
-  def offsetNext
+  def offsetnext
     move = false
     idx = @offset.size - 1
     while !move && idx >= 0
-      @offset[ idx ] += 1
-      if @sizeFixed
-	if @offset[ idx ] < @size[ idx ]
+      @offset[idx] += 1
+      if @size_fixed
+	if @offset[idx] < @size[idx]
 	  move = true
 	else
-	  @offset[ idx ] = 0
+	  @offset[idx] = 0
 	  idx -= 1
 	end
       else
@@ -728,14 +717,13 @@ private
 
 public
 
-  # DEBT: Check if getArrayType returns non-nil before invoking this method.
-  def self.decode( elementName, type, arrayType )
-    typeStr, nofArray = parseType( arrayType.name )
-    rank = nofArray.count( ',' ) + 1
-    plainArrayType = XSD::QName.new( arrayType.namespace, typeStr )
-    o = SOAPArray.new( type, rank, plainArrayType )
+  def self.decode(elename, type, arytype)
+    typestr, nofary = parse_type(arytype.name)
+    rank = nofary.count(',') + 1
+    plain_arytype = XSD::QName.new(arytype.namespace, typestr)
+    o = SOAPArray.new(type, rank, plain_arytype)
     size = []
-    nofArray.split( ',' ).each do | s |
+    nofary.split(',').each do |s|
       if s.empty?
 	size.clear
 	break
@@ -745,21 +733,21 @@ public
     end
     unless size.empty?
       o.size = size
-      o.sizeFixed = true
+      o.size_fixed = true
     end
-    o.elementName = elementName
+    o.elename = elename
     o
   end
 
 private
 
-  def self.getAtype( typeName, rank )
-    "#{ typeName }[" << ',' * ( rank - 1 ) << ']'
+  def self.create_arytype(typename, rank)
+    "#{ typename }[" << ',' * (rank - 1) << ']'
   end
 
-  TypeParseRegexp = Regexp.new( '^(.+)\[([\d,]*)\]$' )
+  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$')
 
-  def self.parseType( string )
+  def self.parse_type(string)
     TypeParseRegexp =~ string
     return $1, $2
   end

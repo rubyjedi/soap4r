@@ -24,7 +24,6 @@ Version = '0.0.2'
 
 Namespace = 'http://schemas.xmlsoap.org/wsdl/'
 SOAPBindingNamespace ='http://schemas.xmlsoap.org/wsdl/soap/'
-DocumentationName = XSD::QName.new( Namespace, 'documentation' )
 
 class Error < StandardError; end
 

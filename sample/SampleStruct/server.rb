@@ -1,17 +1,14 @@
 #!/usr/bin/env ruby
 
-require 'soap/standaloneServer'
+require 'soap/rpc/standaloneServer'
 require 'sampleStruct'
 
-class SampleStructServer < SOAP::StandaloneServer
-  def initialize( *arg )
+class SampleStructServer < SOAP::RPC::StandaloneServer
+  def initialize(*arg)
     super
-    aServant = SampleStructService.new
-    addServant( aServant )
+    servant = SampleStructService.new
+    add_servant(servant)
   end
 end
 
-status = SampleStructServer.new(
-  'SampleStructServer', SampleStructServiceNamespace,
-  '0.0.0.0', 7000
-).start
+status = SampleStructServer.new('SampleStructServer', SampleStructServiceNamespace, '0.0.0.0', 7000).start

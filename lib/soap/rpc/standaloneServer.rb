@@ -1,6 +1,6 @@
 =begin
-SOAP4R - Standalone Server
-Copyright (c) 2001, 2003 by Michael Neumann and NAKAMURA, Hiroshi
+SOAP4R - WEBrick Server
+Copyright (c) 2003 by NAKAMURA, Hiroshi
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -16,99 +16,94 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-require 'soap/rpc/server'
+require 'devel/logger'
 require 'soap/streamHandler'
-require "soap/httpserver"
+
+# require 'webrick'
+require 'webrick/compat.rb'
+require 'webrick/version.rb'
+require 'webrick/config.rb'
+require 'webrick/log.rb'
+require 'webrick/server.rb'
+require 'webrick/utils.rb'
+require 'webrick/accesslog'
+# require 'webrick/htmlutils.rb'
+require 'webrick/httputils.rb'
+# require 'webrick/cookie.rb'
+require 'webrick/httpversion.rb'
+require 'webrick/httpstatus.rb'
+require 'webrick/httprequest.rb'
+require 'webrick/httpresponse.rb'
+require 'webrick/httpserver.rb'
+# require 'webrick/httpservlet.rb'
+# require 'webrick/httpauth.rb'
+#
+require 'soap/rpc/soaplet'
 
 
 module SOAP
 module RPC
 
 
-###
-# SYNOPSIS
-#   StandaloneServer.new(namespace, listening_i/f, listening_port)
-#
-# DESCRIPTION
-#   To be written...
-#
-class StandaloneServer < Server
-  class SAError < Error; end
-  
-  ALLOWED_LENGTH = 1024 * 1024
-    
-  def initialize(appName, namespace, host = "127.0.0.1", port = 8080)
-    super(appName, namespace)
-    @host, @port = host, port
+class StandaloneServer < Devel::Application
+  attr_reader :server
 
-    handler = method(:request_handler)
-    @server = ::HttpServer.new(handler, @port, @host)
+  def initialize(app_name, namespace, host = "0.0.0.0", port = 8080)
+    super(app_name)
+    @namespace = namespace
+    @server = WEBrick::HTTPServer.new(
+      :BindAddress => host,
+      :AccessLog => [],
+      :Port => port
+    )
+    @soaplet = ::SOAP::RPC::SOAPlet.new
+    on_init
+    @server.mount('/', @soaplet)
+  end
+
+  def on_init
+    # define extra methods in derived class.
   end
   
-protected
-  
-  def methodDef
-    # Override this method in derived class to call 'addMethod' to add methods.
+  def add_rpc_request_servant(klass, namespace = @namespace, mapping_registry = nil)
+    @soaplet.add_rpc_request_servant(klass, namespace, mapping_registry)
+  end
+
+  def add_rpc_servant(obj, namespace = @namespace)
+    @soaplet.add_rpc_servant(obj, namespace)
+  end
+  alias add_servant add_rpc_servant
+
+  def mapping_registry
+    @soaplet.app_scope_router.mapping_registry
+  end
+
+  def mapping_registry=(mapping_registry)
+    @soaplet.app_scope_router.mapping_registry = mapping_registry
+  end
+
+  def add_method(obj, name, *param)
+    add_method_as(obj, name, name, *param)
+  end
+
+  def add_method_as(obj, name, name_as, *param)
+    qname = XSD::QName.new(@namespace, name_as)
+    soapaction = nil
+    method = obj.method(name)
+    param_def = if param.size == 1 and param[0].is_a?(Array)
+        param[0]
+      elsif param.empty?
+	::SOAP::RPCUtils::SOAPMethod.create_param_def(
+	  (1..method.arity.abs).collect { |i| "p#{ i }" })
+      else
+        SOAP::RPC::SOAPMethod.create_param_def(param)
+      end
+    @soaplet.app_scope_router.add_method(obj, qname, soapaction, name, param_def)
   end
 
 private
 
-  def request_handler(request, response)
-    log(SEV_INFO) { "Received a request." }
-    
-    if request.method != 'POST'
-      raise SAError.new("Method '#{ request.method }' not allowed.")
-    end
-    
-    length = request.content_length || 0
-    if length > ALLOWED_LENGTH
-      raise SAError.new("Content-length too long.")
-    end
-
-    log(SEV_INFO) { "Request: method: #{ request.method }, size: #{ length }" }
-
-    contentType = request.header['Content-Type']
-    requestCharset = SOAP::StreamHandler.parseMediaType(contentType)
-    requestString = request.data.read(length)        
-    log(SEV_DEBUG) { "XML Request: #{requestString}" }
-
-    responseString, isFault = route(requestString, requestCharset)
-    log(SEV_DEBUG) { "XML Response: #{responseString}" }
-    
-    unless isFault
-      response.status = 200
-    else
-      response.status = 500
-    end
-    response.header['Cache-Control'] = 'private'  
-    response.header['Content-Type'] = SOAP::StreamHandler.createMediaType(
-      requestCharset)
-    response.header['Content-Length'] = responseString.length
-    response.body = responseString
-
-  rescue Exception
-    responseString = createFaultResponseString($!)
-    response.body = responseString
-    response.status = 500
-    response.header['Content-Type'] = SOAP::StreamHandler.createMediaType(
-      requestCharset)
-  end
-  
   def run
-    class <<@log
-      def puts(msg)
-	add(SEV_INFO, msg, "SOAP::StandaloneServer")
-      end
-      def flush; end
-    end
-    @server.stdlog = @log
-
-    begin
-      trap('INT') { @server.shutdown; exit }
-      trap('HUP') { @server.shutdown; exit }
-    rescue ArgumentError
-      # mswin32 ruby cannot handle SIGHUP because of Windows' restriction.
-    end
     @server.start.join
   end
 end

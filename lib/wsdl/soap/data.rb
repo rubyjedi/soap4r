@@ -24,3 +24,20 @@ require 'wsdl/soap/body'
 require 'wsdl/soap/address'
 require 'wsdl/soap/complexType'
 require 'soap/qname'
+
+
+module WSDL
+  module SOAP
+
+
+LocationAttrName = XSD::QName.new(nil, 'location')
+StyleAttrName = XSD::QName.new(nil, 'style')
+TransportAttrName = XSD::QName.new(nil, 'transport')
+UseAttrName = XSD::QName.new(nil, 'use')
+EncodingStyleAttrName = XSD::QName.new(nil, 'encodingStyle')
+NamespaceAttrName = XSD::QName.new(nil, 'namespace')
+SOAPActionAttrName = XSD::QName.new(nil, 'soapAction')
+
+
+  end
+end

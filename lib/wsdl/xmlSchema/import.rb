@@ -26,26 +26,26 @@ module WSDL
 
 class Import < Info
   attr_reader :namespace
-  attr_reader :schemaLocation
+  attr_reader :schemalocation
 
   def initialize
     super
     @namespace = nil
-    @schemaLocation = nil
+    @schemalocation = nil
   end
 
-  def parseElement( element )
+  def parse_element(element)
     nil
   end
 
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NamespaceAttrName
       @namespace = value
     when SchemaLocationAttrName
-      @schemaLocation = value
+      @schemalocation = value
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

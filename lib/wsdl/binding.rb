@@ -27,23 +27,21 @@ class Binding < Info
   attr_reader :name		# required
   attr_reader :type		# required
   attr_reader :operations
-  attr_reader :soapBinding
+  attr_reader :soapbinding
 
   def initialize
     super
     @name = nil
     @type = nil
     @operations = NamedElements.new
-    @soapBinding = nil
+    @soapbinding = nil
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  OperationName = XSD::QName.new( Namespace, 'operation' )
-  SOAPBindingName = XSD::QName.new( SOAPBindingNamespace, 'binding' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when OperationName
       o = OperationBinding.new
@@ -51,7 +49,7 @@ class Binding < Info
       o
     when SOAPBindingName
       o = WSDL::SOAP::Binding.new
-      @soapBinding = o
+      @soapbinding = o
       o
     when DocumentationName
       o = Documentation.new
@@ -61,16 +59,14 @@ class Binding < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  TypeAttrName = XSD::QName.new( nil, 'type' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( targetNamespace, value )
+      @name = XSD::QName.new(targetnamespace, value)
     when TypeAttrName
       @type = value
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

@@ -24,66 +24,66 @@ module SOAP
 
 class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
   Namespace = 'http://tempuri.org/ASP.NET'
-  addHandler
+  add_handler
 
-  def initialize( charset = nil )
-    super( charset )
-    @textBuf = ''
-    @decodeComplexTypes = nil
+  def initialize(charset = nil)
+    super(charset)
+    @textbuf = ''
+    @decode_typemap = nil
   end
 
 
   ###
   ## encode interface.
   #
-  def encodeData( buf, ns, qualified, data, parent, indent = '' )
+  def encode_data(buf, ns, qualified, data, parent, indent = '')
     attrs = {}
-    name = if qualified and data.elementName.namespace
-        SOAPGenerator.assignNamespace( attrs, ns, data.elementName.namespace )
-        ns.name( data.elementName )
+    name = if qualified and data.elename.namespace
+        SOAPGenerator.assign_ns(attrs, ns, data.elename.namespace)
+        ns.name(data.elename)
       else
-        data.elementName.name
+        data.elename.name
       end
 
     case data
     when SOAPRawString
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
       buf << data.to_s
     when XSDString
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
-      buf << SOAPGenerator.encodeStr( @charset ?
-	Charset.encodingToXML( data.to_s, @charset ) : data.to_s )
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
+      buf << SOAPGenerator.encode_str(@charset ?
+	Charset.encoding_to_xml(data.to_s, @charset) : data.to_s)
     when XSDAnySimpleType
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
-      buf << SOAPGenerator.encodeStr( data.to_s )
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
+      buf << SOAPGenerator.encode_str(data.to_s)
     when SOAPStruct
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
-      data.each do | key, value |
-	if !value.elementName.namespace
-          value.elementName.namespace = data.elementName.namespace 
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
+      data.each do |key, value|
+	if !value.elename.namespace
+          value.elename.namespace = data.elename.namespace 
         end
-        yield( value, true )
+        yield(value, true)
       end
     when SOAPArray
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
-      data.traverse do | child, *rank |
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
+      data.traverse do |child, *rank|
 	data.position = nil
-        yield( child, true )
+        yield(child, true)
       end
     else
-      raise EncodingStyleError.new( "Unknown object:#{ data } in this encodingSt
-yle." )
+      raise EncodingStyleError.new("Unknown object:#{ data } in this encodingSt
+yle.")
     end
   end
 
-  def encodeDataEnd( buf, ns, qualified, data, parent )
-    name = if qualified and data.elementName.namespace
-        ns.name( data.elementName )
+  def encode_data_end(buf, ns, qualified, data, parent, indent = "")
+    name = if qualified and data.elename.namespace
+        ns.name(data.elename)
       else
-        data.elementName.name
+        data.elename.name
       end
-    cr = data.is_a?( SOAPCompoundtype )
-    SOAPGenerator.encodeTagEnd( buf, name, indent, cr )
+    cr = data.is_a?(SOAPCompoundtype)
+    SOAPGenerator.encode_tag_end(buf, name, indent, cr)
   end
 
 
@@ -99,123 +99,123 @@ yle." )
   end
 
   class SOAPUnknown < SOAPTemporalObject
-    def initialize( handler, elementName )
+    def initialize(handler, elename)
       super()
       @handler = handler
-      @elementName = elementName
+      @elename = elename
     end
 
-    def toStruct
-      o = SOAPStruct.decode( @elementName, XSD::AnyTypeName )
+    def as_struct
+      o = SOAPStruct.decode(@elename, XSD::AnyTypeName)
       o.parent = @parent
       o.type.name = @name
-      @handler.decodeParent( @parent, o )
+      @handler.decode_parent(@parent, o)
       o
     end
 
-    def toString
-      o = SOAPString.decode( @elementName )
+    def as_string
+      o = SOAPString.decode(@elename)
       o.parent = @parent
-      @handler.decodeParent( @parent, o )
+      @handler.decode_parent(@parent, o)
       o
     end
 
-    def toNil
-      o = SOAPNil.decode( @elementName )
+    def as_nil
+      o = SOAPNil.decode(@elename)
       o.parent = @parent
-      @handler.decodeParent( @parent, o )
+      @handler.decode_parent(@parent, o)
       o
     end
   end
 
-  def decodeTag( ns, elementName, attrs, parent )
-    # ToDo: check if @textBuf is empty...
-    @textBuf = ''
-    o = SOAPUnknown.new( self, elementName )
+  def decode_tag(ns, elename, attrs, parent)
+    # ToDo: check if @textbuf is empty...
+    @textbuf = ''
+    o = SOAPUnknown.new(self, elename)
     o.parent = parent
     o
   end
 
-  def decodeTagEnd( ns, node )
+  def decode_tag_end(ns, node)
     o = node.node
-    if o.is_a?( SOAPUnknown )
-      newNode = o.toString
-#	if /\A\s*\z/ =~ @textBuf
-#	  o.toStruct
+    if o.is_a?(SOAPUnknown)
+      newnode = o.as_string
+#	if /\A\s*\z/ =~ @textbuf
+#	  o.as_struct
 #	else
-#	  o.toString
+#	  o.as_string
 #	end
-      node.replaceNode( newNode )
+      node.replace_node(newnode)
       o = node.node
     end
 
-    decodeTextBuf( o )
-    @textBuf = ''
+    decode_textbuf(o)
+    @textbuf = ''
   end
 
-  def decodeText( ns, text )
-    # @textBuf is set at decodeTagEnd.
-    @textBuf << text
+  def decode_text(ns, text)
+    # @textbuf is set at decode_tag_end.
+    @textbuf << text
   end
 
-  def decodePrologue
+  def decode_prologue
   end
 
-  def decodeEpilogue
+  def decode_epilogue
   end
 
-  def decodeParent( parent, node )
+  def decode_parent(parent, node)
     case parent.node
     when SOAPUnknown
-      newParent = parent.node.toStruct
-      node.parent = newParent
-      parent.replaceNode( newParent )
-      decodeParent( parent, node )
+      newparent = parent.node.as_struct
+      node.parent = newparent
+      parent.replace_node(newparent)
+      decode_parent(parent, node)
 
     when SOAPStruct
-      data = parent.node[ node.elementName.name ]
+      data = parent.node[node.elename.name]
       case data
       when nil
-	parent.node.add( node.elementName.name, node )
+	parent.node.add(node.elename.name, node)
       when SOAPArray
-	name, typeNamespace = node.elementName.name, node.type.namespace
-	data.add( node )
-	node.elementName, node.type.namespace = name, typeNamespace
+	name, type_ns = node.elename.name, node.type.namespace
+	data.add(node)
+	node.elename, node.type.namespace = name, type_ns
       else
-	parent.node[ node.elementName.name ] = SOAPArray.new
-	name, typeNamespace = data.elementName.name, data.type.namespace
-	parent.node[ node.elementName.name ].add( data )
-	data.elementName.name, data.type.namespace = name, typeNamespace
-	name, typeNamespace = node.elementName.name, node.type.namespace
-	parent.node[ node.elementName.name ].add( node )
-	node.elementName.name, node.type.namespace = name, typeNamespace
+	parent.node[node.elename.name] = SOAPArray.new
+	name, type_ns = data.elename.name, data.type.namespace
+	parent.node[node.elename.name].add(data)
+	data.elename.name, data.type.namespace = name, type_ns
+	name, type_ns = node.elename.name, node.type.namespace
+	parent.node[node.elename.name].add(node)
+	node.elename.name, node.type.namespace = name, type_ns
       end
 
     when SOAPArray
       if node.position
-	parent.node[ *( decodeArrayPosition( node.position )) ] = node
+	parent.node[*(decode_arypos(node.position))] = node
 	parent.node.sparse = true
       else
-	parent.node.add( node )
+	parent.node.add(node)
       end
 
     when SOAPBasetype
-      raise EncodingStyleError.new( "SOAP base type must not have a child." )
+      raise EncodingStyleError.new("SOAP base type must not have a child.")
 
     else
       # SOAPUnknown does not have parent.
-      # raise EncodingStyleError.new( "Illegal parent: #{ parent }." )
+      # raise EncodingStyleError.new("Illegal parent: #{ parent }.")
     end
   end
 
 private
 
-  def decodeTextBuf( node )
-    if node.is_a?( XSDString )
+  def decode_textbuf(node)
+    if node.is_a?(XSDString)
       if @charset
-	node.set( Charset.encodingFromXML( @textBuf, @charset ))
+	node.set(Charset.encoding_from_xml(@textbuf, @charset))
       else
-	node.set( @textBuf )
+	node.set(@textbuf)
       end
     else
       # Nothing to do...

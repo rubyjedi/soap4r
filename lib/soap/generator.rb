@@ -37,135 +37,129 @@ class SOAPGenerator
 public
 
   attr_accessor :charset
-  attr_accessor :defaultEncodingStyle
-  attr_accessor :generateEncodeType
+  attr_accessor :default_encodingstyle
+  attr_accessor :generate_explicit_type
   attr_accessor :pretty
 
-  def initialize( opt = {} )
-    @refTarget = nil
+  def initialize(opt = {})
+    @reftarget = nil
     @handlers = {}
-    @charset = opt[ :charset ] || Charset.getEncodingLabel
-    @defaultEncodingStyle = opt[ :defaultEncodingStyle ] || EncodingNamespace
-    @generateEncodeType = if opt.has_key?( :generateEncodeType )
-	opt[ :generateEncodeType ]
-      else
-	true
-      end
-    @pretty = true # opt[ :pretty ]
+    @charset = opt[:charset] || Charset.encoding_label
+    @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
+    @generate_explicit_type =
+      opt.key?(:generate_explicit_type) ? opt[:generate_explicit_type] : true
+    @pretty = true # opt[:pretty]
   end
 
-  def generate( obj, io = nil )
+  def generate(obj, io = nil)
     prologue
-    @handlers.each do | uri, handler |
-      handler.encodePrologue
+    @handlers.each do |uri, handler|
+      handler.encode_prologue
     end
 
     io = '' if io.nil?
 
     NS.reset
     ns = NS.new
-    io << xmlDecl
-    encodeData( io, ns, true, obj, nil, 0 )
+    io << xmldecl
+    encode_data(io, ns, true, obj, nil, 0)
 
-    @handlers.each do | uri, handler |
-      handler.encodeEpilogue
+    @handlers.each do |uri, handler|
+      handler.encode_epilogue
     end
     epilogue
 
     io
   end
 
-  def encodeData( buf, ns, qualified, obj, parent, indent )
-    if obj.is_a?( SOAPEnvelopeElement )
-      encodeElement( buf, ns, qualified, obj, parent, indent )
+  def encode_data(buf, ns, qualified, obj, parent, indent)
+    if obj.is_a?(SOAPEnvelopeElement)
+      encode_element(buf, ns, qualified, obj, parent, indent)
       return
     end
 
-    if @refTarget && !obj.precedents.empty?
-      @refTarget.add( obj.elementName.name, obj )
+    if @reftarget && !obj.precedents.empty?
+      @reftarget.add(obj.elename.name, obj)
       ref = SOAPReference.new
-      ref.elementName.name = obj.elementName.name
-      ref.__setobj__( obj )
+      ref.elename.name = obj.elename.name
+      ref.__setobj__(obj)
       obj.precedents.clear	# Avoid cyclic delay.
-      obj.encodingStyle = parent.encodingStyle
+      obj.encodingstyle = parent.encodingstyle
       # SOAPReference is encoded here.
       obj = ref
     end
 
-    encodingStyle = obj.encodingStyle
-    # Children's encodingStyle is derived from its parent.
-    encodingStyle ||= parent.encodingStyle if parent
-    obj.encodingStyle = encodingStyle
+    encodingstyle = obj.encodingstyle
+    # Children's encodingstyle is derived from its parent.
+    encodingstyle ||= parent.encodingstyle if parent
+    obj.encodingstyle = encodingstyle
 
-    handler = getHandler( encodingStyle || @defaultEncodingStyle )
+    handler = find_handler(encodingstyle || @default_encodingstyle)
     unless handler
-      raise FormatEncodeError.new(
-        "Unknown encodingStyle: #{ encodingStyle }." )
+      raise FormatEncodeError.new("Unknown encodingStyle: #{ encodingstyle }.")
     end
 
-    if !obj.elementName.name
-      raise FormatEncodeError.new( "Element name not defined: #{ obj }." )
+    if !obj.elename.name
+      raise FormatEncodeError.new("Element name not defined: #{ obj }.")
     end
 
-    indentStr = ' ' * indent
-    handler.encodeData( buf, ns, qualified, obj, parent, indentStr ) do | child, childQualified |
-      encodeData( buf, ns.clone, childQualified, child, obj,
-        ( @pretty ? indent + 2 : indent ))
+    indent_str = ' ' * indent
+    child_indent = @pretty ? indent + 2 : indent
+    handler.encode_data(buf, ns, qualified, obj, parent, indent_str) do |child, child_q|
+      encode_data(buf, ns.clone, child_q, child, obj, child_indent)
     end
-    handler.encodeDataEnd( buf, ns, qualified, obj, parent, indentStr )
+    handler.encode_data_end(buf, ns, qualified, obj, parent, indent_str)
   end
 
-  def encodeElement( buf, ns, qualified, obj, parent, indent )
-    indentStr = ' ' * indent
+  def encode_element(buf, ns, qualified, obj, parent, indent)
+    indent_str = ' ' * indent
+    child_indent = @pretty ? indent + 2 : indent
     attrs = {}
-    if obj.is_a?( SOAPBody )
-      @refTarget = obj
-      obj.encode( buf, ns, attrs, indentStr ) do | child, childQualified |
-        encodeData( buf, ns.clone, childQualified, child, obj,
-          ( @pretty ? indent + 2 : indent ))
+    if obj.is_a?(SOAPBody)
+      @reftarget = obj
+      obj.encode(buf, ns, attrs, indent_str) do |child, child_q|
+        encode_data(buf, ns.clone, child_q, child, obj, child_indent)
       end
-      @refTarget = nil
+      @reftarget = nil
     else
-      if obj.is_a?( SOAPEnvelope )
+      if obj.is_a?(SOAPEnvelope)
         # xsi:nil="true" can appear even if dumping without explicit type.
-        SOAPGenerator.assignNamespace( attrs, ns, XSD::InstanceNamespace,
-          XSINamespaceTag )
-        if @generateEncodeType
-          SOAPGenerator.assignNamespace( attrs, ns, XSD::Namespace,
-            XSDNamespaceTag )
+        SOAPGenerator.assign_ns(attrs, ns,
+	  XSD::InstanceNamespace, XSINamespaceTag)
+        if @generate_explicit_type
+          SOAPGenerator.assign_ns(attrs, ns, XSD::Namespace, XSDNamespaceTag)
         end
       end
-      obj.encode( buf, ns, attrs, indentStr ) do | child, childQualified |
-        encodeData( buf, ns.clone, childQualified, child, obj,
-          ( @pretty ? indent + 2 : indent ))
+      obj.encode(buf, ns, attrs, indent_str) do |child, child_q|
+        encode_data(buf, ns.clone, child_q, child, obj, child_indent)
       end
     end
   end
 
-  def self.assignNamespace( attrs, ns, namespace, tag = nil )
-    unless ns.assigned?( namespace )
-      tag = ns.assign( namespace, tag )
-      attrs[ 'xmlns:' << tag ] = namespace
+  def self.assign_ns(attrs, ns, namespace, tag = nil)
+    unless ns.assigned?(namespace)
+      tag = ns.assign(namespace, tag)
+      attrs['xmlns:' << tag] = namespace
     end
   end
 
-  def self.encodeTag( buf, elementName, attrs = nil, indent = '' )
+  def self.encode_tag(buf, elename, attrs = nil, indent = '')
     if attrs
-      buf << "\n#{ indent }<#{ elementName }" <<
-        attrs.collect { | key, value |
+      buf << "\n#{ indent }<#{ elename }" <<
+        attrs.collect { |key, value|
           %Q[ #{ key }="#{ value }"]
         }.join <<
         '>'
     else
-      buf << "\n#{ indent }<#{ elementName }>"
+      buf << "\n#{ indent }<#{ elename }>"
     end
   end
 
-  def self.encodeTagEnd( buf, elementName, indent = '', cr = nil )
+  def self.encode_tag_end(buf, elename, indent = '', cr = nil)
     if cr
-      buf << "\n#{ indent }</#{ elementName }>"
+      buf << "\n#{ indent }</#{ elename }>"
     else
-      buf << "</#{ elementName }>"
+      buf << "</#{ elename }>"
     end
   end
 
@@ -177,8 +171,8 @@ public
     '\'' => '&apos;',
     "\r" => '&#xd;'
   }
-  EncodeCharRegexp = Regexp.new( "[#{EncodeMap.keys.join}]" )
-  def self.encodeStr( str )
+  EncodeCharRegexp = Regexp.new("[#{EncodeMap.keys.join}]")
+  def self.encode_str(str)
     str.gsub(EncodeCharRegexp) { |c| EncodeMap[c] }
   end
 
@@ -190,18 +184,17 @@ private
   def epilogue
   end
 
-  def getHandler( encodingStyle )
-    unless @handlers.has_key?( encodingStyle )
-      handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new(
-	@charset )
-      handler.generateEncodeType = @generateEncodeType
-      handler.encodePrologue
-      @handlers[ encodingStyle ] = handler
+  def find_handler(encodingstyle)
+    unless @handlers.key?(encodingstyle)
+      handler = SOAP::EncodingStyleHandler.handler(encodingstyle).new(@charset)
+      handler.generate_explicit_type = @generate_explicit_type
+      handler.encode_prologue
+      @handlers[encodingstyle] = handler
     end
-    @handlers[ encodingStyle ]
+    @handlers[encodingstyle]
   end
 
-  def xmlDecl
+  def xmldecl
     if @charset
       %Q[<?xml version="1.0" encoding="#{ @charset }" ?>]
     else

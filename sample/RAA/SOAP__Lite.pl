@@ -7,7 +7,7 @@ use strict;
 use Data::Dumper;
 use SOAP::Lite
   uri => 'http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1',
-  proxy => 'http://www.ruby-lang.org/~nahi/soap/raa/',
+  proxy => 'http://raa.ruby-lang.org/soap/1.0/',
 ;
 my $oSom = SOAP::Lite->new->getAllListings();
 my $raRes = $oSom->result;

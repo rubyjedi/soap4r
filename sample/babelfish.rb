@@ -3,16 +3,14 @@
 text = ARGV.shift || 'Hello world.'
 lang = ARGV.shift || 'en_fr'
 
-require 'soap/driver'
+require 'soap/rpc/driver'
 
 server = 'http://services.xmethods.net/perl/soaplite.cgi'
 InterfaceNS = 'urn:xmethodsBabelFish'
-logger = nil		# Devel::Logger.new( STDERR )
 wireDumpDev = nil	# STDERR
-proxy = ENV[ 'HTTP_PROXY' ] || ENV[ 'http_proxy' ]
 
-drv = SOAP::Driver.new( logger, $0, InterfaceNS, server, proxy )
-drv.setWireDumpDev( wireDumpDev )
-drv.addMethodWithSOAPAction( 'BabelFish', InterfaceNS + "#BabelFish", 'translationmode', 'sourcedata' )
+drv = SOAP::RPC::Driver.new(server, InterfaceNS)
+drv.wiredump_dev = wireDumpDev
+drv.add_method_with_soapaction('BabelFish', InterfaceNS + "#BabelFish", 'translationmode', 'sourcedata')
 
-p drv.BabelFish( lang, text )
+p drv.BabelFish(lang, text)

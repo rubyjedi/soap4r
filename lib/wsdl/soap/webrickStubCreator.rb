@@ -32,11 +32,11 @@ class WEBrickStubCreator
 
   attr_reader :definitions
 
-  def initialize( definitions )
+  def initialize(definitions)
     @definitions = definitions
   end
 
-  def dump( serviceName )
+  def dump(service_name)
     STDERR.puts "!!! IMPORTANT !!!"
     STDERR.puts "WEBrick stub ignores port location defined in WSDL.  Location is http://localhost:10080/soapsrv by default.  Generated client from WSDL must be configured to point this endpoint by hand."
     STDERR.puts "!!! IMPORTANT !!!"
@@ -49,32 +49,32 @@ STDERR.puts "All WEBrick httpd functions are enabled such as ERuby and CGI."
 STDERR.puts "Take care before running this server in public network."
 
 require 'devel/logger'
-logDev = Devel::Logger.new( 'httpd.log' )
-logDev.sevThreshold = Devel::Logger::SEV_INFO
+logdev = Devel::Logger.new('httpd.log')
+logdev.sev_threshold = Devel::Logger::SEV_INFO
 
 wwwsvr = WEBrick::HTTPServer.new(
   :BindAddress    => "0.0.0.0",
   :Port           => 10080, 
-  :Logger         => logDev
+  :Logger         => logdev
 )
 
-require 'soaplet'
-soapsrv = WEBrick::SOAPlet.new
+require 'webrick/httpservlet/soaplet'
+soapsrv = WEBrick::HTTPServlet::SOAPlet.new
 
 require 'soap/rpcUtils'
 MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
 __EOD__
 
-    @definitions.getService( serviceName ).ports.each do | port |
-      result << dumpPortType( port.getPortType.name )
+    @definitions.service(service_name).ports.each do |port|
+      result << dump_porttype(port.porttype.name)
       result << "\n"
     end
 
     result << <<__EOD__
-soapsrv.appScopeRouter.mappingRegistry = Sm11PortType::MappingRegistry
-wwwsvr.mount( '/soapsrv', soapsrv )
+soapsrv.app_scope_router.mapping_registry = MappingRegistry
+wwwsvr.mount('/soapsrv', soapsrv)
 
-trap( "INT" ){ wwwsvr.shutdown }
+trap("INT"){ wwwsvr.shutdown }
 wwwsvr.start
 __EOD__
     result
@@ -82,24 +82,23 @@ __EOD__
 
 private
 
-  def dumpPortType( portTypeName )
-    className = createClassName( portTypeName )
-    methodDefCreator = MethodDefCreator.new( @definitions )
-    methodDef, types = methodDefCreator.dump( portTypeName )
-    mrCreator = MappingRegistryCreator.new( @definitions )
+  def dump_porttype(porttype)
+    name = create_class_name(porttype)
+    methoddef, types = MethodDefCreator.new(@definitions).dump(porttype)
+    mr_creator = MappingRegistryCreator.new(@definitions)
 
     return <<__EOD__
-#{ mrCreator.dump( types ).gsub( /^/, "  " ).chomp }
+#{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
 
-class #{ className }
+class #{ name }
   Methods = [
-#{ methodDef.gsub( /^/, "    " ).chomp }
+#{ methoddef.gsub(/^/, "    ").chomp }
   ]
 end
 
-servant = #{ className }.new
-Sm11PortType::Methods.each do | nameAs, name, params, soapAction, ns |
-  soapsrv.appScopeRouter.addMethodAs( ns, servant, name, nameAs, params )
+servant = #{ name }.new
+#{ name }::Methods.each do |name_as, name, params, soapaction, ns|
+  soapsrv.app_scope_router.add_method(servant, XSD::QName.new(ns, name), soapaction, name_as, params)
 end
 __EOD__
   end

@@ -37,27 +37,27 @@ class CGIStub < Server
 
   # There is a client which does not accept the media-type which is defined in
   # SOAP spec.
-  attr_accessor :mediaType
+  attr_accessor :mediatype
 
   class CGIError < Error; end
 
   class SOAPRequest
     ALLOWED_LENGTH = 1024 * 1024
 
-    def initialize( sourceStream = $stdin )
-      @method = ENV[ 'REQUEST_METHOD' ]
-      @size = ENV[ 'CONTENT_LENGTH' ].to_i || 0
-      @content_type = ENV[ 'CONTENT_TYPE' ]
+    def initialize(stream = $stdin)
+      @method = ENV['REQUEST_METHOD']
+      @size = ENV['CONTENT_LENGTH'].to_i || 0
+      @contenttype = ENV['CONTENT_TYPE']
       @charset = nil
-      @soap_action = ENV[ 'HTTP_SOAPAction' ]
-      @source = sourceStream
+      @soapaction = ENV['HTTP_SOAPAction']
+      @source = stream
       @body = nil
     end
 
     def init
       validate
-      @charset = StreamHandler.parseMediaType( @content_type )
-      @body = @source.read( @size )
+      @charset = StreamHandler.parse_media_type(@contenttype)
+      @body = @source.read(@size)
       self
     end
 
@@ -65,8 +65,8 @@ class CGIStub < Server
       @body.dup
     end
 
-    def soap_action
-      @soap_action
+    def soapaction
+      @soapaction
     end
 
     def charset
@@ -81,76 +81,75 @@ class CGIStub < Server
 
     def validate # raise CGIError
       if @method != 'POST'
-	raise CGIError.new( "Method '#{ @method }' not allowed." )
+	raise CGIError.new("Method '#{ @method }' not allowed.")
       end
 
       if @size > ALLOWED_LENGTH
-        raise CGIError.new( "Content-length too long." )
+        raise CGIError.new("Content-length too long.")
       end
     end
   end
 
-  def initialize( appName, namespace )
-    super( appName, namespace )
-    @remote_user = ENV[ 'REMOTE_USER' ] || 'anonymous'
-    @remote_host = ENV[ 'REMOTE_HOST' ] || ENV[ 'REMOTE_ADDR' ] || 'unknown'
+  def initialize(appname, namespace)
+    super(appname, namespace)
+    @remote_user = ENV['REMOTE_USER'] || 'anonymous'
+    @remote_host = ENV['REMOTE_HOST'] || ENV['REMOTE_ADDR'] || 'unknown'
     @request = nil
     @response = nil
-    @mediaType = MediaType
+    @mediatype = MediaType
   end
   
-protected
-  def methodDef
-    # Override this method in derived class to call 'addMethod' to add methods.
+  def on_init
+    # Override this method in derived class to call 'add_method' to add methods.
   end
 
 private
   
   def run
-    @log.sevThreshold = SEV_INFO
+    @log.sev_threshold = SEV_INFO
 
     prologue
 
     begin
-      log( SEV_INFO ) { "Received a request from '#{ @remote_user }@#{ @remote_host }'." }
+      log(SEV_INFO) { "Received a request from '#{ @remote_user }@#{ @remote_host }'." }
     
       # SOAP request parsing.
       @request = SOAPRequest.new.init
-      requestCharset = @request.charset
-      requestString = @request.dump
-      log( SEV_DEBUG ) { "XML Request: #{requestString}" }
+      req_charset = @request.charset
+      req_string = @request.dump
+      log(SEV_DEBUG) { "XML Request: #{req_string}" }
 
-      responseString, isFault = route( requestString, requestCharset )
-      log( SEV_DEBUG ) { "XML Response: #{responseString}" }
+      res_string, is_fault = route(req_string, req_charset)
+      log(SEV_DEBUG) { "XML Response: #{res_string}" }
 
-      @response = HTTP::Message.newResponse( responseString )
-      unless isFault
+      @response = HTTP::Message.new_response(res_string)
+      unless is_fault
 	@response.status = 200
       else
 	@response.status = 500
       end
-      @response.header.set( 'Cache-Control', 'private' )
-      @response.body.type = @mediaType
-      @response.body.charset = if requestCharset
-	  ::SOAP::Charset.getCharsetStr( requestCharset )
+      @response.header.set('Cache-Control', 'private')
+      @response.body.type = @mediatype
+      @response.body.charset = if req_charset
+	  ::SOAP::Charset.charset_str(req_charset)
 	else
 	  nil
 	end
       str = @response.dump
-      log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
+      log(SEV_DEBUG) { "SOAP CGI Response:\n#{ str }" }
       print str
 
       epilogue
 
     rescue Exception
-      responseString = createFaultResponseString( $! )
-      @response = HTTP::Message.newResponse( responseString )
-      @response.header.set( 'Cache-Control', 'private' )
-      @response.body.type = @mediaType
+      res_string = create_fault_response($!)
+      @response = HTTP::Message.new_response(res_string)
+      @response.header.set('Cache-Control', 'private')
+      @response.body.type = @mediatype
       @response.body.charset = nil
       @response.status = 500
       str = @response.dump
-      log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
+      log(SEV_DEBUG) { "SOAP CGI Response:\n#{ str }" }
       print str
 
     end

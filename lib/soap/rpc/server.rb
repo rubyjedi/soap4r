@@ -27,71 +27,72 @@ module RPC
 
 ###
 # SYNOPSIS
-#   Server.new(appName, defaultNamespace)
+#   Server.new(app_name, default_namespace)
 #
 # DESCRIPTION
 #   To be written...
 #
 class Server < Devel::Application
-  def initialize(appName, defaultNamespace = nil)
-    super(appName)
-    setSevThreshold(SEV_INFO)
-    @defaultNamespace = defaultNamespace
-    @router = SOAP::RPC::Router.new(appName)
-    methodDef
+  def initialize(app_name, default_namespace = nil)
+    super(app_name)
+    self.sev_threshold = SEV_INFO
+    @default_namespace = default_namespace
+    @router = SOAP::RPC::Router.new(app_name)
+    on_init
   end
  
-  def mappingRegistry
-    @router.mappingRegistry
+  def mapping_registry
+    @router.mapping_registry
   end
 
-  def mappingRegistry=(value)
-    @router.mappingRegistry = value
+  def mapping_registry=(value)
+    @router.mapping_registry = value
   end
 
-  def addServant(obj, namespace = @defaultNamespace, soapAction = nil)
-    RPC.retrieveDefinedMethod(obj).each do |methodName|
-      qname = XSD::QName.new(namespace, methodName)
-      paramSize = obj.method(methodName).arity.abs
-      params = (1..paramSize).collect { |i| "p#{ i }" }
-      paramDef = SOAP::RPC::SOAPMethod.createParamDef(params)
-      @router.addMethod(obj, qname, soapAction, methodName, paramDef)
+  def add_servant(obj, namespace = @default_namespace, soapaction = nil)
+    RPC.defined_methods(obj).each do |name|
+      qname = XSD::QName.new(namespace, name)
+      param_size = obj.method(name).arity.abs
+      params = (1..param_size).collect { |i| "p#{ i }" }
+      param_def = SOAP::RPC::SOAPMethod.create_param_def(params)
+      @router.add_method(obj, qname, soapaction, name, param_def)
     end
   end
 
-  def methodDef
-    # Override this method in derived class to call 'addMethod*' to add methods.
+  def on_init
+    # Override this method in derived class to call 'add_method*' to add methods.
   end
 
-  def addMethod(receiver, methodName, *paramArg)
-    addMethodWithNSAs(@defaultNamespace, receiver, methodName, methodName, *paramArg)
+  def add_method(receiver, name, *param)
+    add_method_with_namespace_as(@default_namespace, receiver,
+      name, name, *param)
   end
 
-  def addMethodAs(receiver, methodName, methodNameAs, *paramArg)
-    addMethodWithNSAs(@defaultNamespace, receiver, methodName, methodNameAs, *paramArg)
+  def add_method_as(receiver, name, name_as, *param)
+    add_method_with_namespace_as(@default_namespace, receiver,
+      name, name_as, *param)
   end
 
-  def addMethodWithNS(namespace, receiver, methodName, *paramArg)
-    addMethodWithNSAs(namespace, receiver, methodName, methodName, *paramArg)
+  def add_method_with_namespace(namespace, receiver, name, *param)
+    add_method_with_namespace_as(namespace, receiver, name, name, *param)
   end
 
-  def addMethodWithNSAs(namespace, receiver, methodName, methodNameAs,
-      *paramArg)
-    paramDef = if paramArg.size == 1 and paramArg[0].is_a?(Array)
-        paramArg[0]
+  def add_method_with_namespace_as(namespace, receiver, name, name_as, *param)
+    param_def = if param.size == 1 and param[0].is_a?(Array)
+        param[0]
       else
-        SOAP::RPC::SOAPMethod.createParamDef(paramArg)
+        SOAP::RPC::SOAPMethod.create_param_def(param)
       end
-    qname = XSD::QName.new(namespace, methodNameAs)
-    @router.addMethod(receiver, qname, nil, methodName, paramDef)
+    qname = XSD::QName.new(namespace, name_as)
+    @router.add_method(receiver, qname, nil, name, param_def)
   end
 
-  def route(requestString, charset)
-    @router.route(requestString, charset)
+  def route(request_string, charset)
+    @router.route(request_string, charset)
   end
 
-  def createFaultResponseString(e)
-    @router.createFaultResponseString(e)
+  def create_fault_response(e)
+    @router.create_fault_response(e)
   end
 end
 

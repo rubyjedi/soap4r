@@ -11,17 +11,17 @@
 
 require 'soap/wsdlDriver'
 wsdl = 'http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/*checkout*/rnn/rnn/app/rnn-hash.wsdl'
-rnn = SOAP::WSDLDriverFactory.new(wsdl).createDriver
-rnn.generateEncodeType = true
-#rnn.setWireDumpDev(STDERR)
+rnn = SOAP::WSDLDriverFactory.new(wsdl).create_driver
+rnn.generate_explicit_type = true
+rnn.wiredump_dev = STDERR
 
 
 test_article_id = 1
 POST_COMMENT_DIRECT = 0
 
-subject = "SOAP4Rによるテスト by 名無しさん"
+subject = "SOAP4Rによるテスト by NaHiの名無しさん"
 text =<<__EOS__
-テスト投稿です。
+euc-jpでのテスト投稿です。
 __EOS__
 
 p rnn.post_comment(test_article_id, POST_COMMENT_DIRECT, subject, text)
