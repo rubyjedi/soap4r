@@ -42,7 +42,16 @@ class Server < Application
     @router = RPCRouter.new( appName )
     methodDef
   end
-  
+ 
+  def mappingRegistry
+    @router.mappingRegistry
+  end
+
+  def mappingRegistry= ( value )
+    @router.mappingRegistry = value
+  end
+
+
 protected
   
   def methodDef
