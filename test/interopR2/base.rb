@@ -3,6 +3,7 @@ require 'soap/soap'
 
 InterfaceNS = 'http://soapinterop.org/'
 TypeNS = 'http://soapinterop.org/xsd'
+ApacheNS = 'http://xml.apache.org/xml-soap'
 
 
 module SOAPBuildersInterop
@@ -39,6 +40,8 @@ MethodsBase = [
     ['in', 'inputDecimal'], ['retval', 'return']],
   ['echoMap',
     ['in', 'inputMap'], ['retval', 'return']],
+  ['echoMapArray',
+    ['in', 'inputMapArray'], ['retval', 'return']],
 
   ['echoDouble',
     ['in', 'inputDouble'], ['retval', 'return']],
@@ -152,20 +155,11 @@ class SOAPArrayStruct
 end
 
 
-class StringArray < Array
-end
-
-
-class IntArray < Array
-end
-
-
-class FloatArray < Array
-end
-
-
-class SOAPStructArray < Array
-end
+class StringArray < Array; end
+class IntArray < Array; end
+class FloatArray < Array; end
+class SOAPStructArray < Array; end
+class SOAPMapArray < Array; end
 
 
 MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
@@ -217,6 +211,13 @@ MappingRegistry.set(
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
   [ TypeNS, 'SOAPStruct' ]
+)
+
+MappingRegistry.set(
+  ::SOAPBuildersInterop::SOAPMapArray,
+  ::SOAP::SOAPArray,
+  ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+  [ ApacheNS, 'Map' ]
 )
 
 
