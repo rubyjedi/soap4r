@@ -477,11 +477,11 @@ module XSDDateTimeImpl
     begin
       if @data.offset * SecInDay == Time.now.utc_offset
         d = @data
-        usec = (d.sec_fraction * SecInDay * 1000000).to_f
+        usec = ((d.sec_fraction * SecInDay * 1000000) + 0.5).to_i
         Time.local(d.year, d.month, d.mday, d.hour, d.min, d.sec, usec)
       else
         d = @data.newof
-        usec = (d.sec_fraction * SecInDay * 1000000).to_f
+        usec = ((d.sec_fraction * SecInDay * 1000000) + 0.5).to_i
         Time.gm(d.year, d.month, d.mday, d.hour, d.min, d.sec, usec)
       end
     rescue ArgumentError
@@ -517,7 +517,7 @@ module XSDDateTimeImpl
   end
 
   def _set(t)
-    set_datetime_init
+    set_datetime_init(t)
     if (t.is_a?(Date))
       @data = t
     elsif (t.is_a?(Time))
@@ -549,7 +549,7 @@ class XSDDateTime < XSDAnySimpleType
 
 private
 
-  def set_datetime_init
+  def set_datetime_init(t)
     @secfrac = nil
   end
 
@@ -619,7 +619,7 @@ class XSDTime < XSDAnySimpleType
 
 private
 
-  def set_datetime_init
+  def set_datetime_init(t)
     @secfrac = nil
   end
 
@@ -669,7 +669,7 @@ class XSDDate < XSDAnySimpleType
 
 private
 
-  def set_datetime_init
+  def set_datetime_init(t)
   end
 
   def set_str(t)
@@ -708,7 +708,7 @@ class XSDGYearMonth < XSDAnySimpleType
 
 private
 
-  def set_datetime_init
+  def set_datetime_init(t)
   end
 
   def set_str(t)
@@ -746,7 +746,7 @@ class XSDGYear < XSDAnySimpleType
 
 private
 
-  def set_datetime_init
+  def set_datetime_init(t)
   end
 
   def set_str(t)
@@ -783,7 +783,7 @@ class XSDGMonthDay < XSDAnySimpleType
 
 private
 
-  def set_datetime_init
+  def set_datetime_init(t)
   end
 
   def set_str(t)
@@ -817,7 +817,7 @@ class XSDGDay < XSDAnySimpleType
 
 private
 
-  def set_datetime_init
+  def set_datetime_init(t)
   end
 
   def set_str(t)
@@ -850,7 +850,7 @@ class XSDGMonth < XSDAnySimpleType
 
 private
 
-  def set_datetime_init
+  def set_datetime_init(t)
   end
 
   def set_str(t)
