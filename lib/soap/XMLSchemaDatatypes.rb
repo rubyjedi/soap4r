@@ -254,7 +254,7 @@ private
     fractionPart = $3
 
     integerPart = '0' if integerPart.empty?
-    fractionPart = fractionPart ? fractionPart.sub( '0+$', '' ) : ''
+    fractionPart = fractionPart ? fractionPart.sub( /0+$/, '' ) : ''
     @point = - fractionPart.size
     @number = integerPart + fractionPart
 
@@ -373,7 +373,16 @@ private
       begin
 	@data = Float( str )
       rescue ArgumentError
-	raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
+	# '1.4e' cannot be parsed on some architecture.
+	if /e\z/i =~ str
+	  begin
+	    @data = Float( str + '0' )
+	  rescue ArgumentError
+	    raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
+	  end
+	else
+	  raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
+	end
       end
     end
   end
@@ -514,7 +523,7 @@ module XSDDateTimeImpl
     elsif ( t.is_a?( Time ))
       @data = DateTime.civil( *( t.dup.gmtime.to_a[ 0..5 ].reverse ))
       diffDay = t.utc_offset.to_r / SecInDay
-      @data = @data.newof( diffDay )
+      @data = @data.new_offset( diffDay )
     else
       set_str( t )
     end
@@ -582,7 +591,7 @@ private
       fr = @data.sec_fraction * SecInDay
       shiftSize = fr.denominator.to_s.size
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
-      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
+      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( /0+$/, '' )
     end
     addTz( s )
   end
@@ -625,7 +634,7 @@ private
       fr = @data.sec_fraction * SecInDay
       shiftSize = fr.denominator.to_s.size
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
-      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
+      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( /0+$/, '' )
     end
     addTz( s )
   end
