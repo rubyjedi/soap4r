@@ -61,6 +61,24 @@ public
     assert_equal( 'var', o.to_s )
   end
 
+  def test_XSDString
+    o = XSDString.new
+    assert_equal( Namespace, o.typeNamespace )
+    assert_equal( StringLiteral, o.typeName )
+    assert_equal( nil, o.data )
+    assert_equal( true, o.isNil )
+
+    str = "abc"
+    assert_equal( str, XSDString.new( str ).data )
+    assert_equal( str, XSDString.new( str ).to_s )
+    assert_exception( XSD::ValueSpaceError ) do
+      XSDString.new( "\0" )
+    end
+    assert_exception( XSD::ValueSpaceError ) do
+      p XSDString.new( "\xC0\xC0" ).to_s
+    end
+  end
+
   def test_XSDBoolean
     o = XSDBoolean.new
     assert_equal( Namespace, o.typeNamespace )
@@ -77,24 +95,6 @@ public
     targets.each do | data, expected |
       assert_equal( expected, XSDBoolean.new( data ).data )
       assert_equal( expected.to_s, XSDBoolean.new( data ).to_s )
-    end
-  end
-
-  def test_XSDString
-    o = XSDString.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( StringLiteral, o.typeName )
-    assert_equal( nil, o.data )
-    assert_equal( true, o.isNil )
-
-    str = "abc"
-    assert_equal( str, XSDString.new( str ).data )
-    assert_equal( str, XSDString.new( str ).to_s )
-    assert_exception( XSD::ValueSpaceError ) do
-      XSDString.new( "\0" )
-    end
-    assert_exception( XSD::ValueSpaceError ) do
-      p XSDString.new( "\xC0\xC0" ).to_s
     end
   end
 
@@ -294,88 +294,59 @@ public
     end
   end
 
-  def test_XSDHexBinary
-    o = XSDHexBinary.new
+  def test_XSDDuration
+    o = XSDDuration.new
     assert_equal( Namespace, o.typeNamespace )
-    assert_equal( HexBinaryLiteral, o.typeName )
+    assert_equal( DurationLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
     targets = [
-      "abcdef",
-      "‚È‚Ð",
-      "\0",
-      "",
+      "P1Y2M3DT4H5M6S",
+      "P1234Y5678M9012DT3456H7890M1234.5678S",
+      "P0DT3456H7890M1234.5678S",
+      "P1234Y5678M9012D",
+      "-P1234Y5678M9012DT3456H7890M1234.5678S",
+      "P5678M9012DT3456H7890M1234.5678S",
+      "-P1234Y9012DT3456H7890M1234.5678S",
+      "+P1234Y5678MT3456H7890M1234.5678S",
+      "P1234Y5678M9012DT7890M1234.5678S",
+      "-P1234Y5678M9012DT3456H1234.5678S",
+      "+P1234Y5678M9012DT3456H7890M",
+      "P123400000000000Y",
+      "-P567800000000000M",
+      "+P901200000000000D",
+      "P0DT345600000000000H",
+      "-P0DT789000000000000M",
+      "+P0DT123400000000000.000000000005678S",
+      "P1234YT1234.5678S",
+      "-P5678MT7890M",
+      "+P9012DT3456H",
     ]
     targets.each do | str |
-      assert_equal( str, XSDHexBinary.new( str ).toString )
-      assert_equal( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ),
-	XSDHexBinary.new( str ).data )
-      o = XSDHexBinary.new
-      o.setEncoded( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ))
-      assert_equal( str, o.toString )
+      assertParsedResult( XSDDuration, str )
     end
-  end
-
-  def test_XSDBase64Binary
-    o = XSDBase64Binary.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( Base64BinaryLiteral, o.typeName )
-    assert_equal( nil, o.data )
-    assert_equal( true, o.isNil )
 
     targets = [
-      "abcdef",
-      "‚È‚Ð",
-      "\0",
-      "",
+      [ "P0Y0M0DT0H0M0S",
+        "P0D" ],
+      [ "-P0DT0S",
+        "-P0D" ],
+      [ "P01234Y5678M9012DT3456H7890M1234.5678S",
+        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
+      [ "P1234Y005678M9012DT3456H7890M1234.5678S",
+        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
+      [ "P1234Y5678M0009012DT3456H7890M1234.5678S",
+        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
+      [ "P1234Y5678M9012DT00003456H7890M1234.5678S",
+        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
+      [ "P1234Y5678M9012DT3456H000007890M1234.5678S",
+        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
+      [ "P1234Y5678M9012DT3456H7890M0000001234.5678S",
+        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
     ]
-    targets.each do | str |
-      assert_equal( str, XSDBase64Binary.new( str ).toString )
-      assert_equal( [ str ].pack( "m" ).chomp, XSDBase64Binary.new( str ).data )
-      o = XSDBase64Binary.new
-      o.setEncoded( [ str ].pack( "m" ).chomp )
-      assert_equal( str, o.toString )
-    end
-  end
-
-  def test_XSDanyURI
-    o = XSDanyURI.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( AnyURILiteral, o.typeName )
-    assert_equal( nil, o.data )
-    assert_equal( true, o.isNil )
-
-    # Too few tests here I know.  Believe uri module. :)
-    targets = [
-      "foo",
-      "http://foo",
-      "http://foo/bar/baz",
-      "http://foo/bar#baz",
-      "http://foo/bar%20%20?a+b",
-      "HTTP://FOO/BAR%20%20?A+B",
-    ]
-    targets.each do | str |
-      assertParsedResult( XSDanyURI, str )
-    end
-  end
-
-  def test_XSDQName
-    o = XSDQName.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( QNameLiteral, o.typeName )
-    assert_equal( nil, o.data )
-    assert_equal( true, o.isNil )
-
-    # More strict test is needed but current implementation allows all non-':'
-    # chars like ' ', C0 or C1...
-    targets = [
-      "foo",
-      "foo:bar",
-      "a:b",
-    ]
-    targets.each do | str |
-      assertParsedResult( XSDQName, str )
+    targets.each do | data, expected |
+      assert_equal( expected, XSDDuration.new( data ).to_s )
     end
   end
 
@@ -388,7 +359,7 @@ public
 
     targets = [
       "2002-05-18T16:52:20Z",
-      "0000-01-01T00:00:00Z",
+      "0001-01-01T00:00:00Z",
       "9999-12-31T23:59:59Z",
       "19999-12-31T23:59:59Z",
       "2002-12-31T23:59:59.999Z",
@@ -425,6 +396,19 @@ public
     ]
     targets.each do | data, expected |
       assert_equal( expected, XSDDateTime.new( data ).to_s )
+    end
+
+    targets = [
+      "0000-05-18T16:52:20Z",
+      "05-18T16:52:20Z",
+      "2002-05T16:52:20Z",
+      "2002-05-18T16:52Z",
+      "",
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError, d.to_s ) do
+	XSDDateTime.new( d )
+      end
     end
   end
 
@@ -509,62 +493,6 @@ public
     ]
     targets.each do | data, expected |
       assert_equal( expected, XSDDate.new( data ).to_s )
-    end
-  end
-
-  def test_XSDDuration
-    o = XSDDuration.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( DurationLiteral, o.typeName )
-    assert_equal( nil, o.data )
-    assert_equal( true, o.isNil )
-
-    targets = [
-      "P1Y2M3DT4H5M6S",
-      "P1234Y5678M9012DT3456H7890M1234.5678S",
-      "P0DT3456H7890M1234.5678S",
-      "P1234Y5678M9012D",
-      "-P1234Y5678M9012DT3456H7890M1234.5678S",
-      "P5678M9012DT3456H7890M1234.5678S",
-      "-P1234Y9012DT3456H7890M1234.5678S",
-      "+P1234Y5678MT3456H7890M1234.5678S",
-      "P1234Y5678M9012DT7890M1234.5678S",
-      "-P1234Y5678M9012DT3456H1234.5678S",
-      "+P1234Y5678M9012DT3456H7890M",
-      "P123400000000000Y",
-      "-P567800000000000M",
-      "+P901200000000000D",
-      "P0DT345600000000000H",
-      "-P0DT789000000000000M",
-      "+P0DT123400000000000.000000000005678S",
-      "P1234YT1234.5678S",
-      "-P5678MT7890M",
-      "+P9012DT3456H",
-    ]
-    targets.each do | str |
-      assertParsedResult( XSDDuration, str )
-    end
-
-    targets = [
-      [ "P0Y0M0DT0H0M0S",
-        "P0D" ],
-      [ "-P0DT0S",
-        "-P0D" ],
-      [ "P01234Y5678M9012DT3456H7890M1234.5678S",
-        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
-      [ "P1234Y005678M9012DT3456H7890M1234.5678S",
-        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
-      [ "P1234Y5678M0009012DT3456H7890M1234.5678S",
-        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
-      [ "P1234Y5678M9012DT00003456H7890M1234.5678S",
-        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
-      [ "P1234Y5678M9012DT3456H000007890M1234.5678S",
-        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
-      [ "P1234Y5678M9012DT3456H7890M0000001234.5678S",
-        "P1234Y5678M9012DT3456H7890M1234.5678S" ],
-    ]
-    targets.each do | data, expected |
-      assert_equal( expected, XSDDuration.new( data ).to_s )
     end
   end
 
@@ -757,6 +685,91 @@ public
     ]
     targets.each do | data, expected |
       assert_equal( expected, XSDgMonth.new( data ).to_s )
+    end
+  end
+
+  def test_XSDHexBinary
+    o = XSDHexBinary.new
+    assert_equal( Namespace, o.typeNamespace )
+    assert_equal( HexBinaryLiteral, o.typeName )
+    assert_equal( nil, o.data )
+    assert_equal( true, o.isNil )
+
+    targets = [
+      "abcdef",
+      "‚È‚Ð",
+      "\0",
+      "",
+    ]
+    targets.each do | str |
+      assert_equal( str, XSDHexBinary.new( str ).toString )
+      assert_equal( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ),
+	XSDHexBinary.new( str ).data )
+      o = XSDHexBinary.new
+      o.setEncoded( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ))
+      assert_equal( str, o.toString )
+    end
+  end
+
+  def test_XSDBase64Binary
+    o = XSDBase64Binary.new
+    assert_equal( Namespace, o.typeNamespace )
+    assert_equal( Base64BinaryLiteral, o.typeName )
+    assert_equal( nil, o.data )
+    assert_equal( true, o.isNil )
+
+    targets = [
+      "abcdef",
+      "‚È‚Ð",
+      "\0",
+      "",
+    ]
+    targets.each do | str |
+      assert_equal( str, XSDBase64Binary.new( str ).toString )
+      assert_equal( [ str ].pack( "m" ).chomp, XSDBase64Binary.new( str ).data )
+      o = XSDBase64Binary.new
+      o.setEncoded( [ str ].pack( "m" ).chomp )
+      assert_equal( str, o.toString )
+    end
+  end
+
+  def test_XSDanyURI
+    o = XSDanyURI.new
+    assert_equal( Namespace, o.typeNamespace )
+    assert_equal( AnyURILiteral, o.typeName )
+    assert_equal( nil, o.data )
+    assert_equal( true, o.isNil )
+
+    # Too few tests here I know.  Believe uri module. :)
+    targets = [
+      "foo",
+      "http://foo",
+      "http://foo/bar/baz",
+      "http://foo/bar#baz",
+      "http://foo/bar%20%20?a+b",
+      "HTTP://FOO/BAR%20%20?A+B",
+    ]
+    targets.each do | str |
+      assertParsedResult( XSDanyURI, str )
+    end
+  end
+
+  def test_XSDQName
+    o = XSDQName.new
+    assert_equal( Namespace, o.typeNamespace )
+    assert_equal( QNameLiteral, o.typeName )
+    assert_equal( nil, o.data )
+    assert_equal( true, o.isNil )
+
+    # More strict test is needed but current implementation allows all non-':'
+    # chars like ' ', C0 or C1...
+    targets = [
+      "foo",
+      "foo:bar",
+      "a:b",
+    ]
+    targets.each do | str |
+      assertParsedResult( XSDQName, str )
     end
   end
 
