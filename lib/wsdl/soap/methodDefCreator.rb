@@ -121,7 +121,7 @@ __EOD__
 
   def documentdefinedtype(part)
     if definedtype = @simpletypes[part.type]
-      ['::' + basetype_mapped_class(definedtype.base).name]
+      ['::' + basetype_mapped_class(definedtype.base).name, nil, part.name]
     elsif definedtype = @elements[part.element]
       ['::SOAP::SOAPElement', part.element.namespace, part.element.name]
     elsif definedtype = @complextypes[part.type]
@@ -155,7 +155,7 @@ __EOD__
     if type.size == 1
       "[#{ type[0] }]" 
     else
-      "[#{ type[0] }, #{ dq(type[1]) }, #{ dq(type[2]) }]" 
+      "[#{ type[0] }, #{ ndq(type[1]) }, #{ dq(type[2]) }]" 
     end
   end
 
