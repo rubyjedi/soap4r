@@ -475,7 +475,7 @@ class WSDLDriver
     end
 
     def log(sev)
-      @logdev.add(sev, nil, self.type) { yield }
+      @logdev.add(sev, nil, self.class) { yield } if @logdev
     end
   end
 
