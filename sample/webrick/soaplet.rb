@@ -14,7 +14,7 @@ public
 
   def initialize
     @routerMap = {}
-    @appScopeRouter = SOAP::RPCRouter.new( self.type.to_s )
+    @appScopeRouter = SOAP::RPCRouter.new( self.class.to_s )
   end
 
   # Add servant klass whose object has request scope.  A servant object is
