@@ -1,4 +1,6 @@
 require 'soap/driver'
+require 'soap/rpcUtils'
+include SOAP::RPCUtils
 require 'base'
 require 'methodDef'
 
@@ -48,15 +50,15 @@ def dump( var )
   end
 end
 
-def getWireDumpLogFile
-  logFilename = File.basename( $0 ) + '.log'
+def getWireDumpLogFile( postfix = "" )
+  logFilename = File.basename( $0 ).sub( '\.rb$', '' ) << postfix << '.log'
   f = File.open( logFilename, 'w' )
   f << "File: #{ logFilename } - Wiredumps for SOAP4R client / #{ $serverName } server.\n"
   f << "Date: #{ Time.now }\n\n"
 end
 
-def getWireDumpLogFileBase
-  File.basename( $0 ).sub( /\.rb$/, '' )
+def getWireDumpLogFileBase( postfix = "" )
+  File.basename( $0 ).sub( /\.rb$/, '' ) + postfix
 end
 
 def dumpTitle( dumpDev, str )
@@ -77,8 +79,9 @@ end
 #
 def doTest( drv )
   dumpDev = getWireDumpLogFile
-#  drv.setWireDumpDev( dumpDev )
-  drv.setWireDumpFileBase( getWireDumpLogFileBase )
+  drv.setWireDumpDev( dumpDev )
+#  drv.setWireDumpFileBase( getWireDumpLogFileBase )
+  drv.mappingRegistry = MappingRegistry
 
   dumpTitle( dumpDev, 'echoVoid' )
   begin
@@ -117,17 +120,25 @@ def doTest( drv )
 
   dumpTitle( dumpDev, 'echoStringArray' )
   begin
-    arg = [ "SOAP4R", "Interoperability", "Test" ]
+    arg = StringArray[ "SOAP4R", "Interoperability", "Test" ]
     var = drv.echoStringArray( arg )
     dumpResult( dumpDev, arg, var )
   rescue
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoInteger' )
+  dumpTitle( dumpDev, 'echoInteger(Int: 2147483647)' )
   begin
-    arg = 1
-    # arg = 4294967296
+    arg = 2147483647
+    var = drv.echoInteger( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoInteger(Int: -2147483648)' )
+  begin
+    arg = -2147483648
     var = drv.echoInteger( arg )
     dumpResult( dumpDev, arg, var )
   rescue
@@ -136,8 +147,7 @@ def doTest( drv )
 
   dumpTitle( dumpDev, 'echoIntegerArray' )
   begin
-    arg = [ 1, 2, 3 ]
-    # arg = [ 4294967295, 4294967296, 4294967297 ]
+    arg = IntArray[ 1, 2, 3 ]
     var = drv.echoIntegerArray( arg )
     dumpResult( dumpDev, arg, var )
   rescue
@@ -163,12 +173,21 @@ def doTest( drv )
     dumpException( dumpDev )
   end
 
+  dumpTitle( dumpDev, 'echoFloatOutOfValueSpace' )
+  begin
+    arg = 1.0e150
+    var = drv.echoFloat( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
+
   dumpTitle( dumpDev, 'echoFloatArray' )
   begin
     nan = 0.0/0.0
     inf = 1.0/0.0
     inf_ = -1.0/0.0
-    arg = [ nan, inf, inf_ ]
+    arg = FloatArray[ nan, inf, inf_ ]
     var = drv.echoFloatArray( arg )
     dumpResult( dumpDev, arg, var ) << "\n"
   rescue
@@ -184,7 +203,7 @@ def doTest( drv )
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoStructArray' )
+  dumpTitle( dumpDev, 'echoAnyTypeArray' )
   begin
     s1 = SOAPStruct.new( 1, 1.1, "a" )
     s2 = SOAPStruct.new( 2, 2.2, "b" )
@@ -196,12 +215,34 @@ def doTest( drv )
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoDate' )
+  dumpTitle( dumpDev, 'echoStructArray' )
+  begin
+    s1 = SOAPStruct.new( 1, 1.1, "a" )
+    s2 = SOAPStruct.new( 2, 2.2, "b" )
+    s3 = SOAPStruct.new( 3, 3.3, "c" )
+    arg = SOAPStructArray[ s1, s2, s3 ]
+    var = drv.echoStructArray( arg )
+    dumpResult( dumpDev, arg, var ) 
+  rescue
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoDate(No TZ)' )
   begin
     t = Time.now.gmtime
     arg = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
     var = drv.echoDate( arg )
     dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoDate(With TZ)' )
+  begin
+    arg = SOAP::SOAPDateTime.new( '2001-06-16T18:13:40-07:00' )
+    argNormalized = Date.new3( 2001, 6, 16, 11, 13, 40 )
+    var = drv.echoDate( arg )
+    dumpResult( dumpDev, argNormalized.to_s, var.to_s )
   rescue
     dumpException( dumpDev )
   end
