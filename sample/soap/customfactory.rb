@@ -2,11 +2,13 @@ require 'soap/marshal'
 include SOAP
 
 class DummyStruct
+  include Enumerable
+
   QName = XSD::QName.new(nil, 'DummyStruct')
 
-  def initialize(hash)
+  def initialize(hash = nil)
     @hash = {}
-    @hash.update(hash)
+    @hash.update(hash) if hash
   end
 
   def [](key)
@@ -29,7 +31,7 @@ class DummyStructFactory
     unless obj.is_a?(DummyStruct)
       return nil
     end
-    soap_obj = SOAPStruct.new(DummyStruct::QName)
+    soap_obj = soap_class.new(DummyStruct::QName)
     obj.each do |key, value|
       soap_obj[key] = SOAPString.new(value.to_s)
     end
@@ -40,7 +42,7 @@ class DummyStructFactory
     unless node.type == DummyStruct::QName
       return false
     end
-    obj = DummyStruct.new
+    obj = obj_class.new
     node.each do |key, value|
       obj[key] = value.data
     end
@@ -54,4 +56,4 @@ map.set(DummyStruct, SOAPStruct, DummyStructFactory.new)
 obj = DummyStruct.new('family' => 'Na', 'given' => 'Hi')
 puts marshalledstring = SOAPMarshal.marshal(obj, map)
 
-p SOAPMarshal.unmarshal(marshalledstring)
+p SOAPMarshal.unmarshal(marshalledstring, map)
