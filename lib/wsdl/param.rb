@@ -33,7 +33,7 @@ class Param < Info
   end
 
   def find_message
-    root.message(@message)
+    root.message(@message) or raise RuntimeError.new("#{@message} not found")
   end
 
   def parse_element(element)

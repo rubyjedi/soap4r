@@ -110,10 +110,8 @@ class ComplexType < Info
       end
     elsif check_array_content(content)
       return content.elements[0].type
-    else
-      raise RuntimeError.new("Assert: Unknown array definition.")
     end
-    nil
+    raise RuntimeError.new("Assert: Unknown array definition.")
   end
 
 private

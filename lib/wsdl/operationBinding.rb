@@ -37,7 +37,7 @@ class OperationBinding < Info
   end
 
   def find_operation
-    porttype.operations[@name]
+    porttype.operations[@name] or raise RuntimeError.new("#{@name} not found")
   end
 
   def soapoperation_style
