@@ -105,7 +105,7 @@ class Driver
       detail = soap2obj( $!.detail ) || ""
       $!.set_backtrace(
 	if detail.is_a?( Array )
-	  soap2obj( $!.detail ).map! { |s|
+	  detail.map! { |s|
 	    s.sub( /^/, @handler.endPoint + ':' )
 	  }
 	else
