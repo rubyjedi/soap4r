@@ -42,7 +42,8 @@ module RPCUtils
     end
 
     def to_e
-      klass = RPCUtils.getClassFromName( @exceptionTypeName.to_s )
+      klass = RPCUtils.getClassFromName(
+	RPCUtils.getNameFromElementName( @exceptionTypeName.to_s ))
       if klass.nil?
 	raise RuntimeError.new( @message )
       end
@@ -688,11 +689,16 @@ module RPCUtils
       if node.is_a?( SOAPStruct )
 	obj = struct2obj( node, map )
 	return true, obj if obj
-      end
-      if !@allowUntypedStruct
+
+	if !@allowUntypedStruct
+	  return false
+	end
+
+	return anyType2obj( node, map )
+      else
+	# Basetype which is not defined...
 	return false
       end
-      return anyType2obj( node, map )
     end
 
     def struct2obj( node, map )
