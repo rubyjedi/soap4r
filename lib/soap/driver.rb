@@ -104,18 +104,22 @@ class Driver
     log( SEV_INFO, "call: checking SOAP-Fault..." )
     begin
       @proxy.checkFault( body )
-    rescue SOAP::FaultError
-      detail = RPCUtils.soap2obj( $!.detail, @mappingRegistry ) || ""
-      $!.set_backtrace(
-	if detail.is_a?( Array )
-	  detail.map! { |s|
-	    s.sub( /^/, @handler.endPoint + ':' )
-	  }
-	else
-	  [ detail.to_s ]
-	end
-      )
-      raise
+    rescue SOAP::FaultError => e
+      detail = RPCUtils.soap2obj( e.detail, @mappingRegistry ) || ""
+      if detail.is_a?( RPCUtils::SOAPException )
+	raise detail.to_e
+      else
+	e.set_backtrace(
+	  if detail.is_a?( Array )
+	    detail.map! { |s|
+	      s.sub( /^/, @handler.endPoint + ':' )
+	    }
+	  else
+	    [ detail.to_s ]
+	  end
+	)
+	raise
+      end
     end
 
     obj = RPCUtils.soap2obj( body.response, @mappingRegistry )

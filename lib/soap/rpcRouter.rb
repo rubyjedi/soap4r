@@ -135,13 +135,12 @@ private
 
   # Create fault response.
   def fault( e )
-    detail = SOAPArray.new
-    detail.extraAttributes << SOAPExtraAttributes.new( EnvelopeNamespace, AttrEncodingStyle, nil, EncodingNamespace )
-    e.backtrace.each do |stack|
-      detail.add( SOAPString.new( stack ))
-    end
-    SOAPFault.new( SOAPString.new( 'Server' ), SOAPString.new( e.to_s ),
-      SOAPString.new( @actor ), detail )
+    detail = RPCUtils::SOAPException.new( e )
+    SOAPFault.new(
+      SOAPString.new( 'Server' ),
+      SOAPString.new( e.to_s ),
+      SOAPString.new( @actor ),
+      RPCUtils.obj2soap( detail ))
   end
 
   # Dispatch to defined method.
