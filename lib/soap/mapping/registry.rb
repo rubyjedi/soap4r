@@ -57,16 +57,6 @@ class SOAPException; include Marshallable
     obj.extend(::SOAP::Mapping::MappedException)
     obj
   end
-
-  def set_backtrace(e)
-    e.set_backtrace(
-      if @cause.backtrace.is_a?(Array)
-        @cause.backtrace
-      else
-        [@cause.backtrace.inspect]
-      end
-  )
-  end
 end
 
 
