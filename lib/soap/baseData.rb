@@ -256,7 +256,7 @@ private
 
   # Override the definition in SOAPBasetype.
   def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::Namespace, XSD::NilLiteral ), XSD::NilValue )
+    Attr.new( ns.name( XSD::InstanceNamespace, XSD::NilLiteral ), XSD::NilValue )
   end
 end
 
@@ -311,6 +311,11 @@ class SOAPDate < XSDDate
 end
 
 class SOAPTime < XSDTime
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPHexBinary < XSDHexBinary
   include SOAPBasetype
   extend SOAPModuleUtils
 end
