@@ -631,13 +631,6 @@ module RPCUtils
 			[ RubyCustomTypeNamespace, "SOAPException" ]],
       [ ::Struct,	::SOAP::SOAPStruct,	CompoundtypeFactory ],
       [ ::Object,	::SOAP::SOAPStruct,	ObjectFactory ],
-
-      ## Classes which can be dumped by Ruby's marshal.
-      # NilClass, TrueClass, FalseClass, Fixnum, Float, Bignum, String, Regexp,
-      # Array, Hash, Struct, Object, Class, Module, Symbol
-
-      ## Rest
-      # Regexp, Class, Module, Symbol
     ]
 
     UserMapping = [
