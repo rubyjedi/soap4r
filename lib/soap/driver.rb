@@ -18,6 +18,10 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/proxy'
 require 'soap/rpcUtils'
+require 'soap/streamHandler'
+#require 'soap/streamHandler_http-access'
+require 'soap/charset'
+
 require 'application'
 
 
@@ -37,7 +41,7 @@ class Driver
     @logId = logId
     log( SEV_INFO, 'initialize: initializing SOAP driver...' )
     @namespace = namespace
-    @handler = HTTPPostStreamHandler.new( endPoint, httpProxy )
+    @handler = HTTPPostStreamHandler.new( endPoint, httpProxy, Charset.getXMLInstanceEncoding )
     @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
     @proxy.allowUnqualifiedElement = true
     @mappingRegistry = nil

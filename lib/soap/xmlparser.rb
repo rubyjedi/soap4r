@@ -44,7 +44,7 @@ class SOAPXMLParser < SOAPParser
     end
   end
 end
-SOAP::Processor.setEncoding( $KCODE )
+Charset.setXMLInstanceEncoding( 'UTF8' )
 
 
 end

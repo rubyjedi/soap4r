@@ -17,7 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/soap'
-require 'soap/processor'
+require 'soap/charset'
 require 'soap/baseData'
 require 'soap/encoding'
 
@@ -260,7 +260,8 @@ class SOAPNQXMLLightWeightParser < SOAPParser
       when NQXML::Text
 	cdata( entity.text )
       when NQXML::ProcessingInstruction
-	# ToDo...
+	encoding = entity.attrs[ 'encoding' ]
+	Charset.setXMLInstanceEncoding( Charset.getCharsetStr( encoding )) if encoding
       when NQXML::Comment
 	# Nothing to do.
       else
@@ -289,7 +290,8 @@ class SOAPNQXMLStreamingParser < SOAPParser
       when NQXML::Text
 	cdata( entity )
       when NQXML::ProcessingInstruction
-	# ToDo...
+	encoding = entity.attrs[ 'encoding' ]
+	Charset.setXMLInstanceEncoding( Charset.getCharsetStr( encoding )) if encoding
       when NQXML::Comment
 	# Nothing to do.
       else

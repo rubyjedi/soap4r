@@ -17,6 +17,8 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/soap'
+require 'soap/charset'
+
 require 'uri'
 require 'socket'
 require 'timeout'
@@ -50,20 +52,21 @@ public
   CallTimeout = 300   # [sec]
   ReadTimeout = 300   # [sec]
 
-  def initialize( endPointUri, proxy = nil )
+  def initialize( endPointUri, proxy = nil, charset = $KCODE )
     super( endPointUri )
     @server = endPointUri
     @proxy = proxy
+    @charset = charset
     @dumpDev = nil	# Set an IO to get wiredump.
     @dumpFileBase = nil
   end
 
-  def send( soapString, soapAction = nil )
+  def send( soapString, soapAction = nil, charset = @charset )
     begin
-      s = sendPOST( soapString, soapAction )
+      s = sendPOST( soapString, soapAction, charset )
     rescue PostUnavailableError
       begin
-        s = sendMPOST( soapString, soapAction )
+        s = sendMPOST( soapString, soapAction, charset )
       rescue MPostUnavailableError
         raise HTTPStreamError.new( $! )
       end
@@ -72,7 +75,7 @@ public
 
   private
 
-  def sendPOST( soapString, soapAction )
+  def sendPOST( soapString, soapAction, charset )
     server = URI.create( @server )
     dumpDev = if @dumpDev && @dumpDev.respond_to?( "<<" )
 	@dumpDev
@@ -121,7 +124,7 @@ POST #{ absPath } HTTP/1.0
 Host: #{ server.host }
 Connection: close
 Content-Length: #{ soapString.size }
-Content-Type: #{ MediaType }
+Content-Type: #{ MediaType }; charset=#{ Charset.getCharsetLabel( charset ) }
 User-Agent: SOAP4R/#{ Version }
 SOAPAction: #{ action }
 
@@ -220,7 +223,7 @@ EOS
     receiveString
   end
 
-  def sendMPOST( soapString, soapAction )
+  def sendMPOST( soapString, soapAction, charset )
     raise NotImplementError.new()
 
     s = nil

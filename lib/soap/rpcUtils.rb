@@ -17,7 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/baseData'
-require 'soap/processor'
+require 'soap/charset'
 require 'delegate'
 
 
@@ -435,16 +435,7 @@ module RPCUtils
     def obj2soap( soapKlass, obj, info, map )
       begin
 	if soapKlass.ancestors.include?( XSD::XSDString )
-	  encoded = case SOAP::Processor.getEncoding
-	    when 'NONE'
-	      obj
-	    when 'EUC'
-	      Uconv.euctou8( obj )
-	    when 'SJIS'
-	      Uconv.sjistou8( obj )
-	    else
-	      obj
-	    end
+	  encoded = Charset.encodingToXML( obj )
 	  soapKlass.new( encoded )
 	else
 	  soapKlass.new( obj )
