@@ -248,6 +248,7 @@ private
       	  @servant.call(#{ name.dump }#{ callparam })
        	end
       EOS
+      @host.method(name)
     end
 
   private
