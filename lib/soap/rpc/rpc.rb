@@ -37,6 +37,14 @@ module RPC
   def self.ary2soap(*arg); Mapping.ary2soap(*arg); end
   def self.ary2md(*arg); Mapping.ary2md(*arg); end
   def self.fault2exception(*arg); Mapping.fault2exception(*arg); end
+
+  def self.retrieveDefinedMethod(obj)
+    if obj.is_a?(Module)
+      obj.methods - Module.methods
+    else
+      obj.methods - Kernel.instance_methods(true)
+    end
+  end
 end
 
 

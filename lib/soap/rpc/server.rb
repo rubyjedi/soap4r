@@ -50,7 +50,7 @@ class Server < Devel::Application
   end
 
   def addServant(obj, namespace = @defaultNamespace, soapAction = nil)
-   (obj.methods - Kernel.instance_methods(true)).each do |methodName|
+    RPC.retrieveDefinedMethod(obj).each do |methodName|
       qname = XSD::QName.new(namespace, methodName)
       paramSize = obj.method(methodName).arity.abs
       params = (1..paramSize).collect { |i| "p#{ i }" }
