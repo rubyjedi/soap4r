@@ -260,7 +260,7 @@ private
       log( SEV_DEBUG, "CGI Response:\n#{ str }" )
       print str
 
-    rescue
+    rescue Exception
       responseString = @router.faultResponseString( $! )
       @response = CGIResponse.new( responseString )
       @response.header.status = 500
@@ -273,8 +273,8 @@ private
     end
   end
 
-  def addMethod( receiver, methodName, namespace = nil )
-    @router.addMethod( namespace || @namespace, receiver, methodName )
+  def addMethod( receiver, methodName, paramDef = nil )
+    @router.addMethod( @namespace, receiver, methodName, paramDef )
   end
 end
 
