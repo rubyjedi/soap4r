@@ -48,7 +48,7 @@ module MethodDefCreatorSupport
   module_function :createClassName
 
   def createMethodName( name )
-    name.sub( /^([A-Z]+)(.*)$/ ) { $1.tr( '[A-Z]', '[a-z]' ) << $2 }
+    uncapitalize( name )
   end
   module_function :createMethodName
 
@@ -80,7 +80,7 @@ __EOD__
       message = param.getMessage
       params = ""
       message.parts.each do | part |
-        params << "#   #{ part.name }\t\t#{ createClassName( part.type ) } - #{ part.type }\n"
+        params << "#   #{ uncapitalize( part.name ) }\t\t#{ createClassName( part.type ) } - #{ part.type }\n"
       end
       unless params.empty?
         return params
@@ -95,7 +95,7 @@ __EOD__
     params = ""
     message.parts.each do | part |
       params << ", " unless params.empty?
-      params << part.name
+      params << uncapitalize( part.name )
     end
     if params.empty?
       ""
@@ -106,9 +106,14 @@ __EOD__
   module_function :dumpInputParam
 
   def capitalize( target )
-    target.gsub( /^([a-z])/ ) { $1.tr!( '[a-z]', '[A-Z]' ) }
+    target.sub( /^([a-z])/ ) { $1.tr!( '[a-z]', '[A-Z]' ) }
   end
   module_function :capitalize
+
+  def uncapitalize( target )
+    target.sub( /^([A-Z])/ ) { $1.tr!( '[A-Z]', '[a-z]' ) }
+  end
+  module_function :uncapitalize
 end
 
 

@@ -64,7 +64,9 @@ require 'soap/rpcUtils'
 require 'soap/streamHandler'
 
 class #{ createClassName( portTypeName ) }
-  MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
+  class EmptyResponseError < ::SOAP::Error; end
+
+  MappingRegistry = ::SOAP::RPCUtils::MappingRegistry.new
 
 #{ mrCreator.dump( types ).gsub( /^/, "  " ).chomp }
   Methods = [
@@ -73,22 +75,42 @@ class #{ createClassName( portTypeName ) }
 
   DefaultEndpointUrl = "#{ addresses[ 0 ] }"
 
-  attr_reader :endpointUrl
-  attr_reader :proxyUrl
+  attr_accessor :mappingRegistry
+  attr_reader :endPointUrl
+  attr_reader :wireDumpDev
+  attr_reader :wireDumpFileBase
+  attr_reader :httpProxy
 
-  def initialize( endpointUrl = DefaultEndpointUrl, proxyUrl = nil )
+  def initialize( endpointUrl = DefaultEndpointUrl, httpProxy = nil )
     @endpointUrl = endpointUrl
-    @proxyUrl = proxyUrl
-    @httpStreamHandler = SOAP::HTTPPostStreamHandler.new( @endpointUrl,
-      @proxyUrl )
-    @proxy = SOAP::SOAPProxy.new( nil, @httpStreamHandler, nil )
-    @proxy.allowUnqualifiedElement = true
     @mappingRegistry = MappingRegistry
+    @wireDumpDev = nil
+    @dumpFileBase = nil
+    @httpProxy = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
+    @handler = ::SOAP::HTTPPostStreamHandler.new( @endpointUrl, @httpProxy,
+      ::SOAP::Charset.getEncodingLabel )
+    @proxy = ::SOAP::SOAPProxy.new( @namespace, @handler )
+    @proxy.allowUnqualifiedElement = true
     addMethod
   end
 
+  def setEndpointUrl( endpointUrl )
+    @endpointUrl = endpointUrl
+    @handler.endpointUrl = @endpointUrl if @handler
+  end
+
   def setWireDumpDev( dumpDev )
-    @httpStreamHandler.dumpDev = dumpDev
+    @wireDumpDev = dumpDev
+    @handler.dumpDev = @wireDumpDev if @handler
+  end
+
+  def setWireDumpFileBase( base )
+    @dumpFileBase = base
+  end
+
+  def setHttpProxy( httpProxy )
+    @httpProxy = httpProxy
+    @handler.proxy = @httpProxy if @handler
   end
 
   def setDefaultEncodingStyle( encodingStyle )
@@ -100,26 +122,25 @@ class #{ createClassName( portTypeName ) }
   end
 
   def call( methodName, *params )
-    # Convert parameters
-    params.collect! { | param |
-      SOAP::RPCUtils.obj2soap( param, @mappingRegistry )
-    }
-
-    # Then, call @proxy.call like the following.
+    # Convert parameters: params array => SOAPArray => members array
+    params = ::SOAP::RPCUtils.obj2soap( params, @mappingRegistry ).to_a
     header, body = @proxy.call( nil, methodName, *params )
+    unless body
+      raise EmptyResponseError.new( "Empty response." )
+    end
 
     # Check Fault.
     begin
       @proxy.checkFault( body )
-    rescue SOAP::FaultError => e
-      SOAP::RPCUtils.fault2exception( e, @mappingRegistry )
+    rescue ::SOAP::FaultError => e
+      ::SOAP::RPCUtils.fault2exception( e )
     end
 
     ret = body.response ?
-      SOAP::RPCUtils.soap2obj( body.response, @mappingRegistry ) : nil
+      ::SOAP::RPCUtils.soap2obj( body.response, @mappingRegistry ) : nil
     if body.outParams
       outParams = body.outParams.collect { | outParam |
-	SOAP::RPCUtils.soap2obj( outParam )
+	::SOAP::RPCUtils.soap2obj( outParam )
       }
       return [ ret ].concat( outParams )
     else
@@ -133,7 +154,7 @@ private
     Methods.each do | methodNameAs, methodName, params, soapAction, namespace |
       @proxy.addMethodAs( methodNameAs, methodName, params, soapAction,
 	namespace )
-      addMethodInterface( methodNameAs, params )
+      addMethodInterface( methodName, params )
     end
   end
 

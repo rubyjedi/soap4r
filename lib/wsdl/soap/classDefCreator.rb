@@ -58,6 +58,20 @@ class ClassDefCreator
 
 private
 
+  def dumpAttrLine( name )
+    varName = uncapitalize( name )
+    return <<__EOD__
+  def #{ name }
+    @#{ varName }
+  end
+
+  def #{ name }=( new#{ name } )
+    @#{ varName } = new#{ name }
+  end
+
+__EOD__
+  end
+
   def dumpClassDef( className )
     complexType = @complexTypes[ className ]
     attr_lines = ""
@@ -66,7 +80,8 @@ private
     complexType.eachElement do | elementName, element |
       name = createMethodName( elementName )
       type = element.type
-      attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
+      #attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
+      attr_lines << dumpAttrLine( elementName )
       init_lines << "    @#{ name } = #{ name }\n"
       unless var_lines.empty?
 	var_lines << ",\n      "

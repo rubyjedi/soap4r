@@ -54,7 +54,7 @@ private
   # methodNameAs, methodName, params, soapAction, namespace
   def dumpMethod( operation, binding )
     methodName = createMethodName( operation.name.name )
-    methodNameAs = methodName
+    methodNameAs = operation.name.name
     params = collectParams( operation )
     soapAction = binding.soapOperation.soapAction
     namespace = binding.input.soapBody.namespace
