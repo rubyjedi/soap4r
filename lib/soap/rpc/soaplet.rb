@@ -10,6 +10,13 @@ require 'webrick/httpservlet/abstract'
 require 'webrick/httpstatus'
 require 'soap/rpc/router'
 require 'soap/streamHandler'
+begin
+  require 'stringio'
+  require 'zlib'
+rescue LoadError
+  STDERR.puts "Loading stringio or zlib failed.  No gzipped response support." if $DEBUG
+end
+
 
 module SOAP
 module RPC
@@ -18,6 +25,7 @@ module RPC
 class SOAPlet < WEBrick::HTTPServlet::AbstractServlet
 public
   attr_reader :app_scope_router
+  attr_reader :options
 
   def initialize
     @rpc_router_map = {}
@@ -25,6 +33,11 @@ public
     @app_scope_router = ::SOAP::RPC::Router.new(self.class.name)
     @headerhandlerfactory = []
     @app_scope_headerhandler = nil
+    @options = {}
+  end
+
+  def allow_content_encoding_gzip=(allow)
+    @options[:allow_content_encoding_gzip] = allow
   end
 
   # Add servant factory whose object has request scope.  A servant object is
@@ -109,11 +122,17 @@ public
 	conn_data.receive_string = req.body
 	conn_data.receive_contenttype = req['content-type']
 	conn_data = router.route(conn_data)
+	res['content-type'] = conn_data.send_contenttype
 	if conn_data.is_fault
 	  res.status = WEBrick::HTTPStatus::RC_INTERNAL_SERVER_ERROR
 	end
-	res.body = conn_data.send_string
-	res['content-type'] = conn_data.send_contenttype
+        if outstring = encode_gzip(req, conn_data.send_string)
+          res['content-encoding'] = 'gzip'
+          res['content-length'] = outstring.size
+          res.body = outstring
+        else
+          res.body = conn_data.send_string
+        end
       rescue Exception => e
 	conn_data = router.create_fault_response(e)
 	res.status = WEBrick::HTTPStatus::RC_INTERNAL_SERVER_ERROR
@@ -203,6 +222,26 @@ private
     ensure
       handlers.each { |h| router.headerhandler.delete(h) }
     end
+  end
+
+  def encode_gzip(req, outstring)
+    unless encode_gzip?(req)
+      return nil
+    end
+    begin
+      ostream = StringIO.new
+      gz = Zlib::GzipWriter.new(ostream)
+      gz.write(outstring)
+      ostream.string
+    ensure
+      gz.close
+    end
+  end
+
+  def encode_gzip?(req)
+    @options[:allow_content_encoding_gzip] and defined?(::Zlib) and
+      req['accept-encoding'] and
+      req['accept-encoding'].split(/,\s*/).include?('gzip')
   end
 
   class << self
