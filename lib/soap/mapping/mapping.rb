@@ -157,18 +157,6 @@ module Mapping
     end
   end
 
-  unless Object.respond_to?(:instance_variable_get)
-    class Object
-      def instance_variable_get(ivarname)
-	instance_eval(ivarname)
-      end
-
-      def instance_variable_set(ivarname, value)
-	instance_eval("#{ivarname} = value")
-      end
-    end
-  end
-
   def self.set_instance_vars(obj, values)
     values.each do |name, value|
       setter = name + "="
