@@ -3,12 +3,13 @@
 $serverName = 'White Mesa SOAP RPC'
 
 require 'clientBase'
+require 'soap/XMLSchemaDatatypes1999'
 
-$server = 'http://services3.xmetdhos.net:8080/interop'
-$soapAction = 'urn:soapinterop#'
+$server = 'http://www.whitemesa.net/interop'
+$soapAction = 'urn:soapinterop'
 
 drv = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
 
-methodDefWithSOAPAction( drv, $soapAction )
+methodDef( drv )
 
 doTest( drv )
