@@ -240,13 +240,13 @@ private
   def _set( d )
     if d.is_a?( String )
       # Integer( "00012" ) => 10 in Ruby.
-      d.sub!( /^([-+]?)0*(?=\d)/, "\\1" )
+      d.sub!( /^([+\-]?)0*(?=\d)/, "\\1" )
     end
     set_str( d )
   end
 
   def set_str( str )
-    /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( str.to_s )
+    /^([+\-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( str.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
@@ -308,7 +308,7 @@ private
     elsif str == '-INF'
       @data = -1.0/0.0
     else
-      if /^[-+\.\deE]+$/ !~ str
+      if /^[+\-\.\deE]+$/ !~ str
 	raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
       end
       # Float( "-1.4E" ) might fail on some system.
@@ -430,7 +430,7 @@ public
 
 private
   def _set( newDuration )
-    /^([+-]?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/ =~ trim( newDuration.to_s )
+    /^([+\-]?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/ =~ trim( newDuration.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newDuration }'." )
     end
@@ -500,7 +500,7 @@ module XSDDateTimeImpl
   end
 
   def ofFromTZ( zoneStr )
-    /^(?:Z|(?:([+-])(\d\d):(\d\d))?)$/ =~ zoneStr
+    /^(?:Z|(?:([+\-])(\d\d):(\d\d))?)$/ =~ zoneStr
     zoneSign = $1
     zoneHour = $2.to_i
     zoneMin = $3.to_i
@@ -558,7 +558,7 @@ public
 
 private
   def set_str( t )
-    /^([+-]?\d\d\d\d\d*)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+    /^([+\-]?\d\d\d\d\d*)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
@@ -621,7 +621,7 @@ public
 
 private
   def set_str( t )
-    /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
+    /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:([+\-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
@@ -664,7 +664,7 @@ public
 
 private
   def set_str( t )
-    /^([+-]?\d\d\d\d\d*)-(\d\d)-(\d\d)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
+    /^([+\-]?\d\d\d\d\d*)-(\d\d)-(\d\d)(Z|(?:([+\-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
@@ -700,7 +700,7 @@ public
 
 private
   def set_str( t )
-    /^([+-]?\d\d\d\d\d*)-(\d\d)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
+    /^([+\-]?\d\d\d\d\d*)-(\d\d)(Z|(?:([+\-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
@@ -735,7 +735,7 @@ public
 
 private
   def set_str( t )
-    /^([+-]?\d\d\d\d\d*)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
+    /^([+\-]?\d\d\d\d\d*)(Z|(?:([+\-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
@@ -769,7 +769,7 @@ public
 
 private
   def set_str( t )
-    /^(\d\d)-(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+    /^(\d\d)-(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
@@ -800,7 +800,7 @@ public
 
 private
   def set_str( t )
-    /^(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+    /^(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
@@ -830,7 +830,7 @@ public
 
 private
   def set_str( t )
-    /^(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+    /^(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
