@@ -32,13 +32,15 @@ module Marshal
   def Marshal.marshal( obj, mappingRegistry = RPCUtils::MappingRegistry.new )
     elementName = RPCUtils.getElementNameFromName( obj.type.to_s )
     soapObj = RPCUtils.obj2soap( obj, mappingRegistry )
-    soapObj.name = elementName
-    generator = SOAPGenerator.new
-    Processor.xmlDecl + generator.generate( soapObj )
+    body = SOAPBody.new
+    body.add( elementName, soapObj )
+    SOAP::Processor.marshal( nil, body )
   end
 
-  def Marshal.unmarshal( str, mappingRegistry = RPCUtils::MappingRegistry.new, parser = Processor.loadParser )
-    RPCUtils.soap2obj( parser.parse( str ), mappingRegistry )
+  def Marshal.unmarshal( str, mappingRegistry = RPCUtils::MappingRegistry.new,
+      parser = Processor.loadParser )
+    header, body = SOAP::Processor.unmarshal( str )
+    RPCUtils.soap2obj( body[0], mappingRegistry )
   end
 
 end
