@@ -52,7 +52,7 @@ class CGIStub < Server
 
     def init
       validate
-      charset = StreamHandler.parseMediaType( @content_type )
+      @charset = StreamHandler.parseMediaType( @content_type )
       @body = @source.read( @size )
       self
     end
