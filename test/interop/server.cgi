@@ -1,14 +1,19 @@
 #!/usr/bin/env ruby
 
+
 require 'soap/cgistub'
+require 'soap/rpcUtils'
 require 'base'
 
 LogFile = './log'
 
 class InteropApp < SOAP::CGIStub
+  include RPCUtils
+
   def initialize( *arg )
     super( *arg )
     setLog( LogFile, 'weekly' )
+    @router.mappingRegistry = MappingRegistry
   end
 
   def methodDef
@@ -23,6 +28,11 @@ class InteropApp < SOAP::CGIStub
     addMethod( self, 'echoStructArray' )
     addMethod( self, 'echoDate' )
     addMethod( self, 'echoBase64' )
+    addMethod( self, 'echoDouble' )
+
+    addMethod( self, 'echo2DStringArray' )
+    addMethod( self, 'echoNestedStruct' )
+    addMethod( self, 'echoArrayStruct' )
   end
   
   def echoVoid
@@ -30,43 +40,63 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoString( inputString )
-    inputString.dup
+    inputString.clone
   end
 
   def echoStringArray( inputStringArray )
-    inputStringArray.dup
+    inputStringArray.clone
   end
 
   def echoInteger( inputInteger )
-    inputInteger.dup
+    SOAP::SOAPInt.new( inputInteger.clone )
   end
 
   def echoIntegerArray( inputIntegerArray )
-    inputIntegerArray.dup
+    inputIntegerArray.clone
   end
 
   def echoFloat( inputFloat )
-    inputFloat.dup
+    SOAPFloat.new( inputFloat )
   end
 
   def echoFloatArray( inputFloatArray )
-    inputFloatArray.dup
+    inputFloatArray.collect { | f |
+      SOAPFloat.new( f )
+    }
   end
 
   def echoStruct( inputStruct )
-    inputStruct.dup
+    inputStruct.clone
   end
 
   def echoStructArray( inputStructArray )
-    inputStructArray.dup
+    inputStructArray.clone
   end
 
   def echoDate( inputDate )
-    inputDate.dup
+    inputDate.clone
   end
 
   def echoBase64( inputBase64String )
-    SOAP::SOAPBase64.new( inputBase64String.dup )
+    SOAP::SOAPBase64.new( inputBase64String.clone )
+  end
+
+  def echoDouble( inputDouble )
+    SOAP::SOAPDouble.new( inputDouble )
+  end
+
+  # for Round 2 group B
+  def echo2DStringArray( ary )
+    # In Ruby, M-D Array is converted to Array of Array now.
+    ary2md( ary, 2 )
+  end
+
+  def echoNestedStruct( inputStruct )
+    inputStruct.clone
+  end
+
+  def echoArrayStruct( inputStruct )
+    inputStruct.clone
   end
 end
 
