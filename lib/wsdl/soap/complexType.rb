@@ -33,8 +33,8 @@ class ComplexType < Info
     if content
       :TYPE_STRUCT
     elsif complexContent and complexContent.base == ::SOAP::ValueArrayName and
-	complexContent.content.attributes.size == 1 and
-	complexContent.content.attributes[ 0 ].ref == ::SOAP::AttrArrayTypeName
+	complexContent.getRefAttribute( ::SOAP::AttrArrayTypeName ).ref ==
+	::SOAP::AttrArrayTypeName
       :TYPE_ARRAY
     else
       raise NotImplementedError.new( "Unknown kind of complexType." )
