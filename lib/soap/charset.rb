@@ -1,6 +1,6 @@
 =begin
 SOAP4R - Charset encoding handler.
-Copyright (C) 2001 NAKAMURA Hiroshi.
+Copyright (C) 2001, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -15,6 +15,9 @@ You should have received a copy of the GNU General Public License along with
 this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
+
+require 'soap/soap'
+
 
 module SOAP
 
