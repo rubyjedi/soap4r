@@ -91,12 +91,10 @@ class Property
 
   # find property from $:.
   def loadproperty(propname)
+    return loadpropertyfile(propname) if File.file?(propname)
     $:.each do |path|
       if File.file?(file = File.join(path, propname))
-        puts "find property at #{file}" if $DEBUG
-	File.open(file) do |f|
-          return load(f)
-        end
+        return loadpropertyfile(file)
       end
     end
     nil
@@ -302,6 +300,13 @@ private
 
   def key_max
     (@store.keys.max { |l, r| l.to_s.to_i <=> r.to_s.to_i }).to_s.to_i
+  end
+
+  def loadpropertyfile(file)
+    puts "find property at #{file}" if $DEBUG
+    File.open(file) do |f|
+      load(f)
+    end
   end
 end
 
