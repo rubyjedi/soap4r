@@ -264,7 +264,7 @@ module SOAP
 
       entity.attrs.each do | key, value |
 	if ( ns.compare( XSD::Namespace, XSD::NilLiteral, key ))
-	  isNil = ( value == NilValue )
+	  isNil = ( value == XSD::NilValue )
 	elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	  type = value
 	elsif ( ns.compare( EncodingNamespace, AttrArrayType, key ))
