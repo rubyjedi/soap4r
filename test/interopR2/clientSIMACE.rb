@@ -3,6 +3,7 @@
 $serverName = 'SIM ACE'
 $serverBase = 'http://soapinterop.simdb.com/round2'
 $serverGroupB = 'http://soapinterop.simdb.com/round2B'
+$noEchoMap = true
 
 require 'clientBase'
 

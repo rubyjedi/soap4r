@@ -3,9 +3,9 @@
 $serverName = 'OpenLink'
 
 $server = 'http://demo.openlinksw.com:8890/Interop'
+$noEchoMap = true
 
 require 'clientBase'
-require 'soap/XMLSchemaDatatypes1999'
 
 log = Log.new( STDERR )
 log.sevThreshold = Log::SEV_INFO	# Log::SEV_WARN, Log::SEV_DEBUG

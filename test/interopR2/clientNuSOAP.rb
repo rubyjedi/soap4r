@@ -4,6 +4,7 @@ $serverName = 'NuSOAP'
 
 $serverBase = 'http://dietrich.ganx4.com/nusoap/testbed/round2_base_server.php'
 $serverGroupB = 'http://dietrich.ganx4.com/nusoap/testbed/round2_groupb_server.php'
+$noEchoMap = true
 
 require 'clientBase'
 log = Log.new( STDERR )

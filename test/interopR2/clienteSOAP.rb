@@ -4,6 +4,7 @@ $serverName = 'eSoap'
 
 $serverBase = 'http://www.quakersoft.net/cgi-bin/interop2_server.cgi'
 #$serverGroupB = ''
+$noEchoMap = true
 
 require 'clientBase'
 

@@ -3,6 +3,7 @@
 $serverName = 'PEAR'
 
 $server = 'http://www.caraveo.com/soap_interop/server_round2.php'
+$noEchoMap = true
 
 require 'clientBase'
 
