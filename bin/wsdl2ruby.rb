@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'getoptlong'
-require 'wsdl/xmlparser'
+require 'wsdl/parser'
 require 'wsdl/name'
 require 'wsdl/soap/classDefCreator'
 require 'wsdl/soap/servantSkeltonCreator'
@@ -39,7 +39,7 @@ private
   def run
     @wsdlFile, @opt = parseOpt( GetoptLong.new( *OptSet ))
     usageExit unless @wsdlFile
-    @wsdl = WSDL::WSDLXMLParser.new.parse( File.open( @wsdlFile ))
+    @wsdl = WSDL::WSDLParser.createParser.parse( File.open( @wsdlFile ))
     @name = @wsdl.name.name || 'default'
     createFile
     0
@@ -226,7 +226,7 @@ __EOU__
   end
 
   def createName( name )
-    name ? WSDL::Name.new( @wsdl.targetNamespace, name ) : nil
+    name ? XSD::QName.new( @wsdl.targetNamespace, name ) : nil
   end
 end
 
