@@ -290,9 +290,6 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       parent.replaceNode( newParent )
       decodeParent( parent, node )
 
-    when SOAPReference
-      raise EncodingStyleError.new( "Reference node must not have a child." )
-
     when SOAPStruct
       parent.node.add( node.name, node )
       node.parent = parent.node
@@ -310,8 +307,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       raise EncodingStyleError.new( "SOAP base type must not have a child." )
 
     else
-      # SOAPUnknown does not have parent.
-      # raise EncodingStyleError.new( "Illegal parent: #{ parent }." )
+      raise EncodingStyleError.new( "Illegal parent: #{ parent.node }." )
     end
   end
 
