@@ -3,7 +3,14 @@
 require 'soap/cgistub'
 require 'base'
 
+LogFile = './log'
+
 class InteropApp < SOAP::CGIStub
+  def initialize( *arg )
+    super( *arg )
+    setLog( LogFile, 'weekly' )
+  end
+
   def methodDef
     addMethod( self, 'echoVoid' )
     addMethod( self, 'echoString' )
@@ -14,6 +21,8 @@ class InteropApp < SOAP::CGIStub
     addMethod( self, 'echoFloatArray' )
     addMethod( self, 'echoStruct' )
     addMethod( self, 'echoStructArray' )
+    addMethod( self, 'echoDate' )
+    addMethod( self, 'echoBase64' )
   end
   
   def echoVoid
@@ -50,6 +59,14 @@ class InteropApp < SOAP::CGIStub
 
   def echoStructArray( inputStructArray )
     inputStructArray.dup
+  end
+
+  def echoDate( inputDate )
+    inputDate.dup
+  end
+
+  def echoBase64( inputBase64String )
+    inputBase64String.dup
   end
 end
 

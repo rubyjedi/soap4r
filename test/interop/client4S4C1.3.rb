@@ -3,13 +3,7 @@
 $serverName = '4S4C'
 
 require 'clientBase'
-
-module XSD
-  Namespace = 'http://www.w3.org/1999/XMLSchema'
-  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  NilLiteral = 'null'
-end
-
+require 'soap/XMLSchemaDatatypes1999'
 
 $server = 'http://soap.4s4c.com/ilab/soap.asp'
 $soapAction = 'urn:soapinterop'

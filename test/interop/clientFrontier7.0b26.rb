@@ -5,12 +5,7 @@ $serverName = 'Frontier 7.0b26(Userland)'
 # NG: returned struct from Frontier is not typed(not bad).
 
 require 'clientBase'
-
-module XSD
-  Namespace = 'http://www.w3.org/1999/XMLSchema'
-  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  NilLiteral = 'null'
-end
+require 'soap/XMLSchemaDatatypes1999'
 
 
 $server = 'http://www.soapware.org/xmethodsInterop'
