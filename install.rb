@@ -41,9 +41,9 @@ begin
   end
 
   # Installing URb
-  File.mkpath DSTPATH + "/urb", true 
-  Dir["redist/urb/*.rb"].each do |name|
-    File.install name, "#{DSTPATH}/urb/#{File.basename name}", 0644, true
+  File.mkpath DSTPATH + "/uri", true 
+  Dir["redist/uri/*.rb"].each do |name|
+    File.install name, "#{DSTPATH}/uri/#{File.basename name}", 0644, true
   end
 
   # Installing http-access2
