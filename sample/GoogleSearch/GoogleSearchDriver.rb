@@ -94,7 +94,7 @@ private
     Methods.each do |name_as, name, params, soapaction, namespace|
       qname = XSD::QName.new(namespace, name_as)
       @proxy.add_method(qname, soapaction, name, params)
-      add_method_interface(name, params)
+      add_rpc_method_interface(name, params)
     end
   end
 end
