@@ -135,7 +135,8 @@ __EOU__
     @classdef_filename = @name + '.rb'
     check_file(@classdef_filename) or return
     File.open(@classdef_filename, "w") do |f|
-      f << WSDL::SOAP::ClassDefCreator.new(@wsdl).dump
+      f << WSDL::SOAP::ClassDefCreator.new(
+        @wsdl.collect_complextypes, @wsdl).dump
     end
   end
 
