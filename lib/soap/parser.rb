@@ -189,26 +189,6 @@ private
       end
     end
 
-    unless o and namespace.nil? and parent.node.is_a?( SOAPFault )
-      if name == 'faultcode'
-	o = SOAPString.decode( ns, entity )
-	parent.node.faultCode = o
-      elsif name == 'faultstring'
-	o = SOAPString.decode( ns, entity )
-	parent.node.faultString = o
-      elsif name == 'faultactor'
-	o = SOAPString.decode( ns, entity )
-	parent.node.faultActor = o
-      elsif name == 'detail'
-	if handler
-	  o = handler.decodeTag( ns, entity, parent )
-	else
-	  o = SOAPString.decode( ns, entity )
-	end
-	parent.node.detail = o
-      end
-    end
-
     # Encoding based parsing.
     unless o
       if handler
