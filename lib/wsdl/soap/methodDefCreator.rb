@@ -44,7 +44,7 @@ class MethodDefCreator
     operations.each do | operation |
       opBinding = binding.operations[ operation.name ]
       result << ",\n" unless result.empty?
-      result << dumpMethod( operation, opBinding )
+      result << dumpMethod( operation, opBinding ).chomp
     end
     return result, @types
   end
@@ -58,46 +58,58 @@ private
     params = collectParams( operation )
     soapAction = binding.soapOperation.soapAction
     namespace = binding.input.soapBody.namespace
-    ary2str( [ methodNameAs, methodName, params, soapAction, namespace ] )
+    paramsStr = param2str( params )
+    if paramsStr.empty?
+      paramsStr = '[]'
+    else
+      paramsStr = "[\n" << paramsStr << " ]"
+    end
+    return <<__EOD__
+[ #{ dq( methodNameAs ) }, #{ dq( methodName ) }, #{ paramsStr },
+  #{ dq( soapAction ) }, #{ dq( namespace ) } ]
+__EOD__
   end
 
   def collectParams( operation )
-    inParam = @definitions.getMessage( operation.input.message )
-    outParam = @definitions.getMessage( operation.output.message )
-    result = inParam.parts.collect { | part |
+    result = operation.getInputParts.collect { | part |
       collectTypes( part.type )
       paramSet( 'in', typeDef( part.type ), part.name )
     }
-    if outParam.parts.size > 0
-      retval = outParam.parts[ 0 ]
+    outParts = operation.getOutputParts
+    if outParts.size > 0
+      retval = outParts[ 0 ]
       collectTypes( retval.type )
       result << paramSet( 'retval', typeDef( retval.type ), retval.name )
-      cdr( outParam.parts ).each { | part |
+      cdr( outParts ).each { | part |
 	collectTypes( part.type )
 	result << paramSet( 'out', typeDef( part.type ), part.name )
       }
+      result
     end
-    sortParameterOrder( operation, result )
   end
 
   def typeDef( type )
-    "#{ createClassName( type ) } #{ type }"
+    if mappedType = getBaseTypeMappedClass( type )
+      [ mappedType ]
+    else
+      typeDef = @complexTypes[ type ]
+      case typeDef.compoundType
+      when :TYPE_STRUCT
+	[ '::SOAP::SOAPStruct', type.namespace, type.name ]
+      when :TYPE_ARRAY
+	arrayType = typeDef.complexContent.getRefAttribute(
+	  ::SOAP::AttrArrayTypeName ).arrayType
+	contentTypeNamespace = arrayType.namespace
+	contentTypeName = arrayType.name.sub( /\[(?:,)*\]$/, '' )
+	[ '::SOAP::SOAPArray', contentTypeNamespace, contentTypeName ]
+      else
+	raise NotImplementedError.new( "Must not reach here." )
+      end
+    end
   end
 
   def paramSet( ioType, type, name )
     [ ioType, type, name ]
-  end
-
-  def sortParameterOrder( operation, params )
-    parameterOrder = operation.parameterOrder
-    return params unless parameterOrder
-    result = []
-    parameterOrder.each do | orderItem |
-      paramDef = params.find { | param | param[ 2 ] == orderItem }
-      raise unless paramDef
-      result << paramDef
-    end
-    result
   end
 
   def collectTypes( type )
@@ -105,15 +117,24 @@ private
     return unless @complexTypes[ type ]
     content = @complexTypes[ type ].content
     return unless content
-    content.elements.each do | element |
+    content.elements.each do | elementName, element |
       collectTypes( element.type )
     end
   end
 
-  def ary2str( ary )
-    "[ " << ary.collect { | item |
-      item.is_a?( Array ) ? ary2str( item ) : dq( item )
-    }.join( ", " ) << " ]"
+  def param2str( params )
+    params.collect { | param |
+      "  [ #{ dq( param[0] ) }, #{ dq( param[2] ) },\n" <<
+      "    #{ type2str( param[1] ) } ]"
+    }.join( ",\n" )
+  end
+
+  def type2str( type )
+    if type.size == 1
+      "[ #{ type[0] } ]" 
+    else
+      "[ #{ type[0] }, #{ dq( type[1] ) }, #{ dq( type[2] ) } ]" 
+    end
   end
 
   def dq( ele )
