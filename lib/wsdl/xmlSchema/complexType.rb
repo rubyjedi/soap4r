@@ -51,6 +51,16 @@ class ComplexType < Info
     parent.targetNamespace
   end
 
+  def addElement( name, type )
+    unless @content
+      @content = Content.new( self )
+    end
+    ele = Element.new
+    ele.name = name
+    ele.type = type
+    @content.elements[ ele.name ] = ele
+  end
+
   ComplexContentName = XSD::QName.new( XSD::Namespace, 'complexContent' )
   def parseElement( element )
     case element
