@@ -25,39 +25,39 @@ module WSDL
 
 
 class Definitions < Info
-  def soap_complextypes(porttype)
+  def soap_complextypes(binding)
     types = collect_complextypes
-    porttype.operations.each do |operation|
-      if operation.input
-	message  = messages[operation.input.message]
-	type = XMLSchema::ComplexType.new(operation.input.name || operation.name)
+    binding.operations.each do |op_bind|
+      operation = op_bind.find_operation
+      if op_bind.input
+      	message  = messages[operation.input.message]
+	type = if op_bind.soapoperation and op_bind.soapoperation.style == :rpc
+	    XMLSchema::ComplexType.new(operation.input.name || operation.name)
+	  else
+	      ????? this method is for rpc.
+	    XMLSchema::ComplexType.new(message.name)
+	  end
 	elements = message.parts.collect { |part|
 	    XMLSchema::Element.new(part.name, part.type)
 	  }
-	type.sequence_elements = elements
+       	type.sequence_elements = elements
 	types << type
       end
-      if operation.output
+      if op_bind.output
 	message  = messages[operation.output.message]
-	type = XMLSchema::ComplexType.new(operation.output.name ||
-	  XSD::QName.new(operation.name.namespace, operation.name.name + "Response"))
+	type = if op_bind.soapoperation and op_bind.soapoperation.style == :rpc
+	    XMLSchema::ComplexType.new(operation.output.name ||
+	      XSD::QName.new(operation.name.namespace, operation.name.name + "Response"))
+	  else
+	    XMLSchema::ComplexType.new(message.name)
+	  end
 	elements = message.parts.collect { |part|
-	    XMLSchema::Element.new(part.name, part.type)
+       	    XMLSchema::Element.new(part.name, part.type)
 	  }
 	type.sequence_elements = elements
 	types << type
       end
     end
-=begin
-    messages.each do |message|
-      type = XMLSchema::ComplexType.new(message.name)
-      elements = message.parts.collect { |part|
-	  XMLSchema::Element.new(part.name, part.type)
-	}
-      type.sequence_elements = elements
-      types << type
-    end
-=end
     types << array_complextype
     types << fault_complextype
     types << exception_complextype
