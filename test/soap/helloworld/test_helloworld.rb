@@ -1,7 +1,7 @@
 require 'test/unit'
 require 'soap/rpc/driver'
 
-dir = '../sample/HelloWorld/'
+dir = File.dirname(__FILE__)
 $:.push(dir)
 require 'hw_s.rb'
 $:.delete(dir)

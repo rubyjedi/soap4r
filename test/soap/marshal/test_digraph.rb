@@ -36,4 +36,10 @@ class TestDigraph < Test::Unit::TestCase
     assert_equal(newnode.first.first.__id__, newnode.second.first.__id__)
     assert_equal(newnode.first.first.first.first.__id__, newnode.second.first.second.first.__id__)
   end
+
+  def teardown
+    if File.exist?("digraph_marshalled_string.soap")
+      File.unlink("digraph_marshalled_string.soap")
+    end
+  end
 end
