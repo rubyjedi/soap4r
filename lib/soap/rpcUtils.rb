@@ -238,13 +238,17 @@ module RPCUtils
       SOAPString.new( obj )
     when Time, Date
       SOAPDateTime.new( obj )
-    when Fixnum
-      SOAPInt.new( obj )
     when Float
       SOAPFloat.new( obj )
     when Integer
-      SOAPInteger.new( obj )
+      if (( -2147483648 <= obj ) && ( obj <= +2147483647 )) 
+	SOAPInt.new( obj )
+      else
+	SOAPInteger.new( obj )
+      end
     when Array
+      # [ [1], [2] ] is converted to Array of Array, not 2-D Array.
+      # To create M-D Array, you must create SOAPArray manually now.
       typeName = getTypeName( obj )
       typeNamespace = getNamespace( obj ) || RubyTypeNamespace
       unless typeName
@@ -270,7 +274,7 @@ module RPCUtils
       end
       param
     when Struct
-      param = SOAPStruct.new( obj.type.to_s )
+      param = SOAPStruct.new( toTypeName( obj.type.to_s ))
       param.typeNamespace = getNamespace( obj ) || RubyTypeNamespace
       obj.members.each do |member|
 	param.add( member, obj2soap( obj[ member ] ))
@@ -316,7 +320,7 @@ module RPCUtils
       # Stringify
       node.toString
     when SOAPArray
-      obj = node.collect { |elem|
+      obj = node.soap2array { | elem |
 	soap2obj( elem )
       }
       obj.instance_eval( "@typeName = '#{ node.typeName }'; @typeNamespace = '#{ node.typeNamespace }'" )
@@ -348,7 +352,28 @@ module RPCUtils
     end
   end
 
+
+  def ary2md( ary, rank )
+    mdAry = SOAPArray.new( XSD::AnyTypeLiteral, rank )
+    mdAry.typeNamespace = XSD::Namespace
+
+    addMDAry( mdAry, ary, [] )
+
+    mdAry
+  end
+
+
 private
+
+  def addMDAry( mdAry, ary, indices )
+    0.upto( ary.size - 1 ) do | idx |
+      if ary[ idx ].is_a?( Array )
+	addMDAry( mdAry, ary[ idx ], indices + [ idx ] )
+      else
+	mdAry[ *( indices + [ idx ] ) ] = obj2soap( ary[ idx ] )
+      end
+    end
+  end
 
   def getTypeName( obj )
     ret = nil
@@ -387,7 +412,7 @@ private
     obj = nil
     typeName = node.typeName || node.instance_eval( "@name" )
     begin
-      klass = Object.const_get( toTypeName( typeName ))
+      klass = Object.const_get( toType( typeName ))
       if getNamespace( klass ) != node.typeNamespace
 	raise NameError.new()
       elsif getTypeName( klass ) and ( getTypeName( klass ) != typeName )
@@ -405,7 +430,7 @@ private
 
     rescue NameError
       klass = nil
-      structName = toTypeName( typeName )
+      structName = toType( typeName )
       if ( Struct.constants - Struct.superclass.constants ).member?( structName )
 	klass = Struct.const_get( structName )
 	if klass.members.length != node.members.length
@@ -414,8 +439,10 @@ private
       else
         klass = Struct.new( structName, *node.members )
       end
-      arg = node.collect { |name, value| soap2obj( value ) }
-      obj = klass.new( *arg )
+      obj = klass.new
+      node.each do | name, value |
+	obj.send( name + "=", soap2obj( value ))
+      end
     end
 
     obj
@@ -474,8 +501,13 @@ EOS
     obj
   end
 
-  def toTypeName( name )
+  def toType( name )
     capitalize( name )
+  end
+
+  # Create NCName
+  def toTypeName( name )
+    name.gsub( ':', '_' )
   end
 
   def capitalize( target )
