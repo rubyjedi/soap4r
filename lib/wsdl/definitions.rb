@@ -57,7 +57,7 @@ class Definitions < Info
     result = XSD::NamedElements.new
     if @types
       @types.schemas.each do |schema|
-	result.concat(schema.elements)
+	result.concat(schema.collect_elements)
       end
     end
     @imports.each do |import|
@@ -70,7 +70,7 @@ class Definitions < Info
     result = @anontypes.dup
     if @types
       @types.schemas.each do |schema|
-	result.concat(schema.complextypes)
+	result.concat(schema.collect_complextypes)
       end
     end
     @imports.each do |import|
@@ -83,7 +83,7 @@ class Definitions < Info
     result = XSD::NamedElements.new
     if @types
       @types.schemas.each do |schema|
-	result.concat(schema.simpletypes)
+	result.concat(schema.collect_simpletypes)
       end
     end
     @imports.each do |import|
