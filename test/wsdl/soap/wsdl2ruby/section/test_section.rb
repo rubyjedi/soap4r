@@ -11,11 +11,11 @@ class TestSection < Test::Unit::TestCase
   end
 
   def teardown
-    File.unlink(pathname("mysample.rb"))
   end
 
   def test_classdef
     compare("expectedClassdef.rb", "mysample.rb")
+    File.unlink(pathname("mysample.rb"))
   end
 
   def test_marshal
