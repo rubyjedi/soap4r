@@ -11,7 +11,7 @@ proxy = ARGV.shift || nil
 RAAInterfaceNS = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"
 
 class Category
-  include SOAPSerializable
+  include SOAP::Marshallable
   @@typeNamespace = RAAInterfaceNS
 
   attr_reader :major, :minor
@@ -37,7 +37,7 @@ class Category
 end
 
 class Product
-  include SOAPSerializable
+  include SOAP::Marshallable
   @@typeNamespace = RAAInterfaceNS
 
   attr_reader :name
@@ -55,7 +55,7 @@ class Product
 end
 
 class Owner
-  include SOAPSerializable
+  include SOAP::Marshallable
   @@typeNamespace = RAAInterfaceNS
 
   attr_reader :id
@@ -69,7 +69,7 @@ class Owner
 end
 
 class Info
-  include SOAPSerializable
+  include SOAP::Marshallable
   @@typeNamespace = RAAInterfaceNS
 
   attr_accessor :category, :product, :owner, :update
@@ -86,7 +86,7 @@ end
 ###
 ## Create Proxy
 #
-raa = SOAPDriver.new( Log.new( STDERR ), 'SampleApp', RAAInterfaceNS, server, proxy )
+raa = SOAP::Driver.new( Log.new( STDERR ), 'SampleApp', RAAInterfaceNS, server, proxy )
 
 # Method definition.
 raa.addMethod( 'getAllListings' )
@@ -108,7 +108,7 @@ raa.addMethod( 'getInfoFromName', 'name' )
 ###
 ## Invoke methods.
 #
-p raa.getAllListings()
+p raa.getAllListings().sort
 
 p raa.getProductTree()
 
