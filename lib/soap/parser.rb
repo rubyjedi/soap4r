@@ -94,19 +94,22 @@ protected
   def tag( entity )
     unless entity.isTagEnd
       lastFrame = @parseStack.last
+      ns = parent = parentEncodingStyle = nil
       if lastFrame
 	ns = lastFrame.ns.clone
 	parent = lastFrame.node
-	encodingStyle = lastFrame.encodingStyle
+	parentEncodingStyle = lastFrame.encodingStyle
       else
 	ns = NS.new
 	parent = ParseFrame::NodeContainer.new( nil )
-	encodingStyle = nil
+	parentEncodingStyle = nil
       end
 
       parseNS( ns, entity )
+      encodingStyle, root = getEncodingStyle( ns, entity )
+
       # Children's encodingStyle is derived from its parent.
-      encodingStyle = getEncodingStyle( ns, entity ) || encodingStyle
+      encodingStyle ||= parentEncodingStyle
 
       node = decodeTag( ns, entity, parent, encodingStyle )
 
@@ -148,7 +151,7 @@ private
 
   def getEncodingStyle( ns, entity )
     entity.attrs.each do | key, value |
-      if ns.compare( EnvelopeNamespace, AttrEncodingStyle, key )
+      if ( ns.compare( EnvelopeNamespace, AttrEncodingStyle, key ))
 	return value
       end
     end
