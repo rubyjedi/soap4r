@@ -31,6 +31,7 @@ class SOAPParser
 
   class ParseError < Error; end
   class FormatDecodeError < Error; end
+  class UnexpectedElementError < Error; end
 
   @@parserFactory = nil
 
@@ -52,6 +53,7 @@ class SOAPParser
 private
   class ParseFrame
     attr_reader :node
+    attr_reader :name
     attr_reader :ns, :encodingStyle
 
     class NodeContainer
@@ -71,8 +73,9 @@ private
 
   public
 
-    def initialize( ns = nil, node = nil, encodingStyle = nil )
+    def initialize( ns, name, node, encodingStyle )
       @ns = ns
+      @name = name
       self.node = node
       @encodingStyle = encodingStyle
     end
@@ -148,7 +151,7 @@ public
 
     node = decodeTag( ns, name, attrs, parent, encodingStyle )
 
-    @parseStack << ParseFrame.new( ns, node, encodingStyle )
+    @parseStack << ParseFrame.new( ns, name, node, encodingStyle )
   end
 
   def characters( text )
@@ -167,6 +170,9 @@ public
 
   def endElement( name )
     lastFrame = @parseStack.pop
+    unless name == lastFrame.name
+      raise UnexpectedElementError.new( "Closing element name '#{ name }' does not match with opening element '#{ lastFrame.name }'." )
+    end
     decodeTagEnd( lastFrame.ns, lastFrame.node, lastFrame.encodingStyle )
     @lastNode = lastFrame.node.node
   end
