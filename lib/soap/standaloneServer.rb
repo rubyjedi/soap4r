@@ -118,8 +118,6 @@ private
   end
   
   def run
-    @log.sevThreshold = SEV_INFO
-
     class <<@log
       def puts( msg )
 	add( SEV_INFO, msg, "SOAP::StandaloneServer" )
