@@ -4,7 +4,7 @@ require 'soap/mapping'
 module RAA; extend SOAP
 
 
-InterfaceNS = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"
+InterfaceNS = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"
 MappingRegistry = SOAP::Mapping::Registry.new
 
 Methods = [
@@ -108,17 +108,18 @@ class Info
   @@schema_type = 'Info'
   @@schema_ns = InterfaceNS
 
-  attr_accessor :category, :product, :owner, :update
+  attr_accessor :category, :product, :owner, :updated, :created
 
-  def initialize(category = nil, product = nil, owner = nil, update = nil)
+  def initialize(category = nil, product = nil, owner = nil, updated = nil, created = nil)
     @category = category
     @product = product
     @owner = owner
-    @update = update
+    @updated = updated
+    @created = created
   end
 
   def <=>(rhs)
-    @update <=> rhs.update
+    @updated <=> rhs.updated
   end
 
   def eql?(rhs)

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'soap/wsdlDriver'
-wsdl = 'http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1/'
+wsdl = 'http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/'
 raa = SOAP::WSDLDriverFactory.new(wsdl).create_driver
 raa.generate_explicit_type = true
 p "WSDL loaded."
