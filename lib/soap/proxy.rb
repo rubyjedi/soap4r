@@ -115,6 +115,8 @@ class SOAPProxy
 
     # StreamHandler returns receiveCharset to use.
     parser = Processor.getDefaultParser
+    kcodeAdjusted = false
+    charsetStrBackup = nil
     if receiveCharset
       receiveString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
 
@@ -123,18 +125,20 @@ class SOAPProxy
 	charsetStrBackup = $KCODE.to_s.dup
 	$KCODE = charsetStr
 	Charset.setXMLInstanceEncoding( charsetStr )
+	kcodeAdjusted = true
       end
     end
 
-    # SOAP tree parsing.
-    opt = {}
-    if @defaultEncodingStyle
-      opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
-    end
-    header, body = Processor.unmarshal( receiveString, opt )
-
-    if receiveCharset
-      if parser.adjustKCode
+    header = body = nil
+    begin
+      # SOAP tree parsing.
+      opt = {}
+      if @defaultEncodingStyle
+	opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
+      end
+      header, body = Processor.unmarshal( receiveString, opt )
+    ensure
+      if kcodeAdjusted
        	$KCODE = charsetStrBackup
 	Charset.setXMLInstanceEncoding( $KCODE )
       end

@@ -52,6 +52,8 @@ protected
   end
 
 private
+
+  ReceiveMediaType = 'text/xml'
   
   def request_handler(request, response)
     log( SEV_INFO ) { "Received a request." }
@@ -66,12 +68,41 @@ private
     end
 
     log( SEV_INFO ) { "Request: method: #{ request.method }, size: #{ length }" }
+
+    contentType = request.header['Content-Type']
+    if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ contentType
+      raise RuntimeError.new("Illegal content-type.")
+    end
+    requestCharset = $1
     
     requestString = request.data.read( length )        
     log( SEV_DEBUG ) { "XML Request: #{requestString}" }
 
-    responseString, isFault = route( requestString )
-    log( SEV_DEBUG ) { "XML Response: #{responseString}" }
+    parser = Processor.getDefaultParser
+    kcodeAdjusted = false
+    charsetStrBackup = nil
+    if requestCharset
+      requestString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
+
+      if parser.adjustKCode
+	charsetStr = Charset.getCharsetStr( requestCharset )
+     	charsetStrBackup = $KCODE.to_s.dup
+  	$KCODE = charsetStr
+	Charset.setXMLInstanceEncoding( charsetStr )
+     	kcodeAdjusted = true
+      end
+    end
+
+    responseString = isFault = nil
+    begin
+      responseString, isFault = route( requestString )
+      log( SEV_DEBUG ) { "XML Response: #{responseString}" }
+    ensure
+      if kcodeAdjusted
+	$KCODE = charsetStrBackup
+     	Charset.setXMLInstanceEncoding( $KCODE )
+      end
+    end
     
     unless isFault
       response.status = 200
@@ -79,7 +110,7 @@ private
       response.status = 500
     end
     response.body = responseString
-    response.header['Content-Type']   = "text/xml; charset=#{ Charset.getXMLInstanceEncodingLabel }"
+    response.header['Content-Type']   = "text/xml; charset=#{ requestCharset || Charset.getXMLInstanceEncodingLabel }"
     response.header['Content-Length'] = responseString.length
     response.header['Cache-Control']  = 'private'  
 

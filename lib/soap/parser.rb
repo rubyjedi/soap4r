@@ -148,6 +148,10 @@ public
     @lastNode = lastFrame.node.node
   end
 
+  def adjustKCode
+    false
+  end
+
 private
 
   # $1 is necessary.
@@ -243,10 +247,6 @@ private
   end
 
   def epilogue
-  end
-
-  def adjustKCode
-    false
   end
 end
 
