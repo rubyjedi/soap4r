@@ -108,16 +108,7 @@ public
     rescue ::SOAP::FaultError => e
       Mapping.fault2exception(e)
     end
-    ret = env.body.response ?
-      Mapping.soap2obj(env.body.response, @mapping_registry) : nil
-    if env.body.outparams
-      outparams = env.body.outparams.collect { |outparam|
-        Mapping.soap2obj(outparam)
-      }
-      return [ret].concat(outparams)
-    else
-      return ret
-    end
+    op.create_response_obj(env, @mapping_registry, @literal_mapping_registly)
   end
 
   def check_fault(body)
@@ -255,8 +246,25 @@ private
         SOAPBody.new(method)
       else
         name = @document_method_name[:input]
-        document = literal_mapping_registry.obj2ele(values[0], name)
+        document = literal_mapping_registry.obj2soap(nil, values[0], name)
         SOAPBody.new(document)
+      end
+    end
+
+    def create_response_obj(env, mapping_registry, literal_mapping_registry)
+      if @response_style == :rpc
+        ret = env.body.response ?
+          Mapping.soap2obj(env.body.response, mapping_registry) : nil
+        if env.body.outparams
+          outparams = env.body.outparams.collect { |outparam|
+            Mapping.soap2obj(outparam)
+          }
+          [ret].concat(outparams)
+        else
+          ret
+        end
+      else
+        Mapping.soap2obj(env.body.root_node, literal_mapping_registry)
       end
     end
 
