@@ -78,6 +78,12 @@ class Schema < Info
     end
   end
 
+  def collect_complextypes
+    types = NamedElements.new
+    types.concat(@complextypes)
+    types
+  end
+
   def self.parse_element(element)
     if element == SchemaName
       Schema.new

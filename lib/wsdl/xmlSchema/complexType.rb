@@ -29,6 +29,8 @@ class ComplexType < Info
   attr_accessor :name
   attr_accessor :complexcontent
   attr_accessor :content
+  attr_accessor :final
+  attr_accessor :mixed
   attr_reader :attributes
 
   def initialize(name = nil)
@@ -36,6 +38,8 @@ class ComplexType < Info
     @name = name
     @complexcontent = nil
     @content = nil
+    @final = nil
+    @mixed = false
     @attributes = NamedElements.new
   end
 
@@ -52,31 +56,29 @@ class ComplexType < Info
   end
 
   def each_element
-    if content
-      content.elements.each do |name, element|
-	yield(name, element)
+    if @content
+      @content.elements.each do |element|
+	yield(element.name, element)
       end
     end
   end
 
   def find_element(name)
-    @content.elements.each do |key, element|
-      return element if name == key
+    @content.elements.each do |element|
+      return element if name == element.name
     end
     nil
   end
 
   def sequence_elements=(elements)
-    @content = Content.new
-    @content.type = 'sequence'
+    @content = Sequence.new
     elements.each do |element|
       @content << element
     end
   end
 
   def all_elements=(elements)
-    @content = Content.new
-    @content.type = 'all'
+    @content = All.new
     elements.each do |element|
       @content << element
     end
@@ -84,9 +86,14 @@ class ComplexType < Info
 
   def parse_element(element)
     case element
-    when AllName, SequenceName, ChoiceName
-      @content = Content.new
-      @content.type = element.name
+    when AllName
+      @content = All.new
+      @content
+    when SequenceName
+      @content = Sequence.new
+      @content
+    when ChoiceName
+      @content = Choice.new
       @content
     when ComplexContentName
       @complexcontent = ComplexContent.new
@@ -102,6 +109,10 @@ class ComplexType < Info
 
   def parse_attr(attr, value)
     case attr
+    when FinalAttrName
+      @final = value
+    when MixedAttrName
+      @mixed = (value == 'true')
     when NameAttrName
       @name = XSD::QName.new(targetnamespace, value)
     else

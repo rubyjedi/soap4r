@@ -1,5 +1,5 @@
 =begin
-WSDL4R - XMLSchema attribute definition for WSDL.
+WSDL4R - XMLSchema complexType definition for WSDL.
 Copyright (C) 2002, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -24,56 +24,47 @@ module WSDL
   module XMLSchema
 
 
-class Attribute < Info
-  attr_accessor :ref
-  attr_accessor :use
-  attr_accessor :form
-  attr_accessor :name
-  attr_accessor :type
-  attr_accessor :default
-  attr_accessor :fixed
-
-  attr_accessor :arytype
+class All < Info
+  attr_reader :minoccurs
+  attr_reader :maxoccurs
+  attr_reader :elements
 
   def initialize
-    super
-    @ref = nil
-    @use = nil
-    @form = nil
-    @name = nil
-    @type = nil
-    @default = nil
-    @fixed = nil
+    super()
+    @minoccurs = 1
+    @maxoccurs = 1
+    @elements = []
+  end
 
-    @arytype = nil
+  def targetnamespace
+    parent.targetnamespace
+  end
+
+  def <<(element)
+    @elements << element
   end
 
   def parse_element(element)
-    nil
+    case element
+    when AnyName
+      o = Any.new
+      @elements << o
+      o
+    when ElementName
+      o = Element.new
+      @elements << o
+      o
+    else
+      nil
+    end
   end
 
   def parse_attr(attr, value)
     case attr
-    when RefAttrName
-      @ref = value
-    when UseAttrName
-      @use = value
-    when FormAttrName
-      @form = value
-    when NameAttrName
-      @name = value
-    when TypeAttrName
-      @type = value
-    when DefaultAttrName
-      @default = value
-    when FixedAttrName
-      @fixed = value
-    when ArrayTypeAttrName
-      @arytype = if value.is_a?(XSD::QName)
-	  value
-	else
-	  XSD::QName.new(XSD::Namespace, value)
-	end
+    when MaxOccursAttrName
+      @maxoccurs = value
+    when MinOccursAttrName
+      @minoccurs = value
     else
       nil
     end
