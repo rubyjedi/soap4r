@@ -83,7 +83,7 @@ private
     response.header['Content-Length'] = responseString.length
     response.header['Cache-Control']  = 'private'  
 
-  rescue
+  rescue Exception
     responseString  = createFaultResponseString( $! )
     response.body   = responseString
     response.status = 500
