@@ -121,7 +121,7 @@ private
       end
       unless o
         unless @ignored.key?(elename)
-          STDERR.puts("ignored element: #{elename}")
+          STDERR.puts("ignored element: #{elename} of #{parent.class}")
           @ignored[elename] = elename
         end
 	o = Documentation.new	# which accepts any element.
