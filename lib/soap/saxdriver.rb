@@ -25,13 +25,11 @@ module SOAP
 
 
 class SOAPSAXDriver < SOAPParser
-  def initialize( stringOrReadable )
-    super
+  def initialize( *vars )
+    super( *vars )
     @parser = XML::Parser::SAXDriver.new
     handler = Handler.new( self )
     @parser.setDocumentHandler( handler )
-#    @parser.setDTDHandler( handler )
-#    @parser.setEntityResolver( handler )
     @parser.setErrorHandler( handler )
   end
 
@@ -44,7 +42,6 @@ class SOAPSAXDriver < SOAPParser
       ret = {}
       for i in 0...attrs.getLength
 	ret[ attrs.getName( i ) ] = attrs.getValue( i )
-	#ret .push([attrs.getName(i), attrs.getValue(i)])
       end
       ret
     end
@@ -52,21 +49,16 @@ class SOAPSAXDriver < SOAPParser
     # def startDocument; end
     # def endDocument; end
 
-    def startElement(name, attr)
-      getAttrs( attr )
-      getAttrs( attr )
-      e = NQXML::Tag.new( name, getAttrs( attr ), false )
-      @driver.tag( e )
+    def startElement( name, attr )
+      @driver.startElement( name, getAttrs( attr ))
     end
 
-    def endElement(name)
-      e = NQXML::Tag.new( name, nil, true )
-      @driver.tag( e )
+    def endElement( name )
+      @driver.endElement( name )
     end
 
-    def characters(ch, start, length)
-      e = NQXML::Text.new( ch[start, length] )
-      @driver.text( e )
+    def characters( ch, start, length )
+      @driver.cdata( ch[ start, length ] )
     end
 
     # def processingInstruction(target, data); end
@@ -87,13 +79,18 @@ class SOAPSAXDriver < SOAPParser
   end
 
   def doParse( stringOrReadable )
-    f = Tempfile.new( "SOAP4R_SOAPXMLParserParser" )
-    f.write( stringOrReadable )
+    f = Tempfile.new( "SOAP4R_SOAPSAXDriver" )
+    if stringOrReadable.is_a?( String )
+      f.write( stringOrReadable )
+    else
+      f.write( stringOrReadable.read )
+    end
     f.close( false )	# Close but not removed
     @parser.parse( f.path )
     # 
   end
 end
+SOAP::Processor.setEncoding( $KCODE )
 
 
 end
