@@ -4,12 +4,14 @@ require "soap/driver"
 require 'iExchange'
 
 server = "http://localhost:2000/soapsrv"
-proxy = nil
-# server = "http://services.xmethods.net/soap"
-# namespace = "urn:xmethods-CurrencyExchange"
-# proxy = "http://ifront0:8080"
 
-drv = SOAP::Driver.new( nil, nil, ExchangeServiceNamespace, server, proxy )
+logger = nil
+wireDumpDev = nil
+# logger = Devel::Logger.new( STDERR )
+# wireDumpDev = STDERR
+
+drv = SOAP::Driver.new( logger, $0, ExchangeServiceNamespace, server )
+drv.setWireDumpDev( wireDumpDev )
 drv.addMethod( "getRate", "country1", "country2" )
 
 p drv.getRate( "USA", "Japan" )

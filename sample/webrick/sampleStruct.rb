@@ -3,7 +3,7 @@ require 'iSampleStruct'
 class SampleStructService
   def hi( sampleStruct )
     howAreYou = SampleStruct.new
-    howAreYou.copy( sampleStruct )
+    howAreYou.wrap( sampleStruct )
     howAreYou
   end
 end
