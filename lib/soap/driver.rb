@@ -135,7 +135,11 @@ class Driver
     begin
       @proxy.checkFault( body )
     rescue SOAP::FaultError => e
-      detail = RPCUtils.soap2obj( e.detail, @mappingRegistry ) || ""
+      detail = if e.detail
+	  RPCUtils.soap2obj( e.detail, @mappingRegistry ) || ""
+	else
+	  ""
+	end
       if detail.is_a?( RPCUtils::SOAPException )
 	begin
 	  raise detail.to_e
