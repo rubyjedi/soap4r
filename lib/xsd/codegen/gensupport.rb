@@ -82,15 +82,16 @@ private
 
   def trim_indent(str)
     indent = nil
+    str = str.collect { |line| untab(line) }.join
     str.each do |line|
-      head = untab(line).index(/\S/)
+      head = line.index(/\S/)
       if !head.nil? and (indent.nil? or head < indent)
         indent = head
       end
     end
     return str unless indent
     str.collect { |line|
-      untab(line).sub(/^ {0,#{indent}}/, "")
+      line.sub(/^ {0,#{indent}}/, "")
     }.join
   end
 

@@ -197,6 +197,7 @@ if __FILE__ == $0
     Foo.new
     Bar.z
   EOD
+  c.def_privatemethod("foo", "baz", "*arg", "&block")
 
   puts c.dump
 end
