@@ -19,8 +19,8 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/streamHandler'
+#require 'soap/streamHandler_wo_http-access'
 require 'soap/rpcUtils'
-
 
 class SOAPProxy
   include SOAPProcessor
@@ -29,11 +29,13 @@ class SOAPProxy
   public
 
   attr_reader :namespace
+  attr_accessor :allowUnqualifiedElement
 
   def initialize( namespace, streamHandler )
     @namespace = namespace
     @handler = streamHandler
     @method = {}
+    @allowUnqualifiedElement = false
   end
 
   class Request
@@ -93,7 +95,9 @@ class SOAPProxy
     receiveString = sendRequest( req, tree )
 
     # SOAP tree parsing.
-    ns, header, body = unmarshal( receiveString )
+    opt = {}
+    opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
+    ns, header, body = unmarshal( receiveString, opt )
 
     # Used namespaces, header element, and body element.
     return ns, header, body
@@ -131,8 +135,8 @@ class SOAPProxy
 
   # SOAP Fault checking.
   def checkFault( ns, body )
-    if ( body.isFault )
-      raise FaultError.new( body.data )
+    if ( body.fault )
+      raise FaultError.new( body.fault )
     end
   end
 end
