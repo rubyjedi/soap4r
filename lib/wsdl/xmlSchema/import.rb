@@ -1,5 +1,5 @@
 =begin
-WSDL4R - XMLSchema schema definition for WSDL.
+WSDL4R - XMLSchema import definition.
 Copyright (C) 2002 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -18,53 +18,40 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
-require 'wsdl/namedElements'
 
 
 module WSDL
   module XMLSchema
 
 
-class Schema < Info
-  attr_reader :targetNamespace	# required
-  attr_reader :complexTypes
-  attr_reader :imports
+class Import < Info
+  attr_reader :namespace
+  attr_reader :schemaLocation
 
   def initialize
     super
-    @targetNamespace = nil
-    @complexTypes = NamedElements.new
-    @imports = []
+    @namespace = nil
+    @schemaLocation = nil
   end
 
-  ImportName = Name.new( XSD::Namespace, 'import' )
-  ComplexTypeName = Name.new( XSD::Namespace, 'complexType' )
   def parseElement( element )
-    case element
-    when ImportName
-      o = Import.new
-      @imports << o
-      o
-    when ComplexTypeName
-      o = ComplexType.new
-      @complexTypes << o
-      o
-    else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
-    end
+    nil
   end
 
-  TargetNamespaceAttrName = Name.new( nil, 'targetNamespace' )
+  NamespaceAttrName = Name.new( nil, 'namespace' )
+  SchemaLocationAttrName = Name.new( nil, 'schemaLocation' )
   def parseAttr( attr, value )
     case attr
-    when TargetNamespaceAttrName
-      @targetNamespace = value
+    when NamespaceAttrName
+      @namespace = value
+    when SchemaLocationAttrName
+      @schemaLocation = value
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
   end
 end
+
 
   end
 end
