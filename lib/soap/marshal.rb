@@ -30,7 +30,7 @@ module SOAP
 module Marshal
 
   def Marshal.marshal( obj, mappingRegistry = RPCUtils::MappingRegistry.new )
-    elementName = RPCUtils.getElementNameFromType( obj.type )
+    elementName = RPCUtils.getElementNameFromName( obj.type.to_s )
     str = String.new( '' )
     RPCUtils.obj2soap( obj, mappingRegistry ).encode( SOAP::NS.new, elementName  ).writeTo( str )
     Processor.xmlDecl + str
