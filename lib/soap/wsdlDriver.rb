@@ -121,14 +121,13 @@ private
 
   def create_param_def(op_bind)
     op = op_bind.find_operation
-    param_def = []
+    result = []
     inputparts = op.inputparts
     if op_bind.input.soapbody.parts
       inputparts = filter_parts(op_bind.input.soapbody.parts, inputparts)
     end
     inputparts.each do |part|
-      partqname = partqname(part)
-      param_def << param_def(::SOAP::RPC::SOAPMethod::IN, partqname)
+      result << param_def(::SOAP::RPC::SOAPMethod::IN, partqname(part))
     end
     outputparts = op.outputparts
     if op_bind.output.soapbody.parts
@@ -136,16 +135,16 @@ private
     end
     if op_bind.soapoperation_style == :rpc
       part = outputparts.shift
-      param_def << param_def(::SOAP::RPC::SOAPMethod::RETVAL, partqname(part))
+      result << param_def(::SOAP::RPC::SOAPMethod::RETVAL, partqname(part))
       outputparts.each do |part|
-        param_def << param_def(::SOAP::RPC::SOAPMethod::OUT, partqname(part))
+        result << param_def(::SOAP::RPC::SOAPMethod::OUT, partqname(part))
       end
     else
       outputparts.each do |part|
-        param_def << param_def(::SOAP::RPC::SOAPMethod::OUT, partqname(part))
+        result << param_def(::SOAP::RPC::SOAPMethod::OUT, partqname(part))
       end
     end
-    param_def
+    result
   end
 
   def partqname(part)

@@ -77,13 +77,13 @@ class Definitions < Info
 
   def collect_faulttypes
     result = []
-    collect_fault_messages.each do |message|
-      parts = message(message).parts
-      if parts.size != 1
+    collect_fault_messages.each do |name|
+      faultparts = message(name).parts
+      if faultparts.size != 1
 	raise RuntimeError.new("expecting fault message to have only 1 part")
       end
-      if result.index(parts[0].type).nil?
-	result << parts[0].type
+      if result.index(faultparts[0].type).nil?
+	result << faultparts[0].type
       end
     end
     result
