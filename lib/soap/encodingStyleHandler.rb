@@ -67,7 +67,11 @@ class EncodingStyleHandler
   ## encode interface.
   #
   # Returns a XML instance as a string.
-  def encodeData( ns, data, name, parent )
+  def encodeData( buf, ns, qualified, data, parent, indent )
+    raise NotImplementError.new( 'Method encodeData must be defined in derived class.' )
+  end
+
+  def encodeDataEnd( buf, ns, qualified, data, parent, indent )
     raise NotImplementError.new( 'Method encodeData must be defined in derived class.' )
   end
 

@@ -38,7 +38,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   ###
   ## encode interface.
   #
-  def encodeData( buf, ns, qualified, data, parent )
+  def encodeData( buf, ns, qualified, data, parent, indent = '' )
     attrs = encodeAttrs( ns, qualified, data, parent )
 
     if parent && parent.is_a?( SOAPArray ) && parent.position
@@ -56,24 +56,24 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     case data
     when SOAPReference
       attrs[ 'href' ] = '#' << data.refId
-      SOAPGenerator.encodeTag( buf, name, attrs, false )
+      SOAPGenerator.encodeTag( buf, name, attrs, indent )
     when SOAPRawString
-      SOAPGenerator.encodeTag( buf, name, attrs, false )
+      SOAPGenerator.encodeTag( buf, name, attrs, indent )
       buf << data.to_s
     when XSDString
-      SOAPGenerator.encodeTag( buf, name, attrs, false )
+      SOAPGenerator.encodeTag( buf, name, attrs, indent )
       buf << SOAPGenerator.encodeStr( @charset ?
 	Charset.encodingToXML( data.to_s, @charset ) : data.to_s )
     when XSDAnySimpleType
-      SOAPGenerator.encodeTag( buf, name, attrs, false )
+      SOAPGenerator.encodeTag( buf, name, attrs, indent )
       buf << SOAPGenerator.encodeStr( data.to_s )
     when SOAPStruct
-      SOAPGenerator.encodeTag( buf, name, attrs, true )
+      SOAPGenerator.encodeTag( buf, name, attrs, indent )
       data.each do | key, value |
 	yield( value, false )
       end
     when SOAPArray
-      SOAPGenerator.encodeTag( buf, name, attrs, true )
+      SOAPGenerator.encodeTag( buf, name, attrs, indent )
       data.traverse do | child, *rank |
 	unless data.sparse
 	  data.position = nil
@@ -87,14 +87,14 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     end
   end
 
-  def encodeDataEnd( buf, ns, qualified, data, parent )
-    name = nil
-    if qualified and data.elementName.namespace
-      name = ns.name( data.elementName )
-    else
-      name = data.elementName.name
-    end
-    SOAPGenerator.encodeTagEnd( buf, name, true )
+  def encodeDataEnd( buf, ns, qualified, data, parent, indent = '' )
+    name = if qualified and data.elementName.namespace
+        ns.name( data.elementName )
+      else
+        data.elementName.name
+      end
+    cr = data.is_a?( SOAPCompoundtype )
+    SOAPGenerator.encodeTagEnd( buf, name, indent, cr )
   end
 
 
@@ -305,12 +305,8 @@ private
     end
 
     if data.is_a?( SOAPNil )
-      if @generateEncodeType
-        SOAPGenerator.assignNamespace( attrs, ns, XSD::InstanceNamespace )
-      end
       attrs[ ns.name( XSD::AttrNilName ) ] = XSD::NilValue
     elsif @generateEncodeType
-      SOAPGenerator.assignNamespace( attrs, ns, XSD::InstanceNamespace )
       if data.type.namespace
         SOAPGenerator.assignNamespace( attrs, ns, data.type.namespace )
       end
