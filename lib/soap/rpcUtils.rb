@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/baseData'
+require 'soap/processor'
 require 'delegate'
 
 
@@ -431,20 +432,25 @@ module RPCUtils
 
   class BasetypeFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
-      if soapKlass.ancestors.include?( XSD::XSDString )
-	encoded = case SOAP::Processor.getEncoding
-          when 'NONE'
-	    obj
-          when 'EUC'
-            Uconv.euctou8( obj )
-          when 'SJIS'
-            Uconv.sjistou8( obj )
-          else
-	    obj
-          end
-	soapKlass.new( encoded )
-      else
-	soapKlass.new( obj )
+      begin
+	if soapKlass.ancestors.include?( XSD::XSDString )
+	  encoded = case SOAP::Processor.getEncoding
+	    when 'NONE'
+	      obj
+	    when 'EUC'
+	      Uconv.euctou8( obj )
+	    when 'SJIS'
+	      Uconv.sjistou8( obj )
+	    else
+	      obj
+	    end
+	  soapKlass.new( encoded )
+	else
+	  soapKlass.new( obj )
+	end
+      rescue XSD::ValueSpaceError
+	# Conversion failed.
+	nil
       end
     end
 
@@ -455,7 +461,7 @@ module RPCUtils
 
   class Base64Factory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
-      raise FactoryError.new
+      soapKlass.new( obj )
     end
 
     def soap2obj( objKlass, node, info, map )
@@ -774,6 +780,7 @@ module RPCUtils
       [ ::Float,	::SOAP::SOAPFloat,	BasetypeFactory ],
       [ ::Float,	::SOAP::SOAPDouble,	BasetypeFactory ],
       [ ::Integer,	::SOAP::SOAPInt,	BasetypeFactory ],
+      [ ::Integer,	::SOAP::SOAPLong,	BasetypeFactory ],
       [ ::Integer,	::SOAP::SOAPInteger,	BasetypeFactory ],
       [ ::String,	::SOAP::SOAPBase64,	Base64Factory ],
       [ ::String,	::SOAP::SOAPDecimal,	BasetypeFactory ],
