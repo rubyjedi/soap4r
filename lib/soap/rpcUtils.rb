@@ -86,6 +86,170 @@ module RPCUtils
 
 
   ###
+  ## RPC specific elements
+  #
+  class SOAPMethod < NSDBase
+    include SOAPCompoundtype
+
+    attr_reader :namespace
+    attr_reader :name
+
+    attr_reader :paramDef
+    attr_accessor :paramNames
+    attr_reader :paramTypes
+    attr_reader :params
+    attr_reader :soapAction
+
+    attr_accessor :retName
+    attr_accessor :retVal
+  
+    def initialize( namespace, name, paramDef = nil, soapAction = nil )
+      super( self.type.to_s )
+  
+      @namespace = namespace
+      @name = name
+  
+      @paramDef = paramDef
+      @paramNames = []
+      @paramTypes = {}
+      @params = {}
+
+      @soapAction = soapAction
+
+      @retName = nil
+      @retVal = nil
+  
+      setParamDef if @paramDef
+    end
+  
+    def setParams( params )
+      params.each do | param, data |
+        @params[ param ] = data
+      end
+    end
+  
+    def encode( ns )
+      attrs = []
+      createNS( attrs, ns )
+      if !retVal
+	# Should it be typed?
+	# attrs.push( datatypeAttr( ns ))
+
+	elems = []
+        @paramNames.each do | param |
+	  unless @params[ param ].is_a?( SOAPVoid )
+	    elems << @params[ param ].encode( ns.clone, param )
+	  end
+	end
+
+        # Element.new( ns.name( @namespace, @name ), attrs, elems )
+	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, elems )
+      else
+	# Should it be typed?
+	# attrs.push( datatypeAttrResponse( ns ))
+
+	elems = []
+	unless retVal.is_a?( SOAPVoid )
+	  elems << retVal.encode( ns.clone, 'return' )
+	end
+        # Element.new( ns.name( @namespace, responseTypeName() ), attrs, retElem )
+        Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, elems )
+      end
+    end
+  
+  private
+
+    def datatypeAttr( ns )
+      Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @name ))
+    end
+
+    def datatypeAttrResponse( ns )
+      Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, responseTypeName() ))
+    end
+
+    def createNS( attrs, ns )
+      unless ns.assigned?( @namespace )
+	tag = ns.assign( @namespace )
+	attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
+      end
+    end
+
+    def setParamDef
+      @paramDef.each do | pair |
+        type, name = pair
+        type.scan( /[^,\s]+/ ).each do | typeToken |
+  	case typeToken
+  	when 'in'
+  	  @paramNames.push( name )
+  	  @paramTypes[ name ] = 1
+  	when 'out'
+  	  @paramNames.push( name )
+  	  @paramTypes[ name ] = 2
+  	when 'retval'
+  	  if ( @retName )
+	    raise MethodDefinitionError.new( 'Duplicated retval' )
+  	  end
+  	  @retName = name
+  	else
+  	  raise MethodDefinitionError.new( 'Unknown type: ' << typeToken )
+  	end
+        end
+      end
+    end
+  
+    def responseTypeName
+      @name + 'Response'
+    end
+  end
+
+
+  class SOAPVoid < XSDBase
+    include SOAPBasetype
+    extend SOAPModuleUtils
+
+  public
+    def initialize()
+      @namespace = RubyCustomTypeNamespace
+      @name = nil
+      @id = nil
+      @parent = nil
+    end
+  end
+
+
+  class SOAPException
+    include Marshallable
+    attr_reader :exceptionTypeName, :message, :backtrace
+    def initialize( e )
+      @exceptionTypeName = e.type.to_s
+      @message = e.message
+      @backtrace = e.backtrace
+    end
+
+    def to_e
+      e = begin
+	  klass = Object
+	  @exceptionTypeName.to_s.split( '::' ).each do | klassStr |
+	    klass = klass.const_get( klassStr )
+	  end
+  	  raise NameError unless klass.ancestors.include?( Exception )
+   	  klass.new( @message )
+    	rescue NameError
+	  RuntimeError.new( @message )
+	end
+      e.set_backtrace(
+	if @backtrace.is_a?( Array )
+	  @backtrace
+	else
+	  [ @backtrace.inspect ]
+	end
+      )
+      e
+    end
+  end
+
+
+  ###
   ## Ruby's obj <-> SOAP/OM mapping registry.
   #
   class Factory
@@ -405,6 +569,9 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
+      if node.rank > 1
+	raise FactoryError.new( "Type mismatch" )
+      end
       typeName = info[1]
       typeNamespace = info[0]
       if ( node.typeNamespace != typeNamespace ) || ( node.typeName != typeName )
@@ -531,6 +698,9 @@ module RPCUtils
       [ ::String,	::SOAP::SOAPBase64,	Base64Factory ],
       [ ::String,	::SOAP::SOAPDecimal,	BasetypeFactory ],
       [ ::Array,	::SOAP::SOAPArray,	CompoundtypeFactory ],
+      [ ::SOAP::RPCUtils::SOAPException,
+			::SOAP::SOAPStruct,	TypedStructFactory,
+			[ RubyCustomTypeNamespace, "SOAPException" ]],
       [ ::Struct,	::SOAP::SOAPStruct,	CompoundtypeFactory ],
     ]
 
@@ -570,138 +740,6 @@ module RPCUtils
 
     def defaultFactory=( newFactory )
       @defaultFactory = newFactory
-    end
-  end
-
-
-  ###
-  ## RPC specific elements
-  #
-  class SOAPMethod < NSDBase
-    include SOAPCompoundtype
-
-    attr_reader :namespace
-    attr_reader :name
-
-    attr_reader :paramDef
-    attr_accessor :paramNames
-    attr_reader :paramTypes
-    attr_reader :params
-    attr_reader :soapAction
-
-    attr_accessor :retName
-    attr_accessor :retVal
-  
-    def initialize( namespace, name, paramDef = nil, soapAction = nil )
-      super( self.type.to_s )
-  
-      @namespace = namespace
-      @name = name
-  
-      @paramDef = paramDef
-      @paramNames = []
-      @paramTypes = {}
-      @params = {}
-
-      @soapAction = soapAction
-
-      @retName = nil
-      @retVal = nil
-  
-      setParamDef if @paramDef
-    end
-  
-    def setParams( params )
-      params.each do | param, data |
-        @params[ param ] = data
-      end
-    end
-  
-    def encode( ns )
-      attrs = []
-      createNS( attrs, ns )
-      if !retVal
-	# Should it be typed?
-	# attrs.push( datatypeAttr( ns ))
-
-	elems = []
-        @paramNames.each do | param |
-	  unless @params[ param ].is_a?( SOAPVoid )
-	    elems << @params[ param ].encode( ns.clone, param )
-	  end
-	end
-
-        # Element.new( ns.name( @namespace, @name ), attrs, elems )
-	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, elems )
-      else
-	# Should it be typed?
-	# attrs.push( datatypeAttrResponse( ns ))
-
-	elems = []
-	unless retVal.is_a?( SOAPVoid )
-	  elems << retVal.encode( ns.clone, 'return' )
-	end
-        # Element.new( ns.name( @namespace, responseTypeName() ), attrs, retElem )
-        Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, elems )
-      end
-    end
-  
-  private
-
-    def datatypeAttr( ns )
-      Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @name ))
-    end
-
-    def datatypeAttrResponse( ns )
-      Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, responseTypeName() ))
-    end
-
-    def createNS( attrs, ns )
-      unless ns.assigned?( @namespace )
-	tag = ns.assign( @namespace )
-	attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
-      end
-    end
-
-    def setParamDef
-      @paramDef.each do | pair |
-        type, name = pair
-        type.scan( /[^,\s]+/ ).each do | typeToken |
-  	case typeToken
-  	when 'in'
-  	  @paramNames.push( name )
-  	  @paramTypes[ name ] = 1
-  	when 'out'
-  	  @paramNames.push( name )
-  	  @paramTypes[ name ] = 2
-  	when 'retval'
-  	  if ( @retName )
-	    raise MethodDefinitionError.new( 'Duplicated retval' )
-  	  end
-  	  @retName = name
-  	else
-  	  raise MethodDefinitionError.new( 'Unknown type: ' << typeToken )
-  	end
-        end
-      end
-    end
-  
-    def responseTypeName
-      @name + 'Response'
-    end
-  end
-
-
-  class SOAPVoid < XSDBase
-    include SOAPBasetype
-    extend SOAPModuleUtils
-
-  public
-    def initialize()
-      @namespace = RubyCustomTypeNamespace
-      @name = nil
-      @id = nil
-      @parent = nil
     end
   end
 
