@@ -97,7 +97,7 @@ public
   # add_method is for shortcut of typical use="encoded" method definition.
   alias add_method add_rpc_method
 
-  def invoke(req_header, req_body, opt)
+  def invoke(req_header, req_body, opt = create_options)
     req_env = SOAPEnvelope.new(req_header, req_body)
     opt[:external_content] = nil
     conn_data = marshal(req_env, opt)
