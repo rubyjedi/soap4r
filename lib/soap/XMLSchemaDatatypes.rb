@@ -144,12 +144,17 @@ class XSDFloat < XSDBase
   end
 
   def set( newFloat )
-    unless newFloat.is_a?( Float )
-      # to_f understands 'NaN', 'INF', and '-INF'
-      @data = newFloat.to_f
-    else
-      @data = newFloat
-    end
+    @data = if newFloat.is_a?( Float )
+        newFloat
+      elsif newFloat == 'NaN'
+        0.0/0.0
+      elsif newFloat == 'INF'
+        1.0/0.0
+      elsif newFloat == '-INF'
+        -1.0/0.0
+      else
+        newFloat.to_f
+      end
   end
 
   # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
