@@ -1,6 +1,6 @@
 =begin
 SOAP4R - SOAP REXMLParser library.
-Copyright (C) 2002 NAKAMURA Hiroshi.
+Copyright (C) 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -32,19 +32,23 @@ class SOAPREXMLParser < SOAPParser
   end
 
   def prologue
-    @encodingBackup = nil
   end
 
-  def doParse( stringNotReadable )
-    @encodingBackup = Charset.getXMLInstanceEncoding
-    Charset.setXMLInstanceEncoding( 'UTF8' )
-    str = Charset.codeConv( stringNotReadable, @encodingBackup, 'UTF8' )
-    REXML::Document.parse_stream( str, self )
+  def doParse( stringOrReadable )
+    source = nil
+    if REXML::VERSION_MAJOR < 2 or
+	( REXML::VERSION_MAJOR == 2 and REXML::VERSION_MINOR <= 4 )
+      source = Charset.codeConv( stringOrReadable, charset, 'UTF8' )
+    else
+      source = REXML::SourceFactory.create_from( stringOrReadable )
+      source.encoding = charset
+    end
+    # Listener passes a String in utf-8.
+    @charset = 'utf-8'
+    REXML::Document.parse_stream( source, self )
   end
 
   def epilogue
-    Charset.setXMLInstanceEncoding( @encodingBackup )
-    @encodingBackup = nil
   end
 
   def tag_start( name, attrs )
