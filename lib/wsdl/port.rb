@@ -50,8 +50,9 @@ class Port < Info
   def createInputOperationMap
     result = {}
     getBinding.operations.each do | operationBinding |
-      name, parts, soapAction = operationBinding.inputOperationInfo
-      result[ name ] = [ name, parts, soapAction ]
+      operationName, messageName, parts, soapAction =
+	operationBinding.inputOperationInfo
+      result[ operationName ] = [ messageName, parts, soapAction ]
     end
     result
   end
@@ -59,8 +60,8 @@ class Port < Info
   def createOutputOperationMap
     result = {}
     getBinding.operations.each do | operationBinding |
-      name, parts = operationBinding.outputOperationInfo
-      result[ name ] = [ name, parts ]
+      operationName, messageName, parts = operationBinding.outputOperationInfo
+      result[ operationName ] = [ messageName, parts ]
     end
     result
   end
