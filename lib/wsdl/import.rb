@@ -63,9 +63,14 @@ class Import < Info
 private
 
   def import( location )
-    require 'http-access2'
-    c = HTTPAccess2::Client.new( ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ] )
-    content = c.getContent( location )
+    content = nil
+    if FileTest.exist?( location )
+      content = File.open( location ).read
+    else
+      require 'http-access2'
+      c = HTTPAccess2::Client.new( ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ] )
+      content = c.getContent( location )
+    end
     WSDL::WSDLParser.createParser.parse( content )
   end
 end
