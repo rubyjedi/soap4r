@@ -29,6 +29,10 @@ class QName
     @name = name
   end
 
+  def dup_name(name)
+    self.class.new(@namespace, name)
+  end
+
   def match(rhs)
     unless self.class === rhs
       return false
