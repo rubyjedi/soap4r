@@ -101,6 +101,7 @@ class CGIStub < Application
 	'NONE' => 'us-ascii',
 	'EUC' => 'euc-jp',
 	'SJIS' => 'shift_jis',
+	'UTF8' => 'utf-8',
       }
 
       def initialize( status = 200 )
