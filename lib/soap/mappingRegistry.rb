@@ -59,7 +59,7 @@ module RPCUtils
     def to_e
       klass = RPCUtils.getClassFromName( @exceptionTypeName.to_s )
       if klass.nil?
-	RuntimeError.new( @message )
+	raise RuntimeError.new( @message )
       end
       if !klass.ancestors.include?( Exception )
 	raise NameError.new
@@ -590,7 +590,7 @@ module RPCUtils
 	begin
 	  klass = RPCUtils.getClassFromName( typeName )
 	  if klass.nil?
-	    self.instance_eval( toType( typeName ))
+	    klass = self.instance_eval( toType( typeName ))
 	  end
 	  if !klass.ancestors.include?( ::Struct )
 	    raise NameError.new
@@ -663,7 +663,7 @@ module RPCUtils
       begin
 	klass = RPCUtils.getClassFromName( typeName )
 	if klass.nil?
-	  self.instance_eval( toType( typeName ))
+	  klass = self.instance_eval( toType( typeName ))
        	end
 	if ( getNamespace( klass ) and
 	    ( getNamespace( klass ) != node.typeNamespace ))
