@@ -39,6 +39,95 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   def encodeData( ns, data, name, parent )
   end
 
+  def encodeBaseData( ns, data, name, parent )
+    # for basetype...
+    attrs = []
+    addNSDeclAttr( attrs, ns )
+#    if parentEncodingStyle != EncodingNamespace
+#      addEncodingAttr( attrs, ns )
+#    end
+    if !parent.is_a?( SOAPArray )
+      attrs.push( datatypeAttr( ns )) if data.typeName
+    else
+      if parent.position
+	attrs.push( positionAttr( parent.position, ns ))
+      end
+      if parent.typeNamespace != data.typeNamespace ||
+	  parent.baseTypeName != data.typeName
+	attrs.push( datatypeAttr( ns )) if data.typeName
+      end
+    end
+
+    if ( data.to_s.empty? )
+      Node.initializeWithChildren( name, attrs )
+    else
+      Node.initializeWithChildren( name, attrs, Text.new( data.to_s ))
+    end
+  end
+
+# @
+  def encodeStruct( ns, data, name, parent )
+    attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
+    addNSDeclAttr( attrs, ns )
+#    if parentEncodingStyle != EncodingNamespace
+#      addEncodingAttr( attrs, ns )
+#    end
+    if !parent.is_a?( SOAPArray )
+      attrs.push( datatypeAttr( ns )) if data.typeName
+    else
+      if parent.position
+       	attrs.push( positionAttr( parent.position, ns ))
+      end
+      if parent.typeNamespace != data.typeNamespace ||
+	  parentArray.baseTypeName != data.typeName
+	attrs.push( datatypeAttr( ns )) if data.typeName
+      end
+    end
+
+    children = []
+    0.upto( @array.length - 1 ) do | i |
+      children.push( @data[ i ].encodeData( ns.clone, @array[ i ], data ))
+    end
+
+    # Element.new( name, attrs, children )
+    Node.initializeWithChildren( name, attrs, children )
+  end
+
+  def encodeDataArray( ns, data, name, parent )
+    attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
+    addNSDeclAttr( attrs, ns )
+#    if parentEncodingStyle != EncodingNamespace
+#      addEncodingAttr( attrs, ns )
+#    end
+
+    attrs.push( arrayTypeAttr( ns ))
+    attrs.push( datatypeAttr( ns )) if data.typeName
+    if !parent.is_a?( SOAPArray )
+      attrs.push( datatypeAttr( ns )) if data.typeName	# Added in rewriting...
+    else
+      if parent.position
+	attrs.push( positionAttr( parent.position, ns ))
+      end
+      # Add always.
+      attrs.push( datatypeAttr( ns )) if data.typeName
+    end
+
+    childTypeName = contentTypeName().gsub( /\[,*\]/, ArrayEncodePostfix ) << ArrayEncodePostfix
+
+    children = []
+    traverse do | child, *rank |
+      unless @sparse
+	@position = nil
+      else
+	@position = rank
+      end
+      children << child.encode( ns.clone, childTypeName, EncodingNamespace, self )
+    end
+
+    # Element.new( name, attrs, children )
+    Node.initializeWithChildren( name, attrs, children )
+  end
+
 
   ###
   ## decode interface.

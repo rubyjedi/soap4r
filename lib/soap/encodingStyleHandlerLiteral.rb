@@ -83,7 +83,7 @@ class SOAPEncodingStyleHandlerLiteral < EncodingStyleHandler
       decodeTextBuf( o )
       o.data << "</#{ o.name }>"
     end
-    o.parent.node.data << o.data if o.parent.node
+    # o.parent.node.data << o.data if o.parent.node
     @textBuf = ''
   end
 
