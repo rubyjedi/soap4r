@@ -81,7 +81,7 @@ class Element < Info
       end
     when MinOccursAttrName
       if parent.type == 'all'
-	if [ '0', '1' ].includes?( value )
+	if [ '0', '1' ].include?( value )
 	  @minOccurs = value
 	else
 	  raise WSDLParser::AttrConstraintError.new(
