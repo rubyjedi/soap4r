@@ -1,12 +1,15 @@
 #!/usr/bin/env ruby
 
-#$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
-$KCODE = "EUC"
+$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
+#$KCODE = "EUC"
+#$KCODE = "SJIS"
 
-#require 'soap/nqxmlparser'
-#require 'soap/rexmlparser'
 require 'soap/standaloneServer'
 require 'base'
+#require 'soap/rexmlparser'
+#require 'soap/xmlscanner'
+#require 'soap/xmlparser'
+#require 'soap/nqxmlparser'
 
 class InteropApp < SOAP::StandaloneServer
 
@@ -113,7 +116,7 @@ class InteropApp < SOAP::StandaloneServer
 
   def echo2DStringArray( ary )
     # In Ruby, M-D Array is converted to Array of Array now.
-    mdary = SOAP::RPCUtils.ary2md( ary, 2 )
+    mdary = SOAP::RPCUtils.ary2md( ary, 2, XSD::Namespace, XSD::StringLiteral )
     if mdary.include?( nil )
       mdary.sparse = true
     end
