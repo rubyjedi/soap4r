@@ -53,7 +53,7 @@ class #{ class_name }
   ]
 end
 
-class App < SOAP::RPC::CGIStub
+class #{name}App < SOAP::RPC::CGIStub
   def initialize(*arg)
     super(*arg)
     servant = #{ class_name }.new
@@ -67,7 +67,7 @@ class App < SOAP::RPC::CGIStub
 end
 
 # Change listen port.
-App.new('app', nil).start
+#{name}App.new('app', nil).start
 __EOD__
   end
 end

@@ -35,9 +35,7 @@ class MappingRegistryCreator
       end
     end
 
-    return <<__EOD__
-#{ map }
-__EOD__
+    return map
   end
 
 private
@@ -68,7 +66,7 @@ __EOD__
 
   def dump_array_typemap(definedtype)
     ele = definedtype.name
-    arytype = definedtype.find_arytype
+    arytype = definedtype.find_arytype || XSD::AnyTypeName
     type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
     @types << type
     return <<__EOD__
