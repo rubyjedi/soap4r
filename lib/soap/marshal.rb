@@ -1,6 +1,6 @@
 =begin
 SOAP4R - Marshalling/Unmarshalling Ruby's object using SOAP Encoding.
-Copyright (C) 2001 NAKAMURA Hiroshi.
+Copyright (C) 2001, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -20,7 +20,8 @@ Ave, Cambridge, MA 02139, USA.
 # using SOAP Encoding was written by Michael Neumann.  His valuable comments
 # and his program inspired me to write this.  Thanks.
 
-require "soap/rpcUtils"
+
+require "soap/mapping/registry"
 require "soap/processor"
 
 
@@ -29,13 +30,11 @@ module SOAP
 
 module Marshal
   # Trying xsd:dateTime data to be recovered as aTime.  aDateTime if it fails.
-  MarshalMappingRegistry = RPCUtils::MappingRegistry.new(
-    :allowOriginalMapping => true
-  )
+  MarshalMappingRegistry = Mapping::Registry.new(:allowOriginalMapping => true)
   MarshalMappingRegistry.add(
     Time,
     ::SOAP::SOAPDateTime,
-    ::SOAP::RPCUtils::MappingRegistry::DateTimeFactory
+    ::SOAP::Mapping::Registry::DateTimeFactory
   )
 
   class << self
@@ -49,8 +48,8 @@ module Marshal
     end
 
     def marshal( obj, mappingRegistry = MarshalMappingRegistry, io = nil )
-      elementName = RPCUtils.getElementNameFromName( obj.class.to_s )
-      soapObj = RPCUtils.obj2soap( obj, mappingRegistry )
+      elementName = Mapping.getElementNameFromName( obj.class.to_s )
+      soapObj = Mapping.obj2soap( obj, mappingRegistry )
       body = SOAPBody.new
       body.add( elementName, soapObj )
       SOAP::Processor.marshal( nil, body, {}, io )
@@ -58,7 +57,7 @@ module Marshal
 
     def unmarshal( stream, mappingRegistry = MarshalMappingRegistry )
       header, body = SOAP::Processor.unmarshal( stream )
-      RPCUtils.soap2obj( body.rootNode, mappingRegistry )
+      Mapping.soap2obj( body.rootNode, mappingRegistry )
     end
   end
 
