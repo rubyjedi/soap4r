@@ -13,5 +13,5 @@ methodDef( drvBase )
 drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
 methodDefGroupB( drvGroupB )
 
-#doTestBase( drvBase )
+doTestBase( drvBase )
 doTestGroupB( drvGroupB )
