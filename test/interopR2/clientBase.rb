@@ -172,7 +172,7 @@ end
 
 def submitTestResult
   load 'soap/XMLSchemaDatatypes.rb'
-  $testResultDrv.add( $testResults )
+  $testResultDrv.addResults( $testResults )
 end
 
 class FakeFloat < SOAP::SOAPFloat
