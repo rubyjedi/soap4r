@@ -73,6 +73,8 @@ class SOAPNQXMLLightWeightParser < SOAPParser
     $KCODE = @charsetStrBackup
     Charset.setXMLInstanceEncoding( $KCODE )
   end
+
+  setFactory( self )
 end
 
 class SOAPNQXMLStreamingParser < SOAPParser
@@ -98,7 +100,7 @@ class SOAPNQXMLStreamingParser < SOAPParser
 	  endElement( entity.name )
 	end
       when NQXML::Text
-	characters( entity )
+	characters( entity.text )
       # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
       when NQXML::XMLDecl, NQXML::ProcessingInstruction
 	encoding = entity.attrs[ 'encoding' ]
@@ -121,7 +123,7 @@ class SOAPNQXMLStreamingParser < SOAPParser
     Charset.setXMLInstanceEncoding( $KCODE )
   end
 
-  setFactory( self )
+  # setFactory( self )
 end
 
 
