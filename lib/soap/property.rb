@@ -84,6 +84,7 @@ protected
     key, rest = location_pair(ary)
     if rest.empty?
       check_lock(key)
+      @store[key] ||= nil
       (@hook[key] ||= []) << hook
     else
       deref_key(key).assign_hook(rest, &hook)
