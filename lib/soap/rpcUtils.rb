@@ -391,23 +391,41 @@ module RPCUtils
     end
   end
 
-=begin
-    when SOAP::RPCUtils::Object
-      typeName = obj.typeName
-      param = SOAPStruct.new( typeName  )
-      param.typeNamespace = obj.typeNamespace
-      obj.instance_variables do |var, data|
-	name = var.dup.sub!( /^@/, '' )
-	param.add( name, RPCUtils.obj2soap( data ))
+  class TypedArrayFactory_ < Factory
+    def obj2soap( soapKlass, obj, info, map )
+      typeName = info[1]
+      typeNamespace = info[0]
+      param = SOAPArray.new( typeName )
+      param.typeNamespace = typeNamespace
+
+      obj.each do | var |
+	param.add( RPCUtils.obj2soap( var, map ))
       end
       param
-=end
+    end
+
+    def soap2obj( objKlass, node, info, map )
+      typeName = info[1]
+      typeNamespace = info[0]
+      if ( node.typeNamespace != typeNamespace ) || ( node.typeName != typeName )
+	raise FactoryError.new( "Type mismatch" )
+      end
+
+      obj = objKlass.new
+      node.soap2array.each do | elem |
+	obj << RPCUtils.soap2obj( elem, map )
+      end
+      obj.instance_eval( "@typeName = '#{ typeName }'; @typeNamespace = '#{ typeNamespace }'" )
+      obj
+    end
+  end
 
   class TypedStructFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
       typeName = info[1]
+      typeNamespace = info[0]
       param = SOAPStruct.new( typeName  )
-      param.typeNamespace = info[0]
+      param.typeNamespace = typeNamespace
       if obj.type.ancestors.member?( Marshallable )
 	obj.instance_variables do |var, data|
 	  name = var.dup.sub!( /^@/, '' )
@@ -423,11 +441,12 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
-      if ( node.typeNamespace != info[0] ) || ( node.typeName != info[1] )
+      typeName = info[1]
+      typeNamespace = info[0]
+      if ( node.typeNamespace != typeNamespace ) || ( node.typeName != typeName )
 	raise FactoryError.new( "Type mismatch" )
       end
 
-      typeName = info[1]
       Thread.critical = true
       addWriter( objKlass, node )
       obj = createEmptyObject( objKlass )
@@ -493,6 +512,7 @@ module RPCUtils
     Base64Factory = Base64Factory_.new
     HashFactory = HashFactory_.new
     UnknownKlassFactory = UnknownKlassFactory_.new
+    TypedArrayFactory = TypedArrayFactory_.new
     TypedStructFactory = TypedStructFactory_.new
 
     SOAPBaseMapping = [
@@ -525,7 +545,7 @@ module RPCUtils
       @defaultFactory = UnknownKlassFactory
     end
 
-    def set( objKlass, soapKlass, factory, info )
+    def set( objKlass, soapKlass, factory, info = nil )
       @userMap.set( objKlass, soapKlass, factory, info )
     end
 
