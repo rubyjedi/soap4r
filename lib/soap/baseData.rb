@@ -546,8 +546,6 @@ class SOAPArray < XSD::NSDBase
 
 public
 
-  ArrayEncodePostfix = 'Ary'
-
   attr_accessor :sparse
 
   attr_reader :offset, :rank

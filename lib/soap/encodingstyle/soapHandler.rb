@@ -279,8 +279,6 @@ class SOAPHandler < Handler
 
 private
 
-  ArrayEncodePostfix = 'Ary'
-
   def content_ranksize(typename)
     typename.scan(/\[[\d,]*\]$/)[0]
   end
