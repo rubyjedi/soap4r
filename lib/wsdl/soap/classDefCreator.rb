@@ -19,6 +19,7 @@ class ClassDefCreator
   include ClassDefCreatorSupport
 
   def initialize(definitions)
+    @simpletypes = definitions.collect_simpletypes
     @complextypes = definitions.collect_complextypes
     @faulttypes = definitions.collect_faulttypes
   end
@@ -31,13 +32,18 @@ class ClassDefCreator
       @complextypes.each do |type|
 	case type.compoundtype
 	when :TYPE_STRUCT
-	  result << dump_classdef(type.name)
+	  result << dump_classdef(type)
 	when :TYPE_ARRAY
-	  result << dump_arraydef(type.name)
+	  result << dump_arraydef(type)
        	else
 	  raise RuntimeError.new("Unknown complexContent definition...")
 	end
 	result << "\n"
+      end
+
+      # ??
+      @simpletypes.each do |type|
+        result << dump_simpletypedef(type)
       end
     end
     result
@@ -45,8 +51,22 @@ class ClassDefCreator
 
 private
 
-  def dump_classdef(qname)
-    complextype = @complextypes[qname]
+  def dump_simpletypedef(simpletype)
+    qname = simpletype.name
+    if simpletype.restriction.enumeration.empty?
+      STDERR.puts("#{qname}: simpleType which is not enum type not supported.")
+      return ""
+    end
+    c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
+    c.comment = "#{ qname.namespace }"
+    simpletype.restriction.enumeration.each do |value|
+      c.def_const(safeconstname(value), value.dump)
+    end
+    c.dump
+  end
+
+  def dump_classdef(complextype)
+    qname = complextype.name
     if @faulttypes.index(qname)
       c = XSD::CodeGen::ClassDef.new(create_class_name(qname),
         "::StandardError")
@@ -70,8 +90,9 @@ private
     c.dump
   end
 
-  def dump_arraydef(qname)
-    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), ::Array)
+  def dump_arraydef(complextype)
+    qname = complextype.name
+    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), "::Array")
     c.comment = "#{ qname.namespace }"
     c.def_classvar("schema_type", qname.name.dump)
     c.def_classvar("schema_ns", qname.namespace.dump)
