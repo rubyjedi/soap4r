@@ -37,26 +37,32 @@ public
   EncodingConvertMap = {}
   def Charset.init
     begin
-      require 'nkf'
-      EncodingConvertMap[['EUC' , 'SJIS']] =
-	Proc.new { |str| NKF.nkf('-sXm0', str) }
-      EncodingConvertMap[['SJIS', 'EUC']] =
-	Proc.new { |str| NKF.nkf('-eXm0', str) }
-    rescue LoadError
-    end
-  
-    begin
-      require 'uconv'
-      EncodingConvertMap[['UTF8', 'EUC']] = Uconv.method(:u8toeuc)
-      EncodingConvertMap[['UTF8', 'SJIS']] = Uconv.method(:u8tosjis)
-      EncodingConvertMap[['EUC' , 'UTF8']] = Uconv.method(:euctou8)
-      EncodingConvertMap[['SJIS', 'UTF8']] = Uconv.method(:sjistou8)
-
+      require 'iconv'
       @encoding = 'UTF8'
+      EncodingConvertMap[['UTF8', 'EUC' ]] = Proc.new { |str| Iconv.iconv("euc-jp", "utf-8", str).join }
+      EncodingConvertMap[['UTF8', 'SJIS']] = Proc.new { |str| Iconv.iconv("shift-jis", "utf-8", str).join }
+      EncodingConvertMap[['EUC' , 'UTF8']] = Proc.new { |str| Iconv.iconv("utf-8", "euc-jp", str).join }
+      EncodingConvertMap[['SJIS', 'UTF8']] = Proc.new { |str| Iconv.iconv("utf-8", "shift-jis", str).join }
+      EncodingConvertMap[['EUC' , 'SJIS']] = Proc.new { |str| Iconv.iconv("shift-jis", "euc-jp", str).join }
+      EncodingConvertMap[['SJIS', 'EUC' ]] = Proc.new { |str| Iconv.iconv("euc-jp", "shift-jis", str).join }
     rescue LoadError
+      begin
+       	require 'nkf'
+	EncodingConvertMap[['EUC' , 'SJIS']] = Proc.new { |str| NKF.nkf('-sXm0', str) }
+	EncodingConvertMap[['SJIS', 'EUC' ]] = Proc.new { |str| NKF.nkf('-eXm0', str) }
+      rescue LoadError
+      end
+  
+      begin
+	require 'uconv'
+	@encoding = 'UTF8'
+	EncodingConvertMap[['UTF8', 'EUC' ]] = Uconv.method(:u8toeuc)
+	EncodingConvertMap[['UTF8', 'SJIS']] = Uconv.method(:u8tosjis)
+	EncodingConvertMap[['EUC' , 'UTF8']] = Uconv.method(:euctou8)
+	EncodingConvertMap[['SJIS', 'UTF8']] = Uconv.method(:sjistou8)
+      rescue LoadError
+      end
     end
-
-    # ToDo: Iconv support
   end
   self.init
 
@@ -95,8 +101,6 @@ public
     else
       raise CharsetConversionError.new(
 	"Converter not found: #{ enc_from } -> #{ enc_to }")
-      # In 1.4.7 or earlier, it only ignored encoding mismatch.
-      # str
     end
   end
 
