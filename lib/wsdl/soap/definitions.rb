@@ -28,9 +28,10 @@ class Definitions < Info
     types = complexTypes
     messages.each do | message |
       type = createComplexType( message.name )
-      message.parts.each do | part |
-	type.addElement( part.name, part.type )
-      end
+      elements = message.parts.collect { | part |
+	  XMLSchema::Element.new( part.name, part.type )
+	}
+      type.addSequenceElements( elements )
       types << type
     end
     types << arrayComplexType
@@ -53,12 +54,30 @@ private
     type
   end
 
+=begin
+<xs:complexType name="Fault" final="extension">
+  <xs:sequence>
+    <xs:element name="faultcode" type="xs:QName" /> 
+    <xs:element name="faultstring" type="xs:string" /> 
+    <xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /> 
+    <xs:element name="detail" type="tns:detail" minOccurs="0" /> 
+  </xs:sequence>
+</xs:complexType>
+=end
   def faultComplexType
     type = createComplexType( ::SOAP::EleFaultName )
-    type.addElement( ::SOAP::EleFaultCodeName.name, XSD::XSDString::Type )
-    type.addElement( ::SOAP::EleFaultStringName.name, XSD::XSDString::Type )
-    type.addElement( ::SOAP::EleFaultActorName.name, XSD::XSDString::Type )
-    type.addElement( ::SOAP::EleFaultDetailName.name, XSD::XSDAnyType::Type )
+    type.content.final = 'extension'
+    faultcode = Element.new( ::SOAP::EleFaultCodeName.name,
+      XSD::XSDQName::Type )
+    faultstring = Element.new( ::SOAP::EleFaultStringName.name,
+      XSD::XSDString::Type )
+    faultactor = Element.new( ::SOAP::EleFaultActorName.name,
+      XSD::XSDAnyURI::Type )
+    faultactor.minOccurs = 0
+    detail = Element.new( ::SOAP::EleFaultDetailName.name,
+      XSD::XSDAnyType::Type )
+    detail.minOccurs = 0
+    type.setSequenceElements( [ faultcode, faultstring, faultactor, detail ] )
     type
   end
 
