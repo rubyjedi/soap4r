@@ -1,5 +1,5 @@
 # soap/baseData.rb: SOAP4R - Base type library
-# Copyright (C) 2000, 2001, 2003, 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003-2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -399,7 +399,7 @@ public
   def to_s()
     str = ''
     self.each do |key, data|
-      str << "#{ key }: #{ data }\n"
+      str << "#{key}: #{data}\n"
     end
     str
   end
@@ -574,14 +574,15 @@ class SOAPElement
     o
   end
 
-  def self.from_obj(hash_or_string)
+  def self.from_obj(hash_or_string, namespace = nil)
     o = SOAPElement.new(nil)
     if hash_or_string.nil?
       o.text = nil
     elsif hash_or_string.is_a?(Hash)
       hash_or_string.each do |k, v|
-	child = self.from_obj(v)
-	child.elename = k.is_a?(XSD::QName) ? k : XSD::QName.new(nil, k.to_s)
+	child = self.from_obj(v, namespace)
+	child.elename =
+          k.is_a?(XSD::QName) ? k : XSD::QName.new(namespace, k.to_s)
 	o.add(child)
       end
     else
@@ -656,7 +657,7 @@ public
 
   def [](*idxary)
     if idxary.size != @rank
-      raise ArgumentError.new("Given #{ idxary.size } params does not match rank: #{ @rank }")
+      raise ArgumentError.new("given #{idxary.size} params does not match rank: #{@rank}")
     end
 
     retrieve(idxary)
@@ -666,8 +667,8 @@ public
     value = idxary.slice!(-1)
 
     if idxary.size != @rank
-      raise ArgumentError.new("given #{ idxary.size } params(#{ idxary })" +
-        " does not match rank: #{ @rank }")
+      raise ArgumentError.new("given #{idxary.size} params(#{idxary})" +
+        " does not match rank: #{@rank}")
     end
 
     for i in 0..(idxary.size - 1)
@@ -847,7 +848,7 @@ public
 private
 
   def self.create_arytype(typename, rank)
-    "#{ typename }[" << ',' * (rank - 1) << ']'
+    "#{typename}[" << ',' * (rank - 1) << ']'
   end
 
   TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$')
