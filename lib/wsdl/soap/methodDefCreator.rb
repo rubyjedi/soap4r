@@ -159,18 +159,6 @@ __EOD__
     end
   end
 
-  def dq(ele)
-    "\"#{ ele }\""
-  end
-
-  def ndq(ele)
-    ele.nil? ? "nil" : dq(ele)
-  end
-
-  def sym(ele)
-    ':' + ele
-  end
-
   def cdr(ary)
     result = ary.dup
     result.shift

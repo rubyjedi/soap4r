@@ -107,6 +107,7 @@ private
     params = []
     type_or_element.each_element do |element|
       name = element.name.name
+      type = create_class_name(element.type)
       varname = safevarname(name)
       if element.map_as_array?
         c.def_attr(name, false, varname)
@@ -117,7 +118,7 @@ private
         init_lines << "@#{ varname } = #{ varname }\n"
         params << "#{ varname } = nil"
       end
-      schema_element << name
+      schema_element << [name, type]
     end
     unless type_or_element.attributes.empty?
       type_or_element.attributes.each do |attribute|
@@ -135,10 +136,11 @@ private
       end
       init_lines << "@__soap_attribute = {}\n"
     end
-    c.def_classvar("schema_attribute",
-      "[" + schema_attribute.collect { |ele| ele.dump }.join(", ") + "]")
-    c.def_classvar("schema_element",
-      "[" + schema_element.collect { |ele| ele.dump }.join(", ") + "]")
+    c.def_classvar("schema_attribute", "[" +
+      schema_attribute.collect { |ele| ele.dump }.join(", ") + "]")
+    c.def_classvar("schema_element", "[" +
+      schema_element.collect { |name, type| arystr(name, type) }.join(", ") +
+      "]")
     c.def_method("initialize", *params) do
       init_lines
     end
@@ -152,6 +154,10 @@ private
     c.def_classvar("schema_type", qname.name.dump)
     c.def_classvar("schema_ns", qname.namespace.dump)
     c.dump
+  end
+
+  def arystr(*ary)
+    "[" + ary.collect { |ele| ndq(ele) }.join(", ") + "]"
   end
 end
 
