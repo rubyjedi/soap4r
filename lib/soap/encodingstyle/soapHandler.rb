@@ -404,7 +404,7 @@ private
 
   def decode_defined_complextype(elename, typename, typedef, arytypestr)
     case typedef.compoundtype
-    when :TYPE_STRUCT
+    when :TYPE_STRUCT, :TYPE_MAP
       o = SOAPStruct.decode(elename, typename)
       o.definedtype = typedef
       return o
@@ -421,6 +421,9 @@ private
       end
       o.definedtype = typedef
       return o
+    else
+      raise RuntimeError.new(
+        "Unknown kind of complexType: #{typedef.compoundtype}")
     end
     nil
   end

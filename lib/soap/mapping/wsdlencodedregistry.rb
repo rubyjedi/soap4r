@@ -32,18 +32,18 @@ class WSDLEncodedRegistry
     )
   end
 
-  def obj2soap(obj, type_qname)
+  def obj2soap(obj, type_qname = nil)
     soap_obj = nil
     if obj.nil?
       soap_obj = SOAPNil.new
+    elsif type_qname.nil? or type_qname == XSD::AnyTypeName
+      soap_obj = @rubytype_factory.obj2soap(nil, obj, nil, self)
     elsif obj.is_a?(XSD::NSDBase)
       soap_obj = soap2soap(obj, type_qname)
     elsif type = @definedtypes[type_qname]
       soap_obj = obj2type(obj, type)
     elsif (type = TypeMap[type_qname])
       soap_obj = base2soap(obj, type)
-    elsif type_qname == XSD::AnyTypeName
-      soap_obj = @rubytype_factory.obj2soap(nil, obj, nil, nil)
     end
     return soap_obj if soap_obj
     if @excn_handler_obj2soap
@@ -106,6 +106,10 @@ private
       struct2soap(obj, type.name, type)
     when :TYPE_ARRAY
       array2soap(obj, type.name, type)
+    when :TYPE_MAP
+      map2soap(obj, type.name, type)
+    else
+      raise MappingError.new("Unknown compound type: #{ type.compoundtype }")
     end
   end
 
@@ -129,11 +133,28 @@ private
   end
 
   def array2soap(obj, type_qname, type)
-    contenttype = type.child_type
-    soap_obj = SOAPArray.new(ValueArrayName, 1, contenttype)
+    arytype = type.child_type
+    soap_obj = SOAPArray.new(ValueArrayName, 1, arytype)
     mark_marshalled_obj(obj, soap_obj)
     obj.each do |item|
-      soap_obj.add(Mapping._obj2soap(item, self, contenttype))
+      soap_obj.add(Mapping._obj2soap(item, self, arytype))
+    end
+    soap_obj
+  end
+
+  MapKeyName = XSD::QName.new(nil, "key")
+  MapValueName = XSD::QName.new(nil, "value")
+  def map2soap(obj, type_qname, type)
+    keytype = type.child_type(MapKeyName) || XSD::AnyTypeName
+    valuetype = type.child_type(MapValueName) || XSD::AnyTypeName
+    soap_obj = SOAPStruct.new(MapQName)
+    mark_marshalled_obj(obj, soap_obj)
+    obj.each do |key, value|
+      elem = SOAPStruct.new
+      elem.add("key", Mapping._obj2soap(key, self, keytype))
+      elem.add("value", Mapping._obj2soap(value, self, valuetype))
+      # ApacheAxis allows only 'item' here.
+      soap_obj.add("item", elem)
     end
     soap_obj
   end
