@@ -80,6 +80,8 @@ class MPostUnavailableError < HTTPStreamError; end
 class ArrayIndexOutOfBoundsError < Error; end
 class ArrayStoreError < Error; end
 
+class RPCRoutingError < Error; end
+
 class FaultError < Error
   attr_reader :faultCode
   attr_reader :faultString
