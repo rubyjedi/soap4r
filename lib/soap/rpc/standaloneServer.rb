@@ -52,9 +52,6 @@ class StandaloneServer < Logger::Application
     super(app_name)
     @logdev = Logger.new(STDERR)
     @logdev.level = INFO
-    def @logdev.<<(msg)
-      info(msg)
-    end
     @namespace = namespace
     @server = WEBrick::HTTPServer.new(
       :BindAddress => host,
