@@ -67,7 +67,7 @@ module MethodDefCreatorSupport
 #{ dump_inout_type(output).chomp }
 #
 # RAISES
-#{ dump_inout_type(fault).chomp }
+#{ (fault.collect { |f| dump_inout_type(f).chomp }).join(', ') }
 #
 __EOD__
   end

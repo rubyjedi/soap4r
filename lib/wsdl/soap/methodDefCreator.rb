@@ -64,8 +64,7 @@ private
       paramstr = "[\n" << paramstr << "]"
     end
     return <<__EOD__
-[#{ dq(name_as) }, #{ dq(name) }, #{ paramstr },
- #{ dq(soapaction) }, #{ dq(namespace) }]
+[#{ dq(name_as) }, #{ dq(name) }, #{ paramstr }, #{ soapaction ? dq(soapaction) : "nil" }, #{ dq(namespace) }]
 __EOD__
   end
 

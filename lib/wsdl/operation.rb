@@ -49,7 +49,7 @@ class Operation < Info
     @parameter_order = nil
     @input = nil
     @output = nil
-    @fault = nil
+    @fault = []
   end
 
   def targetnamespace
@@ -76,10 +76,6 @@ class Operation < Info
     sort_parts(output.find_message.parts)
   end
 
-  def faultparts
-    sort_parts(fault.find_message.parts)
-  end
-
   def outputname
     XSD::QName.new(targetnamespace,
       output.name ? output.name.name : @name.name + 'Response')
@@ -97,7 +93,7 @@ class Operation < Info
       o
     when FaultName
       o = Param.new
-      @fault = o
+      @fault << o
       o
     when DocumentationName
       o = Documentation.new

@@ -35,7 +35,7 @@ class OperationBinding < Info
     @name = nil
     @input = nil
     @output = nil
-    @fault = nil
+    @fault = []
     @soapoperation = nil
   end
 
@@ -63,7 +63,7 @@ class OperationBinding < Info
       o
     when FaultName
       o = Param.new
-      @fault = o
+      @fault << o
       o
     when SOAPOperationName
       o = WSDL::SOAP::Operation.new
