@@ -50,7 +50,7 @@ class XMLScanner < XSD::XMLParser::Parser
   }
 
   def parse_error(msg)
-    raise XSD::XMLParser::ParseError.new(msg)
+    raise ParseError.new(msg)
   end
 
   def wellformed_error(msg)
