@@ -25,11 +25,34 @@ module SOAP
 
 
 class StreamHandler
-  public
+public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.15 2001/08/24 03:25:39 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.16 2001/12/05 02:06:10 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
+
+  class ConnectionData
+    attr_accessor :sendString
+    attr_accessor :sendContentType
+    attr_accessor :receiveString
+    attr_accessor :receiveContentType
+
+    def initialize
+      @sendData = nil
+      @sendContentType = nil
+      @receiveData = nil
+      @receiveContentType = nil
+      @bag = {}
+    end
+
+    def []( idx )
+      @bag[ idx ]
+    end
+
+    def []=( idx, value )
+      @bag[ idx ] = value
+    end
+  end
 
   attr_reader :endPoint
 
@@ -47,7 +70,7 @@ public
   attr_accessor :dumpDev
   attr_accessor :dumpFileBase
   
-  MediaType = 'text/xml'
+  SendMediaType = 'text/xml'
 
   NofRetry = 10       	# [times]
   ConnectTimeout = 60   # [sec]
@@ -80,9 +103,13 @@ public
     end
   end
 
-  private
+private
 
   def sendPOST( soapString, soapAction, charset )
+    data = ConnectionData.new
+    data.sendString = soapString
+    data.sendContentType = SendMediaType
+
     dumpDev = if @dumpDev && @dumpDev.respond_to?( "<<" )
 	@dumpDev
       else
@@ -98,7 +125,7 @@ public
     end
 
     extra = {}
-    extra[ 'Content-Type' ] = "#{ MediaType }; charset=#{ Charset.getCharsetLabel( charset ) }"
+    extra[ 'Content-Type' ] = "#{ SendMediaType }; charset=#{ Charset.getCharsetLabel( charset ) }"
     extra[ 'SOAPAction' ] = "\"#{ soapAction }\""
 
     dumpDev << "Wire dump:\n\n" if dumpDev
@@ -128,12 +155,10 @@ public
       raise HTTPStreamError.new( "#{ res.status }: #{ res.reason }" )
     end
 
-    unless /^#{ MediaType }(?:;\s*charset=(.*))?/i =~ res.header[ 'content-type' ][ 0 ]
-      raise HTTPStreamError.new( "Illegal content-type: #{ res.header[ 'content-type' ][ 0 ] }" )
-    end
-    receiveCharset = $1
+    data.receiveString = receiveString
+    data.receiveContentType = res.header[ 'content-type' ][ 0 ]
 
-    return receiveString, receiveCharset
+    return data
   end
 
   def sendMPOST( soapString, soapAction, charset )
