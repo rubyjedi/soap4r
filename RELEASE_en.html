@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: April 11, 2002<br />
+Last modified: May 6, 2002<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.4.3
+Target SOAP4R version: SOAP4R/1.4.4
 </p>
 
 <ol>
@@ -52,81 +52,46 @@ Target SOAP4R version: SOAP4R/1.4.3
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<dl>
-<dt>Attention to 1.4.2 or earlier users;</dt>
-<dd>
-<ul>
-<li>Stopped redistributing packages in RAA from this release.
-Please get <a href="#dependencies">required</a> packages from
-<a href="http://www.ruby-lang.org/en/raa.html">RAA</a>
-and install it.</li>
-<li>It still does NOT support WSDL!</li>
-</ul>
-</dd>
+<p>
+This is a bug fix release.
+Following users should update.
+</p>
 
-<dt>New features</dt>
-<dd>
 <ul>
-<li>Added REXML parser support.</li>
-<li>Added uninstaller.</li>
-<li>Re: samples
-<ul>
-<li>Added 3 new samples, Calc, Exchange, and SampleStruct.</li>
-<li>Use environment variable HTTP_PROXY or http_proxy for http proxy.</li>
-<li>Removed unreachable services.</li>
-<li>RAA: Separate iRAA.rb into RAA.rb and iRAA.rb.</li>
-<li>Added description about <a href="#samples">samples</a> to RELEASE_en.html.</li>
+<li>Users who use DateTime datatype.</li>
+<li>Developers of SOAP client/server which works under multi-thread condition.</li>
+<li>REXML users.</li>
 </ul>
-<li>Changed String encoding handling among
-Ruby object &lt;-&gt; SOAP Data Model &lt;-&gt; XML instance.
+
+<p>
+Fixed bugs.
+</p>
+
 <ul>
-<li>Ruby object: $KCODE.</li>
-<li>SOAP Data Model: utf-8 if uconv module is installed, $KCODE if not.</li>
-<li>XML instance: Client side use utf-8 if uconv module is installed,
-$KCODE if not.  Server side try to adjust the request encoding.</li>
-<li>Use regexp instead of NKF.guess to check if the given String is EUC/SJIS or not.</li>
+<li>XSDDataTime: Changed variable name usec to sec_frac.  It's not a micro sec so name usec is misleading.</li>
+<li>XSDTime: Fixed bugs in usec part.</li>
+<li>date.rb in standard library and date2 version 3 conflicts because date2.rb is a successor of date.rb and not designed for dual use.
+(ex. using a module which requires date.rb like DBI and another module which requires date2.rb).
+Added a workaround for this.</li>
+<li>SOAP::Processor was not MT-safe.  Fixed.
+Projected feature regards to MT are follows.
+At least I hope so.  Tell me if you find these wrong.
+<ul>
+<li>Driver: safe</li>
+<li>Proxy: safe</li>
+<li>Server: safe</li>
+<li>CGIStub: safe</li>
+<li>StandaloneServer: safe</li>
+<li>RPCRouter: safe</li>
+<li>StreamHandler: safe</li>
+<li>Processor: safe</li>
+<li>SOAPParser: unsafe</li>
+<li>SOAPGenerator: unsafe</li>
+<li>EncodingStyleHandler: unsafe</li>
 </ul>
 </li>
-<li>Added 'addServant' interface to server side.  See sample/Calc/server.rb.</li>
-<li>Added 'addMethodAs' interface to both server side and client side.
-See sample/Calc/server2.rb.</li>
+<li>SOAP4R/1.4.3 supports REXML/2.1.3 but it did not detect REXML processor automatically.</li>
 </ul>
-</dd>
-
-<dt>Changes</dt>
-<dd>
-<ul>
-<li>Removed Japanese document.
-I was tired of maintaining 2 separated documents.
-Though my English is poor as you see, numbers of readers of my English document
-should be more than one of my Japanese document.
-Would you please tell me bug of my English composition and of course in the code?</li>
-<li>Use
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Devel%3A%3ALogger">[RAA:Devel::Logger]</a>
-instead of
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Application">[RAA:Application]</a>.
-</li>
-<li>Avoided using exception in soap2obj and reduced warnings in runtime.</li>
-<li>XSDDateTime: Use date2 version 3 instead of date3.rb.
-Date2 version 3 will be included in standard distribution of Ruby/1.8.</li>
-<li>XSDDateTime: Added XSDDateTimeToTime module to extract a Time object from XSDDateTime, XSDDate and XSDTime.</li>
-</ul>
-</dd>
-
-<dt>Bug fixes</dt>
-<dd>
-<ul>
-<li>Set 'charset=' to content-type when sending back a SOAPFault.
-It was not set.</li>
-<li>XSDDateTime: Parsedate was not used.  Removed.</li>
-<li>Added constant Log as a canonical name of Devel::Logger for backward
-compatibility of devel-logger.</li>
-<li>Foo = Struct.new(:foo) and Foo = Struct.new("Foo", :foo) could not be
-  unmarshalled collectly.  All members were unmarshalled as nil.  Fixed.</li>
-<li>Rescue ArgumentError(Unrecognized signal) in standaloneServer.rb for mswin32 ruby.</li>
-</ul>
-</dd>
-</dl>
 
 <h2 id="install" name="install">2. Install</h2>
 
@@ -566,6 +531,43 @@ Any comments are welcomed. (as always)</dd>
 <h2 id="history" name="history">9. History</h2>
 
 <dl>
+<dt>1.4.4 - May 6, 2002</dt>
+<dd>
+This is a bug fix release.
+Following users should update.
+<ul>
+<li>Users who use DateTime datatype.</li>
+<li>Developers of SOAP client/server which works under multi-thread condition.</li>
+<li>REXML users.</li>
+</ul>
+Fixed bugs.
+<ul>
+<li>XSDDataTime: Changed variable name usec to sec_frac.  It's not a micro sec so name usec is misleading.</li>
+<li>XSDTime: Fixed bugs in usec part.</li>
+<li>date.rb in standard library and date2 version 3 conflicts because date2.rb is a successor of date.rb and not designed for dual use.
+(ex. using a module which requires date.rb like DBI and another module which requires date2.rb).
+Added a workaround for this.</li>
+<li>SOAP::Processor was not MT-safe.  Fixed.
+Projected feature regards to MT are follows.
+At least I hope so.  Tell me if you find these wrong.
+<ul>
+<li>Driver: safe</li>
+<li>Proxy: safe</li>
+<li>Server: safe</li>
+<li>CGIStub: safe</li>
+<li>StandaloneServer: safe</li>
+<li>RPCRouter: safe</li>
+<li>StreamHandler: safe</li>
+<li>Processor: safe</li>
+<li>SOAPParser: unsafe</li>
+<li>SOAPGenerator: unsafe</li>
+<li>EncodingStyleHandler: unsafe</li>
+</ul>
+</li>
+<li>SOAP4R/1.4.3 supports REXML/2.1.3 but it did not detect REXML processor automatically.</li>
+</ul>
+</dd>
+
 <dt>1.4.3 - April 11, 2002</dt>
 
 <dd>
