@@ -68,6 +68,10 @@ class RPCRouter
       # So far, header is omitted...
 
       soapRequest = body.request
+      unless soapRequest.is_a?( SOAPStruct )
+	raise RPCRoutingError.new( "Not an RPC style." )
+      end
+
       soapResponse = nil
 
       soapResponse = dispatch( soapRequest )
@@ -139,7 +143,7 @@ private
     }
     method = lookup( namespace, methodName, values )
     unless method
-      raise Error.new( "Method: #{methodName} not supported." )
+      raise RPCRoutingError.new( "Method: #{methodName} not supported." )
     end
 
     result = method.call( *values )
