@@ -303,16 +303,19 @@ module RPCUtils
     end
 
     def to_e
-      e = begin
-	  klass = Object
-	  @exceptionTypeName.to_s.split( '::' ).each do | klassStr |
-	    klass = klass.const_get( klassStr )
-	  end
-  	  raise NameError unless klass.ancestors.include?( Exception )
-   	  klass.new( @message )
-    	rescue NameError
-	  RuntimeError.new( @message )
+      begin
+	klass = Object
+	@exceptionTypeName.to_s.split( '::' ).each do | klassStr |
+	  klass = klass.const_get( klassStr )
 	end
+	raise NameError unless klass.ancestors.include?( Exception )
+ 	klass.new( @message )
+      rescue NameError
+	RuntimeError.new( @message )
+      end
+    end
+
+    def set_backtrace( e )
       e.set_backtrace(
 	if @backtrace.is_a?( Array )
 	  @backtrace
@@ -320,7 +323,6 @@ module RPCUtils
 	  [ @backtrace.inspect ]
 	end
       )
-      e
     end
   end
 
