@@ -24,8 +24,9 @@ class Property
   # value: an Object
   def []=(name, value)
     hooks = assign(name_to_a(name), value)
+    normalized_name = normalize_name(name)
     hooks.each do |hook|
-      hook.call(name, value)
+      hook.call(normalized_name, value)
     end
     value
   end
@@ -72,7 +73,11 @@ protected
 private
 
   def deref_key(key)
-    @store[key] ||= self.class.new
+    ref = @store[key] ||= self.class.new
+    unless ref.is_a?(SOAP::Property)
+      raise ArgumentError.new("key `#{key}' already defined as a value.")
+    end
+    ref
   end
 
   NO_HOOK = [].freeze
@@ -91,6 +96,10 @@ private
     else
       raise ArgumentError.new("Unknown name #{name}(#{name.class})")
     end
+  end
+
+  def normalize_name(name)
+    name_to_a(name).collect { |key| to_key(key) }.join('.')
   end
 
   def to_key(name)
