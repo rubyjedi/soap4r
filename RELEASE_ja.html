@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: November 11, 2000<br />
+Last modified: March 23, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 $BK\J8=q$,BP>]$H$7$F$$$k(BSOAP4R$B$N%P!<%8%g%s$O!$(B
-SOAP4R/1.0.2
+SOAP4R/1.1.0
 $B$G$9!%(B
 </p>
 
@@ -54,13 +54,24 @@ SOAP4R/1.0.2
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-$B<c438E$/$J$C$F$-$?$N$G!$:Y$+$$%j%U%l%C%7%e$r9T$J$$$^$7$?!%(B
-<ul>
-<li>ruby 1.6.x$BBP1~$7$^$7$?!%(B</li>
-<li>$BBP1~$9$k(Buri.rb$B$N%P!<%8%g%s$,(B3.54$B$+$i(B4.22$B$K$J$j$^$7$?!%(B</li>
-<li>$B%5%s%W%k$,(Bxml-soap/2.0$B$KBP1~$7$^$7$?!%(B</li>
-</ul>
+$B7k9=$?$/$5$sJQ99$7$^$7$?!%$J$RMQES$G$7$+%F%9%H$G$-$F$J$$$N$G!$(B
+$B0BDjEY$ODc$$$H;W$$$^$9$N$G8fCm0U$/$@$5$$!%(B
+$BFC$KB>(BSOAP$B<BAu$H$N(Binteroperability$B$,IT0B$G$9!%(B
+$B!V!A$K$D$J$$$G$_$?$,>e<j$/$$$+$J$$!W$H$$$&%l%]!<%H$,$"$j$^$7$?$i!$(B
+$B@'Hs$J$R!J(B<a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>$B!K$^$G8fO"Mm$/$@$5$$!%2DG=$J8B$jBP1~$7$^$9!%(B
 </p>
+<ul>
+<li>RPC$B%5!<%P$H$7$F$N5!G=$rDI2C$7$^$7$?!%(B</li>
+<li>RPC$B%/%i%$%"%s%H(B/$B%5!<%P5!G=$N<BAu$r!$(BSOAP$BK\BN$+$iJ,N%$7$^$7$?!%(B</li>
+<li>RPC$B$G(BRuby$B@lMQ$K;H$($k7?$H$7$F!$(BDate$B!$(BHash$B$r%5%]!<%H$7$^$7$?!%(B
+$B!JCN$i$J$$7?$K$D$$$F$O!$=>MhDL$jC1$J$k(BStruct$B$K$J$j$^$9!K(B</li>
+<li>TimeInstant$B$H$7$F!$(BTime$B$G$O$J$/!$(B
+$B$U$J$P$5$s$N(Bdate3.rb$B$N(BDate$B$r;H$&$h$&$K$7$^$7$?!%(B
+$B$^$?!$(Bparsedate2$B"*(Bparsedate3$B$K0\9T$7$F$_$^$7$?!%(B</li>
+<li>RPC$B%5!<%P$H$7$F$N5!G=$rDI2C$7$F$$$k:GCf$K!$(B
+SOAPArray$B$*$h$S(BSOAPStruct$B$N(Bencoding/decoding$B$N%P%0!JFC$KL>A06u4V2s$j!K$r(B
+$B$?$/$5$s=$@5$7$^$7$?!%(B</li>
+</ul>
 
 <h2 id="install" name="install">2. Install</h2>
 
@@ -75,11 +86,19 @@ SOAP4R$B$N%i%$%V%i%j%W%m%0%i%`$,F0:n$9$k$?$a$K$O!$(Bredist$B%G%#%l%/%H%j$K4^$
 $B$3$l$i$b%i%$%V%i%jK\BN$H0l=o$KE,Ev$J%G%#%l%/%H%j$K%3%T!<$7$F$*$$$F$/$@$5$$!%(B
 </p>
 
-<ul>
-<li class="path">parsedate2.rb</li>
-<li class="path">http-access.rb</li>
-<li class="path">uri.rb</li>
-</ul>
+<dl>
+<dt class="path">date3.rb</dt>
+<dd>by $B$U$J$P$5$s!J(B<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>$B!K(B</dd>
+
+<dt class="path">parsedate3.rb</dt>
+<dd>by $B$U$J$P$5$s!J(B<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>$B!K(B</dd>
+
+<dt class="path">http-access.rb</dt>
+<dd>by $BA066$5$s!J(B<a href="http://www.jin.gr.jp/~nahi/Ruby/ruby.shtml#http-access">http://www.jin.gr.jp/~nahi/Ruby/ruby.shtml#http-access</a>$B!K(B</dd>
+
+<dt class="path">uri.rb</dt>
+<dd>by $B1[?e$5$s!J(B<a href="http://www02.so-net.ne.jp/~greentea/ruby/uri/">http://www02.so-net.ne.jp/~greentea/ruby/uri/</a>$B!K(B</dd>
+</dl>
 
 <p>
 $B%Q%C%1!<%8Cf$N3F%U%!%$%k$N2r@b$G$9!%(B
@@ -101,9 +120,23 @@ IBM$B$N(BSOAP for Java$B$b$7$/$O(BApache SOAP$B$N!$(Bstockquote$B$*$h$S(
 </pre>
 $B$J$I$H$7$F5/F0$9$k!%(B</dd>
 
+<dt class="path">sample/sampleCGIServer.rb</dt>
+<dd>SOAP-RPC$B%5!<%P$N%5%s%W%k%W%m%0%i%`!%(B
+Apache-SOAP$B%i%$%/$J!$(BgetQuote$B$d(BgetAddressFromName$B%$%s%?%U%'%$%9$,Dj5A$5$l$F$$$^$9!%(B
+$B%$%s%?%U%'%$%9$@$1$G!$5!G=$O$"$j$^$;$s!%(B</dd>
+
+<dt class="path">sample/sampleClient.rb</dt>
+<dd>SOAP-RPC$B%/%i%$%"%s%H$N%5%s%W%k%W%m%0%i%`!%(B
+IBM$B$N(BSOAP for Java$B$b$7$/$O(BApache SOAP$B$N!$(Bstockquote$B$*$h$S(Baddressbook$B%G%b$K@\B3$9$k!%(B
+$B@h$K%5!<%PB&$N%$%s%9%H!<%k(B &amp; deploy$B$r:Q$^$;$F$*$/$3$H!%(B
+<pre class="path">
+./sampleClient.rb http://localhsot:2020/ibm-soap/rpcrouter.jsp
+</pre>
+$B$J$I$H$7$F5/F0$9$k!%(B</dd>
+
+
 <dt class="path">sample/sampleDriver.rb</dt>
-<dd>MS SOAP TK for VS6.0$B$G$O(BROPE$B$K$"$?$k$N$,$3$N%U%!%$%k!%(B
-$B!J(BRuby$B$NDs6!$9$k6/NO$J(Bdynamism$B$N$*$+$2$G!KBg$7$?$3$H$O$7$F$J$$$,!$!V(BSOAP$B$N(BRuby mapping$B!W$H8@$($k$H$7$?$i$3$3!%(B</dd>
+<dd>MS SOAP TK for VS6.0$B$G$O(BROPE$B$K$"$?$k$N$,$3$N%U%!%$%k!%(B</dd>
 
 <dt class="path">redist/</dt>
 <dd>$B3F<o:FG[I[%Q%C%1!<%8$+$i!$(BSOAP4R$B$GMxMQ$9$k%U%!%$%k72!%(B
@@ -136,10 +169,7 @@ SOAP$B$K$D$$$F$N>\:Y$O!$(B
 
 <p>
 <a href="#restrictions">Restrictions</a>
-$B$r8+$k$H$o$+$k$H;W$$$^$9$,!$:#$N$H$3$m(BSOAP-RPC$B%/%i%$%"%s%H$KFC2=$7$?5!G=$N$_Ds6!$5$l$F$$$^$9!%(B
-RPC$B$KFC2=$7$F$$$k$N$O!$(BSOAP/1.0$B$,=P$kA0$K<BAu$r;O$a$?$b$N$r!$(BSOAP/1.1$B8~$1$K2~=$$7$?$?$a$G$9!%(B
-$B8=:_$N<BAuJ}K!$N2~=$$G$O8B3&$,$"$k$N$G!$<!%P!<%8%g%s$G$O(B1$B$+$i<BAu$7D>$9$D$b$j$G$9!%(B
-$B0l1~(BRPC$B%5!<%PB&MQ$N<BAu$b$"$j$^$9$,!J(BHTTP$B$H$N(Bbinding$B$r=|$/!K!$%F%9%H$G$N%3!<%I%+%P%l%C%8N($ODc$$$N$G8fCm0U!%(B
+$B$r8+$k$H$o$+$k$H;W$$$^$9$,!$:#$N$H$3$m(BRPC$B$KFC2=$7$?5!G=$N$_Ds6!$5$l$F$$$^$9!%(B
 </p>
 
 <h2 id="dependencies" name="dependencies">5. Dependencies</h2>
@@ -153,7 +183,8 @@ SOAP4R$B$rMxMQ$9$k$?$a$K$O!$0J2<$N$b$N$,I,MW$G$9!%(B
 <a href="http://www.ruby-lang.org">Ruby</a>
 $B8~$1$N%i%$%V%i%j$G$9!%(B
 $B$b$A$m$s(BRuby$BK\BN$,I,MW$G$9!%(B
-$B2TF/%F%9%H$O(B1.4$B7O$G$d$C$F$^$9$,!$(B1.5$B7O$G$bF0$/$s$8$c$J$$$+$H;W$$$^$9!%(B</li>
+$B2TF/%F%9%H$O(B1.6$B7O$G9T$J$C$F$$$^$9!%(B
+$B%/%i%9JQ?t$r;H$C$F$$$k$?$a!$(B1.4$B7O$G$OF0$-$^$;$s!%(B</li>
 
 <li>SOAP4R$B$O(BXML$B4XO"$N=hM}$r(B
 <a href="http://www.bekkoame.ne.jp/~yoshidam/Ruby_ja.html">XMLParser$B%b%8%e!<%k(B</a>
@@ -197,7 +228,7 @@ SOAP Encoding$BK\BN$KKd$a9~$^$l$?(Bxsi:type$B$N$_$rMxMQ$7$^$9!%(B</li>
 </ul></li>
 <li style="margin-top: 2ex;">$B$=$NB>(B
 <ul>
-<li>$B%H%i%s%9%]!<%H$O(BHTTP$B$N%/%i%$%"%s%HB&$N$_$G$9!%(B</li>
+<li>$B%H%i%s%9%]!<%H$O(BHTTP$B$N%5!<%P!J(BCGI$B!K(B$B!$%/%i%$%"%s%HB&$N$_$G$9!%(B</li>
 <li>HTTP Extension Framework$B!J(BM-POST$B!K$KBP1~$7$F$$$^$;$s!%(B</li>
 <li>Content-Type$B$O(B'text/xml'$B$G$9!%(B
 charset$B;XDj$K$OBP1~$7$F$$$^$;$s!%(B
@@ -208,6 +239,27 @@ charset$B;XDj$K$OBP1~$7$F$$$^$;$s!%(B
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.1.0 - March 23, 2001</dt>
+<dd>
+$B7k9=$?$/$5$sJQ99$7$^$7$?!%$J$RMQES$G$7$+%F%9%H$G$-$F$J$$$N$G!$(B
+$B0BDjEY$ODc$$$H;W$$$^$9$N$G8fCm0U$/$@$5$$!%(B
+$BFC$KB>(BSOAP$B<BAu$H$N(Binteroperability$B$,IT0B$G$9!%(B
+$B!V!A$K$D$J$$$G$_$?$,>e<j$/$$$+$J$$!W$H$$$&%l%]!<%H$,$"$j$^$7$?$i!$(B
+$B@'Hs$J$R!J(B<a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>$B!K$^$G8fO"Mm$/$@$5$$!%2DG=$J8B$jBP1~$7$^$9!%(B
+<ul>
+<li>RPC$B%5!<%P$H$7$F$N5!G=$rDI2C$7$^$7$?!%(B</li>
+<li>RPC$B%/%i%$%"%s%H(B/$B%5!<%P5!G=$N<BAu$r!$(BSOAP$BK\BN$+$iJ,N%$7$^$7$?!%(B</li>
+<li>RPC$B$G(BRuby$B@lMQ$K;H$($k7?$H$7$F!$(BDate$B!$(BHash$B$r%5%]!<%H$7$^$7$?!%(B
+$B!JCN$i$J$$7?$K$D$$$F$O!$=>MhDL$jC1$J$k(BStruct$B$K$J$j$^$9!K(B</li>
+<li>TimeInstant$B$H$7$F!$(BTime$B$G$O$J$/!$(B
+$B$U$J$P$5$s$N(Bdate3.rb$B$N(BDate$B$r;H$&$h$&$K$7$^$7$?!%(B
+$B$^$?!$(Bparsedate2$B"*(Bparsedate3$B$K0\9T$7$F$_$^$7$?!%(B</li>
+<li>RPC$B%5!<%P$H$7$F$N5!G=$rDI2C$7$F$$$k:GCf$K!$(B
+SOAPArray$B$*$h$S(BSOAPStruct$B$N(Bencoding/decoding$B$N%P%0!JFC$KL>A06u4V2s$j!K$r(B
+$B$?$/$5$s=$@5$7$^$7$?!%(B</li>
+</ul>
+</dd>
+
 <dt>1.0.2 - November 11, 2000</dt>
 <dd>$B<c438E$/$J$C$F$-$?$N$G!$:Y$+$$%j%U%l%C%7%e$r9T$J$$$^$7$?!%(B
 <ul>

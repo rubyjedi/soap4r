@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: November 11, 2000<br />
+Last modified: March 23, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.0.2
+Target SOAP4R version: SOAP4R/1.1.0
 </p>
 
 <ol>
@@ -49,6 +49,21 @@ Target SOAP4R version: SOAP4R/1.0.2
 </ol>
 
 <h2 id="changes" name="changes">1. Changes</h2>
+
+<p>
+Made many changes.
+Since it is tested only for my limited use, please be careful to use.
+Any comments especially "cannot connect to XXX implementation" are welcomed.
+Feel free sending mail to
+<a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>.
+</p>
+<ul>
+<li>Added RPC server support.</li>
+<li>Divided RPC client/server implementation from core.</li>
+<li>Added Date, Hash type support. (Unknown type is converted to Struct as usual)</li>
+<li>Adopted Date in date3.rb by Funaba-san instead of Time as TimeInstant.</li>
+<li>Many encoding/decoding bugs around SOAPArray and SOAPStruct were fixed.</li>
+</ul>
 
 <p>
 Since the previous package dated, refreshes some points.
@@ -71,11 +86,19 @@ To use this library, copy files in lib/ to suitable directory and require it sin
 To play with SOAP4R, you also have copy redistributed files below in redist/ to suitable directory.
 </p>
 
-<ul>
-<li class="path">parsedate2.rb</li>
-<li class="path">http-access.rb</li>
-<li class="path">uri.rb</li>
-</ul>
+<dl>
+<dt class="path">date3.rb</dt>
+<dd>by Funaba-san (<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>)</dd>
+
+<dt class="path">parsedate3.rb</dt>
+<dd>by Funaba-san (<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>)</dd>
+
+<dt class="path">http-access.rb</dt>
+<dd>by Maehashi-san (<a href="http://www.jin.gr.jp/~nahi/Ruby/ruby.shtml#http-access">http://www.jin.gr.jp/~nahi/Ruby/ruby.shtml#http-access</a>)</dd>
+
+<dt class="path">uri.rb</dt>
+<dd>by Koshimizu-san (<a href="http://www02.so-net.ne.jp/~greentea/ruby/uri/">http://www02.so-net.ne.jp/~greentea/ruby/uri/</a>)</dd>
+</dl>
 
 <p>
 Files in archive:
@@ -97,6 +120,16 @@ To execute;
 ./sampleClient.rb http://localhsot:2020/ibm-soap/rpcrouter.jsp
 </pre>
 </dd>
+
+<dt class="path">sample/sampleClientRAA.rb</dt>
+<dd>SOAP-RPC client sample 2.
+It connects with testing RAA server on www.ruby-lang.org.
+Since the server is under testing phase so stable operation is not expected.</dd>
+
+<dt class="path">sample/sampleCGIServer.rb</dt>
+<dd>SOAP-RPC CGI server sample.
+Interfaces such as getQuote and getAddressFromName like Apache-SOAP are
+defined.  Only interfaces, no implementation.</dd>
 
 <dt class="path">sample/sampleDriver.rb</dt>
 <dd>Ruby mapping implementation.</dd>
@@ -128,10 +161,7 @@ Delete created files at installation.
 <p>
 As
 <a href="#restrictions">Restrictions</a>,
-SOAP4R offers only SOAP-RPC client specific features now.
-The reason why it is, that I started to write this library program before SOAP/1.0 and revised for SOAP/1.1
-(Definitely SOAP/1.0 was a RPC specific spec!)
-I will do rewrite all over again in the next version of SOAP4R.
+SOAP4R offers only SOAP-RPC specific features now.
 </p>
 
 <h2 id="dependencies" name="dependencies">5. Dependencies</h2>
@@ -145,7 +175,8 @@ SOAP4R depends on below programs:
 <a href="http://www.ruby-lang.org">Ruby</a>
 library program.
 You have to install Ruby itself.
-I test SOAP4R under Ruby/1.4.x series but Ruby/1.5.x series may be OK.</li>
+Ruby/1.6 series are required.
+It does not works on 1.4 series because of class variable.</li>
 
 <li>SOAP4R delegates XML related processing to
 <a href="http://www.bekkoame.ne.jp/~yoshidam/Ruby.html">XMLParser module</a>.
@@ -185,7 +216,7 @@ Only xsi:type in SOAP Encoding is checked</li>
 </ul></li>
 <li style="margin-top: 2ex;">Othres
 <ul>
-<li>Transport binding except HTTP client</li>
+<li>Transport binding except HTTP server(CGI) and client</li>
 <li>HTTP Extension Framework (M-POST)</li>
 <li>Content-Type is 'text/xml';
 Does not support 'charset='.
@@ -196,6 +227,21 @@ Does not support 'charset='.
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.1.0 - March 23, 2001</dt>
+<dd>Made many changes.
+Since it is tested only for my limited use, please be careful to use.
+Any comments especially "cannot connect to XXX implementation" are welcomed.
+Feel free sending mail to
+<a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>.
+
+<ul>
+<li>Added RPC server support.</li>
+<li>Divided RPC client/server implementation from core.</li>
+<li>Added Date, Hash type support. (Unknown type is converted to Struct as usual)</li>
+<li>Adopted Date in date3.rb by Funaba-san instead of Time as TimeInstant.</li>
+<li>Many encoding/decoding bugs around SOAPArray and SOAPStruct were fixed.</li>
+</ul></dd>
+
 <dt>1.0.2 - November 11, 2000</dt>
 <dd>Since the previous package dated, refreshes some points.
 <ul>
