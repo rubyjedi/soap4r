@@ -26,7 +26,7 @@ class ClassDefCreator
   end
 
   def dump(class_name = nil)
-    result = ""
+    result = ''
     if class_name
       result = dump_classdef(class_name)
     else
@@ -71,7 +71,7 @@ private
       when :TYPE_ARRAY
         dump_arraydef(type)
       else
-        raise RuntimeError.new("Unknown complexContent definition...")
+        raise RuntimeError.new('Unknown complexContent definition...')
       end
     }.join("\n")
   end
@@ -80,7 +80,7 @@ private
     qname = simpletype.name
     if simpletype.restriction.enumeration.empty?
       STDERR.puts("#{qname}: simpleType which is not enum type not supported.")
-      return ""
+      return ''
     end
     c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
     c.comment = "#{ qname.namespace }"
@@ -94,28 +94,31 @@ private
     qname = type_or_element.name
     if @faulttypes.index(qname)
       c = XSD::CodeGen::ClassDef.new(create_class_name(qname),
-        "::StandardError")
+        '::StandardError')
     else
       c = XSD::CodeGen::ClassDef.new(create_class_name(qname))
     end
     c.comment = "#{ qname.namespace }"
-    c.def_classvar("schema_type", qname.name.dump)
-    c.def_classvar("schema_ns", qname.namespace.dump)
+    c.def_classvar('schema_type', qname.name.dump)
+    c.def_classvar('schema_ns', qname.namespace.dump)
     schema_attribute = []
     schema_element = []
-    init_lines = ""
+    init_lines = ''
     params = []
     type_or_element.each_element do |element|
       name = element.name.name
-      type = create_class_name(element.type)
-      varname = safevarname(name)
-      if element.map_as_array?
-        c.def_attr(name, false, varname)
-        init_lines << "@#{ varname } = #{ varname }\n"
-        params << "#{ varname } = []"
+      if basetype = basetype_class(element.type)
+        type = basetype.name
       else
-        c.def_attr(name, true, varname)
-        init_lines << "@#{ varname } = #{ varname }\n"
+        type = create_class_name(element.type)
+      end
+      varname = safevarname(name)
+      c.def_attr(name, true, varname)
+      init_lines << "@#{ varname } = #{ varname }\n"
+      if element.map_as_array?
+        params << "#{ varname } = []"
+        type << '[]'
+      else
         params << "#{ varname } = nil"
       end
       schema_element << [name, type]
@@ -123,41 +126,55 @@ private
     unless type_or_element.attributes.empty?
       type_or_element.attributes.each do |attribute|
         name = attribute.name
-        varname = safevarname("attr_" + name)
+        type = basetype_class(attribute.type).name
+        varname = safevarname('attr_' + name)
         c.def_method(varname) do <<-__EOD__
             @__soap_attribute[#{name.dump}]
           __EOD__
         end
-        c.def_method(varname + "=", "value") do <<-__EOD__
+        c.def_method(varname + '=', 'value') do <<-__EOD__
             @__soap_attribute[#{name.dump}] = value
           __EOD__
         end
-        schema_attribute << name
+        schema_attribute << [name, type]
       end
       init_lines << "@__soap_attribute = {}\n"
     end
-    c.def_classvar("schema_attribute", "[" +
-      schema_attribute.collect { |ele| ele.dump }.join(", ") + "]")
-    c.def_classvar("schema_element", "[" +
-      schema_element.collect { |name, type| arystr(name, type) }.join(", ") +
-      "]")
-    c.def_method("initialize", *params) do
+    c.def_classvar('schema_attribute',
+      '{' +
+        schema_attribute.collect { |name, type|
+          name.dump + ' => ' + type.dump
+        }.join(', ') +
+      '}'
+    )
+    c.def_classvar('schema_element',
+      '{' +
+        schema_element.collect { |name, type|
+          name.dump + ' => ' + type.dump
+        }.join(', ') +
+      '}'
+    )
+    c.def_method('initialize', *params) do
       init_lines
     end
     c.dump
   end
 
-  def dump_arraydef(complextype)
-    qname = complextype.name
-    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), "::Array")
-    c.comment = "#{ qname.namespace }"
-    c.def_classvar("schema_type", qname.name.dump)
-    c.def_classvar("schema_ns", qname.namespace.dump)
-    c.dump
+  def basetype_class(type)
+    if @simpletypes[type]
+      basetype_mapped_class(@simpletypes[type].base)
+    else
+      basetype_mapped_class(type)
+    end
   end
 
-  def arystr(*ary)
-    "[" + ary.collect { |ele| ndq(ele) }.join(", ") + "]"
+  def dump_arraydef(complextype)
+    qname = complextype.name
+    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), '::Array')
+    c.comment = "#{ qname.namespace }"
+    c.def_classvar('schema_type', qname.name.dump)
+    c.def_classvar('schema_ns', qname.namespace.dump)
+    c.dump
   end
 end
 
