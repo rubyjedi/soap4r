@@ -86,7 +86,6 @@ public
       @opt[ 'noEncodeType' ] = true
     end
     @opt[ 'decodeComplexTypes' ] = @wsdl.getComplexTypesWithMessages
-    @opt[ 'decodeOperationMap' ] = @port.createOutputOperationMap
     createHandler
     @operationMap = {}
     # Convert Map which key is QName, to aHash which key is String.

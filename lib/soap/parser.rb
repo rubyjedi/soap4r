@@ -93,6 +93,7 @@ public
     @lastNode = nil
     @option = opt
     @handlers = {}
+    @decodeComplexTypes = @option[ 'decodeComplexTypes' ] || nil
     EncodingStyleHandler.defaultHandler =
       EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
       EncodingNamespace )
@@ -271,6 +272,7 @@ private
   def getHandler( encodingStyle )
     unless @handlers.has_key?( encodingStyle )
       handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new
+      handler.decodeComplexTypes = @decodeComplexTypes
       handler.decodePrologue
       @handlers[ encodingStyle ] = handler
     end
