@@ -43,9 +43,13 @@ class Importer
     opt = {}	# charset?
     begin
       WSDL::Parser.new(opt).parse(content)
-    rescue WSDL::Parser::ParseError
-      require 'wsdl/xmlSchema/parser'
-      WSDL::XMLSchema::Parser.new(opt).parse(content)
+    rescue WSDL::Parser::ParseError => orgexcn
+      begin
+	require 'wsdl/xmlSchema/parser'
+	WSDL::XMLSchema::Parser.new(opt).parse(content)
+      rescue
+	raise orgexcn
+      end
     end
   end
 
