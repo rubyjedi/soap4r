@@ -19,15 +19,20 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/rpcUtils'
+require 'nqxml/writer'
 
 # Ruby bundled library
 
 # Redist library
 
 
-class SOAPRPCRouter
-  include SOAPProcessor
-  include SOAPRPCUtils
+module SOAP
+
+
+class RPCRouter
+  include SOAP
+  include Processor
+  include RPCUtils
 
   class RPCRoutingError < Error; end
 
@@ -58,7 +63,7 @@ class SOAPRPCRouter
     begin
       opt = {}
       opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
-      ns, header, body = unmarshal( soapString, opt )
+      header, body = unmarshal( soapString, opt )
 
       # So far, header is omitted...
 
@@ -71,21 +76,24 @@ class SOAPRPCRouter
       soapResponse = fault( $! )
     end
 
-    ns = SOAPNS.new
+    ns = NS.new
     header = SOAPHeader.new
     body = SOAPBody.new( soapResponse )
-    responseTree = marshal( ns, header, body )
-    responseString = responseTree.to_s
+    responseString = marshal( ns, header, body )
+
+    responseString
   end
 
-  # Create fault response.
-  def fault( e )
-    detail = SOAPArray.new
-    e.backtrace.each do |stack|
-      detail.add( SOAPString.new( stack ))
-    end
-    SOAPFault.new( SOAPString.new( 'Server' ), SOAPString.new( e.to_s ),
-      SOAPString.new( @actor ), detail )
+  # Create fault response string.
+  def faultResponseString( e )
+    soapResponse = fault( $! )
+
+    ns = NS.new
+    header = SOAPHeader.new
+    body = SOAPBody.new( soapResponse )
+    responseString = marshal( ns, header, body )
+
+    responseString
   end
 
 private
@@ -107,6 +115,17 @@ private
     soapResponse = method.dup
     soapResponse.retVal = obj2soap( retVal )
     soapResponse
+  end
+
+  # Create fault response.
+  def fault( e )
+    detail = SOAPArray.new
+    detail.extraAttributes << SOAPExtraAttributes.new( EnvelopeNamespace, AttrEncodingStyle, nil, EncodingNamespace )
+    e.backtrace.each do |stack|
+      detail.add( SOAPString.new( stack ))
+    end
+    SOAPFault.new( SOAPString.new( 'Server' ), SOAPString.new( e.to_s ),
+      SOAPString.new( @actor ), detail )
   end
 
   # Dispatch to defined method.
@@ -137,4 +156,7 @@ private
       nil
     end
   end
+end
+
+
 end
