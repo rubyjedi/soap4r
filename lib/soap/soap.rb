@@ -39,7 +39,6 @@ module SOAP
 
   class Error < StandardError; end
 
-  class MethodDefinitionError < Error; end
   class HTTPStreamError < Error; end
   class PostUnavailableError < HTTPStreamError; end
   class MPostUnavailableError < HTTPStreamError; end
