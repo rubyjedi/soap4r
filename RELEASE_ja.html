@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 27, 2001<br />
+Last modified: August 24, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 $BK\J8=q$,BP>]$H$7$F$$$k(BSOAP4R$B$N%P!<%8%g%s$O!$(B
-SOAP4R/1.3.6
+SOAP4R/1.3.7
 $B$G$9!%(B
 </p>
 
@@ -54,18 +54,32 @@ SOAP4R/1.3.6
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-Michael Neumann$B$5$s$+$i$N$?$/$5$s$N%U%#!<%I%P%C%/!%(B
-$B$"$j$,$H$&$4$6$$$^$9!%(B
+<a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
+$B$G8!=P$5$l$?Hs8_49@-$r$$$/$D$+=$@5$7$^$7$?!%(B
 </p>
 
 <ul>
-<li>hexBinary type: $BDI2C$7$^$7$?!%(B</li>
-<li>nil type: xsd:nil$B$G$O$J$/!$(Bxsi:nil$B$H$9$Y$-$G$7$?!%(B</li>
-<li>$BC1FH%5!<%P<BAu$rDI2C$7$^$7$?!%(BMichael Neumann$B$5$s$K46<U$7$^$9!%(B</li>
-<li>XML$BJ8=q@k8@ItJ,$N2r@O$,IT@5$G$7$?!%=$@5$7$^$7$?!%(B</li>
-<li>RPC$B$N(B'inout'$B%Q%i%a!<%?$,%5%]!<%H$5$l$F$$$^$;$s$G$7$?!%=$@5$7$^$7$?!%(BMichael Neumann$B$5$s$K46<U$7$^$9!%(B</li>
-<li>URb::Generic#path$B$O@dBP%Q%9$,6u$N$H$-!JNc$($P(Bhttp://foo$B!K$K(B''$B$rJV$7$^$9!%%A%'%C%/%3!<%I$rDI2C$7$^$7$?!%(B</li>
-<li>$BFH<+(BHTTP$B<BAu$N$+$o$j$K!$(Bhttp-access2$B%b%8%e!<%k$rMxMQ$7$^$9!%(Bhttp-access2$B$O(BHTTP/1.1$B$N(Bpersistent connection$B$r%5%]!<%H$7$^$9!%(B</li>
+<li>$B%G!<%?7?(B:
+<ul>
+<li>$BA4$F$N%G!<%?7?$G!$(Bnil$B$r07$($k$h$&$K$7$^$7$?!%(B</li>
+<li>XSDInt/Integer/Long: '123junk'$B$N$h$&$JIT@5$JCM$r8!=P$9$k$?$a$K!$(Bto_i -&gt; Integer()$B$r;H$&$h$&$K$7$^$7$?!%(B</li>
+<li>XSDDateTime, XSDDate, XSDTime: $BL@<(E*$K(BUTC$B$G$"$k$3$H$rI=$9$?$a!$KvHx$K(B'Z'$B$rIU$1$k$h$&$K$7$^$7$?!%(B</li>
+<li>SOAPStruct: xsi:type$B$,L@<($5$l$F$$$J$$9=B$BN$G$b<u$1$D$1$k$h$&$K$7$^$7$?!%(B</li>
+<li>Map(Hash): item$BMWAG$N7?$O7?IU$1$7$J$$$h$&$K$7$^$7$?!%(BApache$B7O$N(BSOAP$B<BAu$,5a$a$F$$$^$9!%(B</li>
+</ul></li>
+
+<li>$B%9%H%j!<%`4XO"(B:
+<ul>
+<li>MPOST$BBP1~%3!<%I$r:o$j$^$7$?!%(B</li>
+<li>ECONNRESET$B$r8!=P$7$F$$$^$;$s$G$7$?!%=$@5$7$^$7$?!%(B</li>
+<li>$B%?%$%`%"%&%H$r%5%]!<%H$7$^$7$?!%(B</li>
+</ul></li>
+
+<li>$B$=$NB>(B:
+<ul>
+<li>URb$B$G$J$/(BURI$B%b%8%e!<%k$r;H$&$h$&$K$7$^$7$?!%(BURb$B$,(BURI$B$KL>A0$rJQ99$7$?$N$KDI=>$7$?$@$1$G$9!%(B</li>
+<li>NQXML/1.1.0$B$KBP1~$7$^$7$?!%(B</li>
+</ul></li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -93,9 +107,6 @@ lib/soap$B%G%#%l%/%H%j$K4^$^$l$F$$$k%U%!%$%k$,!$(BSOAP4R$B$N%i%$%V%i%j%W%m%0%
 
 <dt class="path">parsedate3.rb</dt>
 <dd>by $B$U$J$P$5$s!J(B<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>$B!K(B</dd>
-
-<dt class="path">URb</dt>
-<dd>by $B$d$^$@$"$-$i$5$s(B: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=URb">[RAA:URb]</a></dd>
 
 <dt class="path">GServer</dt>
 <dd>by John W. Small</dd>
@@ -255,6 +266,34 @@ SOAP Encoding$BK\BN$KKd$a9~$^$l$?(Bxsi:type$B$N$_$rMxMQ$7$^$9!%(B</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.7 - August 24, 2001</dt>
+<a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
+$B$G8!=P$5$l$?Hs8_49@-$r$$$/$D$+=$@5$7$^$7$?!%(B
+
+<ul>
+<li>$B%G!<%?7?(B:
+<ul>
+<li>$BA4$F$N%G!<%?7?$G!$(Bnil$B$r07$($k$h$&$K$7$^$7$?!%(B</li>
+<li>XSDInt/Integer/Long: '123junk'$B$N$h$&$JIT@5$JCM$r8!=P$9$k$?$a$K!$(Bto_i -&gt; Integer()$B$r;H$&$h$&$K$7$^$7$?!%(B</li>
+<li>XSDDateTime, XSDDate, XSDTime: $BL@<(E*$K(BUTC$B$G$"$k$3$H$rI=$9$?$a!$KvHx$K(B'Z'$B$rIU$1$k$h$&$K$7$^$7$?!%(B</li>
+<li>SOAPStruct: xsi:type$B$,L@<($5$l$F$$$J$$9=B$BN$G$b<u$1$D$1$k$h$&$K$7$^$7$?!%(B</li>
+<li>Map(Hash): item$BMWAG$N7?$O7?IU$1$7$J$$$h$&$K$7$^$7$?!%(BApache$B7O$N(BSOAP$B<BAu$,5a$a$F$$$^$9!%(B</li>
+</ul></li>
+
+<li>$B%9%H%j!<%`4XO"(B:
+<ul>
+<li>MPOST$BBP1~%3!<%I$r:o$j$^$7$?!%(B</li>
+<li>ECONNRESET$B$r8!=P$7$F$$$^$;$s$G$7$?!%=$@5$7$^$7$?!%(B</li>
+<li>$B%?%$%`%"%&%H$r%5%]!<%H$7$^$7$?!%(B</li>
+</ul></li>
+
+<li>$B$=$NB>(B:
+<ul>
+<li>URb$B$G$J$/(BURI$B%b%8%e!<%k$r;H$&$h$&$K$7$^$7$?!%(BURb$B$,(BURI$B$KL>A0$rJQ99$7$?$N$KDI=>$7$?$@$1$G$9!%(B</li>
+<li>NQXML/1.1.0$B$KBP1~$7$^$7$?!%(B</li>
+</ul></li>
+</ul></dd>
+
 <dt>1.3.6 - July 27, 2001</dt>
 <dd>Michael Neumann$B$5$s$+$i$N$?$/$5$s$N%U%#!<%I%P%C%/!%(B
 $B$"$j$,$H$&$4$6$$$^$9!%(B
@@ -267,7 +306,7 @@ SOAP Encoding$BK\BN$KKd$a9~$^$l$?(Bxsi:type$B$N$_$rMxMQ$7$^$9!%(B</li>
 <li>RPC$B$N(B'inout'$B%Q%i%a!<%?$,%5%]!<%H$5$l$F$$$^$;$s$G$7$?!%=$@5$7$^$7$?!%(BMichael Neumann$B$5$s$K46<U$7$^$9!%(B</li>
 <li>URb::Generic#path$B$O@dBP%Q%9$,6u$N$H$-!JNc$($P(Bhttp://foo$B!K$K(B''$B$rJV$7$^$9!%%A%'%C%/%3!<%I$rDI2C$7$^$7$?!%(B</li>
 <li>$BFH<+(BHTTP$B<BAu$N$+$o$j$K!$(Bhttp-access2$B%b%8%e!<%k$rMxMQ$7$^$9!%(Bhttp-access2$B$O(BHTTP/1.1$B$N(Bpersistent connection$B$r%5%]!<%H$7$^$9!%(B</li>
-</ul>
+</ul></dd>
 
 <dt>1.3.5 - July 14, 2001</dt>
 <dd>Michael Neumann$B$5$s$+$i$N$?$/$5$s$N%U%#!<%I%P%C%/!%(B
