@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 14, 2001<br />
+Last modified: July 27, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 $BK\J8=q$,BP>]$H$7$F$$$k(BSOAP4R$B$N%P!<%8%g%s$O!$(B
-SOAP4R/1.3.5
+SOAP4R/1.3.6
 $B$G$9!%(B
 </p>
 
@@ -54,36 +54,18 @@ SOAP4R/1.3.5
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-Michael Neumann$B$5$s$+$i(Bno$B$?$/$5$s$N%U%#!<%I%P%C%/!%(B
-$BH`$+$i$N2ACM$N$"$k%3%a%s%H$K46<U$7$^$9!%(B
+Michael Neumann$B$5$s$+$i$N$?$/$5$s$N%U%#!<%I%P%C%/!%(B
+$B$"$j$,$H$&$4$6$$$^$9!%(B
 </p>
 
 <ul>
-<li>$B0MB8$9$k(BURI$B%i%$%V%i%j$r!$(Buri$B$+$i(BURb$B$KJQ99$7$^$7$?!%(B</li>
-
-<li>$B7?4XO"$NJQ99(B:
-  <ul>
-    <li>$BA4$F(B: string$B$r=|$-!$2r@OA0$KA08e$N6uGrJ8;z$r%H%j%_%s%0$9$k$h$&$K$7$^$7$?!%(B</li>
-    <li>string$B7?(B: XML$BJ8;zNs$+$I$&$+$rH=CG$9$k(BRegexp$B$,!$(BUTF8$B%b!<%I$G$&$^$/F0$-$^$;$s$G$7$?!%=$@5$7$^$7$?!%(B</li>
-    <li>Nil: 2001xsd:nil$B$OCM(B'1'$B$r5v2D$7$F$O$$$1$^$;$s!%(B1999xsd:null$B$OCM(B'true'$B$r5v2D$7$F$O$$$1$^$;$s!%$J$<$J$i$3$l$i$O(Bboolean$B7?$G$O$J$$$+$i$G$9!%=$@5$7$^$7$?!%(B</li>
-  </ul>
-</li>
-
-<li>XML$B%Q!<%6$N%5%]!<%H(B:
-  <ul>
-    <li>NQXML$B$rMxMQ$9$k>l9g$G$b!$J8;z%3!<%I$N<+F0JQ495!G=$r%5%]!<%H$7$^$7$?!%(Buconv$B%b%8%e!<%k$d(Bnkf$B%b%8%e!<%k$rMxMQ$7$F!$E,59JQ49$r;n$_$^$9!%(Buconv$B%b%8%e!<%k$,$J$1$l$P!$(BUTF8$B$X$NJQ49$r9T$$$^$;$s!%(B</li>
-    <li>NQXML$B%Q!<%6$N<BAu$rJL%U%!%$%k$X0\F0$7$^$7$?!%C/$+(Bxmlscan$B$H(BchibiXML$BBP1~$7$F$/$@$5$$!%(B</li>
-  </ul>
-</li>
-
-<li>RPC$B4XO"5!G=$NJQ99(B:</li>
-  <ul>
-    <li>SOAP Encoding$B$rMxMQ$7$F!$(BRuby$B$N%*%V%8%'%/%H$r(Bmarshal/unmarshal$B$9$k5!G=$rDI2C$7$^$7$?!%(B</li>
-    <li>'addMethod'$B%$%s%?%U%'%$%9$N%7%0%K%A%c$rBP1~IU$1$7$^$7$?(B: proxy.rb &lt;-&gt; rpcRouter.rb, driver.rb &lt;-&gt; cgistub.rb.</li>
-    <li>addMethod$B$G(B'retval'$B$,Dj5A$5$l$J$+$C$?;~!$(Bvoid$B$rJV$7$^$9!%(B</li>
-    <li>BigNum$B$O!$CM$NHO0O$K1~$8!$(BSOAP$B$N(BLong$B7?$KJQ49$5$l$^$9!%(B</li>
-  </ul>
-</li>
+<li>hexBinary type: $BDI2C$7$^$7$?!%(B</li>
+<li>nil type: xsd:nil$B$G$O$J$/!$(Bxsi:nil$B$H$9$Y$-$G$7$?!%(B</li>
+<li>$BC1FH%5!<%P<BAu$rDI2C$7$^$7$?!%(BMichael Neumann$B$5$s$K46<U$7$^$9!%(B</li>
+<li>XML$BJ8=q@k8@ItJ,$N2r@O$,IT@5$G$7$?!%=$@5$7$^$7$?!%(B</li>
+<li>RPC$B$N(B'inout'$B%Q%i%a!<%?$,%5%]!<%H$5$l$F$$$^$;$s$G$7$?!%=$@5$7$^$7$?!%(BMichael Neumann$B$5$s$K46<U$7$^$9!%(B</li>
+<li>URb::Generic#path$B$O@dBP%Q%9$,6u$N$H$-!JNc$($P(Bhttp://foo$B!K$K(B''$B$rJV$7$^$9!%%A%'%C%/%3!<%I$rDI2C$7$^$7$?!%(B</li>
+<li>$BFH<+(BHTTP$B<BAu$N$+$o$j$K!$(Bhttp-access2$B%b%8%e!<%k$rMxMQ$7$^$9!%(Bhttp-access2$B$O(BHTTP/1.1$B$N(Bpersistent connection$B$r%5%]!<%H$7$^$9!%(B</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -114,6 +96,18 @@ lib/soap$B%G%#%l%/%H%j$K4^$^$l$F$$$k%U%!%$%k$,!$(BSOAP4R$B$N%i%$%V%i%j%W%m%0%
 
 <dt class="path">URb</dt>
 <dd>by $B$d$^$@$"$-$i$5$s(B: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=URb">[RAA:URb]</a></dd>
+
+<dt class="path">GServer</dt>
+<dd>by John W. Small</dd>
+
+<dt class="path">httpserver.rb</dt>
+<dd>by Michael Neumann: httpserver.rb in <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XML-RPC">[RAA:XML-RPC]</a></dd>
+
+<dt class="path">application.rb</dt>
+<dd>by $B$J$R(B: <a href="http://www.jin.gr.jp/~nahi/Ruby/Application/application.rb">http://www.jin.gr.jp/~nahi/Ruby/Application/application.rb</a></dd>
+
+<dt class="path">http-access2</dt>
+<dd>by $B$J$R(B: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a></dd>
 </dl>
 
 <p>
@@ -253,18 +247,30 @@ SOAP Encoding$BK\BN$KKd$a9~$^$l$?(Bxsi:type$B$N$_$rMxMQ$7$^$9!%(B</li>
 </ul></li>
 <li style="margin-top: 2ex;">$B$=$NB>(B
 <ul>
-<li>$B%H%i%s%9%]!<%H$O(BHTTP$B$N%5!<%P!J(BCGI$B!K!$%/%i%$%"%s%HB&$N$_$G$9!%(B</li>
+<li>$B%H%i%s%9%]!<%H$O(BHTTP$B$N%5!<%P!$%/%i%$%"%s%HB&$N$_$G$9!%(B</li>
 <li>HTTP Extension Framework$B!J(BM-POST$B!K$KBP1~$7$F$$$^$;$s!%(B</li>
-<li>Content-Type$B$O(B'text/xml'$B$G$9!%(B
-charset$B;XDj$K$OBP1~$7$F$$$^$;$s!%(B</li>
 </ul></li>
 </ul>
 
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.6 - July 27, 2001</dt>
+<dd>Michael Neumann$B$5$s$+$i$N$?$/$5$s$N%U%#!<%I%P%C%/!%(B
+$B$"$j$,$H$&$4$6$$$^$9!%(B
+
+<ul>
+<li>hexBinary type: $BDI2C$7$^$7$?!%(B</li>
+<li>nil type: xsd:nil$B$G$O$J$/!$(Bxsi:nil$B$H$9$Y$-$G$7$?!%(B</li>
+<li>$BC1FH%5!<%P<BAu$rDI2C$7$^$7$?!%(BMichael Neumann$B$5$s$K46<U$7$^$9!%(B</li>
+<li>XML$BJ8=q@k8@ItJ,$N2r@O$,IT@5$G$7$?!%=$@5$7$^$7$?!%(B</li>
+<li>RPC$B$N(B'inout'$B%Q%i%a!<%?$,%5%]!<%H$5$l$F$$$^$;$s$G$7$?!%=$@5$7$^$7$?!%(BMichael Neumann$B$5$s$K46<U$7$^$9!%(B</li>
+<li>URb::Generic#path$B$O@dBP%Q%9$,6u$N$H$-!JNc$($P(Bhttp://foo$B!K$K(B''$B$rJV$7$^$9!%%A%'%C%/%3!<%I$rDI2C$7$^$7$?!%(B</li>
+<li>$BFH<+(BHTTP$B<BAu$N$+$o$j$K!$(Bhttp-access2$B%b%8%e!<%k$rMxMQ$7$^$9!%(Bhttp-access2$B$O(BHTTP/1.1$B$N(Bpersistent connection$B$r%5%]!<%H$7$^$9!%(B</li>
+</ul>
+
 <dt>1.3.5 - July 14, 2001</dt>
-<dd>Michael Neumann$B$5$s$+$i(Bno$B$?$/$5$s$N%U%#!<%I%P%C%/!%(B
+<dd>Michael Neumann$B$5$s$+$i$N$?$/$5$s$N%U%#!<%I%P%C%/!%(B
 $BH`$+$i$N2ACM$N$"$k%3%a%s%H$K46<U$7$^$9!%(B
 
 <ul>
