@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 11, 2001<br />
+Last modified: July 14, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.4.2
+Target SOAP4R version: SOAP4R/1.3.5
 </p>
 
 <ol>
@@ -51,67 +51,36 @@ Target SOAP4R version: SOAP4R/1.3.4.2
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-SOAP4R/1.3.4 was once packed in July 10, 2001.
-But, thanks to MNeumann and knu,
-I found I had forgotten to pack 'redist' directory with it.
-I added some fix from developing version and repack it as 1.3.4.2.
-Sorry for frequently release...
-</p>
-
-<p>
-Feedback from
-<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
-and Michael Neumann.  Thanks!
+Many feedbacks from Michael Neumann.
+I much appreciate valuable comments to him.
+Thanks!
 </p>
 
 <ul>
-<li>Added in 1.3.4.2:
-  <ul>
-    <li>Type Decimal: Silly bug fixed.  0.0001 was converted to 0.1</li>
-    <li>CGIStub returns HTTP status 500 when returning SOAP Fault.
-        Returned 200 because I don't like this spec., but SOAP/1.2 W3C WD
-        9 July 2001 have adopted it.  Hmm...</li>
-    <li>RPC client(driver.rb): Exception#set_backtrace was omitted when transmitting exception by SOAP Fault.</li>
-  </ul>
-</li>
+<li>Changed using URI library: uri -&gt; URb.</li>
 <li>Types changed:
   <ul>
-    <li>Array: Incomplete sparse array support.  Fixed.</li>
-    <li>Date: Added.</li>
-    <li>Time: Added.</li>
-    <li>DateTime: Added precision of time support.</li>
-    <li>String: Default data should not be nil but ''.</li>
-    <li>Nil: Attribute value of xsi:nil might be '1' instead of 'true'.  Fixed.</li>
+    <li>All: Triming data except XSDString before parsing it.</li>
+    <li>String: Regexp for XML Char check did not work under $KCODE = 'UTF8' condition.  Fixed.</li>
+    <li>Nil: 2001xsd:nil must not accept a value '1'.  1999xsd:null must not accept a value 'true' because these are not a boolean but only a flag for nil.  Fixed.</li>
   </ul>
 </li>
 
 <li>Supported XML parser:
   <ul>
-    <li>Added SOAPXMLParser and SOAPSAXDriver for XMLParser which uses expat.
-        You can get the module from RAA: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">XMLParser module</a>.<br/>
-        To use XMLParser -&gt; add &quot;require 'soap/xmlparser'&quot;.<br/>
-        To use SAX driver of XMLParser -&gt; add &quot;require 'soap/saxdriver'&quot;.<br/>
-        To use NQXMLParser -&gt; nothing to do.<br/>
-        FYI:
-        <ul>
-          <li>XMLParser version is faster than others</li>
-          <li>SAXDriver version is extremely slow</li>
-          <li>NQXMLParser version is somewhat slower than XMLParser version</li>
-          <li>XMLParser is a Ruby extension module; To use it, you must compile and install it.</li>
-          <li>So far, automatic code conversion support is for XMLParser and SAXDriver.  See below.</li>
-        </ul>
-    </li>
-    <li>Added automatic CES conversion support: UTF-8 &lt;-&gt; EUC, SJIS.
-        Requires Uconv module.  Works with XMLParser module only now.</li>
-    <li>Added XMLDecl for CES.</li>
+    <li>Added automatic CES conversion support for NQXMLParser.
+        (Depends on uconv module).
+        Set $KCODE for regexps used in NQXML parser.</li>
+    <li>Moved SOAPNQXML*Parser to nqxmlparser.rb.</li>
   </ul>
 </li>
 
 <li>RPC related functions changed:</li>
   <ul>
-    <li>Changed signature of CGIStub#addMethod.  You cannot define namespace with this method.  CGIStub instance supports only one namespace.</li>
-    <li>Added output parameter support.</li>
-    <li>Changed method definition interfaces(RPCRouter#addMethod and Driver#addMethod).  You can specify paramter names and 'in', 'inout', 'out' and 'retval' parameter types of each method.  So far, parameter names are not checked on RPC server side, but should be checked in the future version of SOAP4R.  Thanks to Michael Neumann for valuable comments.</li>
+    <li>Added marshalling/unmarshalling Ruby's object using SOAP Encoding.</li>
+    <li>Parallelize of signatures of 'addMethod': proxy.rb &lt;-&gt; rpcRouter.rb, driver.rb &lt;-&gt; cgistub.rb.</li>
+    <li>Void return if 'retval' is not defined.</li>
+    <li>Added SOAP's Long type to default mapping table.</li>
   </ul>
 </li>
 </ul>
@@ -142,8 +111,8 @@ Followings are redistributed files in redist/.
 <dt class="path">parsedate3.rb</dt>
 <dd>by Funaba-san (<a href="http://www.kt.rim.or.jp/~tadf/ruby-en.html">http://www.kt.rim.or.jp/~tadf/ruby-en.html</a>)</dd>
 
-<dt class="path">uri.rb</dt>
-<dd>by Koshimizu-san (<a href="http://www02.so-net.ne.jp/~greentea/ruby/uri/">http://www02.so-net.ne.jp/~greentea/ruby/uri/</a>)</dd>
+<dt class="path">URb</dt>
+<dd>by akira yamada-san: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=URb">[RAA:URb]</a></dd>
 </dl>
 
 <p>
@@ -209,7 +178,7 @@ ruby -rrbconfig -e 'include Config; puts CONFIG[&quot;sitedir&quot;] + &quot;/&q
 </pre>
 
 <p>
-should be dump installation root directory.
+should dump the installation root directory.
 Here, check &quot;soap&quot; directory and filename of files in &quot;redist&quot; directory.
 </p>
 
@@ -280,6 +249,40 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.5 - July 14, 2001</dt>
+<dd>Many feedbacks from Michael Neumann.
+I much appreciate valuable comments to him.
+Thanks!
+
+<ul>
+<li>Changed using URI library: uri -&gt; URb.</li>
+<li>Types changed:
+  <ul>
+    <li>All: Triming data except XSDString before parsing it.</li>
+    <li>String: Regexp for XML Char check did not work under $KCODE = 'UTF8' condition.  Fixed.</li>
+    <li>Nil: 2001xsd:nil must not accept a value '1'.  1999xsd:null must not accept a value 'true' because these are not a boolean but only a flag for nil.  Fixed.</li>
+  </ul>
+</li>
+
+<li>Supported XML parser:
+  <ul>
+    <li>Added automatic CES conversion support for NQXMLParser.
+        (Depends on uconv module).
+        Set $KCODE for regexps used in NQXML parser.</li>
+    <li>Moved SOAPNQXML*Parser to nqxmlparser.rb.</li>
+  </ul>
+</li>
+
+<li>RPC related functions changed:</li>
+  <ul>
+    <li>Added marshalling/unmarshalling Ruby's object using SOAP Encoding.</li>
+    <li>Parallelize of signatures of 'addMethod': proxy.rb &lt;-&gt; rpcRouter.rb, driver.rb &lt;-&gt; cgistub.rb.</li>
+    <li>Void return if 'retval' is not defined.</li>
+    <li>Added SOAP's Long type to default mapping table.</li>
+  </ul>
+</li>
+</ul></dd>
+
 <dt>1.3.4.2 - July 11, 2001</dt>
 <dd>SOAP4R/1.3.4 was once packed in July 10, 2001.
 But, thanks to MNeumann and knu,
