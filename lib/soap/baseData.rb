@@ -557,7 +557,7 @@ class SOAPElement
     if hash_or_string.is_a?(Hash)
       hash_or_string.each do |k, v|
 	child = self.from_obj(v)
-	child.elename = XSD::QName.new(nil, k)
+	child.elename = XSD::QName.new(nil, k.to_s)
 	o.add(child)
       end
     else
