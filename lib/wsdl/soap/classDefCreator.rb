@@ -7,6 +7,7 @@
 
 
 require 'wsdl/data'
+require 'wsdl/soap/classDefCreatorSupport'
 require 'wsdl/soap/methodDefCreatorSupport'
 
 
@@ -15,14 +16,12 @@ module SOAP
 
 
 class ClassDefCreator
+  include ClassDefCreatorSupport
   include MethodDefCreatorSupport
 
-  attr_reader :definitions
-
-  def initialize(definitions)
-    @definitions = definitions
-    @complextypes = definitions.collect_complextypes
-    @faulttypes = collect_faulttype(@definitions)
+  def initialize(complextypes, definitions = nil)
+    @complextypes = complextypes
+    @faulttypes = definitions ? collect_faulttype(definitions) : []
   end
 
   def dump(class_name = nil)
@@ -69,7 +68,6 @@ __EOD__
     complextype.each_element do |element|
       name = create_method_name(element.name)
       type = element.type
-      #attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
       attr_lines << dump_attrline(element.name.name)
       init_lines << "    @#{ name } = #{ name }\n"
       unless var_lines.empty?

@@ -7,6 +7,7 @@
 
 
 require 'wsdl/info'
+require 'wsdl/soap/classDefCreatorSupport'
 
 
 module WSDL
@@ -14,6 +15,7 @@ module SOAP
 
 
 class MappingRegistryCreator
+  include ClassDefCreatorSupport
   include MethodDefCreatorSupport
 
   attr_reader :definitions

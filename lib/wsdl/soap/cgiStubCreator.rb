@@ -9,6 +9,7 @@
 require 'wsdl/info'
 require 'wsdl/soap/mappingRegistryCreator'
 require 'wsdl/soap/methodDefCreator'
+require 'wsdl/soap/classDefCreatorSupport'
 require 'wsdl/soap/methodDefCreatorSupport'
 
 
@@ -17,6 +18,7 @@ module SOAP
 
 
 class CGIStubCreator
+  include ClassDefCreatorSupport
   include MethodDefCreatorSupport
 
   attr_reader :definitions
