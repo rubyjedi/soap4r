@@ -272,7 +272,7 @@ module FloatConstants
   NEGATIVE_INF = -1.0/0.0
   POSITIVE_ZERO = +1.0/POSITIVE_INF
   NEGATIVE_ZERO = -1.0/POSITIVE_INF
-  MIN_POSITIVE_SINGLE = 2 ** -149
+  MIN_POSITIVE_SINGLE = 2.0 ** -149
 end
 
 class XSDFloat < XSDAnySimpleType
