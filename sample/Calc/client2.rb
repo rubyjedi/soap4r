@@ -1,9 +1,9 @@
-require 'soap/driver'
-
+require 'soap/rpc/driver'
+#GC.start
 server = 'http://localhost:7000/'
 # server = 'http://localhost/cgi-bin/server2.cgi'
 
-var = SOAP::Driver.new( nil, nil, 'http://tempuri.org/calcService', server )
+var = SOAP::RPC::Driver.new( server, 'http://tempuri.org/calcService' )
 var.addMethod( 'set', 'newValue' )
 var.addMethod( 'get' )
 var.addMethodAs( '+', 'add', 'rhs' )

@@ -1,9 +1,9 @@
-require 'soap/driver'
+require 'soap/rpc/driver'
 
 server = 'http://localhost:7000/'
 # server = 'http://localhost/cgi-bin/server.cgi'
 
-calc = SOAP::Driver.new( nil, nil, 'http://tempuri.org/calcService', server )
+calc = SOAP::RPC::Driver.new( server, 'http://tempuri.org/calcService' )
 calc.addMethod( 'add', 'lhs', 'rhs' )
 calc.addMethod( 'sub', 'lhs', 'rhs' )
 calc.addMethod( 'multi', 'lhs', 'rhs' )
