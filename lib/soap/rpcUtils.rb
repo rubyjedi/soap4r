@@ -590,7 +590,7 @@ module RPCUtils
 	param.typeNamespace = ApacheSOAPTypeNamespace
 	i = 1
 	obj.each do | key, value |
-	  elem = SOAPStruct.new( "mapItem" )
+	  elem = SOAPStruct.new	# Undefined typeName.
 	  elem.add( "key", RPCUtils.obj2soap( key, map ))
 	  elem.add( "value", RPCUtils.obj2soap( value, map ))
 	  # param.add( "item#{ i }", elem )
