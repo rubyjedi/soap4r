@@ -7,6 +7,7 @@
 
 
 require 'wsdl/info'
+require 'wsdl/soap/classDefCreatorSupport'
 require 'wsdl/soap/methodDefCreatorSupport'
 
 
@@ -15,6 +16,7 @@ module SOAP
 
 
 class ClientSkeltonCreator
+  include ClassDefCreatorSupport
   include MethodDefCreatorSupport
 
   attr_reader :definitions
