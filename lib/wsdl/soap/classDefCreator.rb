@@ -43,16 +43,13 @@ class ClassDefCreator
       result = dumpClassDef( className )
     else
       @complexTypes.each do | complexType |
-	if complexType.content
+	case complexType.compoundType
+	when :TYPE_STRUCT
 	  result << dumpClassDef( complexType.name )
-	elsif complexType.complexContent	# ToDo: too ad-hoc
-	  content = complexType.complexContent.content
-	  if content.attributes.size == 1 and content.attributes[ 0 ].ref ==
-	      XSD::QName.new( ::SOAP::EncodingNamespace, ::SOAP::AttrArrayType )
-	    result << dumpArrayDef( complexType.name )
-	  else
-	    raise RuntimeError.new( "Unknown complexContent definition..." )
-	  end
+	when :TYPE_ARRAY
+	  result << dumpArrayDef( complexType.name )
+       	else
+	  raise RuntimeError.new( "Unknown complexContent definition..." )
 	end
 	result << "\n"
       end
@@ -68,8 +65,8 @@ private
     attr_lines = ""
     var_lines = ""
     init_lines = ""
-    elements.each do | element |
-      name = createMethodName( element.name )
+    elements.each do | elementName, element |
+      name = createMethodName( elementName )
       type = element.type
       attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
       init_lines << "    @#{ name } = #{ name }\n"
