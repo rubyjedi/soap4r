@@ -69,7 +69,7 @@ Methods = [
     c.def_privatemethod("init_methods") do
       <<-EOD
         Methods.each do |name_as, name, params, soapaction, namespace|
-          qname = XSD::QName.new(namespace, name_as)
+          qname = ::XSD::QName.new(namespace, name_as)
           @proxy.add_method(qname, soapaction, name, params)
           add_rpc_method_interface(name, params)
         end

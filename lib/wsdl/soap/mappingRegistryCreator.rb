@@ -39,7 +39,6 @@ class MappingRegistryCreator
 	end
       end
     end
-
     return map
   end
 
@@ -65,7 +64,7 @@ MappingRegistry.set(
   #{ create_class_name(ele) },
   ::SOAP::SOAPStruct,
   ::SOAP::Mapping::Registry::TypedStructFactory,
-  { :type => XSD::QName.new("#{ ele.namespace }", "#{ ele.name }") }
+  { :type => ::XSD::QName.new("#{ ele.namespace }", "#{ ele.name }") }
 )
 __EOD__
   end
@@ -80,7 +79,7 @@ MappingRegistry.set(
   #{ create_class_name(ele) },
   ::SOAP::SOAPArray,
   ::SOAP::Mapping::Registry::TypedArrayFactory,
-  { :type => XSD::QName.new("#{ type.namespace }", "#{ type.name }") }
+  { :type => ::XSD::QName.new("#{ type.namespace }", "#{ type.name }") }
 )
 __EOD__
   end

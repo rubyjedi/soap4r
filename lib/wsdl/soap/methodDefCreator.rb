@@ -82,11 +82,11 @@ __EOD__
 
   def definedtype(part)
     if mapped = basetype_mapped_class(part.type)
-      [mapped]
+      ['::' + mapped.name]
     elsif definedelement = @elements[part.element]
       raise RuntimeError.new("Part: #{part.name} should be typed for RPC service for now.")
     elsif definedtype = @simpletypes[part.type]
-      [basetype_mapped_class(definedtype.base)]
+      ['::' + basetype_mapped_class(definedtype.base).name]
     elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
       when :TYPE_STRUCT
