@@ -793,6 +793,7 @@ module RPCUtils
       [ ::Integer,	::SOAP::SOAPLong,	BasetypeFactory ],
       [ ::Integer,	::SOAP::SOAPInteger,	BasetypeFactory ],
       [ ::String,	::SOAP::SOAPBase64,	Base64Factory ],
+      [ ::String,	::SOAP::SOAPHexBinary,	Base64Factory ],
       [ ::String,	::SOAP::SOAPDecimal,	BasetypeFactory ],
       [ ::Array,	::SOAP::SOAPArray,	CompoundtypeFactory ],
       [ ::SOAP::RPCUtils::SOAPException,
