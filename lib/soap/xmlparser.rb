@@ -17,7 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/parser'
-require 'xmlparser'
+require 'xml/parser'
 
 
 module SOAP
@@ -25,8 +25,12 @@ module SOAP
 
 class SOAPXMLParser < SOAPParser
   class Listener < XML::Parser
-    # Dummy handler to get XML::Parser::XML_DECL event.
-    def xmlDecl; end
+    begin
+      require 'xml/encoding-ja'
+      include XML::Encoding_ja
+    rescue LoadError
+      # uconv may not be installed.
+    end
   end
 
   def initialize( *vars )
@@ -34,6 +38,8 @@ class SOAPXMLParser < SOAPParser
   end
 
   def doParse( stringOrReadable )
+    # XMLParser passes a String in utf-8.
+    @charset = 'utf-8'
     @parser = Listener.new
     @parser.parse( stringOrReadable ) do | type, name, data |
       case type
@@ -43,14 +49,6 @@ class SOAPXMLParser < SOAPParser
 	endElement( name )
       when XML::Parser::CDATA
 	characters( data )
-      when XML::Parser::XML_DECL
-	if data[ 1 ]
-	  encoding = Charset.getCharsetStr( data[ 1 ] )
-	  if encoding != Charset.getXMLInstanceEncoding
-	    raise FormatDecodeError.new( "Unsupported encoding: #{ data[ 1 ] }/#{ Charset.getXMLInstanceEncoding }" )
-	  end
-	  Charset.setXMLInstanceEncoding( encoding )
-	end
       else
 	raise FormatDecodeError.new( "Unexpected XML: #{ type }/#{ name }/#{ data }." )
       end
