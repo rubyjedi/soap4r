@@ -271,16 +271,8 @@ module SOAP
 	when XSDBase64Binary
 	  node.setEncoded( @textBuf )
 	when XSDString
-	  case SOAP::Processor.getEncoding
-	  when 'NONE'
-	    node.set( @textBuf )
-	  when 'EUC'
-	    node.set( Uconv.u8toeuc( @textBuf ))
-	  when 'SJIS'
-	    node.set( Uconv.u8tosjis( @textBuf ))
-	  else
-	    node.set( @textBuf )
-	  end
+	  encoded = Charset.encodingFromXML( @textBuf )
+	  node.set( encoded )
 	when SOAPBasetype
 	  node.set( @textBuf )
 	else

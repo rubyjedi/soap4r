@@ -1,6 +1,6 @@
 =begin
 SOAP4R - marshal/unmarshal interface.
-Copyright (C) 2000 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -20,6 +20,7 @@ require 'soap/soap'
 require 'soap/element'
 require 'soap/XMLSchemaDatatypes'
 require 'soap/parser'
+require 'soap/charset'
 
 require 'nqxml/writer'
 
@@ -29,33 +30,6 @@ module SOAP
 
 module Processor
   public
-
-  ###
-  ## Encoding handling for xmlparser ( With NQXML, it does not work )
-  #
-  Encoding = [ nil ]
-  def setEncoding( encoding = $KCODE )
-    case encoding
-    when 'EUC', 'SJIS'
-      begin
-	require 'uconv'
-      rescue LoadError
-	encoding = 'NONE'
-      end
-    when 'UTF8'
-      # nothing to do
-    else
-      encoding = 'NONE'
-    end
-    Encoding[ 0 ] = encoding
-  end
-  module_function :setEncoding
-  self.setEncoding( 'NONE' )
-
-  def getEncoding
-    Encoding[ 0 ]
-  end
-  module_function :getEncoding
 
   ###
   ## SOAP marshalling
@@ -126,10 +100,10 @@ module Processor
   XSINamespaceTag = 'xsi'
 
   def xmlDecl
-    if Processor.getEncoding == 'NONE'
+    if Charset.getXMLInstanceEncoding == 'NONE'
       "<?xml version=\"1.0\" ?>\n"
     else
-      "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+      "<?xml version=\"1.0\" encoding=\"#{ Charset.getXMLInstanceEncodingLabel }\" ?>\n"
     end
   end
 end

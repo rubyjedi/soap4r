@@ -90,7 +90,7 @@ class SOAPSAXDriver < SOAPParser
     # 
   end
 end
-SOAP::Processor.setEncoding( $KCODE )
+Charset.setXMLInstanceEncoding( 'UTF8' )
 
 
 end

@@ -37,7 +37,6 @@ module SOAP
 #
 class CGIStub < Application
   include SOAP
-  include Processor
   include RPCUtils
 
   class CGIError < Error; end
@@ -264,6 +263,7 @@ private
 	@response.header.status = 500
       end
       @response.body.type = 'text/xml'
+      @response.body.charset = Charset.getXMLInstanceEncoding
       str = @response.dump
       log( SEV_DEBUG, "CGI Response:\n#{ str }" )
       print str
