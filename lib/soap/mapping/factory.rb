@@ -46,9 +46,18 @@ class Factory
   else
     def create_empty_object(klass)
       name = klass.name
-      # Below line is from TANAKA, Akira's amarshal.rb.
-      # See http://cvs.m17n.org/cgi-bin/viewcvs/amarshal/?cvsroot=ruby
-      ::Marshal.load(sprintf("\004\006o:%c%s\000", name.length + 5, name))
+      case name
+      when "String"
+	""
+      when "Array"
+	[]
+      when "Hash"
+	{}
+      else
+	# Below line is from TANAKA, Akira's amarshal.rb.
+	# See http://cvs.m17n.org/cgi-bin/viewcvs/amarshal/?cvsroot=ruby
+	::Marshal.load(sprintf("\004\006o:%c%s\000", name.length + 5, name))
+      end
     end
   end
 
