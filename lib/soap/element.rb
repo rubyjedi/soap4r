@@ -116,7 +116,6 @@ public
     if @isFault
       contents = @data.encode( ns )
     else
-      attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), EncodingNamespace ))
       contents = @data.collect { | item | item.encode( ns ) }
     end
 
