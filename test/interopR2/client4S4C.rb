@@ -10,4 +10,4 @@ drv = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $server, $
 
 methodDef( drv )
 
-doTestBase( drv )
+doTest( drv )
