@@ -169,7 +169,7 @@ module RPC
       end
       @map.add(obj_class, soap_class, factory, { :type => info[0] })
     end
-    alias :set :add
+    alias set add
   end
 
   class Router
