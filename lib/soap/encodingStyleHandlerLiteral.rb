@@ -72,7 +72,8 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
         yield( child, true )
       end
     when SOAPElement
-      SOAPGenerator.encodeTag( buf, name, attrs.update( data.attr ), true )
+      SOAPGenerator.encodeTag( buf, name, attrs.update( data.extraAttrs ),
+        true )
       buf << data.text if data.text
       data.each do | key, value |
 	value.elementName.namespace = data.elementName.namespace if !value.elementName.namespace

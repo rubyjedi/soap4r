@@ -54,6 +54,7 @@ module SOAPBasetype
   attr_accessor :root
   attr_accessor :parent
   attr_accessor :position
+  attr_reader :extraAttrs
 
 public
 
@@ -65,6 +66,7 @@ public
     @precedents = []
     @parent = nil
     @position = nil
+    @extraAttrs = {}
   end
 end
 
@@ -83,6 +85,7 @@ module SOAPCompoundtype
   attr_accessor :root
   attr_accessor :parent
   attr_accessor :position
+  attr_reader :extraAttrs
 
   attr_accessor :typeDef
 
@@ -99,6 +102,7 @@ public
     @parent = nil
     @position = nil
     @typeDef = nil
+    @extraAttrs = {}
   end
 end
 
@@ -435,13 +439,7 @@ public
     @qualified = false
     @array = []
     @data = []
-    @attrs = {}		# Should I allow plural attributes?
     @text = text
-  end
-
-  # Attribute interface.
-  def attr
-    @attrs
   end
 
   # Text interface.
