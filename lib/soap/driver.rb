@@ -110,18 +110,6 @@ public
 
 
   ###
-  ## Wiredump inteface.
-  #
-  def setWireDumpDev( dumpDev )
-    @handler.dumpDev = dumpDev
-  end
-
-  def setWireDumpFileBase( base )
-    @dumpFileBase = base
-  end
-
-
-  ###
   ## Encoding style inteface.
   #
   def setDefaultEncodingStyle( encodingStyle )
