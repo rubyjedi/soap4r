@@ -3,8 +3,8 @@
 $:.unshift(".")
 
 #$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
-$KCODE = "EUC"
-#$KCODE = "SJIS"
+#$KCODE = "EUC"
+$KCODE = "SJIS"
 
 require 'soap/rpc/standaloneServer'
 require 'base'
@@ -268,5 +268,7 @@ private
 end
 
 if __FILE__ == $0
-  InteropApp.new('InteropApp', InterfaceNS, '0.0.0.0', 10080).start
+  svr = InteropApp.new('InteropApp', InterfaceNS, '0.0.0.0', 10080)
+  trap("INT") { svr.shutdown }
+  svr.start
 end
