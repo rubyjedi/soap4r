@@ -485,8 +485,15 @@ module XSDDateTimeImpl
 
   def to_time
     begin
-      d = @data.newof
-      Time.gm( d.year, d.month, d.mday, d.hour, d.min, d.sec )
+      if @data.of * SecInDay == Time.now.utc_offset
+        d = @data
+        usec = ( d.sec_fraction * SecInDay * 1000000 ).to_f
+        Time.local( d.year, d.month, d.mday, d.hour, d.min, d.sec, usec )
+      else
+        d = @data.newof
+        usec = ( d.sec_fraction * SecInDay * 1000000 ).to_f
+        Time.gm( d.year, d.month, d.mday, d.hour, d.min, d.sec, usec )
+      end
     rescue ArgumentError
       nil
     end
@@ -523,9 +530,11 @@ module XSDDateTimeImpl
     if ( t.is_a?( Date ))
       @data = t
     elsif ( t.is_a?( Time ))
-      @data = DateTime.civil( *( t.dup.gmtime.to_a[ 0..5 ].reverse ))
-      diffDay = t.utc_offset.to_r / SecInDay
-      @data = @data.new_offset( diffDay )
+      sec, min, hour, mday, month, year = t.to_a[ 0..5 ]
+      diffDay = t.usec.to_r / 1000000 / SecInDay
+      of = t.utc_offset.to_r / SecInDay
+      @data = DateTime.civil( year, month, mday, hour, min, sec, of )
+      @data += diffDay
     else
       set_str( t )
     end
