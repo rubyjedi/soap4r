@@ -73,11 +73,11 @@ class Factory
 
   def setiv2obj(obj, node, map)
     return if node.nil?
-    vars = {}
-    node.each do |name, value|
-      vars[Mapping.elename2name(name)] = Mapping._soap2obj(value, map)
+    if obj.is_a?(Array)
+      setiv2ary(obj, node, map)
+    else
+      setiv2struct(obj, node, map)
     end
-    Mapping.set_instance_vars(obj, vars)
   end
 
   def setiv2soap(node, obj, map)
@@ -104,6 +104,22 @@ class Factory
 
   def capitalize(target)
     target.gsub(/^([a-z])/) { $1.tr!('[a-z]', '[A-Z]') }
+  end
+
+private
+
+  def setiv2ary(obj, node, map)
+    node.each do |name, value|
+      Array.instance_method(:<<).bind(obj).call(Mapping._soap2obj(value, map))
+    end
+  end
+
+  def setiv2struct(obj, node, map)
+    vars = {}
+    node.each do |name, value|
+      vars[Mapping.elename2name(name)] = Mapping._soap2obj(value, map)
+    end
+    Mapping.set_instance_vars(obj, vars)
   end
 end
 
