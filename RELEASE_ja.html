@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 11, 2001<br />
+Last modified: July 14, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 $BK\J8=q$,BP>]$H$7$F$$$k(BSOAP4R$B$N%P!<%8%g%s$O!$(B
-SOAP4R/1.3.4.2
+SOAP4R/1.3.5
 $B$G$9!%(B
 </p>
 
@@ -54,76 +54,37 @@ SOAP4R/1.3.4.2
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-SOAP4R/1.3.4$B$O(B2001/7/10$B$K0lEY%Q%C%1!<%82=$5$l$^$7$?!%(B
-$B$7$+$7!$(BMNeumann$B$5$s$H(Bknu$B$5$s$K65$($F$$$?$@$$$F!$(B
-'redist'$B%G%#%l%/%H%j$r%Q%C%1!<%8$K4^$a$k$N$rK:$l$F$$$?$3$H$K5$IU$-$^$7$?!%(B
-$B$=$3$G3+H/HG$+$i$$$/$D$+$N=$@5$r<h$j9~$`$HF1;~$K!$(B
-1.3.4.2$B$H$7$F:FEY%Q%C%1!<%82=$7$^$7$?!%(B
-$BIQHK$J%j%j!<%9$G?=$7Lu$"$j$^$;$s!%!%!%(B
-</p>
-
-<p>
-<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
-$B$G8!=P$5$l$?Hs8_49@-$r$$$/$D$+=$@5$7$^$7$?!%(B
+Michael Neumann$B$5$s$+$i(Bno$B$?$/$5$s$N%U%#!<%I%P%C%/!%(B
+$BH`$+$i$N2ACM$N$"$k%3%a%s%H$K46<U$7$^$9!%(B
 </p>
 
 <ul>
-<li>1.3.4.2$B$G$NJQ99(B:
-  <ul>
-    <li>Decimal$B7?(B: $B4VH4$1$J%P%0$r=$@5$7$^$7$?!%(B0.0001$B$,(B0.1$B$KJQ49$5$l$F$7$^$C$F$$$^$7$?!%(B</li>
-    <li>CGIStub$B$O(BSOAP Fault$B$rJV$9$H$-$K(BHTTP status 500$B$rJV$9$h$&$K$J$j$^$7$?!%(B
-        $B$*$+$7$J;EMM$J$N$G$:$C$HL5;k$7$F(B200$B$rJV$7$F$-$^$7$?$,!$(B
-        SOAP/1.2 W3C WD 9 July 2001$B$b$3$l$r:NMQ$7$?$h$&$G$9!%$`!<!%!%!%(B</li>
-    <li>RPC$B%/%i%$%"%s%H<BAu!J(Bdriver.rb$B!K$K$*$$$F!$(BException#set_backtrace$B$,@5$7$/F/$$$F$$$^$;$s$G$7$?!%(B</li>
-  </ul>
-</li>
+<li>$B0MB8$9$k(BURI$B%i%$%V%i%j$r!$(Buri$B$+$i(BURb$B$KJQ99$7$^$7$?!%(B</li>
+
 <li>$B7?4XO"$NJQ99(B:
   <ul>
-    <li>Array: $BAB$JG[Ns$N%5%]!<%H$,IT40A4$G$7$?!%=$@5$5$l$^$7$?!%(B</li>
-    <li>Date: $BDI2C$5$l$^$7$?!%(B</li>
-    <li>Time: $BDI2C$5$l$^$7$?!%(B</li>
-    <li>DateTime: $B%_%jIC$r%5%]!<%H$7$^$7$?!%(B</li>
-    <li>String: $B%G%U%)%k%HCM$O(Bnil$B$G$O$J$/(B''$B$G$"$k$Y$-$G$9!%(B</li>
-    <li>Nil: xsi:nil$B$NB0@-CM$O(B'true'$B$8$c$J$/$F(B'1'$B$+$b$7$l$J$$!%=$@5$5$l$^$7$?!%(B</li>
+    <li>$BA4$F(B: string$B$r=|$-!$2r@OA0$KA08e$N6uGrJ8;z$r%H%j%_%s%0$9$k$h$&$K$7$^$7$?!%(B</li>
+    <li>string$B7?(B: XML$BJ8;zNs$+$I$&$+$rH=CG$9$k(BRegexp$B$,!$(BUTF8$B%b!<%I$G$&$^$/F0$-$^$;$s$G$7$?!%=$@5$7$^$7$?!%(B</li>
+    <li>Nil: 2001xsd:nil$B$OCM(B'1'$B$r5v2D$7$F$O$$$1$^$;$s!%(B1999xsd:null$B$OCM(B'true'$B$r5v2D$7$F$O$$$1$^$;$s!%$J$<$J$i$3$l$i$O(Bboolean$B7?$G$O$J$$$+$i$G$9!%=$@5$7$^$7$?!%(B</li>
   </ul>
 </li>
 
 <li>XML$B%Q!<%6$N%5%]!<%H(B:
   <ul>
-    <li>expat$B$rMxMQ$7$?(BXML$B%Q!<%6!$(BXMLParser$B$rMxMQ$9$k!$(BSOAPXMLParser$B$H(BSOAPSAXDriver$B$rDI2C$7$^$7$?!%(B
-        XMLParser$B$O(BRAA$B$+$iF~<j2DG=$G$9(B: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">XMLParser module</a>.<br/>
-        XMLParser$B$r;H$&(B -&gt; &quot;require 'soap/xmlparser'&quot;$B$rDI2C$7$^$9!%(B<br/>
-        SAX driver of XMLParser$B$r;H$&(B -&gt; &quot;require 'soap/saxdriver'&quot;$B$rDI2C$7$^$9!%(B<br/>
-        NQXMLParser$B$r;H$&(B -&gt; $B2?$b$7$J$/$F$b$+$^$$$^$;$s!%(B<br/>
-        FYI:
-        <ul>
-          <li>XMLParser$B%P!<%8%g%s$,0lHVB.$$$G$9!%(B</li>
-          <li>SAXDriver$B%P!<%8%g%s$O$a$A$c$/$A$cCY$$$G$9!%(B</li>
-          <li>NQXMLParser$B%P!<%8%g%s$O!$(BXMLParser$B%P!<%8%g%s$h$j<c43CY$$DxEY!J(BSOAP$B%a%C%;!<%8$N(BXML$BJ8=q$O>.$5$$$N$@!K!%(B</li>
-          <li>XMLParser$B$O(BRuby$B$N3HD%%b%8%e!<%k$J$N$G!$;H$&$K$O!$(Bexpat$B$H(BXMLParser$B$r<h$C$F$-$F%3%s%Q%$%k!&%$%s%9%H!<%k$9$kI,MW$,$"$j$^$9!%(B</li>
-          <li>$BJ8;z%3!<%I$N<+F0JQ495!G=$O!$(BXMLParser$B%P!<%8%g%s$H(BSAXDriver$B%P!<%8%g%s$G$7$+;H$($^$;$s!%0J2<$b;2>H$N$3$H!%(B</li>
-        </ul>
-    </li>
-    <li>$BJ8;z%3!<%I$N<+F0JQ495!G=$r%5%]!<%H$7$^$7$?!%(BUTF-8 &lt;-&gt; $KCODE$B!J(BEUC, SJIS$B!K$NJQ49$r9T$J$$$^$9!%(B
-        XMLParser$B%b%8%e!<%k!$(Buconv$B%b%8%e!<%k$,I,MW$G$9!%(B</li>
-    <li>SOAP$B%a%C%;!<%8$N(BXML$BJ8=q$K(BXML$B@k8@$,IU$/$h$&$K$J$j$^$9!%(B</li>
+    <li>NQXML$B$rMxMQ$9$k>l9g$G$b!$J8;z%3!<%I$N<+F0JQ495!G=$r%5%]!<%H$7$^$7$?!%(Buconv$B%b%8%e!<%k$d(Bnkf$B%b%8%e!<%k$rMxMQ$7$F!$E,59JQ49$r;n$_$^$9!%(Buconv$B%b%8%e!<%k$,$J$1$l$P!$(BUTF8$B$X$NJQ49$r9T$$$^$;$s!%(B</li>
+    <li>NQXML$B%Q!<%6$N<BAu$rJL%U%!%$%k$X0\F0$7$^$7$?!%C/$+(Bxmlscan$B$H(BchibiXML$BBP1~$7$F$/$@$5$$!%(B</li>
   </ul>
 </li>
 
 <li>RPC$B4XO"5!G=$NJQ99(B:</li>
   <ul>
-    <li>CGIStub#addMethod$B$N%$%s%?%U%'%$%9$,JQ$o$j$^$7$?!%(B
-        $B$3$3$G$O%a%=%C%I$NL>A06u4V$r@k8@$G$-$J$/$J$j$^$9!%(B
-        CGIStub$B%$%s%9%?%s%9$O$?$@(B1$B$D$NL>A06u4V$@$1$r%5%]!<%H$7$^$9!%(B</li>
-    <li>$B=PNO%Q%i%a!<%?$N%5%]!<%H$rDI2C$7$^$7$?!%(B</li>
-    <li>$B%a%=%C%I@k8@%$%s%?%U%'%$%9!J(BRPCRouter#addMethod$B$H(BDriver#addMethod$B!K$rJQ99$7$^$7$?!%(B
-        $BN><T$K$F!$%Q%i%a%?L>$H%Q%i%a%?$N7?!J(Bin, inout, out, retval$B!K$r;XDj$G$-$^$9!%(B
-        $B8=:_$N$H$3$m!$%5!<%PB&$G$O%Q%i%a%?L>$O%A%'%C%/$5$l$^$;$s$,!$>-MhE*$K$O%A%'%C%/$5$l$k$Y$-$G$9!%(B
-        $B2ACM$N$"$k%3%a%s%H$r$/$l$?(BMichael Neumann$B$5$s$K46<U$7$^$9!%(B</li>
+    <li>SOAP Encoding$B$rMxMQ$7$F!$(BRuby$B$N%*%V%8%'%/%H$r(Bmarshal/unmarshal$B$9$k5!G=$rDI2C$7$^$7$?!%(B</li>
+    <li>'addMethod'$B%$%s%?%U%'%$%9$N%7%0%K%A%c$rBP1~IU$1$7$^$7$?(B: proxy.rb &lt;-&gt; rpcRouter.rb, driver.rb &lt;-&gt; cgistub.rb.</li>
+    <li>addMethod$B$G(B'retval'$B$,Dj5A$5$l$J$+$C$?;~!$(Bvoid$B$rJV$7$^$9!%(B</li>
+    <li>BigNum$B$O!$CM$NHO0O$K1~$8!$(BSOAP$B$N(BLong$B7?$KJQ49$5$l$^$9!%(B</li>
   </ul>
 </li>
 </ul>
-
 
 <h2 id="install" name="install">2. Install</h2>
 
@@ -136,7 +97,7 @@ SOAP4R/1.3.4$B$O(B2001/7/10$B$K0lEY%Q%C%1!<%82=$5$l$^$7$?!%(B
 </pre>
 
 <p>
-$BI,MW$J%U%!%$%k$,E,Ev$J%G%#%l%/%H%j$K%3%T!<$5$l$^$9!%(B
+$B$H$9$k$H!$I,MW$J%U%!%$%k$,E,Ev$J%G%#%l%/%H%j$K%3%T!<$5$l$^$9!%(B
 </p>
 
 <p>
@@ -151,8 +112,8 @@ lib/soap$B%G%#%l%/%H%j$K4^$^$l$F$$$k%U%!%$%k$,!$(BSOAP4R$B$N%i%$%V%i%j%W%m%0%
 <dt class="path">parsedate3.rb</dt>
 <dd>by $B$U$J$P$5$s!J(B<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>$B!K(B</dd>
 
-<dt class="path">uri.rb</dt>
-<dd>by $B1[?e$5$s!J(B<a href="http://www02.so-net.ne.jp/~greentea/ruby/uri/">http://www02.so-net.ne.jp/~greentea/ruby/uri/</a>$B!K(B</dd>
+<dt class="path">URb</dt>
+<dd>by $B$d$^$@$"$-$i$5$s(B: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=URb">[RAA:URb]</a></dd>
 </dl>
 
 <p>
@@ -302,6 +263,38 @@ charset$B;XDj$K$OBP1~$7$F$$$^$;$s!%(B</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.5 - July 14, 2001</dt>
+<dd>Michael Neumann$B$5$s$+$i(Bno$B$?$/$5$s$N%U%#!<%I%P%C%/!%(B
+$BH`$+$i$N2ACM$N$"$k%3%a%s%H$K46<U$7$^$9!%(B
+
+<ul>
+<li>$B0MB8$9$k(BURI$B%i%$%V%i%j$r!$(Buri$B$+$i(BURb$B$KJQ99$7$^$7$?!%(B</li>
+
+<li>$B7?4XO"$NJQ99(B:
+  <ul>
+    <li>$BA4$F(B: string$B$r=|$-!$2r@OA0$KA08e$N6uGrJ8;z$r%H%j%_%s%0$9$k$h$&$K$7$^$7$?!%(B</li>
+    <li>string$B7?(B: XML$BJ8;zNs$+$I$&$+$rH=CG$9$k(BRegexp$B$,!$(BUTF8$B%b!<%I$G$&$^$/F0$-$^$;$s$G$7$?!%=$@5$7$^$7$?!%(B</li>
+    <li>Nil: 2001xsd:nil$B$OCM(B'1'$B$r5v2D$7$F$O$$$1$^$;$s!%(B1999xsd:null$B$OCM(B'true'$B$r5v2D$7$F$O$$$1$^$;$s!%$J$<$J$i$3$l$i$O(Bboolean$B7?$G$O$J$$$+$i$G$9!%=$@5$7$^$7$?!%(B</li>
+  </ul>
+</li>
+
+<li>XML$B%Q!<%6$N%5%]!<%H(B:
+  <ul>
+    <li>NQXML$B$rMxMQ$9$k>l9g$G$b!$J8;z%3!<%I$N<+F0JQ495!G=$r%5%]!<%H$7$^$7$?!%(Buconv$B%b%8%e!<%k$d(Bnkf$B%b%8%e!<%k$rMxMQ$7$F!$E,59JQ49$r;n$_$^$9!%(Buconv$B%b%8%e!<%k$,$J$1$l$P!$(BUTF8$B$X$NJQ49$r9T$$$^$;$s!%(B</li>
+    <li>NQXML$B%Q!<%6$N<BAu$rJL%U%!%$%k$X0\F0$7$^$7$?!%C/$+(Bxmlscan$B$H(BchibiXML$BBP1~$7$F$/$@$5$$!%(B</li>
+  </ul>
+</li>
+
+<li>RPC$B4XO"5!G=$NJQ99(B:</li>
+  <ul>
+    <li>SOAP Encoding$B$rMxMQ$7$F!$(BRuby$B$N%*%V%8%'%/%H$r(Bmarshal/unmarshal$B$9$k5!G=$rDI2C$7$^$7$?!%(B</li>
+    <li>'addMethod'$B%$%s%?%U%'%$%9$N%7%0%K%A%c$rBP1~IU$1$7$^$7$?(B: proxy.rb &lt;-&gt; rpcRouter.rb, driver.rb &lt;-&gt; cgistub.rb.</li>
+    <li>addMethod$B$G(B'retval'$B$,Dj5A$5$l$J$+$C$?;~!$(Bvoid$B$rJV$7$^$9!%(B</li>
+    <li>BigNum$B$O!$CM$NHO0O$K1~$8!$(BSOAP$B$N(BLong$B7?$KJQ49$5$l$^$9!%(B</li>
+  </ul>
+</li>
+</ul></dd>
+
 <dt>1.3.4.2 - July 11, 2001</dt>
 <dd>
 SOAP4R/1.3.4$B$O(B2001/7/10$B$K0lEY%Q%C%1!<%82=$5$l$^$7$?!%(B
