@@ -18,15 +18,6 @@ class Definitions < Info
   attr_reader :targetnamespace
   attr_reader :imports
 
-  # Overrides Info#root
-  def root
-    @root
-  end
-
-  def root=(root)
-    @root = root
-  end
-
   def initialize
     super
     @name = nil
@@ -51,6 +42,19 @@ class Definitions < Info
     if @name
       @name = XSD::QName.new(@targetnamespace, @name.name)
     end
+  end
+
+  def collect_attributes
+    result = XSD::NamedElements.new
+    if @types
+      @types.schemas.each do |schema|
+	result.concat(schema.collect_attributes)
+      end
+    end
+    @imports.each do |import|
+      result.concat(import.content.collect_attributes)
+    end
+    result
   end
 
   def collect_elements
