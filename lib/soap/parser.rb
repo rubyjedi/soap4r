@@ -57,11 +57,10 @@ private
     attr_reader :node
     attr_reader :ns, :encodingStyle
 
-  private
-
     class NodeContainer
       def initialize( node )
 	@node = node
+	@typeDef = nil
       end
 
       def node
@@ -145,7 +144,8 @@ public
     encodingStyle = getEncodingStyle( ns, attrs )
 
     # Children's encodingStyle is derived from its parent.
-    encodingStyle ||= parentEncodingStyle || EncodingStyleHandler.defaultHandler.uri
+    encodingStyle ||= parentEncodingStyle ||
+      EncodingStyleHandler.defaultHandler.uri
 
     node = decodeTag( ns, name, attrs, parent, encodingStyle )
 
@@ -197,49 +197,23 @@ private
   end
 
   def decodeTag( ns, name, attrs, parent, encodingStyle )
-    o = nil
-    handler = getHandler( encodingStyle )
-
-    # SOAP Envelope parsing.
     element = ns.parse( name )
+
+    # Envelope based parsing.
     if (( element.namespace == EnvelopeNamespace ) ||
 	( @allowUnqualifiedElement && element.namespace.nil? ))
-      if element.name == EleEnvelope
-	o = SOAPEnvelope.new
-      elsif element.name == EleHeader
-	unless parent.node.is_a?( SOAPEnvelope )
-	  raise FormatDecodeError.new( "Header should be a child of Envelope." )
-	end
-	o = SOAPHeader.new
-	parent.node.header = o
-      elsif element.name == EleBody
-	unless parent.node.is_a?( SOAPEnvelope )
-	  raise FormatDecodeError.new( "Body should be a child of Envelope." )
-	end
-	o = SOAPBody.new
-	parent.node.body = o
-      elsif element.name == EleFault
-	unless parent.node.is_a?( SOAPBody )
-	  raise FormatDecodeError.new( "Fault should be a child of Body." )
-	end
-	o = SOAPFault.new
-	parent.node.setFault( o )
-      end
+      o = decodeSOAPEnvelope( ns, element, attrs, parent )
+      return o if o
     end
 
     # Encoding based parsing.
-    unless o
-      if handler
-	o = handler.decodeTag( ns, name, attrs, parent )
-      else
-	# SOAPAny?
-	raise FormatDecodeError.new( "Unknown encodingStyle: #{ encodingStyle }." )
-      end
+    handler = getHandler( encodingStyle )
+    if handler
+      return handler.decodeTag( ns, element, attrs, parent )
     else
-      o.parent = parent
+      raise FormatDecodeError.new(
+	"Unknown encodingStyle: #{ encodingStyle }." )
     end
-
-    o
   end
 
   def decodeTagEnd( ns, node, encodingStyle )
@@ -247,7 +221,7 @@ private
 
     handler = getHandler( encodingStyle )
     if handler
-      handler.decodeTagEnd( ns, node )
+      return handler.decodeTagEnd( ns, node )
     else
       raise FormatDecodeError.new( "Unknown encodingStyle: #{ encodingStyle }." )
     end
@@ -261,6 +235,33 @@ private
     else
       # How should I do?
     end
+  end
+
+  def decodeSOAPEnvelope( ns, element, attrs, parent )
+    o = nil
+    if element.name == EleEnvelope
+      o = SOAPEnvelope.new
+    elsif element.name == EleHeader
+      unless parent.node.is_a?( SOAPEnvelope )
+	raise FormatDecodeError.new( "Header should be a child of Envelope." )
+      end
+      o = SOAPHeader.new
+      parent.node.header = o
+    elsif element.name == EleBody
+      unless parent.node.is_a?( SOAPEnvelope )
+	raise FormatDecodeError.new( "Body should be a child of Envelope." )
+      end
+      o = SOAPBody.new
+      parent.node.body = o
+    elsif element.name == EleFault
+      unless parent.node.is_a?( SOAPBody )
+	raise FormatDecodeError.new( "Fault should be a child of Body." )
+      end
+      o = SOAPFault.new
+      parent.node.setFault( o )
+    end
+    o.parent = parent if o
+    o
   end
 
   def prologue
