@@ -58,7 +58,14 @@ class ComplexType < Info
     ele = Element.new
     ele.name = name
     ele.type = type
-    @content.elements[ ele.name ] = ele
+    @content.addElement( ele )
+  end
+
+  def getElement( name )
+    @content.elements.each do | key, element |
+      return element if name == key
+    end
+    nil
   end
 
   ComplexContentName = XSD::QName.new( XSD::Namespace, 'complexContent' )
