@@ -81,11 +81,11 @@ class WSDLRegistry
     type = @complextypes[type_qname]
     if obj.nil?
       ele = SOAPElement.new(type_qname)
-    elsif (type = @complextypes[type_qname])
+    elsif type
       ele = struct2ele(obj, type_qname, type)
     end
     return ele if ele
-    raise MappingError.new("Cannot map #{ klass.name } to SOAP/OM.")
+    raise MappingError.new("Cannot map #{ type_qname } to XML element.")
   end
 
   def soap2obj(klass, node)
