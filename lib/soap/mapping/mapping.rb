@@ -157,17 +157,6 @@ module Mapping
     end
   end
 
-  def self.set_instance_vars(obj, values)
-    values.each do |name, value|
-      setter = name + "="
-      if obj.respond_to?(setter)
-	obj.__send__(setter, value)
-      else
-        obj.instance_variable_set('@' + name, value)
-      end
-    end
-  end
-
   # Allow only (Letter | '_') (Letter | Digit | '-' | '_')* here.
   # Caution: '.' is not allowed here.
   # To follow XML spec., it should be NCName.
@@ -243,7 +232,7 @@ module Mapping
     end
   end
 
-  def self.find_attribute(obj, attr_name)
+  def self.get_attribute(obj, attr_name)
     if obj.is_a?(::Hash)
       obj[attr_name] || obj[attr_name.intern]
     else
@@ -254,6 +243,36 @@ module Mapping
         obj.instance_variable_get('@' + name)
       end
     end
+  end
+
+  def self.set_attributes(obj, values)
+    values.each do |attr_name, value|
+      name = XSD::CodeGen::GenSupport.safevarname(attr_name)
+      setter = name + "="
+      if obj.respond_to?(setter)
+        obj.__send__(setter, value)
+      else
+        obj.instance_variable_set('@' + name, value)
+      end
+    end
+  end
+
+  def self.schema_element_definition(klass)
+    elements = {}
+    as_array = []
+    klass.class_eval('@@schema_element').each do |varname, definition|
+      class_name, name = definition
+      if /\[\]$/ =~ class_name
+        class_name = class_name.sub(/\[\]$/, '')
+        as_array << class_name
+      end
+      elements[name] = class_name
+    end
+    [elements, as_array]
+  end
+
+  def self.schema_attribute_definition(klass)
+    klass.class_eval('@@schema_attribute')
   end
 
   class << Mapping

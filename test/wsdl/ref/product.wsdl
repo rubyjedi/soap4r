@@ -50,12 +50,12 @@
         </simpleType>
       </element>
 
-      <element name="ProductBag">
+      <element name="Product-Bag">
         <complexType>
           <sequence>
             <element name="bag" type="tns:Product" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="tns:Rating" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="tns:ProductBag"/>
+            <element ref="tns:Product-Bag"/>
             <element name="comment_1" minOccurs="0" maxOccurs="unbounded">
               <complexType>
                 <simpleContent>
@@ -65,7 +65,7 @@
                 </simpleContent>
               </complexType>
             </element>
-            <element name="comment_2" type="tns:Comment" minOccurs="0" maxOccurs="unbounded"/>
+            <element name="comment-2" type="tns:Comment" minOccurs="0" maxOccurs="unbounded"/>
           </sequence>
           <attribute ref="tns:version"/>
           <attribute ref="tns:yesno"/>

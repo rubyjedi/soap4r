@@ -38,10 +38,19 @@ class Factory
 
   def setiv2soap(node, obj, map)
     # should we sort instance_variables?
+    if obj.class.class_variables.include?('@@schema_element')
+      elements = obj.class.class_eval('@@schema_element')
+    end
     obj.instance_variables.each do |var|
       name = var.sub(/^@/, '')
-      node.add(Mapping.name2elename(name),
-        Mapping._obj2soap(obj.instance_variable_get(var), map))
+      if elements
+        type, qname = elements[name]
+        if qname
+          elename = qname.name
+        end
+      end
+      elename ||= Mapping.name2elename(name)
+      node.add(elename, Mapping._obj2soap(obj.instance_variable_get(var), map))
     end
   end
 
@@ -68,7 +77,7 @@ private
     node.each do |name, value|
       vars[Mapping.elename2name(name)] = Mapping._soap2obj(value, map)
     end
-    Mapping.set_instance_vars(obj, vars)
+    Mapping.set_attributes(obj, vars)
   end
 end
 

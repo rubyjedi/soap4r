@@ -437,7 +437,7 @@ private
     attr.__getobj__.each do |name, value|
       vars[name] = Mapping._soap2obj(value, self)
     end
-    Mapping.set_instance_vars(obj, vars)
+    Mapping.set_attributes(obj, vars)
   end
 
   if RUBY_VERSION >= '1.8.0'
