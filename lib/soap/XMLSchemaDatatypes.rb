@@ -333,7 +333,7 @@ public
 	@data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
       end
 
-      @data = XSDDateTime.tzAdjust( @data, zoneStr ) if zoneStr
+      @data = XSDDateTime.tzAdjust( @data, zoneStr )
     end
   end
 
@@ -347,11 +347,21 @@ public
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
       s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
     end
+
+    # @data is adjusted to UTC.
+    s << 'Z'
+
     s
   end
 
   # Debt: collect syntax.
   def self.tzAdjust( date, zoneStr )
+    # From interoperability point of view, a dateTime without "Z" and -/+
+    # is parsed as a UTC.
+    unless zoneStr
+      return date
+    end
+
     newDate = date
 
     /^(?:Z|(?:([+-])(\d\d):(\d\d))?)$/ =~ zoneStr
@@ -427,11 +437,16 @@ public
   end
 
   def to_s
-    if @data.usec.zero?
+    s = if @data.usec.zero?
       format( '%02d:%02d:%02d', @data.hour, @data.min, @data.sec )
     else
       format( '%02d:%02d:%02d.%d', @data.hour, @data.min, @data.sec, @data.usec )
     end
+
+    # @data is adjusted to UTC.
+    s << 'Z'
+
+    s
   end
 end
 
@@ -461,12 +476,17 @@ public
       zoneStr = $4
 
       @data = Date.new3( year, mon, mday, 0, 0, 0 )
-      @data = XSDDateTime.tzAdjust( @data, zoneStr ) if zoneStr
+      @data = XSDDateTime.tzAdjust( @data, zoneStr )
     end
   end
 
   def to_s
-    @data.to_s.sub( /T.*$/, '' )
+    s = @data.to_s.sub( /T.*$/, '' )
+
+    # @data is adjusted to UTC.
+    s << 'Z'
+
+    s
   end
 end
 
