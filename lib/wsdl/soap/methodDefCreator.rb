@@ -66,10 +66,24 @@ class MethodDefCreator
       retval = outParam.parts[ 0 ]
       @types << retval.type
       result << [ 'retval', retval.name ]
-      cdr( outParam.parts ).collect { | part |
+      cdr( outParam.parts ).each { | part |
 	@types << part.type
-	[ 'out', part.name ]
+	result << [ 'out', part.name ]
       }
+    end
+    sortParameterOrder( operation, result )
+  end
+
+  def sortParameterOrder( operation, params )
+    parameterOrder = operation.parameterOrder
+    return params unless parameterOrder
+    result = []
+    parameterOrder.each do | orderItem |
+      p orderItem
+      p params
+      paramDef = params.find { | param | param[ 1 ] == orderItem }
+      raise unless paramDef
+      result << paramDef
     end
     result
   end

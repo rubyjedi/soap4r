@@ -70,12 +70,15 @@ class Operation < Info
 
   NameAttrName = Name.new( nil, 'name' )
   TypeAttrName = Name.new( nil, 'type' )
+  ParameterOrderName = Name.new( nil, 'parameterOrder' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
       @name = Name.new( targetNamespace, value )
     when TypeAttrName
       @type = value
+    when ParameterOrderName
+      @parameterOrder = value.split( /\s+/ )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
