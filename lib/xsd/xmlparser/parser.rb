@@ -57,7 +57,7 @@ public
 
   def initialize(host, opt = {})
     @host = host
-    @charset = opt[:charset] || 'us-ascii'
+    @charset = opt[:charset] || nil
   end
 
   def parse(string_or_readable)
