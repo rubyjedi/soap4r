@@ -20,7 +20,10 @@ Ave, Cambridge, MA 02139, USA.
 require 'iconv'
 
 
-class Iconv
+module XSD
+
+
+class IconvCharset
   def self.safe_iconv(to, from, str)
     iconv = Iconv.new(to, from)
     out = ""
@@ -35,4 +38,7 @@ class Iconv
     end
     return out
   end
+end
+
+
 end
