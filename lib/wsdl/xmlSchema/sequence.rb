@@ -20,8 +20,8 @@ class Sequence < Info
 
   def initialize
     super()
-    @minoccurs = 1
-    @maxoccurs = 1
+    @minoccurs = '1'
+    @maxoccurs = '1'
     @elements = []
   end
 

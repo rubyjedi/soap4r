@@ -20,7 +20,7 @@ class ComplexType < Info
 
   def check_type
     if content
-      if content.elements.size == 1 and content.elements[0].maxoccurs != 1
+      if content.elements.size == 1 and content.elements[0].maxoccurs != '1'
 	:TYPE_ARRAY
       else
 	:TYPE_STRUCT
@@ -83,7 +83,7 @@ class ComplexType < Info
 	  return attribute.arytype
 	end
       end
-    elsif content.elements.size == 1 and content.elements[0].maxoccurs != 1
+    elsif content.elements.size == 1 and content.elements[0].maxoccurs != '1'
       return content.elements[0].type
     else
       raise RuntimeError.new("Assert: Unknown array definition.")
