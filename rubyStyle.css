@@ -1,0 +1,56 @@
+/*
+ * style.css: CSS style definition file for `Rubyavailable'.
+ * (<URL:http://www.jin.gr.jp/~nahi/Ruby/*>)
+ */
+
+body {
+    background: #EEEEEE;
+    color: black;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+h1 {
+    font-family: "comic sans ms", verdana, sans-serif; 
+    text-align: right;
+    margin-top: 5%;
+    margin-right: 10%;
+}
+
+h2, h3, h4, h5, h6 {
+    font-family: "Impact", verdana, sans-serif;
+}
+
+h2 {
+    color: #FFFFFF;
+    background: #CC3333;
+}
+
+div.header p.status { text-align: right; }
+div.header p.last-modified { text-align: left; }
+
+span.download {
+    font-weight: normal;
+    color: blue;
+    background: #EEEEEE;
+}
+
+dt {
+    font-weight: bold;
+    margin-top: 2ex;
+    margin-left: 1em;
+}
+
+address {
+    color: gray;
+    background: #EEEEEE;
+    text-align: right;
+    font-family: Times, serif;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+}
+
+.path {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+}

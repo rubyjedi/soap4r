@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="ISO-2022-JP"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-2022-JP" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<link rev="MADE" href="mailto:nakahiro@sarion.co.jp" />
+<link rel="StyleSheet" href="rubyStyle.css" type="text/css" media="screen" />
+<title>Release Notes - SOAP4R</title>
+</head>
+<body>
+
+<div class="header">
+<h1>
+Release Notes - SOAP4R
+</h1>
+
+<p class="status">
+Last modified: July 17, 2000<br />
+Created: July 15, 2000
+</p>
+</div>
+
+<hr />
+
+<div class="main">
+<h2>0. In this document...</h2>
+
+<p>
+このドキュメントは，SOAP4Rのリリースノートです．
+本文書が含まれているリリースパッケージについての解説です．
+</p>
+
+<p>
+本文書が対象としているSOAP4Rのバージョンは，
+SOAP4R/1.0.0
+です．
+</p>
+
+<ol>
+<li><a href="#changes">Changes</a></li>
+<li><a href="#install">Install</a></li>
+<li><a href="#uninstall">Uninstall</a></li>
+<li><a href="#whats">What is SOAP4R?</a></li>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#restrictions">Restrictions</a></li>
+<li><a href="#author">Author</a></li>
+<li><a href="#copyright">Copyright</a></li>
+</ol>
+
+<h2 id="changes" name="changes">1. Changes</h2>
+
+<p>
+これが最初のリリースです．
+変更点もなにもありません．
+なら書くな．^^;
+</p>
+
+<h2 id="install" name="install">2. Install</h2>
+
+<p>
+パッケージを取得し，展開・伸長してください．
+libディレクトリに含まれているファイルが，SOAP4Rのライブラリプログラム本体です．
+インストーラは用意されていませんので，lib下の各ファイルを適当なディレクトリにコピーし，includeして使ってください．
+</p>
+
+<p>
+SOAP4Rのライブラリプログラムが動作するためには，redistディレクトリに含まれている，以下の再配布ライブラリプログラムも必要です．
+これらもライブラリ本体と一緒に適当なディレクトリにコピーしておいてください．
+</p>
+
+<ul>
+<li class="path">parsedate2.rb</li>
+<li class="path">http-access.rb</li>
+<li class="path">uri.rb</li>
+</ul>
+
+<p>
+パッケージ中の各ファイルの解説です．
+</p>
+
+<dl>
+<dt class="path">lib/</dt>
+<dd>SOAP4Rのライブラリプログラム本体．</dd>
+
+<dt class="path">sample/</dt>
+<dd>SOAP4Rを利用するサンプルプログラム．</dd>
+
+<dt class="path">sample/sampleClient.rb</dt>
+<dd>SOAP-RPCクライアントのサンプルプログラム．
+IBMのSOAP for JavaもしくはApache SOAPの，stockquoteおよびaddressbookデモに接続する．
+先にサーバ側のインストール &amp; deployを済ませておくこと．
+<pre class="path">
+./sampleClient.rb http://localhsot:2020/ibm-soap/rpcrouter.jsp
+</pre>
+などとして起動する．</dd>
+
+<dt class="path">sample/sampleDriver.rb</dt>
+<dd>MS SOAP TK for VS6.0ではROPEにあたるのがこのファイル．
+（Rubyの提供する強力なdynamismのおかげで）大したことはしてないが，「SOAPのRuby mapping」と言えるとしたらここ．</dd>
+
+<dt class="path">redist/</dt>
+<dd>各種再配布パッケージから，SOAP4Rで利用するファイル群．
+利用させて頂いているみなさん，どうもありがとうございます．
+</dd>
+
+<dt class="path">redist/archive/</dt>
+<dd>各種再配布パッケージそのもの．
+各パッケージの著作権および各種隣接権については，各パッケージに記載されているものに従うこと．</dd>
+</dl>
+
+<h2 id="uninstall" name="uninstall">3. Uninstall</h2>
+
+<p>
+インストール時に作成されたファイルを全部消してください．
+</p>
+
+<h2 id="whats" name="whats">4. What is SOAP4R?</h2>
+
+<p>
+SOAP4Rは，
+<a href="http://www.w3.org/TR/SOAP/">Simple Object Access Protocol (SOAP) 1.1 (W3C Note)</a>
+をRubyから利用するためのライブラリプログラムです．
+SOAPについての詳細は，
+<a href="http://www.sarion.co.jp/ml/soap/">SOAP-ml-JP Home Page</a>
+にあるリンク集，
+<a href="http://www.sarion.co.jp/ml/soap/link.html">SOAP-ml-JP Links</a>
+を御覧ください．
+</p>
+
+<p>
+<a href="#restrictions">Restrictions</a>
+を見るとわかると思いますが，今のところSOAP-RPCクライアントに特化した機能のみ提供されています．
+RPCに特化しているのは，SOAP/1.0が出る前に実装を始めたものを，SOAP/1.1向けに改修したためです．
+現在の実装方法の改修では限界があるので，次バージョンでは1から実装し直すつもりです．
+一応RPCサーバ側用の実装もありますが（HTTPとのbindingを除く），テストでのコードカバレッジ率は低いので御注意．
+</p>
+
+<h2 id="dependencies" name="dependencies">5. Dependencies</h2>
+
+<p>
+SOAP4Rを利用するためには，以下のものが必要です．
+</p>
+
+<ul>
+<li>SOAP4Rは
+<a href="http://www.ruby-lang.org">Ruby</a>
+向けのライブラリです．
+もちろんRuby本体が必要です．
+稼働テストは1.4系でやってますが，1.5系でも動くんじゃないかと思います．</li>
+
+<li>SOAP4RはXML関連の処理を
+<a href="http://www.bekkoame.ne.jp/~yoshidam/Ruby_ja.html">XMLParserモジュール</a>
+に依存しています．
+XMLParserモジュールをインストールしておく必要があります．</li>
+
+<li>SOAP-RPCクライアントサンプルを動かすためには，
+<a href="http://www.alphaworks.ibm.com/tech/soap4j">IBMのSOAP for Java</a>
+もしくは
+<a href="http://xml.apache.org/soap/">Apache SOAP</a>
+が必要です．
+</li>
+</ul>
+
+<h2 id="restrictions" name="restrictions">6. Restrictions</h2>
+
+<p>
+SOAP4Rは
+<a href="http://www.w3.org/TR/SOAP/">SOAP 1.1 (W3C Note)</a>
+仕様をサポートすることを目的としていますが，現時点では以下に示す各種様々な制限があります．
+これらは全て，SOAP4Rの実装による制限です．
+</p>
+
+<ul>
+<li style="margin-top: 2ex;">SOAP Envelopeについて
+<ul>
+<li>SOAP actor属性に対応していません．</li>
+<li>SOAP Fault Codesを真面目に扱ってません．</li>
+<li>SOAP EnvelopeにおけるencodingStyleが，SOAP Encodingに固定されています．
+SOAP for Javaのように素のXMLを埋めるencoding，などに対応していません．</li>
+</ul></li>
+<li style="margin-top: 2ex;">SOAP Encodingについて
+<ul>
+<li>encodingStyleはSOAP Encodingに固定されています．
+データ構造の途中を別encodingStyleにすることはできません．</li>
+<li>XML Schemaを読んでencode/decodeすることはできません．
+SOAP Encoding本体に埋め込まれたxsi:typeのみを利用します．</li>
+<li>Partially Transmitted Arrays（部分配列），Sparse Arrays（粗な配列）に対応していません．</li>
+<li>SOAP root属性に対応していません．</li>
+<li>多重参照時に利用される独立要素に対応していません（encoding，decoding共）．</li>
+</ul></li>
+<li style="margin-top: 2ex;">その他
+<ul>
+<li>トランスポートはHTTPのクライアント側のみです．</li>
+<li>HTTP Extension Framework（M-POST）に対応していません．</li>
+<li>Content-Typeは'text/xml'です．
+charset指定には対応していません．
+だって，charset付けたら（現時点では）SOAP for Javaが怒るんだもん．．．</li>
+</ul></li>
+</ul>
+
+<h2 id="author" name="author">7. Author</h2>
+
+<dl>
+<dt>Name</dt>
+<dd>NAKAMURA, Hiroshi (aka NaHi or nakahiro)</dd>
+
+<dt>E-mail</dt>
+<dd><a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a></dd>
+
+<dt>URL</dt>
+<dd><a href="http://www.jin.gr.jp/~nahi/" class="path">http://www.jin.gr.jp/~nahi/</a></dd>
+</dl>
+
+<h2 id="copyright" name="copyright">8. Copyright</h2>
+
+<p>
+本プログラムの著作権および各種隣接権について．GPL2です．
+詳細は
+<a href="COPYING">GNU GENERAL PUBLIC LICENSE Version 2, June 1991</a>
+を参照してください．
+</p>
+
+<p style="text-align: center;">
+SOAP4R<br />
+Copyright &copy; 2000 NAKAMURA, Hiroshi.
+</p>
+
+<p>
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+</p>
+
+<p>
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License(the file named `COPYING') for more details.
+</p>
+
+<p>
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+</p>
+
+</div>
+
+<hr />
+
+<div class="footer">
+<address>
+<a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP/">SOAP4R</a>.<br />
+Copyright &copy; 2000
+<a href="http://www.jin.gr.jp/~nahi/">NAKAMURA, Hiroshi</a>.
+</address>
+</div>
+</body>
+</html>
