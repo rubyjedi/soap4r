@@ -23,6 +23,10 @@ class SimpleRestriction < Info
     @base = nil
     @enumeration = []   # NamedElements?
   end
+  
+  def valid?(value)
+    @enumeration.include?(value)
+  end
 
   def parse_element(element)
     case element
