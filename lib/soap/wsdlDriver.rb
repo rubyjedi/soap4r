@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/parser'
+require 'wsdl/importer'
 require 'xsd/qname'
 require 'soap/element'
 require 'soap/baseData'
@@ -37,7 +38,7 @@ class WSDLDriverFactory
 
   def initialize(wsdl, logdev = nil)
     @logdev = logdev
-    @wsdl = parse(wsdl)
+    @wsdl = import(wsdl)
   end
 
   def create_driver(servicename = nil, portname = nil, opt = {})
@@ -68,21 +69,8 @@ class WSDLDriverFactory
 
 private
   
-  def parse(wsdl)
-    str = nil
-    if /^http/i =~ wsdl
-      begin
-	c = HTTPAccess2::Client.new(
-	  ENV['http_proxy'] || ENV['HTTP_PROXY'])
-	str = c.get_content(wsdl)
-      rescue
-	str = nil
-      end
-    end
-    if str.nil?
-      str = File.open(wsdl)
-    end
-    WSDL::WSDLParser.create_parser.parse(str)
+  def import(location)
+    WSDL::Importer.import(location)
   end
 end
 

@@ -52,6 +52,7 @@ class NetHttpClient
   def initialize(proxy = nil, agent = nil)
     @proxy = proxy
     @agent = agent
+    @debug_dev = nil
     @session_manager = SessionManager.new
   end
 
@@ -59,20 +60,39 @@ class NetHttpClient
     # ignored.
   end
 
-  def post(url, req_body, header)
+  def post(url, req_body, header = {})
     url = URI.parse(url)
     extra = header.dup
     extra['User-Agent'] = @agent if @agent
-    response = nil
+    res = start(url, header) { |http|
+	http.post(url.instance_eval('path_query'), req_body, extra)
+      }
+    Response.new(res)
+  end
+
+  def get_content(url, header = {})
+    url = URI.parse(url)
+    extra = header.dup
+    extra['User-Agent'] = @agent if @agent
+    res = start(url) { |http|
+	http.get(url.instance_eval('path_query'), extra)
+      }
+    res.body
+  end
+
+private
+
+  def start(url)
     proxy_host = @proxy ? @proxy.host : nil
     proxy_port = @proxy ? @proxy.port : nil
+    response = nil
     Net::HTTP::Proxy(proxy_host, proxy_port).start(url.host, url.port) { |http|
       if http.respond_to?(:set_debug_output)
 	http.set_debug_output(@debug_dev)
       end
-      response, = http.post(url.instance_eval('path_query'), req_body, extra)
+      response, = yield(http)
     }
-    Response.new(response)
+    response
   end
 end
 
