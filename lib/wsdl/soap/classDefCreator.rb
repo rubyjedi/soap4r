@@ -67,17 +67,15 @@ __EOD__
     var_lines = ""
     init_lines = ""
     complextype.each_element do |element|
-      if element.respond_to?(:name)
-        name = create_method_name(element.name)
-        type = element.type
-        #attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
-        attr_lines << dump_attrline(element.name.name)
-        init_lines << "    @#{ name } = #{ name }\n"
-        unless var_lines.empty?
-          var_lines << ",\n      "
-        end
-        var_lines << "#{ name } = nil"
+      name = create_method_name(element.name)
+      type = element.type
+      #attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
+      attr_lines << dump_attrline(element.name.name)
+      init_lines << "    @#{ name } = #{ name }\n"
+      unless var_lines.empty?
+        var_lines << ",\n      "
       end
+      var_lines << "#{ name } = nil"
     end
     attr_lines.chomp!
     init_lines.chomp!

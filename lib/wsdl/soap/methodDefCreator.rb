@@ -111,10 +111,7 @@ __EOD__
     @types << type
     return unless @complextypes[type]
     @complextypes[type].each_element do |element|
-      # checking :type does not work...(Object#type)
-      if element.respond_to?(:name)
-        collect_type(element.type)
-      end
+      collect_type(element.type)
     end
   end
 
