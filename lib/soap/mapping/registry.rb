@@ -217,6 +217,7 @@ class Registry
     [::TrueClass,    ::SOAP::SOAPBoolean,    BasetypeFactory],
     [::FalseClass,   ::SOAP::SOAPBoolean,    BasetypeFactory],
     [::String,       ::SOAP::SOAPString,     StringFactory],
+    [::DateTime,     ::SOAP::SOAPDateTime,   BasetypeFactory],
     [::Date,         ::SOAP::SOAPDateTime,   BasetypeFactory],
     [::Date,         ::SOAP::SOAPDate,       BasetypeFactory],
     [::Time,         ::SOAP::SOAPDateTime,   BasetypeFactory],
