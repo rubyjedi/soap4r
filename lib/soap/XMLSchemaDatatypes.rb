@@ -323,7 +323,14 @@ private
 end
 
 require 'rational'
-require 'date2'
+# This is a workaround untill date2.rb will be included in standard library as
+# date.rb.
+if Object.const_defined?( :Date )
+  Object.module_eval { remove_const( :Date ) }
+end
+$" << 'date.rb' << 'date2.rb'
+load 'date2.rb'
+
 module XSDDateTimeImpl
   def to_time
     begin
