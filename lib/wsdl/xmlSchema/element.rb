@@ -29,6 +29,7 @@ class Element < Info
   attr_accessor :type
   attr_accessor :maxOccurs
   attr_accessor :minOccurs
+  attr_accessor :nillable
 
   AnyType = XSD::QName.new( XSD::Namespace, XSD::AnyTypeLiteral )
   def initialize
@@ -37,6 +38,7 @@ class Element < Info
     @type = AnyType
     @maxOccurs = 1
     @minOccurs = 1
+    @nillable = nil
   end
 
   def targetNamespace
@@ -65,6 +67,7 @@ class Element < Info
   TypeAttrName = XSD::QName.new( nil, 'type' )
   MaxOccursAttrName = XSD::QName.new( nil, 'maxOccurs' )
   MinOccursAttrName = XSD::QName.new( nil, 'minOccurs' )
+  NillableAttrName = XSD::QName.new( nil, 'nillable' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
@@ -101,6 +104,8 @@ class Element < Info
       else
 	raise NotImplementedError.new
       end
+    when NillableAttrName
+      @nillable = value == 'true' ? true : false
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
