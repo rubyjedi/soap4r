@@ -14,12 +14,12 @@ module Header
 
 
 class Handler
-  attr_reader :name
+  attr_reader :elename
   attr_reader :mustunderstand
   attr_reader :encodingstyle
 
-  def initialize(name)
-    @name = name
+  def initialize(elename)
+    @elename = elename
     @mustunderstand = false
     @encodingstyle = nil
   end
@@ -39,10 +39,10 @@ class Handler
     if item.nil?
       nil
     elsif item.is_a?(::SOAP::SOAPHeaderItem)
-      item.elename = @name
+      item.elename = @elename
       item
     else
-      item.elename = @name
+      item.elename = @elename
       ::SOAP::SOAPHeaderItem.new(item, @mustunderstand, @encodingstyle)
     end
   end
