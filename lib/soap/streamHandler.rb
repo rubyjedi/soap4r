@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.25 2003/01/12 02:19:04 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.26 2003/02/14 15:31:03 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -153,7 +153,7 @@ private
     end
     dumpDev << "\n\n" if dumpDev
 
-    receiveString = res.body.content
+    receiveString = res.content
 
     if @dumpFileBase
       fileName = @dumpFileBase + '_response.xml'
