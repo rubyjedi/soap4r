@@ -20,10 +20,10 @@ Ave, Cambridge, MA 02139, USA.
 ## XMLSchamaDatatypes general definitions.
 #
 module XSD
-  #Namespace = 'http://www.w3.org/1999/XMLSchema'
-  #InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  Namespace = 'http://www.w3.org/1999/XMLSchema/'
-  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema/instance/'
+  Namespace = 'http://www.w3.org/1999/XMLSchema'
+  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
+  #Namespace = 'http://www.w3.org/1999/XMLSchema/'
+  #InstanceNamespace = 'http://www.w3.org/1999/XMLSchema/instance/'
 end
 
 
