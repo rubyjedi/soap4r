@@ -82,6 +82,12 @@ class Driver
     @servant = Servant__.new(self, endpoint_url, namespace)
     @servant.soapaction = soapaction
     @proxy = @servant.proxy
+    if env_httpproxy = ::SOAP::Env::HTTP_PROXY
+      @servant.options["client.protocol.http.proxy"] = env_httpproxy
+    end
+    if env_no_proxy = ::SOAP::Env::NO_PROXY
+      @servant.options["client.protocol.http.no_proxy"] = env_no_proxy
+    end
   end
 
   def inspect
