@@ -30,7 +30,7 @@ class Name
   end
 
   def ==( rhs )
-    ( @namespace == rhs.namespace && @name == rhs.name )
+    ( self.type === rhs && @namespace == rhs.namespace && @name == rhs.name )
   end
 
   def ===( rhs )

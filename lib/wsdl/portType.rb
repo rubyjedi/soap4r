@@ -38,13 +38,13 @@ class PortType < Info
   end
 
   def getBinding
-    parent.bindings.find { | item | item.type == @name }
+    root.bindings.find { | item | item.type == @name }
   end
 
   def getLocations
     bindingName = getBinding.name
     result = []
-    parent.services.each do | service |
+    root.services.each do | service |
       service.ports.each do | port |
         if port.binding == bindingName
           result << port.soapAddress.location if port.soapAddress
@@ -62,8 +62,7 @@ class PortType < Info
       @operations << o
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 

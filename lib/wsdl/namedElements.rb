@@ -27,6 +27,16 @@ class NamedElements
     @elements = []
   end
 
+  def dup
+    o = NamedElements.new
+    o.elements = @elements.dup
+    o
+  end
+
+  def size
+    @elements.size
+  end
+
   def []( idx )
     if idx.is_a?( Numeric )
       @elements[ idx ]
@@ -43,6 +53,20 @@ class NamedElements
 
   def <<( rhs )
     @elements << rhs
+  end
+
+  def concat( rhs )
+    @elements.concat( rhs.elements )
+  end
+
+protected
+
+  def elements=( rhs )
+    @elements = rhs
+  end
+
+  def elements
+    @elements
   end
 end
 

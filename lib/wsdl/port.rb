@@ -39,16 +39,12 @@ class Port < Info
     parent.targetNamespace
   end
 
-  def getDefinitions
-    parent.parent
-  end
-
   def getPortType
-    getDefinitions.portTypes[ getBinding.type ]
+    root.getPortType( getBinding.type )
   end
 
   def getBinding
-    getDefinitions.bindings[ @binding ]
+    root.getBinding( @binding )
   end
 
   SOAPAddressName = Name.new( SOAPBindingNamespace, 'address' )
@@ -59,8 +55,7 @@ class Port < Info
       @soapAddress = o
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 

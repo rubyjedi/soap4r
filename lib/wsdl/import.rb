@@ -26,15 +26,17 @@ module WSDL
 class Import < Info
   attr_reader :namespace
   attr_reader :location
+  attr_reader :content
 
   def initialize
     super
     @namespace = nil
     @location = nil
+    @content = nil
   end
 
   def parseElement( element )
-    raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
+    nil
   end
 
   NamespaceAttrName = Name.new( nil, 'namespace' )
@@ -43,12 +45,28 @@ class Import < Info
     case attr
     when NamespaceAttrName
       @namespace = value
+      if @content
+	@content.setTargetNamespace( @namespace )
+      end
     when LocationAttrName
-      @location = location
-      STDERR.puts "Importing from specified location is not supported now..."
+      @location = value
+      @content = import( @location )
+      @content.root = root
+      if @namespace
+	@content.setTargetNamespace( @namespace )
+      end
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
+  end
+
+private
+
+  def import( location )
+    require 'http-access2'
+    c = HTTPAccess2::Client.new( ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ] )
+    content = c.getContent( location )
+    WSDL::WSDLParser.createParser.parse( content )
   end
 end
 

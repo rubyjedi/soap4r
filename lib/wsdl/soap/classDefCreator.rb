@@ -33,7 +33,7 @@ class ClassDefCreator
 
   def initialize( definitions )
     @definitions = definitions
-    @schema = @definitions.types.schema
+    @complexTypes = definitions.complexTypes
     @faultTypes = getFaultTypes( @definitions )
   end
 
@@ -42,7 +42,7 @@ class ClassDefCreator
     if className
       result = dumpClassDef( className )
     else
-      @schema.complexTypes.each do | complexType |
+      @complexTypes.each do | complexType |
 	if complexType.content
 	  result << dumpClassDef( complexType.name )
 	elsif complexType.complexContent	# ToDo: too ad-hoc
@@ -63,7 +63,7 @@ class ClassDefCreator
 private
 
   def dumpClassDef( className )
-    complexType = @schema.complexTypes[ className ]
+    complexType = @complexTypes[ className ]
     elements = complexType.content.elements
     attr_lines = ""
     var_lines = ""
@@ -111,7 +111,7 @@ __EOD__
   def getFaultTypes( definitions )
     result = []
     getFaultMessages( definitions ).each do | message |
-      parts = definitions.messages[ message ].parts
+      parts = definitions.getMessage( message ).parts
       if parts.size != 1
 	raise RuntimeError.new( "Expects fault message to have 1 part." )
       end

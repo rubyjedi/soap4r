@@ -56,7 +56,7 @@ private
     methodDef, types = methodDefCreator.dump( portTypeName )
     mrCreator = MappingRegistryCreator.new( @definitions )
     binding = @definitions.bindings.find { | item | item.type == portTypeName }
-    addresses = @definitions.portTypes[ portTypeName ].getLocations
+    addresses = @definitions.getPortType( portTypeName ).getLocations
 
     return <<__EOD__
 require 'soap/proxy'

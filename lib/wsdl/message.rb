@@ -45,8 +45,7 @@ class Message < Info
       @parts << o
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 
