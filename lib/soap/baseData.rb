@@ -129,6 +129,7 @@ end
 ## SOAP related datatypes.
 #
 module SOAPModuleUtils
+  include SOAP
   include XML::SimpleTree
 
   public
