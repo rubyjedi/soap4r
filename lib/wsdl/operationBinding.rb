@@ -43,6 +43,14 @@ class OperationBinding < Info
     parent.targetNamespace
   end
 
+  def getPortType
+    root.getPortType( parent.type )
+  end
+
+  def getOperation
+    getPortType.operations[ @name ]
+  end
+
   InputName = XSD::QName.new( Namespace, 'input' )
   OutputName = XSD::QName.new( Namespace, 'output' )
   FaultName = XSD::QName.new( Namespace, 'fault' )
