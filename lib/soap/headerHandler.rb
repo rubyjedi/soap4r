@@ -1,6 +1,6 @@
 =begin
-SOAP4R - SOAP Header handler library
-Copyright (C) 2001, 2003  NAKAMURA, Hiroshi.
+SOAP4R - SOAP Header handler
+Copyright (C) 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,40 +17,35 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'xsd/ns'
-require 'soap/soap'
+require 'xsd/namedelements'
 
 
 module SOAP
 
 
 class HeaderHandler
-  @@handlers = {}
-
-  attr_reader :uri
-
-  def initialize(namespace, name)
-    @name = NS.normalizedName(namespace, name)
-    @@handlers[@name] = self
+  def initialize
+    @store = XSD::NamedElements.new
   end
 
-
-  def process(soap_obj)
-    raise NotImplementError.new('Method process must be defined in derived class.')
+  def add_headeritem(headeritem)
+    @store << headeritem
   end
 
-
-  ###
-  ## Class interface
-  #
-  def EncodingStyleHandler.handler(namespace, name)
-    normalizedName = NS.normalizedName(namespace, name)
-    @@handlers[normalizedName]
+  def on_outbound(header)
+    @store.each do |item|
+      if headeritem = item.on_outbound
+	header.add(headeritem)
+      end
+    end
   end
 
-  def EncodingStyleHandler.each
-    @@handlers.each do |key, value|
-      yield(value)
+  def on_inbound(header)
+    @store.each do |handler|
+      name, item = header.find { |name, headeritem|
+	  handler.name == headeritem.elename
+	}
+      handler.on_inbound(item)	# might be nil.
     end
   end
 end

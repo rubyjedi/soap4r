@@ -23,6 +23,7 @@ require 'soap/mapping'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/streamHandler'
+require 'soap/headerhandler'
 
 
 module SOAP
@@ -39,7 +40,6 @@ public
   attr_reader :wiredump_dev
   attr_reader :wiredump_file_base
   attr_reader :httpproxy
-  attr_reader :default_encodingstyle
 
   def initialize(endpoint_url, namespace, soapaction = nil)
     @endpoint_url = endpoint_url
@@ -49,8 +49,9 @@ public
     @wiredump_dev = nil
     @wiredump_file_base = nil
     @httpproxy = ENV['httpproxy'] || ENV['HTTP_PROXY']
+    @headerhandler = HeaderHandler.new
     @handler = HTTPPostStreamHandler.new(@endpoint_url, @httpproxy,
-      Charset.encoding_label)
+      XSD::Charset.encoding_label)
     @proxy = Proxy.new(@handler, @soapaction)
     @proxy.allow_unqualified_element = true
   end
@@ -81,6 +82,10 @@ public
       @handler.proxy = @httpproxy
       @handler.reset
     end
+  end
+
+  def default_encodingstyle
+    @proxy.default_encodingstyle
   end
 
   def default_encodingstyle=(encodingstyle)
