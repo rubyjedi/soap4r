@@ -14,8 +14,8 @@ require 'interopResultBase'
 $testResultServer = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/rwikiInteropServer.cgi'
 $testResultProxy = nil
 
-$testResultLog = Log.new( STDERR )
-$testResultLog.sevThreshold = Log::SEV_INFO
+$testResultLog = Devel::Logger.new( STDERR )
+$testResultLog.sevThreshold = Devel::Logger::SEV_INFO
 $testResultDrv = SOAP::Driver.new( $testResultLog, 'SOAPBuildersInteropResult', SOAPBuildersInteropResult::InterfaceNS, $testResultServer, $testResultProxy, '' )
 
 SOAPBuildersInteropResult::Methods.each do | methodName, *params |
@@ -750,7 +750,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     t = Time.now.gmtime
-    arg = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
+    arg = DateTime.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
     var = drv.echoDate( arg )
     dumpNormal( title, arg.to_s, var.to_s )
   rescue Exception
@@ -761,7 +761,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     t = Time.now.gmtime
-    arg = Date.new3( 1, 1, 1, 0, 0, 0 )
+    arg = DateTime.new3( 1, 1, 1, 0, 0, 0 )
     var = drv.echoDate( arg )
     dumpNormal( title, arg.to_s, var.to_s )
   rescue Exception
@@ -772,7 +772,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     t = Time.now.gmtime
-    arg = Date.new3( 2038, 12, 31, 0, 0, 0 )
+    arg = DateTime.new3( 2038, 12, 31, 0, 0, 0 )
     var = drv.echoDate( arg )
     dumpNormal( title, arg.to_s, var.to_s )
   rescue Exception
@@ -783,7 +783,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     t = Time.now.gmtime
-    arg = Date.new3( -10, 1, 1, 0, 0, 0 )
+    arg = DateTime.new3( -10, 1, 1, 0, 0, 0 )
     var = drv.echoDate( arg )
     dumpNormal( title, arg.to_s, var.to_s )
   rescue Exception
@@ -816,7 +816,7 @@ def doTestBase( drv )
   dumpTitle( title )
   begin
     arg = SOAP::SOAPDateTime.new( '2001-06-16T18:13:40-07:00' )
-    argNormalized = Date.new3( 2001, 6, 17, 1, 13, 40 )
+    argNormalized = DateTime.new3( 2001, 6, 17, 1, 13, 40 )
     var = drv.echoDate( arg )
     dumpNormal( title, argNormalized.to_s, var.to_s )
   rescue Exception
@@ -1429,7 +1429,7 @@ def doTestGroupB( drv )
   title = 'echoXSDDateTime'
   dumpTitle( title )
   begin
-    arg = Date.new3( 1000, 1, 1, 1, 1, 1 )
+    arg = DateTime.new3( 1000, 1, 1, 1, 1, 1 )
     var = drv.echoXSDDateTime( arg )
     dumpNormal( title, arg, var )
   rescue Exception
@@ -1439,7 +1439,7 @@ def doTestGroupB( drv )
   title = 'echoXSDDate'
   dumpTitle( title )
   begin
-    arg = Date.new3( 1000, 1, 1 )
+    arg = DateTime.new3( 1000, 1, 1 )
     var = drv.echoXSDDate( SOAP::SOAPDate.new( arg ))
     dumpNormal( title, arg, var )
   rescue Exception
