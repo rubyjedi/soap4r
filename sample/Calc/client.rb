@@ -1,6 +1,7 @@
 require 'soap/driver'
 
 server = 'http://localhost:7000/'
+# server = 'http://localhost/cgi-bin/server.cgi'
 
 calc = SOAP::Driver.new( nil, nil, 'http://tempuri.org/calcService', server )
 calc.addMethod( 'add', 'lhs', 'rhs' )

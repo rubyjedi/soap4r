@@ -1,7 +1,7 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/env ruby
 
-require 'soap/standaloneServer'
-class CalcServer < SOAP::StandaloneServer
+require 'soap/cgistub'
+class CalcServer < SOAP::CGIStub
   def initialize( *arg )
     super
 
@@ -12,4 +12,4 @@ class CalcServer < SOAP::StandaloneServer
 end
 
 # Stop this program with Ctrl-C.
-status = CalcServer.new( 'CalcServer', nil, '0.0.0.0', 7000 ).start
+status = CalcServer.new( 'CalcServer', nil ).start

@@ -1,6 +1,7 @@
 require 'soap/driver'
 
 server = 'http://localhost:7000/'
+# server = 'http://localhost/cgi-bin/server2.cgi'
 
 var = SOAP::Driver.new( nil, nil, 'http://tempuri.org/calcService', server )
 var.addMethod( 'set', 'newValue' )
