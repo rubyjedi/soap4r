@@ -47,10 +47,6 @@ class Schema < Info
     @attributes << attribute
   end
 
-  ImportName = XSD::QName.new( XSD::Namespace, 'import' )
-  ComplexTypeName = XSD::QName.new( XSD::Namespace, 'complexType' )
-  ElementName = XSD::QName.new( XSD::Namespace, 'element' )
-  AttributeName = XSD::QName.new( XSD::Namespace, 'attribute' )
   def parseElement( element )
     case element
     when ImportName
@@ -72,8 +68,6 @@ class Schema < Info
     end
   end
 
-  TargetNamespaceAttrName = XSD::QName.new( nil, 'targetNamespace' )
-  ElementFormDefaultAttrName = XSD::QName.new( nil, 'elementFormDefault' )
   def parseAttr( attr, value )
     case attr
     when TargetNamespaceAttrName
@@ -85,6 +79,7 @@ class Schema < Info
     end
   end
 end
+
 
   end
 end
