@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: March 30, 2001<br />
+Last modified: May 20, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.2.0
+Target SOAP4R version: SOAP4R/1.3.0
 </p>
 
 <ol>
@@ -50,32 +50,22 @@ Target SOAP4R version: SOAP4R/1.2.0
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<p>
-Checked interoperability with
-<a href="http://xml.apache.org/soap/">Apache-SOAP</a>,
-<a href="http://www.pocketsoap.com">pocketSOAP/0.91</a>,
-<a href="http://www.geocities.com/paulclinger/soap.html">SOAP::Lite for Perl</a>,
-and <a href="http://www.develop.com/soap/">SOAP/Perl/0.28</a>.
-It seems to work good except SOAP/Perl/0.28.
-</p>
-
 <ul>
-<li>Added href/id unmarshalling support.
-(href/id marshalling has not been supported yet)</li>
-<li>Added SOAP's base64 type support.</li>
-<li>SOAPTimeInstant -&gt; SOAPDateTime.  Following XML Schema PR.</li>
-<li>SOAPStruct can have multiple accessor which have same name.
-Should I separate it from original SOAPStruct?</li>
-<li>Unknown attribute in Header Item raised an exception.  Omitted.</li>
-<li>Router can handle methods which belong to different namespace.</li>
-<li>Added an option to allow unqualified SOAP element.</li>
-<li>Added Apache's Map type support.  Ruby's Hash are mapped to it now.
-(Ruby's Hash marshalled by 1.1 processor in the old way can be unmarshalled,
-but 1.2 processor marshals it in the new way and 1.1 processor does not
-unmarshals it into Hash.  Incompatibility between SOAP4R/1.2 and 1.1)</li>
-<li>Unknown type 'unknown:SOAPStruct' was incorrectly unmarshalled into SOAPStruct.  Fixed.</li>
-<li>Added utility methods map! and members to SOAPArray and SOAPStruct.</li>
-<li>Added methods request, response, and fault to SOAPBody.</li>
+<li>Adopted
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
+instead of XMLParser module extensively.
+(You can implement your SOAP parser with XMLParser module.
+See the last part of lib/soap/parser.rb)
+<ul>
+<li>Use NQXML's streamingParser or tokenizer instead of XMLParser's DOMParser for unmarshalling.</li>
+<li>Use NQXML's document instead of XMLParser's DOM for marshalling.</li>
+</ul></li>
+<li>Passed almost inteoperability test in
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+See test/interop/README.txt.</li>
+<li>Changed module namespace.  SOAPFoo -> SOAP::Foo.</li>
+<li>Added float datatype support.</li>
+<li>Changed dateTime marshalling format.  No timezone was added to marshalled string  because SOAP4R does not support timezone now.</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -97,9 +87,6 @@ To play with SOAP4R, you also have copy redistributed files below in redist/ to 
 <dt class="path">parsedate3.rb</dt>
 <dd>by Funaba-san (<a href="http://www.kt.rim.or.jp/~tadf/ruby-en.html">http://www.kt.rim.or.jp/~tadf/ruby-en.html</a>)</dd>
 
-<dt class="path">http-access.rb</dt>
-<dd>by Maehashi-san (<a href="http://www.jin.gr.jp/~nahi/Ruby/ruby.shtml#http-access">http://www.jin.gr.jp/~nahi/Ruby/ruby.shtml#http-access</a>)</dd>
-
 <dt class="path">uri.rb</dt>
 <dd>by Koshimizu-san (<a href="http://www02.so-net.ne.jp/~greentea/ruby/uri/">http://www02.so-net.ne.jp/~greentea/ruby/uri/</a>)</dd>
 </dl>
@@ -117,11 +104,11 @@ Files in archive:
 
 <dt class="path">sample/apacheClient.rb</dt>
 <dd>SOAP-RPC client sample.
-It connects with demonstration server programs stockquote and addressbook in IBM's SOAP for Java or Apache-SOAP.
-You have to install the server either SOAP for Java or Apache-SOAP and deploy demostration programs.<br />
+It connects with demonstration server programs stockquote and addressbook in Apache-SOAP.
+You have to install Apache-SOAP and deploy demostration programs.<br />
 To execute;
 <pre class="path">
-./apacheClient.rb http://localhsot:2020/ibm-soap/rpcrouter.jsp
+./apacheClient.rb http://localhsot:2020/xml-soap/rpcrouter/rpcrouter.jsp
 </pre>
 </dd>
 
@@ -140,6 +127,10 @@ Only interfaces, no implementation.</dd>
 </ul>
 There programs connect with testing RAA server on www.ruby-lang.org.
 Since the server is under testing phase so stable operation is not expected.</dd>
+
+<dt class="path">test/</dt>
+<dd>Clients/Server for
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a></dd>
 
 <dt class="path">redist/</dt>
 <dd>Redistributed programs which SOAP4R is using.
@@ -166,12 +157,6 @@ Delete created files at installation.
 </p>
 
 <p>
-As
-<a href="#restrictions">Restrictions</a>,
-SOAP4R offers only SOAP-RPC specific features now.
-</p>
-
-<p>
 Comments, information such as interoperability between SOAP4R and another implementation are welcomed.
 Feel free sending mail to
 <a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>.
@@ -192,12 +177,10 @@ Ruby/1.6 series are required.
 It does not works on 1.4 series because of class variable.</li>
 
 <li>SOAP4R delegates XML related processing to
-<a href="http://www.yoshidam.net/Ruby.html#xmlparser">XMLParser module</a>.
-You have to install XMLParser module.</li>
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>.
+You have to install NQXML module.</li>
 
 <li>To play with SOAP-RPC client sample, you have to install
-<a href="http://www.alphaworks.ibm.com/tech/soap4j">IBM's SOAP for Java</a>
-or
 <a href="http://xml.apache.org/soap/">Apache SOAP</a>.
 </li>
 </ul>
@@ -220,7 +203,6 @@ Does not support literal XML encoding such as in SOAP for Java</li>
 </ul></li>
 <li style="margin-top: 2ex;">SOAP Encoding
 <ul>
-<li>encodingStyle cannot be changed</li>
 <li>encoding/decoding using XML Schema;
 Only xsi:type in SOAP Encoding is checked</li>
 <li>Arrays which has two or more dimensions (rank), Partially Transmitted Arrays, and Sparse Arrays</li>
@@ -240,6 +222,25 @@ Does not support 'charset='.
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.0 - May 20, 2001</dt>
+<dd><ul>
+<li>Adopted
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
+instead of XMLParser module extensively.
+(You can implement your SOAP parser with XMLParser module.
+See the last part of lib/soap/parser.rb)
+<ul>
+<li>Use NQXML's streamingParser or tokenizer instead of XMLParser's DOMParser for unmarshalling.</li>
+<li>Use NQXML's document instead of XMLParser's DOM for marshalling.</li>
+</ul></li>
+<li>Passed major(?) part of inteoperability test in
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+See test/interop/README.txt.</li>
+<li>Changed module namespace.  SOAPFoo -> SOAP::Foo.</li>
+<li>Added float datatype support.</li>
+<li>Changed dateTime marshalling format.  No timezone was added to marshalled string  because SOAP4R does not support timezone now.</li>
+</ul></dd>
+
 <dt>1.2.0 - March 30, 2001</dt>
 <dd>Checked interoperability with
 <a href="http://xml.apache.org/soap/">Apache-SOAP</a>,
