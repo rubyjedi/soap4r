@@ -19,7 +19,12 @@ class Echo_version_port_type
       ["in", "version",
        [SOAP::SOAPString]],
       ["retval", "version_struct",
-       [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]]], "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"]
+       [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]]], "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"],
+    ["echo_version_r", "echo_version_r", [
+      ["in", "version_struct",
+       [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]],
+      ["retval", "version",
+       [SOAP::SOAPString]]], "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"]
   ]
 end
 
