@@ -138,8 +138,9 @@ module RPCUtils
     # It breaks Thread.current[ :SOAPDataKey ].
     def setInstanceVariables( obj, values )
       values.each do | name, value |
-	Thread.current[ :SOAPDataKey ] = value
-	obj.instance_eval( "@#{ name } = Thread.current[ :SOAPDataKey ]" )
+	# obj.instance_eval( "@#{ name } = Thread.current[ :SOAPDataKey ]" )
+	# m_seki:
+	obj.instance_eval( "@#{ name } = value" )
       end
     end
 
