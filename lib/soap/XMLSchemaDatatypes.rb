@@ -551,7 +551,7 @@ public
   end
 
   def set( newInteger )
-    @data = newInteger.to_i
+    @data = Integer(newInteger)
   end
 
   def data
@@ -573,7 +573,7 @@ public
   end
 
   def set( newLong )
-    @data = newLong.to_i
+    @data = Integer(newLong)
 
     unless validate( @data )
       raise ValueSpaceError.new( "Long: #{ @data } is not acceptable." )
@@ -599,7 +599,7 @@ public
   end
 
   def set( newInt )
-    @data = newInt.to_i
+    @data = Integer(newInt)
 
     unless validate( @data )
       raise ValueSpaceError.new( "Int: #{ @data } is not acceptable." )
