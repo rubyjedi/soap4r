@@ -37,6 +37,10 @@ module SOAP
 
   Base64Literal = 'base64'
 
+  SOAPNamespaceTag = 'env'
+  XSDNamespaceTag = 'xsd'
+  XSINamespaceTag = 'xsi'
+
   class Error < StandardError; end
 
   class HTTPStreamError < Error; end
