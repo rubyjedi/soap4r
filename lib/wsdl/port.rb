@@ -86,7 +86,7 @@ class Port < Info
     when BindingAttrName
       @binding = value
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end

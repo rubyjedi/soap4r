@@ -70,7 +70,7 @@ class Element < Info
     when MaxOccursAttrName
       if parent.type == 'all'
 	if value != '1'
-	  raise WSDLParser::AttrConstraintError.new(
+	  raise Parser::AttrConstraintError.new(
 	    "Cannot parse #{ value } for #{ attr }.")
 	end
 	@maxoccurs = value
@@ -79,12 +79,13 @@ class Element < Info
       else
 	raise NotImplementedError.new
       end
+      @maxoccurs
     when MinOccursAttrName
       if parent.type == 'all'
 	if ['0', '1'].include?(value)
 	  @minoccurs = value
 	else
-	  raise WSDLParser::AttrConstraintError.new(
+	  raise Parser::AttrConstraintError.new(
 	    "Cannot parse #{ value } for #{ attr }.")
 	end
       elsif parent.type == 'sequence'
@@ -92,10 +93,11 @@ class Element < Info
       else
 	raise NotImplementedError.new
       end
+      @minoccurs
     when NillableAttrName
       @nillable = (value == 'true')
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end

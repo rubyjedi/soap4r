@@ -31,6 +31,7 @@ class Schema < Info
   attr_reader :elements
   attr_reader :attributes
   attr_reader :imports
+  attr_accessor :attributeformdefault
   attr_accessor :elementformdefault
 
   def initialize
@@ -68,14 +69,15 @@ class Schema < Info
     case attr
     when TargetNamespaceAttrName
       @targetnamespace = value
+    when AttributeFormDefaultAttrName
+      @attributeformdefault = value
     when ElementFormDefaultAttrName
       @elementformdefault = value
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 
-  SchemaName = XSD::QName.new(XSD::Namespace, 'schema')
   def self.parse_element(element)
     if element == SchemaName
       Schema.new

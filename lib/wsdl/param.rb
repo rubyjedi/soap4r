@@ -76,7 +76,7 @@ class Param < Info
     when NameAttrName
       @name = XSD::QName.new(targetnamespace, value)
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end

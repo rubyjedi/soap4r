@@ -31,7 +31,7 @@ require 'wsdl/soap/data'
 module WSDL
 
 
-class WSDLParser
+class Parser
   include WSDL
 
   class ParseError < Error; end
@@ -49,6 +49,7 @@ private
     attr_accessor :node
 
   private
+
     def initialize(ns, name, node)
       @ns = ns
       @name = name
@@ -72,6 +73,10 @@ public
     @lastnode
   end
 
+  def charset
+    @parser.charset
+  end
+
   def start_element(name, attrs)
     lastframe = @parsestack.last
     ns = parent = nil
@@ -79,7 +84,7 @@ public
       ns = lastframe.ns.clone_ns
       parent = lastframe.node
     else
-      ns = ::SOAP::NS.new
+      ns = NS.new
       parent = nil
     end
     attrs = XSD::XMLParser.filter_ns(ns, attrs)
@@ -142,7 +147,9 @@ private
 	    value
 	  end
 	end
-      o.parse_attr(attr, value_ele)
+      unless o.parse_attr(attr, value_ele)
+	raise UnknownAttributeError.new("Unknown attr #{ attr }.")
+      end
     end
     o
   end

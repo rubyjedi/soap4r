@@ -45,14 +45,14 @@ class ComplexContent < Info
       self
     when AllName, SequenceName, ChoiceName
       if @derivetype.nil?
-	raise WSDLParser::ElementConstraintError.new("base attr not found.")
+	raise Parser::ElementConstraintError.new("base attr not found.")
       end
       @content = Content.new
       @content.type = element.name
       @content
     when AttributeName
       if @derivetype.nil?
-	raise WSDLParser::ElementConstraintError.new("base attr not found.")
+	raise Parser::ElementConstraintError.new("base attr not found.")
       end
       o = Attribute.new
       @attributes << o
@@ -62,13 +62,13 @@ class ComplexContent < Info
 
   def parse_attr(attr, value)
     if @derivetype.nil?
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      return nil
     end
     case attr
     when BaseAttrName
       @base = value
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end

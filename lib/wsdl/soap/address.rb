@@ -33,7 +33,7 @@ class Address < Info
   end
 
   def parse_element(element)
-    raise WSDLParser::UnknownElementError.new("Unknown element #{ element }.")
+    nil
   end
 
   def parse_attr(attr, value)
@@ -41,7 +41,7 @@ class Address < Info
     when LocationAttrName
       @location = value
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end
