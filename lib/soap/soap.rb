@@ -41,6 +41,8 @@ SOAPNamespaceTag = 'env'
 XSDNamespaceTag = 'xsd'
 XSINamespaceTag = 'xsi'
 
+MediaType = 'text/xml'
+
 class Error < StandardError; end
 
 class StreamError < Error; end

@@ -19,6 +19,7 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/rpcUtils'
+require 'soap/streamHandler'
 
 
 module SOAP
@@ -102,20 +103,11 @@ class SOAPProxy
     return data
   end
 
-  ReceiveMediaType = 'text/xml'
   def call( headers, methodName, *values )
     req = createRequest( methodName, *values )
-
     data = invoke( headers, req.method, req.method.soapAction || @soapAction )
-
     receiveString = data.receiveString
-
-    if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ data.receiveContentType
-      raise StreamError.new( "Illegal content-type: #{ data.receiveContentType }" )
-    end
-    receiveCharset = $1
-    receiveCharset.sub!( /^(['"])(.*)\1$/ ) { $2 } if receiveCharset
-
+    receiveCharset = StreamHandler.parseMediaType( data.receiveContentType )
     # StreamHandler returns receiveCharset to use.
     kcodeAdjusted = false
     charsetStrBackup = nil
