@@ -51,7 +51,7 @@ class Param < Info
     case element
     when SOAPBodyName
       o = WSDL::SOAP::Body.new
-      @soap_body = o
+      @soapbody = o
       o
     when SOAPHeaderName
       o = WSDL::SOAP::Header.new

@@ -27,26 +27,6 @@ require 'soap/encodingStyleHandlerLiteral'
 require 'soap/encodingStyleHandlerASPDotNet'
 
 
-# Try to load XML processor.
-loaded = false
-[
-  'soap/xmlscanner',
-  'soap/xmlparser',
-  'soap/rexmlparser',
-  'soap/nqxmlparser',
-].each do |lib|
-  begin
-    require lib
-    loaded = true
-    break
-  rescue LoadError
-  end
-end
-unless loaded
-  raise RuntimeError.new("XML processor module not found.")
-end
-
-
 module SOAP
 
 
@@ -86,7 +66,7 @@ module Processor
       if opt.empty?
 	opt = @@default_parser_option
       end
-      SOAPParser.create_parser(opt)
+      ::SOAP::Parser.new(opt)
     end
   end
 end

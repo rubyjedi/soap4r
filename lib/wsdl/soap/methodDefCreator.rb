@@ -56,7 +56,7 @@ private
     name_as = operation.name.name
     params = collect_parameter(operation)
     soapaction = binding.soap_operation.soapaction
-    namespace = binding.input.soap_body.namespace
+    namespace = binding.input.soapbody.namespace
     paramstr = param2str(params)
     if paramstr.empty?
       paramstr = '[]'

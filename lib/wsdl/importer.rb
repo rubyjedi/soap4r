@@ -40,7 +40,8 @@ class Importer
       proxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
       content = web_client.new(@proxy, "WSDL4R").get_content(location)
     end
-    WSDL::WSDLParser.create_parser.parse(content)
+    opt = {}	# charset?
+    WSDL::WSDLParser.new(opt).parse(content)
   end
 
 private

@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'xsd/ns'
+require 'xsd/xmlparser'
 require 'soap/soap'
 require 'soap/baseData'
 require 'soap/encodingStyleHandler'
@@ -26,29 +27,12 @@ require 'soap/encodingStyleHandler'
 module SOAP
 
 
-class SOAPParser
+class Parser
   include SOAP
 
   class ParseError < Error; end
   class FormatDecodeError < Error; end
   class UnexpectedElementError < Error; end
-
-  @@parser_factory = nil
-
-  def self.factory
-    @@parser_factory
-  end
-
-  def self.create_parser(opt = {})
-    @@parser_factory.new(opt)
-  end
-
-  def self.add_factory(factory)
-    if $DEBUG
-      puts "Set #{ factory } as XML processor."
-    end
-    @@parser_factory = factory
-  end
 
 private
 
@@ -87,31 +71,33 @@ private
 
 public
 
-  attr_accessor :charset
   attr_accessor :default_encodingstyle
   attr_accessor :decode_typemap
   attr_accessor :allow_unqualified_element
 
   def initialize(opt = {})
+    @parser = XSD::XMLParser.create_parser(self, opt)
     @parsestack = nil
     @lastnode = nil
     @handlers = {}
-    @charset = opt[:charset] || 'us-ascii'
     @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
     @decode_typemap = opt[:decode_typemap] || nil
     @allow_unqualified_element = opt[:allow_unqualified_element] || false
+  end
+
+  def charset
+    @parser.charset
   end
 
   def parse(string_or_readable)
     @parsestack = []
     @lastnode = nil
 
-    prologue
     @handlers.each do |uri, handler|
       handler.decode_prologue
     end
 
-    do_parse(string_or_readable)
+    @parser.do_parse(string_or_readable)
 
     unless @parsestack.empty?
       raise FormatDecodeError.new("Unbalanced tag in XML.")
@@ -120,13 +106,8 @@ public
     @handlers.each do |uri, handler|
       handler.decode_epilogue
     end
-    epilogue
 
     @lastnode
-  end
-
-  def do_parse(string_or_readable)
-    raise NotImplementError.new('Method do_parse must be defined in derived class.')
   end
 
   def start_element(name, attrs)
@@ -142,7 +123,7 @@ public
       parent_encodingstyle = nil
     end
 
-    attrs = parse_ns(ns, attrs)
+    attrs = XSD::XMLParser.filter_ns(ns, attrs)
     encodingstyle = find_encodingstyle(ns, attrs)
 
     # Children's encodingstyle is derived from its parent.
@@ -177,33 +158,6 @@ public
   end
 
 private
-
-  def xmldecl_encoding=(charset)
-    if @charset.nil?
-      @charset = charset
-    else
-      # Definition in a stream (like HTTP) has a priority.
-      p "encoding definition: #{ charset } is ignored." if $DEBUG
-    end
-  end
-
-  # $1 is necessary.
-  NSParseRegexp = Regexp.new('^xmlns:?(.*)$')
-
-  def parse_ns(ns, attrs)
-    return attrs if attrs.nil? or attrs.empty?
-    newattrs = {}
-    attrs.each do |key, value|
-      if (NSParseRegexp =~ key)
-        # '' means 'default namespace'.
-        tag = $1 || ''
-        ns.assign(value, tag)
-      else
-        newattrs[key] = value
-      end
-    end
-    newattrs
-  end
 
   def find_encodingstyle(ns, attrs)
     attrs.each do |key, value|
@@ -281,17 +235,11 @@ private
     o
   end
 
-  def prologue
-  end
-
-  def epilogue
-  end
-
   def find_handler(encodingstyle)
     unless @handlers.key?(encodingstyle)
       handler_factory = SOAP::EncodingStyleHandler.handler(encodingstyle) ||
 	SOAP::EncodingStyleHandler.handler(EncodingNamespace)
-      handler = handler_factory.new(@charset)
+      handler = handler_factory.new(@parser.charset)
       handler.decode_typemap = @decode_typemap
       handler.decode_prologue
       @handlers[encodingstyle] = handler
