@@ -20,6 +20,7 @@ Ave, Cambridge, MA 02139, USA.
 require 'wsdl/info'
 require 'wsdl/soap/mappingRegistryCreator'
 require 'wsdl/soap/methodDefCreator'
+require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
@@ -27,6 +28,8 @@ module WSDL
 
 
 class DriverCreator
+  include MethodDefCreatorSupport
+
   attr_reader :definitions
 
   def initialize( definitions )
@@ -48,26 +51,32 @@ class DriverCreator
 
 private
 
-  def dumpPortType( portType )
+  def dumpPortType( portTypeName )
     methodDefCreator = MethodDefCreator.new( @definitions )
-    methodDef, types = methodDefCreator.dump( portType )
+    methodDef, types = methodDefCreator.dump( portTypeName )
     mrCreator = MappingRegistryCreator.new( @definitions )
+    binding = @definitions.bindings.find { | item | item.type == portTypeName }
+    addresses = @definitions.portTypes[ portTypeName ].getLocations
 
     return <<__EOD__
 require 'soap/proxy'
 require 'soap/rpcUtils'
 require 'soap/streamHandler'
 
-class #{ createClassName( portType.name ) }
+class #{ createClassName( portTypeName.name ) }
+  MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
+
 #{ mrCreator.dump( types ).gsub( /^/, "  " ).chomp }
   Methods = [
 #{ methodDef.gsub( /^/, "    " ) }
   ]
 
+  DefaultEndpointUrl = "#{ addresses[ 0 ] }"
+
   attr_reader :endpointUrl
   attr_reader :proxyUrl
 
-  def initialize( endpointUrl, proxyUrl = nil )
+  def initialize( endpointUrl = DefaultEndpointUrl, proxyUrl = nil )
     @endpointUrl = endpointUrl
     @proxyUrl = proxyUrl
     @httpStreamHandler = SOAP::HTTPPostStreamHandler.new( @endpointUrl,
@@ -137,18 +146,6 @@ private
   end
 end
 __EOD__
-  end
-
-  def capitalize( target )
-    target.gsub( /^([a-z])/ ) { $1.tr!( '[a-z]', '[A-Z]' ) }
-  end
-
-  def createClassName( name )
-    result = capitalize( name )
-    unless /^[A-Z]/ =~ result
-      result = "C_#{ name }"
-    end
-    result
   end
 end
 

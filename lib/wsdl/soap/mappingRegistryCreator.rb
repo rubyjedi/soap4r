@@ -46,8 +46,6 @@ class MappingRegistryCreator
     end
 
     return <<__EOD__
-MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
-
 #{ typeMap }
 __EOD__
   end

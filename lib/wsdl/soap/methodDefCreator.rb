@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
@@ -25,6 +26,8 @@ module WSDL
 
 
 class MethodDefCreator
+  include MethodDefCreatorSupport
+
   attr_reader :definitions
 
   def initialize( definitions )
@@ -47,7 +50,7 @@ class MethodDefCreator
 
   # methodNameAs, methodName, params, soapAction, namespace
   def dumpMethod( operation, binding )
-    methodName = operation.name.name
+    methodName = createMethodName( operation.name.name )
     methodNameAs = methodName
     params = collectParams( operation )
     soapAction = binding.soapOperation.soapAction
