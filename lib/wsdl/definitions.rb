@@ -213,7 +213,7 @@ class Definitions < Info
     if element == DefinitionsName
       Definitions.new
     else
-      raise UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      nil
     end
   end
 
