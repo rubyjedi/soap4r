@@ -39,7 +39,7 @@ public
     super( self.type.to_s )
     @namespace = EnvelopeNamespace
     @name = 'Fault'
-    @encodingStyle = nil
+    @encodingStyle = EncodingNamespace
     @faultcode = faultCode
     @faultstring = faultString
     @faultactor = faultActor
@@ -51,8 +51,19 @@ public
   end
 
   def encode( buf, ns )
+    attrs = {}
+    if !ns.assigned?( EnvelopeNamespace )
+      tag = ns.assign( EnvelopeNamespace )
+      attrs[ 'xmlns:' << tag ] = EnvelopeNamespace
+    end
+    if !ns.assigned?( EncodingNamespace )
+      tag = ns.assign( EncodingNamespace )
+      attrs[ 'xmlns:' << tag ] = EncodingNamespace
+    end
+    attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
+      EncodingNamespace
     name = ns.name( @namespace, @name )
-    SOAPGenerator.encodeTag( buf, name, nil, true )
+    SOAPGenerator.encodeTag( buf, name, attrs, true )
     yield( @faultcode, false )
     yield( @faultstring, false)
     yield( @faultactor, false )
