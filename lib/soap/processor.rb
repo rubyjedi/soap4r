@@ -32,86 +32,98 @@ module SOAP
 
 
 module Processor
+  @@defaultParserFactory = nil
+  @@defaultParserOption = {}
+
+  class << self
   public
 
-  ###
-  ## SOAP marshalling
-  #
-  def marshal( header, body, opt = {} )
-    env = SOAPEnvelope.new( header, body )
-    generator = SOAPGenerator.new( opt )
-    xmlDecl + generator.generate( env )
-  end
-  module_function :marshal
-
-
-  ###
-  ## SOAP unmarshalling
-  #
-  DefaultParser = [ nil ]
-  def unmarshal( stream, opt = {} )
-    if opt.empty?
-      parser = DefaultParser[ 0 ] || loadParser( opt )
-    else
-      parser = loadParser( opt )
+    def marshal( header, body, opt = {} )
+      env = SOAPEnvelope.new( header, body )
+      generator = createGenerator( opt )
+      return xmlDecl << generator.generate( env )
     end
 
-    env = parser.parse( stream )
+    def unmarshal( stream, opt = {} )
+      parser = createParser( opt )
+      env = parser.parse( stream )
+      return env.header, env.body
+    end
 
-    return env.header, env.body
-  end
-  module_function :unmarshal
+    def defaultParserFactory=( rhs )
+      @@defaultParserFactory = rhs
+    end
 
-  def Processor.setDefaultParser( opt = {} )
-    DefaultParser[ 0 ] = loadParser( opt )
-  end
+    def defaultParserFactory
+      unless @@defaultParserFactory
+	@@defaultParserFactory = loadParserFactory
+      end
+      @@defaultParserFactory
+    end
 
-  def Processor.getDefaultParser
-    DefaultParser[ 0 ]
-  end
+    def defaultParserOption=( rhs )
+      @@defaultParserOption = rhs
+    end
 
-  def Processor.clearDefaultParser
-    DefaultParser[ 0 ] = nil
-  end
+    def defaultParserOption
+      @@defaultParserOption
+    end
 
-  def loadParser( opt = {} )
-    if SOAP.const_defined?( "SOAPXMLParser" )
-      parser = ::SOAP::SOAPXMLParser.new( opt )
-    elsif SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
-      parser = ::SOAP::SOAPNQXMLLightWeightParser.new( opt )
-    elsif SOAP.const_defined?( "SOAPREXMLParser" )
-      parser = ::SOAP::SOAPREXMLParser.new( opt )
-    elsif SOAP.const_defined?( "SOAPSAXDriver" )
-      parser = ::SOAP::SOAPSAXDriver.new( opt )
-    else
-      begin
-	require 'soap/xmlparser'
-	# parser = SOAPXMLParser.new( opt )
-	# From Ruby/1.7, ruby eventually cannot find this constant in above
-	# style.  Following is a quick hack to avoid this trouble.  It should
-	# be resolved at some time.
-	parser = ::SOAP::SOAPXMLParser.new( opt )
-      rescue LoadError
-	require 'soap/nqxmlparser'
-	# parser = SOAPNQXMLLightWeightParser.new( opt )
-	# ditto.
-	parser = ::SOAP::SOAPNQXMLLightWeightParser.new( opt )
+  private
+
+    def createGenerator( opt )
+      SOAPGenerator.new( opt )
+    end
+
+    def createParser( opt = {} )
+      if opt.empty?
+	defaultParserFactory.new( @@defaultParserOption )
+      else
+	loadParserFactory.new( opt )
       end
     end
-    parser
-  end
-  module_function :loadParser
 
-private
+    def loadParserFactory
+      if SOAP.const_defined?( "SOAPXMLParser" )
+	parser = ::SOAP::SOAPXMLParser
+      elsif SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
+	parser = ::SOAP::SOAPNQXMLLightWeightParser
+      elsif SOAP.const_defined?( "SOAPREXMLParser" )
+	parser = ::SOAP::SOAPREXMLParser
+      else
+	begin
+	  require 'soap/xmlparser'
+	  # parser = SOAPXMLParser.new( opt )
+	  # From Ruby/1.7, ruby eventually cannot find this constant in above
+	  # style.  Following is a quick hack to avoid this trouble.  It should
+	  # be resolved at some time.
+	  parser = ::SOAP::SOAPXMLParser
+	rescue LoadError
+	  begin
+	    require 'soap/nqxmlparser'
+	    # parser = SOAPNQXMLLightWeightParser.new( opt )
+	    parser = ::SOAP::SOAPNQXMLLightWeightParser
+	  rescue LoadError
+	    begin
+	      require 'soap/rexmlparser'
+	      parser = ::SOAP::SOAPREXMLParser
+	    rescue LoadError
+	      raise RuntimeError.new( "XML processor module not found.  SOAP4R now supports XMLParser, NQXML and REXML." )
+	    end
+	  end
+	end
+      end
+      parser
+    end
 
-  def xmlDecl
-    if Charset.getXMLInstanceEncoding == 'NONE'
-      "<?xml version=\"1.0\" ?>\n"
-    else
-      "<?xml version=\"1.0\" encoding=\"#{ Charset.getXMLInstanceEncodingLabel }\" ?>\n"
+    def xmlDecl
+      if Charset.getXMLInstanceEncoding == 'NONE'
+	"<?xml version=\"1.0\" ?>\n"
+      else
+	"<?xml version=\"1.0\" encoding=\"#{ Charset.getXMLInstanceEncodingLabel }\" ?>\n"
+      end
     end
   end
-  module_function :xmlDecl
 end
 
 
