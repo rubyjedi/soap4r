@@ -31,6 +31,10 @@ class SOAPParser
 
   class FormatDecodeError < Error; end
 
+  def self.adjustKCode
+    false
+  end
+
 private
 
   class ParseFrame
@@ -72,6 +76,7 @@ public
     @parseStack = nil
     @lastNode = nil
     @option = opt
+    @handlers = {}
     EncodingStyleHandler.defaultHandler =
       EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
       EncodingNamespace )
@@ -82,7 +87,7 @@ public
     @lastNode = nil
 
     prologue
-    SOAP::EncodingStyleHandler.each do | handler |
+    @handlers.each do | uri, handler |
       handler.decodePrologue
     end
 
@@ -92,7 +97,7 @@ public
       raise FormatDecodeError.new( "Unbalanced tag in XML." )
     end
 
-    SOAP::EncodingStyleHandler.each do | handler |
+    @handlers.each do | uri, handler |
       handler.decodeEpilogue
     end
     epilogue
@@ -148,10 +153,6 @@ public
     @lastNode = lastFrame.node.node
   end
 
-  def adjustKCode
-    false
-  end
-
 private
 
   # $1 is necessary.
@@ -178,7 +179,7 @@ private
 
   def decodeTag( ns, name, attrs, parent, encodingStyle )
     o = nil
-    handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle )
+    handler = getHandler( encodingStyle )
 
     # SOAP Envelope parsing.
     namespace, lname = ns.parse( name )
@@ -225,7 +226,7 @@ private
   def decodeTagEnd( ns, node, encodingStyle )
     return unless encodingStyle
 
-    handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle )
+    handler = getHandler( encodingStyle )
     if handler
       handler.decodeTagEnd( ns, node )
     else
@@ -234,7 +235,7 @@ private
   end
 
   def decodeText( ns, text, encodingStyle )
-    handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle )
+    handler = getHandler( encodingStyle )
 
     if handler
       handler.decodeText( ns, text )
@@ -247,6 +248,15 @@ private
   end
 
   def epilogue
+  end
+
+  def getHandler( encodingStyle )
+    unless @handlers.has_key?( encodingStyle )
+      handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new
+      handler.decodePrologue
+      @handlers[ encodingStyle ] = handler
+    end
+    @handlers[ encodingStyle ]
   end
 end
 

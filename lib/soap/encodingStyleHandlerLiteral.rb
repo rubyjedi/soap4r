@@ -23,9 +23,10 @@ module SOAP
 
 
 class EncodingStyleHandlerLiteral < EncodingStyleHandler
+  Namespace = SOAP::LiteralNamespace
+  addHandler
 
   def initialize
-    super( SOAP::LiteralNamespace )
     @textBuf = ''
   end
 

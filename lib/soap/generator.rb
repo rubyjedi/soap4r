@@ -39,6 +39,7 @@ public
   def initialize( opt = {} )
     @option = opt
     @refTarget = nil
+    @handlers = {}
     EncodingStyleHandler.defaultHandler =
       EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
       EncodingNamespace )
@@ -46,13 +47,13 @@ public
 
   def generate( obj )
     prologue
-    SOAP::EncodingStyleHandler.each do | handler |
+    @handlers.each do | uri, handler |
       handler.encodePrologue
     end
 
     serializedString = doGenerate( obj )
 
-    SOAP::EncodingStyleHandler.each do | handler |
+    @handlers.each do | uri, handler |
       handler.encodeEpilogue
     end
     epilogue
@@ -86,7 +87,7 @@ public
     encodingStyle ||= parent.encodingStyle if parent
     obj.encodingStyle = encodingStyle
 
-    handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle )
+    handler = getHandler( encodingStyle )
 
     attrs = {}
     elementName = nil
@@ -157,6 +158,14 @@ private
   def epilogue
   end
 
+  def getHandler( encodingStyle )
+    unless @handlers.has_key?( encodingStyle )
+      handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new
+      handler.encodePrologue
+      @handlers[ encodingStyle ] = handler
+    end
+    @handlers[ encodingStyle ]
+  end
 end
 
 

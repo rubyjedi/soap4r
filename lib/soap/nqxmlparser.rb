@@ -31,7 +31,7 @@ class SOAPNQXMLLightWeightParser < SOAPParser
     end
   end
 
-  def adjustKCode
+  def self.adjustKCode
     true
   end
 

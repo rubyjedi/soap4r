@@ -23,11 +23,10 @@ module SOAP
 
 
 class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
-
   Namespace = 'http://tempuri.org/ASP.NET'
+  addHandler
 
   def initialize
-    super( Namespace )
     @textBuf = ''
   end
 
