@@ -77,12 +77,11 @@ module Processor
       SOAPGenerator.new( opt )
     end
 
-    def createParser( opt = {} )
+    def createParser( opt )
       if opt.empty?
-	SOAPParser.createParser( @@defaultParserOption )
-      else
-	SOAPParser.createParser( opt )
+	opt = @@defaultParserOption
       end
+      SOAPParser.createParser( opt )
     end
 
     def xmlDecl
