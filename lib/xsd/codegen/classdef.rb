@@ -18,24 +18,25 @@ module CodeGen
 class ClassDef < ModuleDef
   include GenSupport
 
-  attr_accessor :comment
-
   def initialize(name, baseclass = nil)
     super(name)
     @baseclass = baseclass
-    @comment = nil
     @classvar = []
     @attrdef = []
   end
 
   def defclassvar(var, value)
     var = var.sub(/\A@@/, "")
-    raise ArgumentError, var unless safevarname?(var)
+    unless safevarname?(var)
+      raise ArgumentError.new("#{var} seems to be unsafe")
+    end
     @classvar << [var, value]
   end
 
   def defattr(attrname, writable = true, varname = nil)
-    raise ArgumentError, varname || attrname unless safevarname?(varname || attrname)
+    unless safevarname?(varname || attrname)
+      raise ArgumentError.new("#{varname || attrname} seems to be unsafe")
+    end
     @attrdef << [attrname, writable, varname]
   end
 
@@ -45,7 +46,8 @@ class ClassDef < ModuleDef
       buf << dump_requirepath 
     end
     buf << dump_emptyline unless buf.empty?
-    buf << dump_package_def
+    package = @name.split(/::/)[0..-2]
+    buf << dump_package_def(package) unless package.empty?
     buf << dump_comment if @comment
     buf << dump_class_def
     spacer = false
@@ -69,7 +71,7 @@ class ClassDef < ModuleDef
       buf << dump_methods
     end
     buf << dump_class_def_end
-    buf << dump_package_def_end
+    buf << dump_package_def_end(package) unless package.empty?
     buf
   end
 
@@ -90,7 +92,7 @@ private
 
   def dump_classvar
     dump_static(
-      @classvar.sort.collect { |var, value|
+      @classvar.collect { |var, value|
         %Q(@@#{var.sub(/^@@/, "")} = #{dump_value(value)})
       }.join("\n")
     )
@@ -146,11 +148,11 @@ if __FILE__ == $0
   include XSD::CodeGen
   c = ClassDef.new("Foo::Bar::HobbitName", String)
   c.defrequire("foo/bar")
-  c.comment = <<__EOD__
+  c.comment = <<-EOD
       foo
-        bar
+    bar
       baz
-__EOD__
+  EOD
   c.defconst("FOO", 1)
   c.defclassvar("@@foo", "var")
   c.defclassvar("baz", "1")
@@ -174,6 +176,14 @@ __EOD__
       end
     EOD
   end
+
+  m = MethodDef.new("qux", "quxx", "quxxx") do
+    <<-EOD
+    p quxx + quxxx
+    EOD
+  end
+  m.comment = "hello world\n123"
+  c.methoddef << m
 
   puts c.dump
 end

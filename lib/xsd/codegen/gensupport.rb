@@ -100,6 +100,10 @@ private
     end
     line
   end
+
+  def dump_emptyline
+    "\n"
+  end
 end
 
 
