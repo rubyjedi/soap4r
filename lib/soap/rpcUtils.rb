@@ -127,34 +127,6 @@ module SOAPRPCUtils
     def responseTypeName
       @name + 'Response'
     end
-
-    # Module function
-  
-  public
-  
-    # CAUTION: Not tested.
-    def self.decode( ns, elem )
-      retVal = nil
-      outParams = {}
-      elem.childNodes.each do | child |
-        next if ( isEmptyText( child ))
-        childNS = ns.clone
-        parseNS( childNS, child )
-        if ( !retVal )
-  	  retVal = decodeChild( childNS, child )
-        else
-  	  # ToDo: [in/out] or [out] parameters here...
-  	  raise NotImplementError.new( '"out" parameters not supported.' )
-        end
-      end
-  
-      elemNamespace, elemName = ns.parse( elem.nodeName )
-      m = SOAPMethod.new( elemNamespace, elemName )
-  
-      m.retVal = retVal
-      #m.setParams( outParams )
-      m
-    end
   end
 
 
@@ -163,6 +135,8 @@ module SOAPRPCUtils
   #
   RubyTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/1.6'
   RubyCustomTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/custom'
+
+  ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
 
   def obj2soap( obj )
     case obj
@@ -175,7 +149,7 @@ module SOAPRPCUtils
     when String
       SOAPString.new( obj )
     when Time, Date
-      SOAPTimeInstant.new( obj )
+      SOAPDateTime.new( obj )
     when Fixnum
       SOAPInt.new( obj )
     when Integer
@@ -188,6 +162,19 @@ module SOAPRPCUtils
       end
       param
     when Hash
+      param = SOAPStruct.new( "Map" )
+      param.typeNamespace = ApacheSOAPTypeNamespace
+      i = 1
+      obj.each do | key, value |
+	elem = SOAPStruct.new( "mapItem" )
+	elem.add( "key", obj2soap( key ))
+	elem.add( "value", obj2soap( value ))
+	param.add( "item#{ i }", elem )
+	i += 1
+      end
+      param
+=begin
+      # Initial proprietary implementation...
       param = SOAPStruct.new( "Hash" )
       param.typeNamespace = getNamespace( obj ) || RubyTypeNamespace
       paramKey = SOAPArray.new
@@ -199,6 +186,7 @@ module SOAPRPCUtils
       param.add( "key", paramKey )
       param.add( "value", paramValue )
       param
+=end
     when Struct
       param = SOAPStruct.new( obj.type.to_s )
       param.typeNamespace = getNamespace( obj ) || RubyTypeNamespace
@@ -229,17 +217,25 @@ module SOAPRPCUtils
     case node
     when SOAPNull
       nil
-    when SOAPBoolean, SOAPString, SOAPInteger, SOAPInt, SOAPTimeInstant
+    when SOAPBoolean, SOAPString, SOAPInteger, SOAPInt, SOAPDateTime
       node.data
+    when SOAPBase64
+      node.to_s
     when SOAPArray
       node.collect { |elem| soap2obj( elem ) }
     when SOAPStruct
-      if node.typeName == "Hash"
+      if node.typeNamespace == RubyTypeNamespace and node.typeName == "Hash"
 	obj = Hash.new
 	keyArray = soap2obj( node.key )
 	valueArray = soap2obj( node.value )
 	while !keyArray.empty?
 	  obj[ keyArray.shift ] = valueArray.shift
+	end
+	obj
+      elsif node.typeNamespace == ApacheSOAPTypeNamespace and node.typeName == 'Map'
+	obj = Hash.new
+	node.each do | key, value |
+	  obj[ soap2obj( value.key ) ] = soap2obj( value.value )
 	end
 	obj
       else
@@ -291,10 +287,10 @@ private
 
     rescue NameError
       klass = nil
-      if Struct.constants.member?( node.typeName )
+      if ( Struct.constants - Struct.superclass.constants ).member?( node.typeName )
 	klass = eval( "Struct::" << node.typeName )
       else
-        klass = Struct.new( structName(node.typeName), *node.array )
+        klass = Struct.new( structName(node.typeName), *node.members )
       end
       obj = klass.new( *( node.collect { |name, value| soap2obj( value ) } ))
     end
