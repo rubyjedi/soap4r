@@ -189,7 +189,21 @@ module RPCUtils
 
   class BasetypeFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
-      soapKlass.new( obj )
+      if soapKlass.ancestors.include?( XSD::XSDString )
+	encoded = case SOAP::Processor.getEncoding
+          when 'NONE'
+	    obj
+          when 'EUC'
+            Uconv.euctou8( obj )
+          when 'SJIS'
+            Uconv.sjistou8( obj )
+          else
+	    obj
+          end
+	soapKlass.new( encoded )
+      else
+	soapKlass.new( obj )
+      end
     end
 
     def soap2obj( objKlass, node, info, map )
