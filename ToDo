@@ -1,29 +1,20 @@
 = ToDo
 
-Table: signatures of server definition and client call for each operation type
-===============================================================================
-style/use           server definition               client call
--------------------------------------------------------------------------------
-rpc/encoded          OK def elename(obj1, obj2)      OK drv.elename(obj1, obj2)
-rpc/literal         yet def elename(ele1, ele2)     yet drv.elename(ele1, ele2)
-document/encoded    yet def elename(obj)            yet drv.elename(obj)
-document/literal    yet def elename(ele)            yet drv.elename(ele)
--------------------------------------------------------------------------------
-
-
-* style="document" rpc server
-  * style="document" rpc wsdlDriver accepts 2 parameters.  use header handler? 
-  * style="document" rpc driver 
-  * wsdl2ruby literal support.
-    * WSDL attribute support.
+* wsdlDriver to connect document server
+* classDefCreator should dump array's element type with @@schema_element.
+* merge some part of driver.rb and wsdlDriver.rb
 * session scope (with HTTP-Cookies) SOAP servant.
+* SOAP/1.2 support.
+* wsdl2ruby qualified element support; needed?
 * mappingRegistryCreator: do not dump a type which is in default
   mappingRegistry.
 * wsdlRouter: return value must be converted to the specified element name,
   not "fooResponse" style.
 * Implement message router: lib/soap/msgRouter.rb.
   * Messaging sample.
-* Follow SOAP/1.2.
+* Support all derived built-in types in XML Schema Part2 Sec. 3.2.
+  * normalizedString, token, language, NMTOKEN, NMTOKENS, Name, NCName, ID,
+    IDREF, IDREFS, ENTITY, ENTITIES
 
 * WSDL Strict check; order of sequence, unbound, etc.
 * WSDL ref support
@@ -31,7 +22,6 @@ document/literal    yet def elename(ele)            yet drv.elename(ele)
   既存の要素を参照する場合があります。既存の要素を参 照する際は、
   ref属性を使用します
 * Parse XML Namespace with xmlscan, not by itself.
-* Support all derived built-in types in XML Schema Part2 Sec. 3.2.
 * Support actor.
 
 
@@ -56,3 +46,7 @@ document/literal    yet def elename(ele)            yet drv.elename(ele)
 * header handler.
 * Support mustUnderstand.
 * RAA exception
+* style="document" rpc server
+* style="document" rpc driver 
+* wsdl2ruby literal support.
+* WSDL attribute support.
