@@ -113,6 +113,7 @@ public
     action = "\"#{ soapAction }\""
 
     header = {}
+    delayedError = nil
     begin
       timeout( CallTimeout ) do
           postData =<<EOS
@@ -142,7 +143,9 @@ EOS
 	  @dumpDev << "\n"
 	end
 
-        raise HTTPStreamError.new( 'Unexpected EOF...' ) if s.eof
+	if s.eof
+	  raise HTTPStreamError.new( 'Unexpected EOF...' )
+	end
 
         # Parse HTTP header
         version = nil
@@ -176,13 +179,13 @@ EOS
 
         if ( status == '405' )
           # 405: Method Not Allowed
-          raise PostUnavailableError.new( "#{ status }: #{ reason }" )
+          delayedError = PostUnavailableError.new( "#{ status }: #{ reason }" )
         elsif ( status != '200' and status != '500' )
-          raise HTTPStreamError.new( "#{ status }: #{ reason }" )
+          delayedError = HTTPStreamError.new( "#{ status }: #{ reason }" )
         elsif ( !header.has_key?( 'content-type' ))
-          raise HTTPStreamError.new( 'Content-type not found.' )
+          delayedError = HTTPStreamError.new( 'Content-type not found.' )
 	elsif ( /^#{ MediaType }(?:;.*)?/ !~ header[ 'content-type' ] )
-#          raise HTTPStreamError.new( 'Illegal content-type: ' << header[ 'content-type' ] )
+          delayedError = HTTPStreamError.new( 'Illegal content-type: ' << header[ 'content-type' ] )
         end
       end
     rescue TimeoutError
@@ -208,6 +211,10 @@ EOS
       f = File.open( fileName, "w" )
       f << receiveString
       f.close
+    end
+
+    if delayedError
+      raise delayedError
     end
 
     receiveString
