@@ -139,7 +139,7 @@ public
 end
 
 class XSDString < XSDBase
-  CharsRegexp = Regexp.new( '\A[\x9\xa\xd\x20-\xd7ff\xe000-\xfffd\x10000\x10ffff]*\z' )
+  CharsRegexp = Regexp.new( '\A[\x9\xa\xd\x20-\xd7ff\xe000-\xfffd\x10000\x10ffff]*\z', nil, 'NONE' )
 
 public
 
