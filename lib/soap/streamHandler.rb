@@ -84,9 +84,9 @@ public
 
   def initialize(endpoint_url, options)
     super(endpoint_url)
-    @client = Client.new(@proxy, "SOAP4R/#{ Version }")
+    @client = Client.new(nil, "SOAP4R/#{ Version }")
     @wiredump_file_base = nil
-    @proxy = @charset = @wiredump_dev = nil
+    @charset = @wiredump_dev = nil
     @options = options
     set_options
     @client.debug_dev = @wiredump_dev
@@ -107,9 +107,29 @@ public
 private
 
   def set_options
-    @proxy = @options["proxy"]
+    @client.proxy = @options["proxy"]
     @options.add_hook("proxy") do |key, value|
-      @proxy = value
+      @client.proxy = value
+    end
+    @client.no_proxy = @options["no_proxy"]
+    @options.add_hook("no_proxy") do |key, value|
+      @client.no_proxy = value
+    end
+    set_basic_auth(@options["basic_auth"])
+    @options.add_hook("basic_auth") do |key, value|
+      set_basic_auth(value)
+    end
+    @client.protocol_version = @options["protocol_version"]
+    @options.add_hook("protocol_version") do |key, value|
+      @client.protocol_version = value
+    end
+    set_cookie_store_file(@options["cookie_store_file"])
+    @options.add_hook("cookie_store_file") do |key, value|
+      set_cookie_store_file(value)
+    end
+    set_ssl_config(@options["ssl_config"])
+    @options.add_hook("ssl_config") do |key, value|
+      set_ssl_config(@options["ssl_config"])
     end
     @charset = @options["charset"] || XSD::Charset.charset_label($KCODE)
     @options.add_hook("charset") do |key, value|
@@ -121,6 +141,23 @@ private
       @client.debug_dev = @wiredump_dev
     end
     @options.lock
+  end
+
+  def set_basic_auth(value)
+    return unless value
+    value.each do |url, userid, passwd|
+      @client.set_basic_auth(url, userid, passwd)
+    end
+  end
+
+  def set_cookie_store_file(value)
+    return unless value
+    raise NotImplementedError.new
+  end
+
+  def set_ssl_config(value)
+    return unless value
+    raise NotImplementedError.new
   end
 
   def send_post(soap_string, soapaction, charset)
