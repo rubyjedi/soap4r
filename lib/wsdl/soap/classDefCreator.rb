@@ -88,6 +88,7 @@ __EOD__
       end
       var_lines << "#{ name } = nil"
     end
+    attr_lines.chomp!
     init_lines.chomp!
 
 #  @@typeName = "#{ className.name }"
