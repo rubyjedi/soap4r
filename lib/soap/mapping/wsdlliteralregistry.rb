@@ -15,7 +15,7 @@ module SOAP
 module Mapping
 
 
-class WSDLLiteralRegistry < Factory
+class WSDLLiteralRegistry
   attr_reader :definedelements
   attr_reader :definedtypes
   attr_accessor :excn_handler_obj2soap
@@ -24,6 +24,7 @@ class WSDLLiteralRegistry < Factory
   def initialize(definedelements = nil, definedtypes = nil)
     @definedelements = definedelements
     @definedtypes = definedtypes
+    @rubytype_factory = RubytypeFactory.new(:allow_original_mapping => false)
   end
 
   def obj2soap(obj, qname)
@@ -47,10 +48,8 @@ class WSDLLiteralRegistry < Factory
 
   # node should be a SOAPElement
   def soap2obj(node)
-    typestr = Mapping.elename2name(node.elename.name)
-    klass = Mapping.class_from_name(typestr)
     begin
-      return soapele2obj(node, klass)
+      return soapele2obj(node)
     rescue MappingError
     end
     if @excn_handler_soap2obj
@@ -165,9 +164,20 @@ private
     soap_obj
   end
 
-  def soapele2obj(node, obj_class)
-    obj = create_empty_object(obj_class)
-    mark_unmarshalled_obj(node, obj)
+  def soapele2obj(node, obj_class = nil)
+    unless obj_class
+      typestr = Mapping.elename2name(node.elename.name)
+      obj_class = Mapping.class_from_name(typestr)
+    end
+    if obj_class
+      soapele2definedobj(node, obj_class)
+    else
+      @rubytype_factory.soap2obj(nil, node, nil, self)
+    end
+  end
+
+  def soapele2definedobj(node, obj_class)
+    obj = Mapping.create_empty_object(obj_class)
     if obj_class.class_variables.include?('@@schema_element')
       add_elements2obj(node, obj)
       add_attributes2obj(node, obj)
@@ -192,12 +202,18 @@ private
     end
     vars = {}
     node.each do |name, value|
-      class_name = elements[name]
-      klass = Mapping.class_from_name(class_name)
-      if klass and klass.ancestors.include?(::SOAP::SOAPBasetype)
-        child = klass.new(value.data).data
-      else
-        child = soapele2obj(value, klass)
+      if class_name = elements[name]
+        if klass = Mapping.class_from_name(class_name)
+          if klass.ancestors.include?(::SOAP::SOAPBasetype)
+            child = klass.new(value.data).data
+          else
+            child = soapele2obj(value, klass)
+          end
+        else
+          raise MappingError.new("Unknown class: #{class_name}")
+        end
+      else      # untyped element is treated as anyType [???]
+        child = soapele2obj(value)
       end
       if as_array.include?(class_name)
         (vars[name] ||= []) << child
