@@ -121,7 +121,7 @@ class Driver < RPC::Driver
     @logdev = log
     @logid = logid
     @logid_prefix = "<#{ @logid }> "
-    self.httpproxy = httpproxy
+    self.httpproxy = httpproxy if httpproxy
     log(SEV_INFO) { 'initialize: initializing SOAP driver...' }
   end
 
