@@ -64,7 +64,7 @@ class InteropApp < SOAP::CGIStub
   
   # In echoVoid, 'retval' is not defined.  So nothing will be returned.
   def echoVoid
-    # return SOAP::RPCUtils::SOAPVoid.new
+    # return SOAP::RPC::SOAPVoid.new
     return "Hello"
   end
 
@@ -148,7 +148,7 @@ class InteropApp < SOAP::CGIStub
 
   def echo2DStringArray( ary )
     # In Ruby, M-D Array is converted to Array of Array now.
-    mdary = SOAP::RPCUtils.ary2md( ary, 2, XSD::Namespace, XSD::StringLiteral )
+    mdary = SOAP::Mapping.ary2md( ary, 2, XSD::Namespace, XSD::StringLiteral )
     if mdary.include?( nil )
       mdary.sparse = true
     end

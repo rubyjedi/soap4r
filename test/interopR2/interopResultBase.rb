@@ -1,4 +1,4 @@
-require 'soap/rpcUtils'
+require 'soap/mapping'
 
 
 module SOAPBuildersInteropResult
@@ -89,26 +89,26 @@ Methods = [
 
 
 
-MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
+MappingRegistry = SOAP::Mapping::Registry.new
 
 MappingRegistry.set(
   ::SOAPBuildersInteropResult::Endpoint,
   ::SOAP::SOAPStruct,
-  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ TypeNS, 'Endpoint' ]
+  ::SOAP::Mapping::Registry::TypedStructFactory,
+  [ XSD::QName.new(TypeNS, 'Endpoint') ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInteropResult::TestResult,
   ::SOAP::SOAPStruct,
-  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ TypeNS, 'TestResult' ]
+  ::SOAP::Mapping::Registry::TypedStructFactory,
+  [ XSD::QName.new(TypeNS, 'TestResult') ]
 )
 MappingRegistry.set(
   ::SOAPBuildersInteropResult::InteropResults,
   ::SOAP::SOAPStruct,
-  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ TypeNS, 'InteropResults' ]
+  ::SOAP::Mapping::Registry::TypedStructFactory,
+  [ XSD::QName.new(TypeNS, 'InteropResults') ]
 )
 
 
