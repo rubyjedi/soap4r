@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/soap'
+require 'soap/processor'
 require 'soap/baseData'
 require 'soap/encoding'
 
@@ -64,7 +65,7 @@ private
 
 public
 
-  def initialize( opt )
+  def initialize( opt = {} )
     @parseStack = nil
     @lastNode = nil
     @option = opt
