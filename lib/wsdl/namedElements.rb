@@ -25,6 +25,7 @@ class NamedElements
 
   def initialize
     @elements = []
+    @cache = {}
   end
 
   def dup
@@ -41,7 +42,7 @@ class NamedElements
     if idx.is_a?( Numeric )
       @elements[ idx ]
     else
-      @elements.find { | item | item.name == idx }
+      @cache[ idx ] ||= @elements.find { | item | item.name == idx }
     end
   end
 
