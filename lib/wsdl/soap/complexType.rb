@@ -32,9 +32,7 @@ class ComplexType < Info
   def checkType
     if content
       :TYPE_STRUCT
-    elsif complexContent and complexContent.base == ::SOAP::ValueArrayName and
-	complexContent.getRefAttribute( ::SOAP::AttrArrayTypeName ).ref ==
-	::SOAP::AttrArrayTypeName
+    elsif complexContent and complexContent.base == ::SOAP::ValueArrayName
       :TYPE_ARRAY
     else
       raise NotImplementedError.new( "Unknown kind of complexType." )
