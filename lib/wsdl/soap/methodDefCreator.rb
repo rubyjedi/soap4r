@@ -79,8 +79,6 @@ class MethodDefCreator
     return params unless parameterOrder
     result = []
     parameterOrder.each do | orderItem |
-      p orderItem
-      p params
       paramDef = params.find { | param | param[ 1 ] == orderItem }
       raise unless paramDef
       result << paramDef
