@@ -14,4 +14,4 @@ methodDefGroupB( drvGroupB )
 
 doTestBase( drvBase )
 doTestGroupB( drvGroupB )
-submitTestResult
+#submitTestResult

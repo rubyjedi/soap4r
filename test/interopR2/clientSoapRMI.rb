@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Soap RMI 1.1 BETA9D'
+$serverName = 'XSOAP 1.2'
 $serverBase = 'http://www.extreme.indiana.edu:1568'
 $serverGroupB = 'None'
 

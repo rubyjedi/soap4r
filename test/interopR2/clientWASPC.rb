@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-$serverName = 'WASP 1.2 for C++'
+$serverName = 'WASP for C++ 4.0'
 
-$serverBase =   'http://soap.systinet.net:8070/'
-$serverGroupB = 'http://soap.systinet.net:8071/'
+$serverBase =   'http://soap.systinet.net:6070/InteropService/'
+$serverGroupB = 'http://soap.systinet.net:6070/InteropBService/	'
 
 require 'clientBase'
 
