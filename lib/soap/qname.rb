@@ -61,6 +61,12 @@ class QName
   def to_s
     "{#{ namespace }}#{ name }"
   end
+
+  NormalizedNameRegexp = /^\{([^}]*)\}(.*)$/
+  def parse( str )
+    NormalizedNameRegexp =~ str
+    self.new( $1, $2 )
+  end
 end
 
 
