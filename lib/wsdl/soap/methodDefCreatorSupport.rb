@@ -28,15 +28,14 @@ module WSDL
 
 
 module MethodDefCreatorSupport
-  BaseMappingRegistry = ::SOAP::RPCUtils::MappingRegistry.new
-
   def getBaseTypeMappedClass( name )
     ::SOAP::TypeMap[ name ]
   end
 
   def createClassName( name )
-    if ::SOAP::TypeMap[ name ]
-      BaseMappingRegistry.searchMappedRubyClass( ::SOAP::TypeMap[ name ] ).to_s
+    if klass = getBaseTypeMappedClass( name )
+      ::SOAP::RPCUtils::DefaultMappingRegistry.searchMappedRubyClass(
+	klass.name )
     else
       result = capitalize( name.name )
       unless /^[A-Z]/ =~ result
