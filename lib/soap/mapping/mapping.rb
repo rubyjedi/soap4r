@@ -141,7 +141,7 @@ module Mapping
   #   ex. a.b => a.2eb
   #
   def self.getElementNameFromName(name)
-    name.gsub(/([^a-zA-Z0-9:_-]+)/n) {
+    name.gsub(/([^a-zA-Z0-9:_\-]+)/n) {
       '.' << $1.unpack('H2' * $1.size).join('.')
     }.gsub(/::/n, '..')
   end

@@ -211,7 +211,7 @@ class SOAPMethodRequest < SOAPMethod
 
   def checkElementName(qname)
     # NCName & ruby's method name
-    unless /\A[\w_][\w\d_-]*\z/ =~ qname.name
+    unless /\A[\w_][\w\d_\-]*\z/ =~ qname.name
       raise MethodDefinitionError.new("Element name '#{qname.name}' not allowed")
     end
   end
