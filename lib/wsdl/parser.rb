@@ -1,5 +1,5 @@
 # WSDL4R - WSDL XML Instance parser library.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -53,6 +53,7 @@ public
     @parser = XSD::XMLParser.create_parser(self, opt)
     @parsestack = nil
     @lastnode = nil
+    @ignored = {}
   end
 
   def parse(string_or_readable)
@@ -96,7 +97,7 @@ public
   def end_element(name)
     lastframe = @parsestack.pop
     unless name == lastframe.name
-      raise UnexpectedElementError.new("Closing element name '#{ name }' does not match with opening element '#{ lastframe.name }'.")
+      raise UnexpectedElementError.new("closing element name '#{name}' does not match with opening element '#{lastframe.name}'")
     end
     decode_tag_end(lastframe.ns, lastframe.node)
     @lastnode = lastframe.node
@@ -111,12 +112,15 @@ private
       if element == DefinitionsName
 	o = Definitions.parse_element(element)
       else
-	raise UnknownElementError.new("Unknown element #{ element }.")
+	raise UnknownElementError.new("unknown element: #{element}")
       end
     else
       o = parent.parse_element(element)
       unless o
-	STDERR.puts("Unknown element #{ element }.")
+        unless @ignored.key?(element)
+          STDERR.puts("ignored element: #{element}")
+          @ignored[element] = element
+        end
 	o = Documentation.new	# which accepts any element.
       end
       # node could be a pseudo element.  pseudo element has its own parent.
@@ -127,7 +131,10 @@ private
       value_ele = ns.parse(value, true)
       value_ele.source = value  # for recovery; value may not be a QName
       unless o.parse_attr(attr_ele, value_ele)
-	STDERR.puts("Unknown attr #{ attr_ele }.")
+        unless @ignored.key?(attr_ele)
+          STDERR.puts("ignored attr: #{attr_ele}")
+          @ignored[attr_ele] = attr_ele
+        end
       end
     end
     o
