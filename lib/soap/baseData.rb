@@ -95,7 +95,7 @@ public
     @name = nil
     @id = nil
     @precedents = []
-    @root = 0
+    @root = false
     @parent = nil
     @position = nil
   end
@@ -120,7 +120,7 @@ public
     @name = nil
     @id = nil
     @precedents = []
-    @root = 0
+    @root = false
     @parent = nil
     @refId = refId
     @obj = nil
