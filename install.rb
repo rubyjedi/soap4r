@@ -31,20 +31,30 @@ def installDir(from, to)
 end
 
 begin
-  installDir(join(SRCPATH, 'lib', 'soap'),
+  installDir(
+    join(SRCPATH, 'lib', 'soap'),
     join(DSTPATH, 'soap'))
-  installDir(join(SRCPATH, 'lib', 'soap', 'rpc'),
+  installDir(
+    join(SRCPATH, 'lib', 'soap', 'rpc'),
     join(DSTPATH, 'soap', 'rpc'))
-  installDir(join(SRCPATH, 'lib', 'soap', 'mapping'),
+  installDir(
+    join(SRCPATH, 'lib', 'soap', 'mapping'),
     join(DSTPATH, 'soap', 'mapping'))
-  installDir(join(SRCPATH, 'lib', 'wsdl'),
+  installDir(
+    join(SRCPATH, 'lib', 'wsdl'),
     join(DSTPATH, 'wsdl'))
-  installDir(join(SRCPATH, 'lib', 'wsdl', 'xmlSchema'),
+  installDir(
+    join(SRCPATH, 'lib', 'wsdl', 'xmlSchema'),
     join(DSTPATH, 'wsdl', 'xmlSchema'))
-  installDir(join(SRCPATH, 'lib', 'wsdl', 'soap'),
+  installDir(
+    join(SRCPATH, 'lib', 'wsdl', 'soap'),
     join(DSTPATH, 'wsdl', 'soap'))
-  installDir(join(SRCPATH, 'lib', 'xsd'),
+  installDir(
+    join(SRCPATH, 'lib', 'xsd'),
     join(DSTPATH, 'xsd'))
+  installDir(
+    join(SRCPATH, 'lib', 'xsd', 'xmlparser'),
+    join(DSTPATH, 'xsd', 'xmlparser'))
 
   puts "install succeed!"
 
