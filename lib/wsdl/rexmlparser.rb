@@ -39,7 +39,7 @@ class WSDLREXMLParser < WSDLParser
     if REXML::VERSION_MAJOR < 2 or
 	( REXML::VERSION_MAJOR == 2 and REXML::VERSION_MINOR <= 4 )
       source = if charset
-	  ::SOAP::Charset.codeConv( stringOrReadable, charset, 'UTF8' )
+	  ::SOAP::Charset.codeConv( stringOrReadable, ::SOAP::Charset.getCharsetStr( charset ), 'UTF8' )
 	else
 	  stringOrReadable
 	end
