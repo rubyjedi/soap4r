@@ -48,8 +48,8 @@ class SOAPHandler < Handler
     when SOAPReference
       attrs['href'] = data.refidstr
       generator.encode_tag(name, attrs)
-    when SOAPAttachment
-      data.attached
+    when SOAPExternalReference
+      data.referred
       attrs['href'] = data.refidstr
       generator.encode_tag(name, attrs)
     when SOAPRawString
