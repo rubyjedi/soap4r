@@ -26,31 +26,16 @@ module SOAP
 class SOAPXMLScanner < SOAPParser
   def initialize( *vars )
     super( *vars )
-    @charsetBackup = nil
-  end
-
-  def epilogue
-    $KCODE = @charsetBackup if @charsetBackup
   end
 
   def doParse( stringOrReadable )
     @scanner = XMLScan::XMLScanner.new( Visitor.new( self ))
-    if @scanner.respond_to?( :kcode )
-      @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset ) if charset
-    else
-      @charsetBackup = $KCODE
-      $KCODE = ::SOAP::Charset.getCharsetStr( charset ) if charset
-    end
+    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset ) if charset
     @scanner.parse( stringOrReadable )
   end
 
   def setScannerKCode( charset )
-    if @scanner.respond_to?( :kcode )
-      @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset ) if charset
-    elsif self.charset.nil?
-      @charsetBackup = $KCODE
-      $KCODE = ::SOAP::Charset.getCharsetStr( charset ) if charset
-    end
+    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset ) if charset
     setXMLDeclEncoding( charset )
   end
 
