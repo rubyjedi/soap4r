@@ -147,7 +147,7 @@ private
       SOAPString.new( 'Server' ),
       SOAPString.new( e.to_s ),
       SOAPString.new( @actor ),
-      RPCUtils.obj2soap( detail ))
+      RPCUtils.obj2soap( detail, @mappingRegistry ))
   end
 
   # Dispatch to defined method.
