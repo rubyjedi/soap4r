@@ -1,6 +1,6 @@
 =begin
-SOAP4R
-Copyright (C) 2000 NAKAMURA Hiroshi.
+SOAP4R - XML Schema Datatype implementation.
+Copyright (C) 2000, 2001 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -20,10 +20,12 @@ Ave, Cambridge, MA 02139, USA.
 ## XMLSchamaDatatypes general definitions.
 #
 module XSD
-  Namespace = 'http://www.w3.org/1999/XMLSchema'
-  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  #Namespace = 'http://www.w3.org/1999/XMLSchema/'
-  #InstanceNamespace = 'http://www.w3.org/1999/XMLSchema/instance/'
+  Namespace = 'http://www.w3.org/2001/XMLSchema'
+  InstanceNamespace = 'http://www.w3.org/2001/XMLSchema-instance'
+  NilLiteral = 'nil'
+  #Namespace = 'http://www.w3.org/1999/XMLSchema'
+  #InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
+  #NilLiteral = 'null'
 end
 
 
@@ -33,7 +35,7 @@ end
 class NSDBase
   public
 
-  attr_reader :typeName
+  attr_accessor :typeName
   attr_accessor :typeNamespace
 
   def initialize( typeName, typeNamespace )
@@ -67,9 +69,9 @@ end
 ###
 ## Basic datatypes.
 #
-class XSDNull < XSDBase
+class XSDNil < XSDBase
   def initialize()
-    super( 'null' )
+    super( XSD::NilLiteral )
   end
 end
 
@@ -120,6 +122,19 @@ class XSDDecimal < XSDBase
   end
 end
 
+class XSDFloat < XSDBase
+  public
+
+  def initialize( initFloat = nil )
+    super( 'float' )
+    set( initFloat ) if initFloat
+  end
+
+  def set( newFloat )
+    @data = newFloat.to_f
+  end
+end
+
 class XSDDateTime < XSDBase
   require 'date3'
   require 'parsedate3'
@@ -135,11 +150,19 @@ class XSDDateTime < XSDBase
     if ( t.is_a?( Date ))
       @data = t.dup
     elsif ( t.is_a?( Time ))
-      @data = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
+      gt = t.dup.gmtime
+      @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
     else
       ( year, mon, mday, hour, min, sec, zone, wday ) = ParseDate.parsedate( t.to_s )
-      @data = Date.new3( year, mon, mday, hour, min, sec )
+      if $DEBUG && zone
+	$stderr.puts "Timezone in String is not supported.  Set a Date or a Time directly!"
+      end
+      @data = Date.new3( year, mon, mday, hour, min )
     end
+  end
+
+  def to_s
+    @data.to_s.sub( /,.*$/, '' )
   end
 end
 
