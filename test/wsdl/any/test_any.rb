@@ -1,9 +1,9 @@
 require 'test/unit'
 require 'wsdl/parser'
-module WSDL; module SimpleType
+module WSDL; module Any
 
 
-class TestRPC < Test::Unit::TestCase
+class TestAny < Test::Unit::TestCase
   DIR = File.dirname(File.expand_path(__FILE__))
   def pathname(filename)
     File.join(DIR, filename)
