@@ -21,10 +21,11 @@ $testResultDrv = SOAP::Driver.new( $testResultLog, 'SOAPBuildersInteropResult', 
 SOAPBuildersInteropResult::Methods.each do | methodName, *params |
   $testResultDrv.addMethod( methodName, params )
 end
+#$testResultDrv.setWireDumpDev( STDERR )
 
 client = SOAPBuildersInteropResult::Endpoint.new
 client.processorName = 'SOAP4R'
-client.processorVersion = SOAP::Version
+client.processorVersion = '1.4'
 client.uri = '210.233.24.119:*'
 client.wsdl = 'Not used.'
 
@@ -209,6 +210,26 @@ def doTestBase( drv )
     dumpException( title )
   end
 
+  title = 'echoString (Entity reference)'
+  dumpTitle( title )
+  begin
+    arg = "<>\"& &lt;&gt;&quot;&amp; &amp&amp;><<<"
+    var = drv.echoString( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoString (Character reference)'
+  dumpTitle( title )
+  begin
+    arg = "\x7f&#x7f;"
+    var = drv.echoString( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
   title = 'echoString (Leading and trailing whitespace)'
   dumpTitle( title )
   begin
@@ -279,17 +300,17 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoStringArray (sparse)'
-  dumpTitle( title )
-  begin
-    arg = [ nil, "SOAP4R\n", nil, " Interoperability ", nil, "\tTest\t", nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
-    soapAry.sparse = true
-    var = drv.echoStringArray( soapAry )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoStringArray (sparse)'
+#  dumpTitle( title )
+#  begin
+#    arg = [ nil, "SOAP4R\n", nil, " Interoperability ", nil, "\tTest\t", nil ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    soapAry.sparse = true
+#    var = drv.echoStringArray( soapAry )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoStringArray (multi-ref)'
   dumpTitle( title )
@@ -327,18 +348,18 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoStringArray (sparse, multi-ref)'
-  dumpTitle( title )
-  begin
-    str = "SOAP4R"
-    arg = StringArray[ nil, nil, nil, nil, nil, str, nil, str ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
-    soapAry.sparse = true
-    var = drv.echoStringArray( soapAry )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoStringArray (sparse, multi-ref)'
+#  dumpTitle( title )
+#  begin
+#    str = "SOAP4R"
+#    arg = StringArray[ nil, nil, nil, nil, nil, str, nil, str ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    soapAry.sparse = true
+#    var = drv.echoStringArray( soapAry )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoInteger (Int: 123)'
   dumpTitle( title )
@@ -401,17 +422,17 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoIntegerArray (sparse)'
-  dumpTitle( title )
-  begin
-    arg = [ nil, 1, nil, 2, nil, 3, nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::IntLiteral, SOAPBuildersInterop::MappingRegistry )
-    soapAry.sparse = true
-    var = drv.echoIntegerArray( soapAry )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoIntegerArray (sparse)'
+#  dumpTitle( title )
+#  begin
+#    arg = [ nil, 1, nil, 2, nil, 3, nil ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::IntLiteral, SOAPBuildersInterop::MappingRegistry )
+#    soapAry.sparse = true
+#    var = drv.echoIntegerArray( soapAry )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoFloat'
   dumpTitle( title )
@@ -506,17 +527,17 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoFloatArray (sparse)'
-  dumpTitle( title )
-  begin
-    arg = [ nil, nil, 0.0001, 1000.0, 0.0, nil, nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::FloatLiteral, SOAPBuildersInterop::MappingRegistry ) 
-    soapAry.sparse = true
-    var = drv.echoFloatArray( soapAry )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoFloatArray (sparse)'
+#  dumpTitle( title )
+#  begin
+#    arg = [ nil, nil, 0.0001, 1000.0, 0.0, nil, nil ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::FloatLiteral, SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry.sparse = true
+#    var = drv.echoFloatArray( soapAry )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoStruct'
   dumpTitle( title )
@@ -564,20 +585,20 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoStructArray (sparse)'
-  dumpTitle( title )
-  begin
-    s1 = SOAPStruct.new( 1, 1.1, "a" )
-    s2 = SOAPStruct.new( 2, 2.2, "b" )
-    s3 = SOAPStruct.new( 3, 3.3, "c" )
-    arg = [ nil, s1, s2, s3 ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
-    soapAry.sparse = true
-    var = drv.echoStructArray( soapAry )
-    dumpNormal( title, arg, var ) 
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoStructArray (sparse)'
+#  dumpTitle( title )
+#  begin
+#    s1 = SOAPStruct.new( 1, 1.1, "a" )
+#    s2 = SOAPStruct.new( 2, 2.2, "b" )
+#    s3 = SOAPStruct.new( 3, 3.3, "c" )
+#    arg = [ nil, s1, s2, s3 ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry.sparse = true
+#    var = drv.echoStructArray( soapAry )
+#    dumpNormal( title, arg, var ) 
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoStructArray (multi-ref)'
   dumpTitle( title )
@@ -615,33 +636,33 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoStructArray (sparse, multi-ref)'
-  dumpTitle( title )
-  begin
-    s1 = SOAPStruct.new( 1, 1.1, "a" )
-    s2 = SOAPStruct.new( 2, 2.2, "b" )
-    arg = [ nil, s1, nil, nil, s2, nil, s2 ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
-    soapAry.sparse = true
-    var = drv.echoStructArray( soapAry )
-    dumpNormal( title, arg, var ) 
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoStructArray (sparse, multi-ref)'
+#  dumpTitle( title )
+#  begin
+#    s1 = SOAPStruct.new( 1, 1.1, "a" )
+#    s2 = SOAPStruct.new( 2, 2.2, "b" )
+#    arg = [ nil, s1, nil, nil, s2, nil, s2 ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry.sparse = true
+#    var = drv.echoStructArray( soapAry )
+#    dumpNormal( title, arg, var ) 
+#  rescue Exception
+#    dumpException( title )
+#  end
 
-  title = 'echoStructArray (sparse, multi-ref: elem5 == elem7)'
-  dumpTitle( title )
-  begin
-    s1 = SOAPStruct.new( 1, 1.1, "a" )
-    s2 = SOAPStruct.new( 2, 2.2, "b" )
-    arg = [ nil, s1, nil, nil, s2, nil, s2 ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
-    soapAry.sparse = true
-    var = drv.echoStructArray( soapAry )
-    dumpNormal( title, getIdObj( var[4] ), getIdObj( var[6] )) 
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoStructArray (sparse, multi-ref: elem5 == elem7)'
+#  dumpTitle( title )
+#  begin
+#    s1 = SOAPStruct.new( 1, 1.1, "a" )
+#    s2 = SOAPStruct.new( 2, 2.2, "b" )
+#    arg = [ nil, s1, nil, nil, s2, nil, s2 ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry.sparse = true
+#    var = drv.echoStructArray( soapAry )
+#    dumpNormal( title, getIdObj( var[4] ), getIdObj( var[6] )) 
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoStructArray (multi-ref: varString of elem1 == varString of elem2)'
   dumpTitle( title )
@@ -673,22 +694,22 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoStructArray (sparse, multi-ref: varString of elem5 == varString of elem7)'
-  dumpTitle( title )
-  begin
-    str1 = "c"
-    str2 = "c"
-    s1 = SOAPStruct.new( 1, 1.1, str2 )
-    s2 = SOAPStruct.new( 2, 2.2, str1 )
-    s3 = SOAPStruct.new( 3, 3.3, str1 )
-    arg = [ nil, s1, nil, nil, s2, nil, s3 ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
-    soapAry.sparse = true
-    var = drv.echoStructArray( soapAry )
-    dumpNormal( title, getIdObj( var[4].varString ), getIdObj( var[6].varString )) 
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoStructArray (sparse, multi-ref: varString of elem5 == varString of elem7)'
+#  dumpTitle( title )
+#  begin
+#    str1 = "c"
+#    str2 = "c"
+#    s1 = SOAPStruct.new( 1, 1.1, str2 )
+#    s2 = SOAPStruct.new( 2, 2.2, str1 )
+#    s3 = SOAPStruct.new( 3, 3.3, str1 )
+#    arg = [ nil, s1, nil, nil, s2, nil, s3 ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry.sparse = true
+#    var = drv.echoStructArray( soapAry )
+#    dumpNormal( title, getIdObj( var[4].varString ), getIdObj( var[6].varString )) 
+#  rescue Exception
+#    dumpException( title )
+#  end
 
 #  title = 'echoStructArray (2D Array)'
 #  dumpTitle( title )
@@ -1057,20 +1078,20 @@ if $test_echoMap
     dumpException( title )
   end
 
-  title = 'echoMapArray (sparse)'
-  dumpTitle( title )
-  begin
-    map1 = { "a" => 1, "b" => 2 }
-    map2 = { "a" => 1, "b" => 2 }
-    map3 = { "a" => 1, "b" => 2 }
-    arg = [ nil, nil, map1, nil, map2, nil, map3, nil, nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
-    soapAry.sparse = true
-    var = drv.echoMapArray( soapAry )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoMapArray (sparse)'
+#  dumpTitle( title )
+#  begin
+#    map1 = { "a" => 1, "b" => 2 }
+#    map2 = { "a" => 1, "b" => 2 }
+#    map3 = { "a" => 1, "b" => 2 }
+#    arg = [ nil, nil, map1, nil, map2, nil, map3, nil, nil ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry.sparse = true
+#    var = drv.echoMapArray( soapAry )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoMapArray (multibyte char)'
   dumpTitle( title )
@@ -1085,19 +1106,19 @@ if $test_echoMap
     dumpException( title )
   end
 
-  title = 'echoMapArray (sparse, multi-ref)'
-  dumpTitle( title )
-  begin
-    map1 = { "a" => 1, "b" => 2 }
-    map2 = { "a" => 1, "b" => 2 }
-    arg = [ nil, nil, map1, nil, map2, nil, map1, nil, nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
-    soapAry.sparse = true
-    var = drv.echoMapArray( soapAry )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoMapArray (sparse, multi-ref)'
+#  dumpTitle( title )
+#  begin
+#    map1 = { "a" => 1, "b" => 2 }
+#    map2 = { "a" => 1, "b" => 2 }
+#    arg = [ nil, nil, map1, nil, map2, nil, map1, nil, nil ]
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
+#    soapAry.sparse = true
+#    var = drv.echoMapArray( soapAry )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoMapArray (multi-ref: elem1 == elem2)'
   dumpTitle( title )
@@ -1224,39 +1245,39 @@ def doTestGroupB( drv )
     dumpException( title )
   end
 
-  title = 'echo2DStringArray (sparse)'
-  dumpTitle( title )
-  begin
-    # ary2md converts Arry ((of Array)...) into M-D anyType Array
-    arg = [
-      [ 'r0c0', nil,    'r0c2' ],
-      [ nil,    'r1c1', 'r1c2' ],
-    ]
-    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
-    md.sparse = true
+#  title = 'echo2DStringArray (sparse)'
+#  dumpTitle( title )
+#  begin
+#    # ary2md converts Arry ((of Array)...) into M-D anyType Array
+#    arg = [
+#      [ 'r0c0', nil,    'r0c2' ],
+#      [ nil,    'r1c1', 'r1c2' ],
+#    ]
+#    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    md.sparse = true
+#
+#    var = drv.echo2DStringArray( md )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
-    var = drv.echo2DStringArray( md )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
-
-  title = 'echo2DStringArray (anyType, sparse)'
-  dumpTitle( title )
-  begin
-    # ary2md converts Arry ((of Array)...) into M-D anyType Array
-    arg = [
-      [ 'r0c0', nil,    'r0c2' ],
-      [ nil,    'r1c1', 'r1c2' ],
-    ]
-    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
-    md.sparse = true
-
-    var = drv.echo2DStringArray( md )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echo2DStringArray (anyType, sparse)'
+#  dumpTitle( title )
+#  begin
+#    # ary2md converts Arry ((of Array)...) into M-D anyType Array
+#    arg = [
+#      [ 'r0c0', nil,    'r0c2' ],
+#      [ nil,    'r1c1', 'r1c2' ],
+#    ]
+#    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    md.sparse = true
+#
+#    var = drv.echo2DStringArray( md )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echo2DStringArray (multi-ref)'
   dumpTitle( title )
@@ -1313,23 +1334,23 @@ def doTestGroupB( drv )
     dumpException( title )
   end
 
-  title = 'echo2DStringArray (sparse, multi-ref)'
-  dumpTitle( title )
-  begin
-    # ary2md converts Arry ((of Array)...) into M-D anyType Array
-    str = "BANG!"
-    arg = [
-      [ 'r0c0', nil, str    ],
-      [ nil,    str, 'r1c2' ],
-    ]
-    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
-    md.sparse = true
-
-    var = drv.echo2DStringArray( md )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echo2DStringArray (sparse, multi-ref)'
+#  dumpTitle( title )
+#  begin
+#    # ary2md converts Arry ((of Array)...) into M-D anyType Array
+#    str = "BANG!"
+#    arg = [
+#      [ 'r0c0', nil, str    ],
+#      [ nil,    str, 'r1c2' ],
+#    ]
+#    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
+#    md.sparse = true
+#
+#    var = drv.echo2DStringArray( md )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoNestedStruct'
   dumpTitle( title )
@@ -1410,20 +1431,20 @@ def doTestGroupB( drv )
     dumpException( title )
   end
 
-  title = 'echoNestedArray (sparse, multi-ref)'
-  dumpTitle( title )
-  begin
-    str = "!"
-    subAry = [ nil, nil, str, nil, str, nil ]
-    ary = SOAP::RPCUtils.ary2soap( subAry, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry ) 
-    ary.sparse = true
-    arg = SOAPArrayStruct.new( 1, 1.1, str, ary )
-    argNormalized = SOAPArrayStruct.new( 1, 1.1, str, subAry )
-    var = drv.echoNestedArray( arg )
-    dumpNormal( title, argNormalized, var )
-  rescue Exception
-    dumpException( title )
-  end
+#  title = 'echoNestedArray (sparse, multi-ref)'
+#  dumpTitle( title )
+#  begin
+#    str = "!"
+#    subAry = [ nil, nil, str, nil, str, nil ]
+#    ary = SOAP::RPCUtils.ary2soap( subAry, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry ) 
+#    ary.sparse = true
+#    arg = SOAPArrayStruct.new( 1, 1.1, str, ary )
+#    argNormalized = SOAPArrayStruct.new( 1, 1.1, str, subAry )
+#    var = drv.echoNestedArray( arg )
+#    dumpNormal( title, argNormalized, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
 =begin
   title = 'echoXSDDateTime'

@@ -2,8 +2,8 @@
 
 $serverName = 'GLUE'
 
-$serverBase = 'http://www.themindelectric.net:8005/glue/round2.wsdl'
-$serverGroupB = 'http://www.themindelectric.net:8005/glue/round2B.wsdl'
+$serverBase = 'http://www.themindelectric.net:8005/glue/round2'
+$serverGroupB = 'http://www.themindelectric.net:8005/glue/round2B'
 
 require 'clientBase'
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-$serverName = '4S4C'
-$server = 'http://soap.4s4c.com/ilab/soap.asp'
+$serverName = 'Spheon JSOAP'
+$server = 'http://213.23.125.181:8081/RPC'
 
 require 'clientBase'
 
