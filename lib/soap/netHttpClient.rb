@@ -58,7 +58,11 @@ class NetHttpClient
   end
 
   def set_cookie_store(filename)
-    # ignored.
+    raise NotImplementedError.new
+  end
+
+  def save_cookie_store(filename)
+    raise NotImplementedError.new
   end
 
   def reset(url)

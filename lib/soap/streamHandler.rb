@@ -83,6 +83,7 @@ public
     @options = options
     set_options
     @client.debug_dev = @wiredump_dev
+    @cookie_store = nil
   end
 
   def test_loopback_response
@@ -99,6 +100,7 @@ public
 
   def reset
     @client.reset(@endpoint_url)
+    @client.save_cookie_store if @cookie_store
   end
 
 private
@@ -151,8 +153,8 @@ private
   end
 
   def set_cookie_store_file(value)
-    return unless value
-    raise NotImplementedError.new
+    @cookie_store = value
+    @client.set_cookie_store(@cookie_store) if @cookie_store
   end
 
   def set_ssl_config(value)
