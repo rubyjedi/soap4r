@@ -58,9 +58,11 @@ class Import < Info
     when LocationAttrName
       @location = value
       @content = import(@location)
-      @content.root = root
-      if @namespace
-	@content.targetnamespace = @namespace
+      if @content.is_a?(Definitions)
+	@content.root = root
+	if @namespace
+	  @content.targetnamespace = @namespace
+	end
       end
       @location
     else

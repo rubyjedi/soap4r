@@ -102,7 +102,7 @@ private
       XSD::AnyTypeName)
     detail.minoccurs = 0
     type.all_elements = [faultcode, faultstring, faultactor, detail]
-    type.content.final = 'extension'
+    type.final = 'extension'
     type
   end
 
