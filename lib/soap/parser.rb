@@ -94,6 +94,7 @@ public
     @option = opt
     @handlers = {}
     @decodeComplexTypes = @option[ 'decodeComplexTypes' ] || nil
+    @allowUnqualifiedElement = @option[ 'allowUnqualifiedElement' ] || false
     EncodingStyleHandler.defaultHandler =
       EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
       EncodingNamespace )
@@ -202,23 +203,22 @@ private
     # SOAP Envelope parsing.
     element = ns.parse( name )
     if (( element.namespace == EnvelopeNamespace ) ||
-	( @option.has_key?( 'allowUnqualifiedElement' ) &&
-	element.namespace.nil? ))
-      if element.name == 'Envelope'
+	( @allowUnqualifiedElement && element.namespace.nil? ))
+      if element.name == EleEnvelope
 	o = SOAPEnvelope.new
-      elsif element.name == 'Header'
+      elsif element.name == EleHeader
 	unless parent.node.is_a?( SOAPEnvelope )
 	  raise FormatDecodeError.new( "Header should be a child of Envelope." )
 	end
 	o = SOAPHeader.new
 	parent.node.header = o
-      elsif element.name == 'Body'
+      elsif element.name == EleBody
 	unless parent.node.is_a?( SOAPEnvelope )
 	  raise FormatDecodeError.new( "Body should be a child of Envelope." )
 	end
 	o = SOAPBody.new
 	parent.node.body = o
-      elsif element.name == 'Fault'
+      elsif element.name == EleFault
 	unless parent.node.is_a?( SOAPBody )
 	  raise FormatDecodeError.new( "Fault should be a child of Body." )
 	end

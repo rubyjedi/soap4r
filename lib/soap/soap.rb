@@ -29,16 +29,32 @@ LiteralNamespace = 'http://xml.apache.org/xml-soap/literalxml'
 
 NextActor = 'http://schemas.xmlsoap.org/soap/actor/next'
 
+EleEnvelope = 'Envelope'
+EleHeader = 'Header'
+EleBody = 'Body'
+EleFault = 'Fault'
+EleFaultString = 'faultstring'
+EleFaultActor = 'faultactor'
+EleFaultCode = 'faultcode'
+EleFaultDetail = 'detail'
+
 AttrMustUnderstand = 'mustUnderstand'
 AttrEncodingStyle = 'encodingStyle'
 AttrActor = 'actor'
-
 AttrRoot = 'root'
 AttrArrayType = 'arrayType'
 AttrOffset = 'offset'
 AttrPosition = 'position'
 ValueArray = 'Array'
 
+EleEnvelopeName = XSD::QName.new( EnvelopeNamespace, EleEnvelope )
+EleHeaderName = XSD::QName.new( EnvelopeNamespace, EleHeader )
+EleBodyName = XSD::QName.new( EnvelopeNamespace, EleBody )
+EleFaultName = XSD::QName.new( EnvelopeNamespace, EleFault )
+EleFaultStringName = XSD::QName.new( nil, EleFaultString )
+EleFaultActorName = XSD::QName.new( nil, EleFaultActor )
+EleFaultCodeName = XSD::QName.new( nil, EleFaultCode )
+EleFaultDetailName = XSD::QName.new( nil, EleFaultDetail )
 AttrEncodingStyleName = XSD::QName.new( EnvelopeNamespace, AttrEncodingStyle )
 AttrRootName = XSD::QName.new( EncodingNamespace, AttrRoot )
 AttrArrayTypeName = XSD::QName.new( EncodingNamespace, AttrArrayType )
