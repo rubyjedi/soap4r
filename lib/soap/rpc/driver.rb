@@ -102,10 +102,6 @@ class Driver
     end
   end
 
-  def inspect
-    "#<#{self.class}:#{@proxy.inspect}>"
-  end
-
   def add_rpc_method(name, *params)
     add_rpc_method_with_soapaction_as(name, name, @soapaction, *params)
   end
