@@ -2,11 +2,11 @@
 
 $serverName = 'SOAP4R'
 
+require 'clientBase'
+
 $server = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/'
 #$server = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/1999/'
 #require 'soap/XMLSchemaDatatypes1999'
-
-require 'clientBase'
 
 log = Log.new( STDERR )
 log.sevThreshold = Log::SEV_INFO	# Log::SEV_WARN, Log::SEV_DEBUG
