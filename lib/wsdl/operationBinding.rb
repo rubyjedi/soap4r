@@ -51,6 +51,43 @@ class OperationBinding < Info
     getPortType.operations[ @name ]
   end
 
+  def inputOperationInfo
+    operation = getOperation
+    soapBody = input.soapBody
+
+    if soapBody.use != "encoded"
+      raise NotImplementedError.new( "Use '#{ soapBody.use }' not supported." )
+    end
+    if soapBody.encodingStyle != ::SOAP::EncodingNamespace
+      raise NotImplementedError.new(
+	"EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
+    end
+
+    name = operation.inputName
+    name.namespace = soapBody.namespace if soapBody.namespace
+    parts = operation.getInputParts     # sorted
+    soapAction = soapOperation.soapAction
+    return name, parts, soapAction
+  end
+
+  def outputOperationInfo
+    operation = getOperation
+    soapBody = output.soapBody
+
+    if soapBody.use != "encoded"
+      raise NotImplementedError.new( "Use '#{ soapBody.use }' not supported." )
+    end
+    if soapBody.encodingStyle != ::SOAP::EncodingNamespace
+      raise NotImplementedError.new(
+	"EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
+    end
+
+    name = operation.outputName
+    name.namespace = soapBody.namespace if soapBody.namespace
+    parts = operation.getOutputParts     # sorted
+    return name, parts
+  end
+
   InputName = XSD::QName.new( Namespace, 'input' )
   OutputName = XSD::QName.new( Namespace, 'output' )
   FaultName = XSD::QName.new( Namespace, 'fault' )
