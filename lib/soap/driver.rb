@@ -38,7 +38,8 @@ class Driver
   def initialize( log, logId, namespace, endPoint, httpProxy = nil, soapAction = nil )
     @log = log
     @logId = logId
-    log( SEV_INFO, 'initialize: initializing SOAP driver...' )
+    @logIdPrefix = "<#{ @logId }> "
+    log( SEV_INFO ) { 'initialize: initializing SOAP driver...' }
     @namespace = namespace
     @handler = HTTPPostStreamHandler.new( endPoint, httpProxy, Charset.getXMLInstanceEncoding )
     @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
@@ -79,7 +80,7 @@ class Driver
   end
 
   def method_missing( msg_id, *params )
-    log( SEV_INFO, "method_missing: invoked '#{ msg_id.id2name }'." )
+    log( SEV_INFO ) { "method_missing: invoked '#{ msg_id.id2name }'." }
     call( msg_id.id2name, *params )
   end
 
@@ -93,17 +94,17 @@ private
     EOS
   end
 
-  def log( sev, comment )
-    @log.add( sev, "<#{ @logId }> #{ comment }", self.type ) if @log
+  def log( sev )
+    @log.add( sev, nil, self.type ) { @logIdPrefix + yield } if @log
   end
 
   def call( methodName, *params )
-    log( SEV_INFO, "call: calling method '#{ methodName }'." )
-    log( SEV_DEBUG, "call: parameters '#{ params.inspect }'." )
+    log( SEV_INFO ) { "call: calling method '#{ methodName }'." }
+    log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
 
     # Convert parameters
     params.collect! { |param| RPCUtils.obj2soap( param, @mappingRegistry ) }
-    log( SEV_DEBUG, "call: parameters '#{ params.inspect }'." )
+    log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
 
     # Prepare SOAP header.
     headers = nil
@@ -122,7 +123,7 @@ private
     header, body = @proxy.call( ns, headers, methodName, *params )
 
     # Check Fault.
-    log( SEV_INFO, "call: checking SOAP-Fault..." )
+    log( SEV_INFO ) { "call: checking SOAP-Fault..." }
     begin
       @proxy.checkFault( body )
     rescue SOAP::FaultError => e

@@ -54,7 +54,7 @@ protected
 private
   
   def request_handler(request, response)
-    log( SEV_INFO, "Received a request." )
+    log( SEV_INFO ) { "Received a request." }
     
     if request.method != 'POST'
       raise SAError.new( "Method '#{ request.method }' not allowed." )
@@ -65,13 +65,13 @@ private
       raise SAError.new( "Content-length too long." )
     end
 
-    log( SEV_INFO, "Request: method: #{ request.method }, size: #{ length }" )
+    log( SEV_INFO ) { "Request: method: #{ request.method }, size: #{ length }" }
     
     requestString = request.data.read( length )        
-    log( SEV_DEBUG, "XML Request: #{requestString}" )
+    log( SEV_DEBUG ) { "XML Request: #{requestString}" }
 
     responseString, isFault = route( requestString )
-    log( SEV_DEBUG, "XML Response: #{responseString}" )
+    log( SEV_DEBUG ) { "XML Response: #{responseString}" }
     
     unless isFault
       response.status = 200

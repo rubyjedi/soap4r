@@ -99,17 +99,17 @@ private
     prologue
 
     begin
-      log( SEV_INFO, "Received a request from '#{ @remote_user }@#{ @remote_host }'." )
+      log( SEV_INFO ) { "Received a request from '#{ @remote_user }@#{ @remote_host }'." }
     
       # SOAP request parsing.
       @request = SOAPRequest.new.init
-      log( SEV_INFO, "SOAP CGI Request: #{@request}" )
+      log( SEV_INFO ) { "SOAP CGI Request: #{@request}" }
 
       requestString = @request.dump
-      log( SEV_DEBUG, "XML Request: #{requestString}" )
+      log( SEV_DEBUG ) { "XML Request: #{requestString}" }
 
       responseString, isFault = route( requestString )
-      log( SEV_DEBUG, "XML Response: #{responseString}" )
+      log( SEV_DEBUG ) { "XML Response: #{responseString}" }
 
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
@@ -122,7 +122,7 @@ private
       @response.body.type = 'text/xml'
       @response.body.charset = Charset.getXMLInstanceEncoding
       str = @response.dump
-      log( SEV_DEBUG, "SOAP CGI Response:\n#{ str }" )
+      log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
       print str
 
       epilogue
@@ -135,7 +135,7 @@ private
       @response.status = 500
       @response.body.type = 'text/xml'
       str = @response.dump
-      log( SEV_DEBUG, "SOAP CGI Response:\n#{ str }" )
+      log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
       print str
       raise
 
