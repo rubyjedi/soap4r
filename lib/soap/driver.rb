@@ -76,7 +76,7 @@ public
 	SOAPMethod.createParamDef( paramArg )
       end
     @proxy.addMethodAs( nameAs, name, paramDef, soapAction )
-    addMethodInterface( name )
+    addMethodInterface( name, paramDef )
   end
 
 
@@ -116,7 +116,7 @@ public
     log( SEV_INFO ) { "invoke: invoking message '#{ reqBody.type }'." }
 
     if @dumpFileBase
-      @handler.dumpFileBase = @dumpFileBase + '_' << methodName
+      @handler.dumpFileBase = @dumpFileBase + '_' << reqBody.elementName.name
     end
 
     data = @proxy.invoke( reqHeaders, reqBody )
@@ -163,10 +163,19 @@ public
 
 private
 
-  def addMethodInterface( name )
+  def addMethodInterface( name, paramDef )
+    paramNames = []
+    @proxy.method[ name ].eachParamName( RPCUtils::SOAPMethod::IN, RPCUtils::SOAPMethod::INOUT ) do | paramName |
+      paramNames << paramName
+    end
+    callParamStr = if paramNames.empty?
+	""
+      else
+	", " << paramNames.join( ", " )
+      end
     self.instance_eval <<-EOS
-      def #{ name }( *params )
-	call( "#{ name }", *params )
+      def #{ name }( #{ paramNames.join( ", " ) } )
+	call( "#{ name }"#{ callParamStr } )
       end
     EOS
   end
