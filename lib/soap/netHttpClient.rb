@@ -91,6 +91,7 @@ private
 	http.set_debug_output(@debug_dev)
       end
       response, = yield(http)
+      http.finish
     }
     response
   end
