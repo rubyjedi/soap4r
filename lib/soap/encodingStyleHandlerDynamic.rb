@@ -97,6 +97,9 @@ module SOAP
 	o = SOAPArray.decode( ns, entity, typeNamespace, typeNameString )
 	if offset
 	  o.offset = parseArrayPosition( offset )
+	  o.sparse = true
+	else
+	  o.sparse = false
 	end
 	# ToDo: xsi:type should be checked here...
 
@@ -142,6 +145,7 @@ module SOAP
       o.parent = parent
       o.id = id 
       o.root = root
+      o.position = position
 
       unless o.is_a?( SOAPTemporalObject )
 	@idPool << o if o.id
@@ -249,6 +253,7 @@ module SOAP
       when SOAPArray
 	if node.position
 	  parent.node[ *( parseArrayPosition( node.position )) ] = node
+	  parent.node.sparse = true
 	else
 	  parent.node.add( node )
 	end
@@ -276,7 +281,8 @@ module SOAP
 
       entity.attrs.each do | key, value |
 	if ( ns.compare( XSD::Namespace, XSD::NilLiteral, key ))
-	  isNil = ( value == XSD::NilValue )
+	  isNil = (( value == 'true' ) || ( value == '1' ))
+	  # isNil = ( value == XSD::NilValue )
 	elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	  type = value
 	elsif ( ns.compare( EncodingNamespace, AttrArrayType, key ))
