@@ -156,23 +156,6 @@ class Definitions < Info
     nil
   end
 
-  def getComplexTypesWithMessages
-    types = complexTypes
-    messages.each do | message |
-      type = XMLSchema::ComplexType.new
-      type.setAnonymousTypeName( message.name )
-      type.content = XMLSchema::Content.new( type )
-      message.parts.each do | part |
-	ele = XMLSchema::Element.new
-	ele.name = part.name
-	ele.type = part.type
-	type.content.elements[ ele.name ] = ele
-      end
-      types << type
-    end
-    types
-  end
-
   TypesName = XSD::QName.new( Namespace, 'types' )
   MessageName = XSD::QName.new( Namespace, 'message' )
   PortTypeName = XSD::QName.new( Namespace, 'portType' )
