@@ -24,29 +24,27 @@ class HTTPServer < Logger::Application
     super(config[:SOAPHTTPServerApplicationName] || self.class.name)
     @default_namespace = config[:SOAPDefaultNamespace]
     @webrick_config = config.dup
+    self.level = Logger::Severity::ERROR # keep silent by default
     @webrick_config[:Logger] ||= @log
-    @server = nil
+    @log = @webrick_config[:Logger]     # sync logger of App and HTTPServer
     @soaplet = ::SOAP::RPC::SOAPlet.new
-    self.level = Logger::Severity::INFO
     on_init
+    @server = WEBrick::HTTPServer.new(@webrick_config)
+    @server.mount('/', @soaplet)
   end
 
   def on_init
-    # define extra methods in derived class.
+    # do extra initialization in a derived class if needed.
   end
 
   def status
-    if @server
-      @server.status
-    else
-      nil
-    end
+    @server.status if @server
   end
 
   def shutdown
     @server.shutdown if @server
   end
-  
+
   def mapping_registry
     @soaplet.app_scope_router.mapping_registry
   end
@@ -125,8 +123,6 @@ class HTTPServer < Logger::Application
 private
 
   def run
-    @server = WEBrick::HTTPServer.new(@webrick_config)
-    @server.mount('/', @soaplet)
     @server.start
   end
 end
