@@ -33,6 +33,7 @@ class Import < Info
     @namespace = nil
     @location = nil
     @content = nil
+    @web_client = nil
   end
 
   def parse_element(element)
@@ -71,11 +72,22 @@ private
     if FileTest.exist?(location)
       content = File.open(location).read
     else
-      require 'http-access2'
-      c = HTTPAccess2::Client.new(ENV['http_proxy'] || ENV['HTTP_PROXY'])
-      content = c.get_content(location)
+      proxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
+      content = web_client.new(@proxy, "WSDL4R").get_content(location)
     end
     WSDL::WSDLParser.create_parser.parse(content)
+  end
+
+  def web_client
+    @web_client ||= begin
+	require 'http-access2'
+	HTTPAccess2::Client
+      rescue LoadError
+	STDERR.puts "Loading http-access2 failed.  Net/http is used." if $DEBUG
+	require 'soap/netHttpClient'
+	SOAP::NetHttpClient
+      end
+    @web_client
   end
 end
 

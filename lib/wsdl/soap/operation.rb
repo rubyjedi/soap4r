@@ -26,10 +26,12 @@ module WSDL
 
 class Operation < Info
   attr_reader :soapaction
+  attr_reader :style
 
   def initialize
     super
     @soapaction = nil
+    @style = nil
   end
 
   def parse_element(element)
@@ -38,6 +40,8 @@ class Operation < Info
 
   def parse_attr(attr, value)
     case attr
+    when StyleAttrName
+      @style = value
     when SOAPActionAttrName
       @soapaction = value
     else

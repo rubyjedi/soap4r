@@ -54,6 +54,7 @@ SchemaName = XSD::QName.new(XSD::Namespace, 'schema')
 
 SOAPAddressName = XSD::QName.new(SOAPBindingNamespace, 'address')
 SOAPBindingName = XSD::QName.new(SOAPBindingNamespace, 'binding')
+SOAPHeaderName = XSD::QName.new(SOAPBindingNamespace, 'header')
 SOAPBodyName = XSD::QName.new(SOAPBindingNamespace, 'body')
 SOAPFaultName = XSD::QName.new(SOAPBindingNamespace, 'fault')
 SOAPOperationName = XSD::QName.new(SOAPBindingNamespace, 'operation')
