@@ -23,8 +23,8 @@ end
 class InstalledFiles < Array
   Repository = '__installedFiles.db'
 
-  def initialize( loadP = true )
-    load if loadP
+  def initialize( dir = '.' )
+    load( dir ) if dir
   end
 
   def uninstall( target )
@@ -41,10 +41,11 @@ class InstalledFiles < Array
     false
   end
 
-  def load
-    if File.exist?( Repository )
+  def load( dir = '.' )
+    path = File.join( dir, Repository )
+    if File.exist?( path )
       self.clear
-      File.open( Repository, "rb" ) do | f |
+      File.open( path, "rb" ) do | f |
 	Marshal.load( f ).each do | package |
 	  self << package
 	end
@@ -52,9 +53,10 @@ class InstalledFiles < Array
     end
   end
 
-  def dump
+  def dump( dir = '.' )
     pack!
-    File.open( Repository, "wb" ) do | f |
+    path = File.join( dir, Repository )
+    File.open( path, "wb" ) do | f |
       f << Marshal.dump( self )
     end
   end
