@@ -957,7 +957,7 @@ module RPCUtils
     def initialize( wsdl, config = {} )
       @wsdl = wsdl
       @config = config
-      @complexTypes = @wsdl.complexTypes
+      @complexTypes = @wsdl.getComplexTypesWithMessages
       @obj2soapExceptionHandler = nil
     end
 
