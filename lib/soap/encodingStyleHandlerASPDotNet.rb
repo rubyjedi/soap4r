@@ -51,10 +51,10 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
     when SOAPRawString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << data.to_s
-    when SOAPString
+    when XSDString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))
-    when SOAPBasetype
+    when XSDBase
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( data.to_s )
     when SOAPStruct
