@@ -30,7 +30,9 @@ class MappingRegistryCreator
       if map_cache.index(type).nil?
 	map_cache << type
 	if type.namespace != XSD::Namespace
-	  map << dump_typemap(type)
+	  if typemap = dump_typemap(type)
+            map << typemap
+          end
 	end
       end
     end
@@ -41,14 +43,15 @@ class MappingRegistryCreator
 private
 
   def dump_typemap(type)
-    definedtype = @complextypes[type]
-    case definedtype.compoundtype
-    when :TYPE_STRUCT
-      dump_struct_typemap(definedtype)
-    when :TYPE_ARRAY
-      dump_array_typemap(definedtype)
-    else
-      raise NotImplementedError.new("Must not reach here.")
+    if definedtype = @complextypes[type]
+      case definedtype.compoundtype
+      when :TYPE_STRUCT
+        dump_struct_typemap(definedtype)
+      when :TYPE_ARRAY
+        dump_array_typemap(definedtype)
+      else
+        raise NotImplementedError.new("Must not reach here.")
+      end
     end
   end
 
