@@ -163,7 +163,7 @@ class Driver < RPC::Driver
 private
 
   def log(sev)
-    @logdev.add(sev, nil, self.class) { @logid_prefix + yield }
+    @logdev.add(sev, nil, self.class) { @logid_prefix + yield } if @logdev
   end
 end
 
