@@ -134,10 +134,6 @@ private
   end
 end
 
-
-###
-## Basic datatypes.
-#
 class XSDNil < XSDBase
 public
   def initialize( initNil = nil )
@@ -148,6 +144,27 @@ public
 private
   def _set( newNil )
     @data = newNil
+  end
+end
+
+
+###
+## Primitive datatypes.
+#
+class XSDString < XSDBase
+public
+  def initialize( initString = nil )
+    super( StringLiteral )
+    @encoding = nil
+    set( initString ) if initString
+  end
+
+private
+  def _set( newString )
+    unless SOAP::Charset.isUTF8( newString )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newString }'." )
+    end
+    @data = newString
   end
 end
 
@@ -175,23 +192,6 @@ private
   end
 end
 
-class XSDString < XSDBase
-public
-  def initialize( initString = nil )
-    super( StringLiteral )
-    @encoding = nil
-    set( initString ) if initString
-  end
-
-private
-  def _set( newString )
-    unless SOAP::Charset.isUTF8( newString )
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newString }'." )
-    end
-    @data = newString
-  end
-end
-
 class XSDDecimal < XSDBase
 public
   def initialize( initDecimal = nil )
@@ -202,25 +202,42 @@ public
     set( initDecimal ) if initDecimal
   end
 
+  def nonzero?
+    ( @number != '0' )
+  end
+
 private
-  def _set( newDecimal )
-    /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( newDecimal.to_s )
+  def _set( d )
+    if d.is_a?( String )
+      # Integer( "00012" ) => 10 in Ruby.
+      d.sub!( /^([-+]?)0*(?=\d)/, "\\1" )
+    end
+    set_str( d )
+  end
+
+  def set_str( str )
+    /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( str.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDecimal }'." )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
     end
 
     @sign = $1 || '+'
     integerPart = $2
     fractionPart = $3
 
-    integerPart = integerPart.sub( '^0+', '' )
     integerPart = '0' if integerPart.empty?
     fractionPart = fractionPart ? fractionPart.sub( '0+$', '' ) : ''
     @point = - fractionPart.size
     @number = integerPart + fractionPart
 
     # normalize
-    @sign = '' if @sign == '+'
+    if @sign == '+'
+      @sign = ''
+    elsif @sign == '-'
+      if @number == '0'
+	@sign = ''
+      end
+    end
 
     @data = _to_s
   end
@@ -245,20 +262,25 @@ public
 private
   def _set( newFloat )
     # "NaN".to_f => 0 in some environment.  libc?
-    @data = if newFloat.is_a?( Float )
-	narrowTo32bit( newFloat )
-      else
-	str = trim( newFloat.to_s )
-	if str == 'NaN'
-	  0.0/0.0
-	elsif str == 'INF'
-	  1.0/0.0
-	elsif str == '-INF'
-	  -1.0/0.0
-	else
-	  narrowTo32bit( Float( str ))
-	end
+    if newFloat.is_a?( Float )
+      @data = narrowTo32bit( newFloat )
+      return
+    end
+
+    str = trim( newFloat.to_s )
+    if str == 'NaN'
+      @data = 0.0/0.0
+    elsif str == 'INF'
+      @data = 1.0/0.0
+    elsif str == '-INF'
+      @data = -1.0/0.0
+    else
+      begin
+  	@data = narrowTo32bit( Float( str ))
+      rescue ArgumentError
+  	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
       end
+    end
   end
 
   # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
@@ -270,7 +292,7 @@ private
     elsif @data.infinite? == -1
       '-INF'
     else
-      @data.to_s
+      sprintf( "%.10g", @data )
     end
   end
 
@@ -296,20 +318,25 @@ public
 private
   def _set( newDouble )
     # "NaN".to_f => 0 in some environment.  libc?
-    @data = if newDouble.is_a?( Float )
-	newDouble
-      else
-	str = trim( newDouble.to_s )
-	if str == 'NaN'
-	  0.0/0.0
-	elsif str == 'INF'
-	  1.0/0.0
-	elsif str == '-INF'
-	  -1.0/0.0
-	else
-	  Float( str )
-	end
+    if newDouble.is_a?( Float )
+      @data = newDouble
+      return
+    end
+
+    str = trim( newDouble.to_s )
+    if str == 'NaN'
+      @data = 0.0/0.0
+    elsif str == 'INF'
+      @data = 1.0/0.0
+    elsif str == '-INF'
+      @data = -1.0/0.0
+    else
+      begin
+	@data = Float( str )
+      rescue ArgumentError
+	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
       end
+    end
   end
 
   # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
@@ -321,10 +348,78 @@ private
     elsif @data.infinite? == -1
       '-INF'
     else
-      @data.to_s
+      sprintf( "%.16g", @data )
     end
   end
 end
+
+class XSDDuration < XSDBase
+public
+  attr_accessor :sign
+  attr_accessor :year
+  attr_accessor :month
+  attr_accessor :day
+  attr_accessor :hour
+  attr_accessor :min
+  attr_accessor :sec
+
+  def initialize( initDuration = nil )
+    super( DurationLiteral )
+    @sign = nil
+    @year = nil
+    @month = nil
+    @day = nil
+    @hour = nil
+    @min = nil
+    @sec = nil
+    set( initDuration ) if initDuration
+  end
+
+private
+  def _set( newDuration )
+    /^([+-]?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/ =~ trim( newDuration.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDuration }'." )
+    end
+
+    if ( $5 and (( !$2 and !$3 and !$4 ) or ( !$6 and !$7 and !$8 )))
+      # Should we allow 'PT5S' here?
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDuration }'." )
+    end
+
+    @sign = $1
+    @year = $2.to_i
+    @month = $3.to_i
+    @day = $4.to_i
+    @hour = $6.to_i
+    @min = $7.to_i
+    @sec = $8 ? XSDDecimal.new( $8 ) : 0
+    @data = _to_s
+  end
+
+  def _to_s
+    str = ''
+    str << @sign if @sign
+    str << 'P'
+    l = ''
+    l << "#{ @year }Y" if @year.nonzero?
+    l << "#{ @month }M" if @month.nonzero?
+    l << "#{ @day }D" if @day.nonzero?
+    r = ''
+    r << "#{ @hour }H" if @hour.nonzero?
+    r << "#{ @min }M" if @min.nonzero?
+    r << "#{ @sec }S" if @sec.nonzero?
+    str << l
+    if l.empty?
+      str << "0D"
+    end
+    unless r.empty?
+      str << "T" << r
+    end
+    str
+  end
+end
+
 
 require 'rational'
 require 'date'
@@ -700,73 +795,6 @@ private
   end
 end
 
-class XSDDuration < XSDBase
-public
-  attr_accessor :sign
-  attr_accessor :year
-  attr_accessor :month
-  attr_accessor :day
-  attr_accessor :hour
-  attr_accessor :min
-  attr_accessor :sec
-
-  def initialize( initDuration = nil )
-    super( DurationLiteral )
-    @sign = nil
-    @year = nil
-    @month = nil
-    @day = nil
-    @hour = nil
-    @min = nil
-    @sec = nil
-    set( initDuration ) if initDuration
-  end
-
-private
-  def _set( newDuration )
-    /^([+-]?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/ =~ trim( newDuration.to_s )
-    unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDuration }'." )
-    end
-
-    if ( $5 and (( !$2 and !$3 and !$4 ) or ( !$6 and !$7 and !$8 )))
-      # Should we allow 'PT5S' here?
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDuration }'." )
-    end
-
-    @sign = $1
-    @year = $2.to_i
-    @month = $3.to_i
-    @day = $4.to_i
-    @hour = $6.to_i
-    @min = $7.to_i
-    @sec = $8 ? XSDDecimal.new( $8 ) : nil
-    @data = _to_s
-  end
-
-  def _to_s
-    str = ''
-    str << @sign if @sign
-    str << 'P'
-    l = ''
-    l << "#{ @year }Y" if @year.nonzero?
-    l << "#{ @month }M" if @month.nonzero?
-    l << "#{ @day }D" if @day.nonzero?
-    r = ''
-    r << "#{ @hour }H" if @hour.nonzero?
-    r << "#{ @min }M" if @min.nonzero?
-    r << "#{ @sec }S" if @sec
-    str << l
-    unless r.empty?
-      if l.empty?
-	str << "0D"	# Is this really needed?  I mean, is "PT1M" correct?
-      end
-      str << "T" << r
-    end
-    str
-  end
-end
-
 class XSDanyURI < XSDBase
 public
   def initialize( initAnyURI = nil )
@@ -824,14 +852,13 @@ public
     set( initInteger ) if initInteger
   end
 
-  # re-override to recover original definition.
-  def data
-    @data
-  end
-
 private
-  def _set( newInteger )
-    @data = Integer(newInteger)
+  def set_str( str )
+    begin
+      @data = Integer( str )
+    rescue ArgumentError
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+    end
   end
 
   def _to_s()
@@ -848,17 +875,19 @@ public
   end
 
 private
-  def _set( newLong )
-    @data = Integer(newLong)
-
+  def set_str( str )
+    begin
+      @data = Integer( str )
+    rescue ArgumentError
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+    end
     unless validate( @data )
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ @data }'." )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
     end
   end
 
   MaxInclusive = +9223372036854775807
   MinInclusive = -9223372036854775808
-
   def validate( v )
     (( MinInclusive <= v ) && ( v <= MaxInclusive ))
   end
@@ -873,17 +902,19 @@ public
   end
 
 private
-  def _set( newInt )
-    @data = Integer(newInt)
-
+  def set_str( str )
+    begin
+      @data = Integer( str )
+    rescue ArgumentError
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+    end
     unless validate( @data )
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ @data }'." )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
     end
   end
 
   MaxInclusive = +2147483647
   MinInclusive = -2147483648
-
   def validate( v )
     (( MinInclusive <= v ) && ( v <= MaxInclusive ))
   end
