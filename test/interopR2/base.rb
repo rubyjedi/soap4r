@@ -217,70 +217,70 @@ MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPStruct,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ XSD::QName.new( TypeNS, "SOAPStruct" ) ]
+  { :type => XSD::QName.new( TypeNS, "SOAPStruct" ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPStructStruct,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ XSD::QName.new( TypeNS, "SOAPStructStruct" ) ]
+  { :type => XSD::QName.new( TypeNS, "SOAPStructStruct" ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::PolyMorphStruct,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ XSD::QName.new( TypeNS, "PolyMorphStruct" ) ]
+  { :type => XSD::QName.new( TypeNS, "PolyMorphStruct" ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPArrayStruct,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ XSD::QName.new( TypeNS, "SOAPArrayStruct" ) ]
+  { :type => XSD::QName.new( TypeNS, "SOAPArrayStruct" ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::StringArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::QName.new( XSD::Namespace, XSD::StringLiteral ) ]
+  { :type => XSD::QName.new( XSD::Namespace, XSD::StringLiteral ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::IntArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::QName.new( XSD::Namespace, XSD::IntLiteral ) ]
+  { :type => XSD::QName.new( XSD::Namespace, XSD::IntLiteral ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::FloatArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::QName.new( XSD::Namespace, XSD::FloatLiteral ) ]
+  { :type => XSD::QName.new( XSD::Namespace, XSD::FloatLiteral ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPStructArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::QName.new( TypeNS, 'SOAPStruct' ) ]
+  { :type => XSD::QName.new( TypeNS, 'SOAPStruct' ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPMapArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::QName.new( ApacheNS, 'Map' ) ]
+  { :type => XSD::QName.new( ApacheNS, 'Map' ) }
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::ArrayOfanyType,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::AnyTypeName ]
+  { :type => XSD::AnyTypeName }
 )
 
 
