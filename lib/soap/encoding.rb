@@ -33,24 +33,45 @@ module SOAP
       @@handlerMap[ uri ] = self
     end
 
+    ###
+    ## encode interface.
+    #
+    # Returns a XML instance as a string.
+    def encodeData( ns, data, name, parent )
+      raise NotImplementError.new( 'Method encodeData must be defined in derived class.' )
+    end
+
+    def encodePrologue
+    end
+
+    def encodeEpilogue
+    end
+
+    ###
+    ## decode interface.
+    #
+    # Returns SOAP/OM data.
     def decodeTag( ns, name, attrs, parent )
       raise NotImplementError.new( 'Method decodeTag must be defined in derived class.' )
     end
 
     def decodeTagEnd( ns, name )
-      raise NotImplementError.new( 'Method decodeTag must be defined in derived class.' )
+      raise NotImplementError.new( 'Method decodeTagEnd must be defined in derived class.' )
     end
 
     def decodeText( ns, text )
       raise NotImplementError.new( 'Method decodeText must be defined in derived class.' )
     end
 
-    def prologue
+    def decodePrologue
     end
 
-    def epilogue
+    def decodeEpilogue
     end
 
+    ###
+    ## Class interface
+    #
     def EncodingStyleHandler.defaultHandler
       @@defaultHandler
     end
