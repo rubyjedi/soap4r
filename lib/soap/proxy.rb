@@ -104,6 +104,10 @@ class SOAPProxy
     opt = {}
     opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
     opt[ 'defaultEncodingStyleHandler' ] = EncodingStyleHandler.getHandler( EncodingNamespace )
+
+    # Is this right?
+    receiveString.gsub!( "\r\n", "\n" )
+    receiveString.gsub!( "\r", "\n" )
     header, body = unmarshal( receiveString, opt )
 
     return header, body
