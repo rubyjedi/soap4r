@@ -34,8 +34,13 @@ module XSD
   DoubleLiteral = 'double'
   DateTimeLiteral = 'dateTime'
   Base64BinaryLiteral = 'base64Binary'
+  DecimalLiteral = 'decimal'
   IntegerLiteral = 'integer'
+  LongLiteral = 'long'
   IntLiteral = 'int'
+
+  class Error < StandardError; end
+  class ValueSpaceError < Error; end
 end
 
 
@@ -43,7 +48,7 @@ end
 ## The base class of all datatypes with Namespace.
 #
 class NSDBase
-  public
+public
 
   attr_accessor :typeName
   attr_accessor :typeNamespace
@@ -65,7 +70,7 @@ end
 class XSDBase < NSDBase
   include XSD
 
-  public
+public
 
   attr_accessor :data
 
@@ -90,7 +95,7 @@ class XSDNil < XSDBase
 end
 
 class XSDBoolean < XSDBase
-  public
+public
 
   def initialize( initBoolean = false )
     super( BooleanLiteral )
@@ -111,7 +116,7 @@ class XSDBoolean < XSDBase
 end
 
 class XSDString < XSDBase
-  public
+public
 
   def initialize( initString = nil )
     super( StringLiteral )
@@ -124,10 +129,10 @@ class XSDString < XSDBase
 end
 
 class XSDDecimal < XSDBase
-  public
+public
 
   def initialize( initDecimal = nil )
-    super( 'decimal' )
+    super( DecimalLiteral )
     set( initDecimal ) if initDecimal
   end
 
@@ -137,7 +142,7 @@ class XSDDecimal < XSDBase
 end
 
 class XSDFloat < XSDBase
-  public
+public
 
   def initialize( initFloat = nil )
     super( FloatLiteral )
@@ -147,7 +152,7 @@ class XSDFloat < XSDBase
   def set( newFloat )
     # "NaN".to_f => 0 in some environment.  libc?
     @data = if newFloat.is_a?( Float )
-        newFloat
+	newFloat
       elsif newFloat == 'NaN'
         0.0/0.0
       elsif newFloat == 'INF'
@@ -177,7 +182,9 @@ class XSDDateTime < XSDBase
   require 'date3'
   require 'parsedate3'
 
-  public
+  TimeZoneParseRegexp = Regexp.new( '^([+-])(\d\d):(\d\d)$' )
+
+public
 
   def initialize( initDateTime = nil )
     super( DateTimeLiteral )
@@ -192,10 +199,28 @@ class XSDDateTime < XSDBase
       @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
     else
       ( year, mon, mday, hour, min, sec, zone, wday ) = ParseDate.parsedate( t.to_s )
-      if $DEBUG && zone
-	$stderr.puts "Timezone in String is not supported.  Set a Date or a Time directly!"
-      end
       @data = Date.new3( year, mon, mday, hour, min, sec )
+
+      if zone
+	TimeZoneParseRegexp =~ zone
+	zoneSign = $1
+	zoneHour = $2.to_i
+	zoneMin = $3.to_i
+	diffDay = 0
+	case zoneSign
+	when '+'
+	  diffDay = +( zoneHour * 3600 + zoneMin * 60 ).to_f / 86400
+	when '-'
+	  diffDay = -( zoneHour * 3600 + zoneMin * 60 ).to_f / 86400
+	when nil
+	  raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
+	else
+	  raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
+	end
+	jd = @data.jd
+	fr1 = @data.fr1 + diffDay
+	@data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
+      end
     end
   end
 
@@ -205,7 +230,7 @@ class XSDDateTime < XSDBase
 end
 
 class XSDBase64Binary < XSDBase
-  public
+public
 
   # String in Ruby could be a binary.
   def initialize( initString = nil )
@@ -233,7 +258,7 @@ end
 ## Derived types
 #
 class XSDInteger < XSDDecimal
-  public
+public
 
   def initialize( initInteger = nil )
     super()
@@ -246,8 +271,34 @@ class XSDInteger < XSDDecimal
   end
 end
 
-class XSDInt < XSDInteger
-  public
+class XSDLong < XSDInteger
+public
+
+  def initialize( initLong = nil )
+    super()
+    @typeName = LongLiteral
+    set( initLong ) if initLong
+  end
+
+  def set( newLong )
+    @data = newLong.to_i
+
+    unless validate( @data )
+      raise ValueSpaceError.new( "Long: #{ @data } is not acceptable." )
+    end
+  end
+
+private
+  MaxInclusive = +9223372036854775807
+  MinInclusive = -9223372036854775808
+
+  def validate( v )
+    (( MinInclusive <= v ) && ( v <= MaxInclusive ))
+  end
+end
+
+class XSDInt < XSDLong
+public
 
   def initialize( initInt = nil )
     super()
@@ -257,5 +308,17 @@ class XSDInt < XSDInteger
 
   def set( newInt )
     @data = newInt.to_i
+
+    unless validate( @data )
+      raise ValueSpaceError.new( "Int: #{ @data } is not acceptable." )
+    end
+  end
+
+private
+  MaxInclusive = +2147483647
+  MinInclusive = -2147483648
+
+  def validate( v )
+    (( MinInclusive <= v ) && ( v <= MaxInclusive ))
   end
 end
