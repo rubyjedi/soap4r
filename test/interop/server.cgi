@@ -26,7 +26,7 @@ class InteropApp < SOAP::CGIStub
   end
   
   def echoVoid
-    nil		# Every sentence has a value in Ruby...
+    SOAP::RPCUtils::SOAPVoid.new
   end
 
   def echoString( inputString )
