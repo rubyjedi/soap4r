@@ -53,7 +53,7 @@ class SOAPProxy
     attr_reader :name
 
     def initialize( modelMethod, values )
-      @method = SOAPMethod.new( modelMethod.namespace, modelMethod.name, modelMethod.paramDef, modelMethod.soapAction )
+      @method = SOAPMethodRequest.new( modelMethod.namespace, modelMethod.name, modelMethod.paramDef, modelMethod.soapAction )
       @namespace = @method.namespace
       @name = @method.name
 
@@ -74,7 +74,7 @@ class SOAPProxy
 
   # Method definition.
   def addMethod( methodName, paramDef, soapAction = nil )
-    @method[ methodName ] = SOAPMethod.new( @namespace, methodName, paramDef, soapAction )
+    @method[ methodName ] = SOAPMethodRequest.new( @namespace, methodName, paramDef, soapAction )
   end
 
   # Create new request.
@@ -89,13 +89,13 @@ class SOAPProxy
   end
 
   # Method calling.
-  def call( ns, headers, methodName, *values )
+  def call( headers, methodName, *values )
 
     # Create new request
     req = createRequest( methodName, *values )
 
     # Get sending string.
-    sendString = marshalRequest( ns, headers, req )
+    sendString = marshalRequest( headers, req )
 
     # Send request.
     receiveString, receiveCharset = sendRequest( req, sendString )
@@ -131,7 +131,7 @@ class SOAPProxy
   end
 
   # SOAP marshalling
-  def marshalRequest( ns, headers, request )
+  def marshalRequest( headers, request )
     # Preparing headers.
     header = SOAPHeader.new()
     if headers
@@ -144,7 +144,7 @@ class SOAPProxy
     body = SOAPBody.new( request.method )
 
     # Marshal.
-    marshalledString = marshal( ns, header, body )
+    marshalledString = marshal( header, body )
 
     return marshalledString
   end

@@ -53,7 +53,7 @@ class RPCRouter
   def addMethod( namespace, receiver, methodName, paramDef, soapAction = nil )
     name = "#{ namespace }:#{ methodName }"
     @receiver[ name ] = receiver
-    @method[ name ] = SOAPMethod.new( namespace, methodName, paramDef, soapAction )
+    @method[ name ] = SOAPMethodRequest.new( namespace, methodName, paramDef, soapAction )
   end
 
   def addHeaderHandler
@@ -87,10 +87,9 @@ class RPCRouter
       isFault = true
     end
 
-    ns = NS.new
     header = SOAPHeader.new
     body = SOAPBody.new( soapResponse )
-    responseString = marshal( ns, header, body )
+    responseString = marshal( header, body )
 
     return responseString, isFault
   end
@@ -99,10 +98,9 @@ class RPCRouter
   def createFaultResponseString( e )
     soapResponse = fault( e )
 
-    ns = NS.new
     header = SOAPHeader.new
     body = SOAPBody.new( soapResponse )
-    responseString = marshal( ns, header, body )
+    responseString = marshal( header, body )
 
     responseString
   end
@@ -124,7 +122,7 @@ private
       raise RPCRoutingError.new( "Method: #{ name } not defined." )
     end
 
-    soapResponse = method.clone
+    soapResponse = method.createMethodResponse
     if soapResponse.outParam?
       unless result.is_a?( Array )
 	raise RPCRoutingError.new( "Out parameter was not returned." )

@@ -109,18 +109,13 @@ private
     # Prepare SOAP header.
     headers = nil
 
-    # Assign my namespace.
-    NS.reset
-    ns = NS.new
-    ns.assign( @namespace )
-
     # Set dumpDev if needed.
     if @dumpFileBase
       @handler.dumpFileBase = @dumpFileBase + '_' << methodName
     end
 
     # Then, call @proxy.call like the following.
-    header, body = @proxy.call( ns, headers, methodName, *params )
+    header, body = @proxy.call( headers, methodName, *params )
 
     # Check Fault.
     log( SEV_INFO ) { "call: checking SOAP-Fault..." }
