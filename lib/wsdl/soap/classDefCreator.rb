@@ -91,11 +91,12 @@ __EOD__
     attr_lines.chomp!
     init_lines.chomp!
 
-#  @@typeName = "#{ className.name }"
-#  @@typeNamespace = "#{ className.namespace }"
     return <<__EOD__
 # #{ className.namespace }
 class #{ dumpClassName( className ) }
+  @@typeName = "#{ className.name }"
+  @@typeNamespace = "#{ className.namespace }"
+
 #{ attr_lines }
   def initialize( #{ var_lines } )
 #{ init_lines }
