@@ -355,11 +355,9 @@ class WSDLMappingRegistry
 
   attr_reader :complexTypes
 
-  def initialize(wsdl, portType, config = {})
-    @wsdl = wsdl
-    @portType = portType
+  def initialize(complexTypes, config = {})
+    @complexTypes = complexTypes
     @config = config
-    @complexTypes = @wsdl.getComplexTypesWithMessages(portType)
     @obj2soapExceptionHandler = nil
   end
 
