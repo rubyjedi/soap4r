@@ -24,11 +24,11 @@ module WSDL
 
 
 class Types < Info
-  attr_reader :schema
+  attr_reader :schemas
 
   def initialize
     super
-    @schema = nil
+    @schemas = []
   end
 
   SchemaName = XSD::QName.new( XSD::Namespace, 'schema' )
@@ -36,7 +36,7 @@ class Types < Info
     case element
     when SchemaName
       o = XMLSchema::Schema.new
-      @schema = o
+      @schemas << o
       o
     else
       nil
