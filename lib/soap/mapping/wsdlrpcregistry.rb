@@ -15,10 +15,11 @@ module SOAP
 module Mapping
 
 
-class WSDLRegistry
+class WSDLRPCRegistry
   include TraverseSupport
 
   attr_reader :definedtypes
+  attr_accessor :excn_handler_obj2soap
 
   def initialize(definedtypes, config = {})
     @definedtypes = definedtypes
@@ -56,10 +57,6 @@ class WSDLRegistry
 
   def soap2obj(klass, node)
     raise RuntimeError.new("#{ self } is for obj2soap only.")
-  end
-
-  def excn_handler_obj2soap=(handler)
-    @excn_handler_obj2soap = handler
   end
 
 private
