@@ -94,26 +94,18 @@ end
 
 
 class StringArray < Array
-  @typeName = XSD::StringLiteral
-  @typeNamespace = XSD::Namespace
 end
 
 
 class IntArray < Array
-  @typeName = XSD::IntLiteral
-  @typeNamespace = XSD::Namespace
 end
 
 
 class FloatArray < Array
-  @typeName = XSD::FloatLiteral
-  @typeNamespace = XSD::Namespace
 end
 
 
 class SOAPStructArray < Array
-  @typeName = 'SOAPStruct'
-  @typeNamespace = TypeNS
 end
 
 
@@ -122,22 +114,50 @@ MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPStruct,
   ::SOAP::SOAPStruct,
-  SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
   [ TypeNS, "SOAPStruct" ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPStructStruct,
   ::SOAP::SOAPStruct,
-  SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
   [ TypeNS, "SOAPStructStruct" ]
 )
 
 MappingRegistry.set(
   ::SOAPBuildersInterop::SOAPArrayStruct,
   ::SOAP::SOAPStruct,
-  SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
   [ TypeNS, "SOAPArrayStruct" ]
+)
+
+MappingRegistry.set(
+  ::SOAPBuildersInterop::StringArray,
+  ::SOAP::SOAPArray,
+  ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+  [ XSD::Namespace, XSD::StringLiteral ]
+)
+
+MappingRegistry.set(
+  ::SOAPBuildersInterop::IntArray,
+  ::SOAP::SOAPArray,
+  ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+  [ XSD::Namespace, XSD::IntLiteral ]
+)
+
+MappingRegistry.set(
+  ::SOAPBuildersInterop::FloatArray,
+  ::SOAP::SOAPArray,
+  ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+  [ XSD::Namespace, XSD::FloatLiteral ]
+)
+
+MappingRegistry.set(
+  ::SOAPBuildersInterop::SOAPStructArray,
+  ::SOAP::SOAPArray,
+  ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+  [ TypeNS, 'SOAPStruct' ]
 )
 
 
