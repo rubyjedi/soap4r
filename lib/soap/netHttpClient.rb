@@ -91,14 +91,14 @@ private
       proxy_host = @proxy.host
       proxy_port = @proxy.port
     end
+    http = Net::HTTP::Proxy(proxy_host, proxy_port).new(url.host, url.port)
+    http.set_debug_output(@debug_dev) if http.respond_to?(:set_debug_output)
     response = nil
-    Net::HTTP::Proxy(proxy_host, proxy_port).start(url.host, url.port) { |http|
-      if http.respond_to?(:set_debug_output)
-	http.set_debug_output(@debug_dev)
-      end
-      response, = yield(http)
-      http.finish
+    http.start { |worker|
+      response, = yield(worker)
+      worker.finish
     }
+    @debug_dev << response.body if @debug_dev
     response
   end
 
