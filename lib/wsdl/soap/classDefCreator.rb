@@ -61,11 +61,10 @@ private
 
   def dumpClassDef( className )
     complexType = @complexTypes[ className ]
-    elements = complexType.content.elements
     attr_lines = ""
     var_lines = ""
     init_lines = ""
-    elements.each do | elementName, element |
+    complexType.eachElement do | elementName, element |
       name = createMethodName( elementName )
       type = element.type
       attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"

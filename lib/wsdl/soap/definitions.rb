@@ -31,7 +31,7 @@ class Definitions < Info
       elements = message.parts.collect { | part |
 	  XMLSchema::Element.new( part.name, part.type )
 	}
-      type.addSequenceElements( elements )
+      type.setSequenceElements( elements )
       types << type
     end
     types << arrayComplexType
@@ -50,7 +50,7 @@ private
     anyTypeArray = XSD::XSDAnyType::Type.dup
     anyTypeArray.name += '[]'
     attr.arrayType = anyTypeArray
-    type.complexContent.content.attributes << attr
+    type.complexContent.attributes << attr
     type
   end
 
@@ -66,25 +66,23 @@ private
 =end
   def faultComplexType
     type = createComplexType( ::SOAP::EleFaultName )
-    type.content.final = 'extension'
-    faultcode = Element.new( ::SOAP::EleFaultCodeName.name,
+    faultcode = XMLSchema::Element.new( ::SOAP::EleFaultCodeName.name,
       XSD::XSDQName::Type )
-    faultstring = Element.new( ::SOAP::EleFaultStringName.name,
+    faultstring = XMLSchema::Element.new( ::SOAP::EleFaultStringName.name,
       XSD::XSDString::Type )
-    faultactor = Element.new( ::SOAP::EleFaultActorName.name,
+    faultactor = XMLSchema::Element.new( ::SOAP::EleFaultActorName.name,
       XSD::XSDAnyURI::Type )
     faultactor.minOccurs = 0
-    detail = Element.new( ::SOAP::EleFaultDetailName.name,
+    detail = XMLSchema::Element.new( ::SOAP::EleFaultDetailName.name,
       XSD::XSDAnyType::Type )
     detail.minOccurs = 0
     type.setSequenceElements( [ faultcode, faultstring, faultactor, detail ] )
+    type.content.final = 'extension'
     type
   end
 
   def createComplexType( typeQName )
-    type = XMLSchema::ComplexType.new
-    type.setAnonymousTypeName( typeQName )
-    type
+    XMLSchema::ComplexType.new( typeQName )
   end
 end
 

@@ -97,8 +97,7 @@ __EOD__
       when :TYPE_STRUCT
 	[ '::SOAP::SOAPStruct', type.namespace, type.name ]
       when :TYPE_ARRAY
-	arrayType = typeDef.complexContent.getRefAttribute(
-	  ::SOAP::AttrArrayTypeName ).arrayType
+	arrayType = typeDef.getArrayType
 	contentTypeNamespace = arrayType.namespace
 	contentTypeName = arrayType.name.sub( /\[(?:,)*\]$/, '' )
 	[ '::SOAP::SOAPArray', contentTypeNamespace, contentTypeName ]
@@ -115,9 +114,7 @@ __EOD__
   def collectTypes( type )
     @types << type
     return unless @complexTypes[ type ]
-    content = @complexTypes[ type ].content
-    return unless content
-    content.elements.each do | elementName, element |
+    @complexTypes[ type ].eachElement do | elementName, element |
       collectTypes( element.type )
     end
   end
