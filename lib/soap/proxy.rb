@@ -99,14 +99,34 @@ class SOAPProxy
     sendString = marshalRequest( ns, headers, req )
 
     # Send request.
-    receiveString = sendRequest( req, sendString )
+    receiveString, receiveCharset = sendRequest( req, sendString )
 
-    # Is this right?
+    # StreamHandler returns receiveCharset to use.
+    if receiveCharset
+      receiveString.sub!( /^([^>]*)\s+encoding=(['"]).*\2/ ) { $1 }
+
+      # For NQXML Parser.
+      if SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
+	charsetStr = Charset.getCharsetStr( receiveCharset )
+	charsetStrBackup = $KCODE.to_s.dup
+	$KCODE = charsetStr
+	Charset.setXMLInstanceEncoding( charsetStr )
+      end
+    end
+
     receiveString.gsub!( "\r\n", "\n" )
     receiveString.gsub!( "\r", "\n" )
 
     # SOAP tree parsing.
     header, body = unmarshal( receiveString )
+
+    if receiveCharset
+      # For NQXML Parser.
+      if SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
+       	$KCODE = charsetStrBackup
+	Charset.setXMLInstanceEncoding( $KCODE )
+      end
+    end
 
     return header, body
   end
@@ -133,9 +153,7 @@ class SOAPProxy
   # Send the request.
   def sendRequest( request, sendString )
     # Send request.
-    receiveString = @handler.send( sendString, request.method.soapAction || soapAction )
-
-    receiveString
+    @handler.send( sendString, request.method.soapAction || soapAction )
   end
 
   # SOAP Fault checking.
