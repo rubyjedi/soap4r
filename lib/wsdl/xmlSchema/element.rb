@@ -37,6 +37,11 @@ class Element < Info
     parent.targetnamespace
   end
 
+  def elementform
+    # ToDo: must be overwritten.
+    parent.elementformdefault
+  end
+
   def parse_element(element)
     case element
     when ComplexTypeName
