@@ -267,18 +267,18 @@ module SOAP
   private
 
     def decodeTextBuf( node )
-      unless @textBuf.empty?
-	case node
-	when XSDHexBinary, XSDBase64Binary
-	  node.setEncoded( @textBuf )
-	when XSDString
-	  encoded = Charset.encodingFromXML( @textBuf )
-	  node.set( encoded )
-	when SOAPBasetype
-	  node.set( @textBuf )
-	else
-	  # Nothing to do...
-	end
+      case node
+      when XSDHexBinary, XSDBase64Binary
+	node.setEncoded( @textBuf )
+      when XSDString
+	encoded = Charset.encodingFromXML( @textBuf )
+	node.set( encoded )
+      when SOAPNil
+	# Nothing to do.
+      when SOAPBasetype
+	node.set( @textBuf ) unless @textBuf.empty?
+      else
+	# Nothing to do...
       end
     end
 
