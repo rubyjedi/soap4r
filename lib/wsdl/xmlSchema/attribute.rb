@@ -33,8 +33,11 @@ class Attribute < Info
     @type = nil
     @default = nil
     @fixed = nil
-
     @arytype = nil
+  end
+
+  def targetnamespace
+    parent.targetnamespace
   end
 
   def parse_element(element)
