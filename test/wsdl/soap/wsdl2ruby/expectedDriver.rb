@@ -12,7 +12,7 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
     ::SOAP::Mapping::Registry::TypedStructFactory,
     { :type => ::XSD::QName.new("urn:example.com:simpletype-rpc-type", "version_struct") }
   )
-  
+
   Methods = [
     ["echo_version", "echo_version",
       [
