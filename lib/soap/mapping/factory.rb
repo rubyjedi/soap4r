@@ -24,6 +24,10 @@ module Mapping
 class Factory
   include TraverseSupport
 
+  def initialize
+    # nothing to do
+  end
+
   def obj2soap(soap_class, obj, info, map)
     raise NotImplementError.new
     # return soap_obj
@@ -48,24 +52,13 @@ class Factory
     end
   end
 
-  def set_instance_vars(obj, values)
-    values.each do |name, value|
-      setter = name + "="
-      if obj.respond_to?(setter)
-        obj.__send__(setter, value)
-      else
-        obj.instance_eval("@#{ name } = value")
-      end
-    end
-  end
-
   def setiv2obj(obj, node, map)
     return if node.nil?
     vars = {}
     node.each do |name, value|
       vars[Mapping.elename2name(name)] = Mapping._soap2obj(value, map)
     end
-    set_instance_vars(obj, vars)
+    Mapping.set_instance_vars(obj, vars)
   end
 
   def setiv2soap(node, obj, map)
@@ -96,15 +89,21 @@ class Factory
 end
 
 class StringFactory_ < Factory
+  def initialize(allow_original_mapping = false)
+    super()
+    @allow_original_mapping = allow_original_mapping
+  end
+
   def obj2soap(soap_class, obj, info, map)
-    return nil unless obj.instance_variables.empty?
+    if !@allow_original_mapping and !obj.instance_variables.empty?
+      return nil
+    end
     begin
-      if XSD::Charset.is_ces(obj, $KCODE)
-        encoded = XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding)
-        soap_obj = soap_class.new(encoded)
-      else
-        return nil
+      unless XSD::Charset.is_ces(obj, $KCODE)
+	return nil
       end
+      encoded = XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding)
+      soap_obj = soap_class.new(encoded)
     rescue XSD::ValueSpaceError
       return nil
     end
@@ -113,15 +112,24 @@ class StringFactory_ < Factory
   end
 
   def soap2obj(obj_class, node, info, map)
-    obj = XSD::Charset.encoding_conv(node.data, XSD::Charset.encoding, $KCODE)
+    obj = create_empty_object(obj_class)
+    decoded = XSD::Charset.encoding_conv(node.data, XSD::Charset.encoding, $KCODE)
+    obj.replace(decoded)
     mark_unmarshalled_obj(node, obj)
     return true, obj
   end
 end
 
 class BasetypeFactory_ < Factory
+  def initialize(allow_original_mapping = false)
+    super()
+    @allow_original_mapping = allow_original_mapping
+  end
+
   def obj2soap(soap_class, obj, info, map)
-    return nil unless obj.instance_variables.empty?
+    if !@allow_original_mapping and !obj.instance_variables.empty?
+      return nil
+    end
     soap_obj = nil
     begin
       soap_obj = soap_class.new(obj)
@@ -140,8 +148,16 @@ class BasetypeFactory_ < Factory
 end
 
 class DateTimeFactory_ < Factory
+  def initialize(allow_original_mapping = false)
+    super()
+    @allow_original_mapping = allow_original_mapping
+  end
+
   def obj2soap(soap_class, obj, info, map)
-    return nil if Time === obj and !obj.instance_variables.empty?
+    if !@allow_original_mapping and
+	Time === obj and !obj.instance_variables.empty?
+      return nil
+    end
     soap_obj = nil
     begin
       soap_obj = soap_class.new(obj)
@@ -186,10 +202,17 @@ class Base64Factory_ < Factory
 end
 
 class ArrayFactory_ < Factory
+  def initialize(allow_original_mapping = false)
+    super()
+    @allow_original_mapping = allow_original_mapping
+  end
+
   # [[1], [2]] is converted to Array of Array, not 2-D Array.
   # To create M-D Array, you must call Mapping.ary2md.
   def obj2soap(soap_class, obj, info, map)
-    return nil unless obj.instance_variables.empty?
+    if !@allow_original_mapping and !obj.instance_variables.empty?
+      return nil
+    end
     arytype = Mapping.obj2element(obj)
     if arytype.name
       arytype.namespace ||= RubyTypeNamespace
@@ -215,8 +238,15 @@ class ArrayFactory_ < Factory
 end
 
 class TypedArrayFactory_ < Factory
+  def initialize(allow_original_mapping = false)
+    super()
+    @allow_original_mapping = allow_original_mapping
+  end
+
   def obj2soap(soap_class, obj, info, map)
-    return nil unless obj.instance_variables.empty?
+    if !@allow_original_mapping and !obj.instance_variables.empty?
+      return nil
+    end
     arytype = info[:type] || info[0]
     param = SOAPArray.new(ValueArrayName, 1, arytype)
     mark_marshalled_obj(obj, param)
@@ -270,10 +300,17 @@ end
 
 MapQName = XSD::QName.new(ApacheSOAPTypeNamespace, 'Map')
 class HashFactory_ < Factory
+  def initialize(allow_original_mapping = false)
+    super()
+    @allow_original_mapping = allow_original_mapping
+  end
+
   def obj2soap(soap_class, obj, info, map)
-    return nil unless obj.instance_variables.empty?
-    if obj.default or
-        (obj.respond_to?(:default_proc) and obj.default_proc)
+    if !@allow_original_mapping and !obj.instance_variables.empty?
+      return nil
+    end
+    if !obj.default.nil? or
+	(obj.respond_to?(:default_proc) and obj.default_proc)
       return nil
     end
     param = SOAPStruct.new(MapQName)
