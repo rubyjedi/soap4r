@@ -1,23 +1,20 @@
-#!/usr/bin/env ruby
-
-$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
+#!/home/nahi/bin/ruby
 
 require 'soap/cgistub'
 require 'base'
 
-LogFile = './log'
+LogFile = 'SOAPBuildersInterop.log'
 
 class InteropApp < SOAP::CGIStub
 
   def initialize( *arg )
     super( *arg )
-    # setLog( LogFile, 'weekly' )
     setLog( LogFile )
     @router.mappingRegistry = SOAPBuildersInterop::MappingRegistry
   end
 
   def methodDef
-    ( SOAPBuildersInterop::MethodsBase + SOAPBuildersInterop::MethodsGroupB ).each do | methodName, *params |
+    ( SOAPBuildersInterop::MethodsBase + SOAPBuildersInterop::MethodsGroupB + SOAPBuildersInterop::MethodsPolyMorph ).each do | methodName, *params |
       addMethod( self, methodName, params )
     end
   end
@@ -27,10 +24,10 @@ class InteropApp < SOAP::CGIStub
   end
 
   def clone( obj )
-    if obj.nil?
-      nil
-    else
-      obj.clone
+    begin
+      return Marshal.load( Marshal.dump( obj ))
+    rescue TypeError
+      return obj
     end
   end
   
@@ -99,6 +96,9 @@ class InteropApp < SOAP::CGIStub
     outputString = inputStruct.varString
     outputInteger = inputStruct.varInt
     outputFloat = inputStruct.varFloat
+    # retVal is not returned to SOAP client because retVal of this method is
+    #   not defined in method definition.
+    # retVal, out, out, out
     return nil, outputString, outputInteger, outputFloat
   end
 
@@ -157,18 +157,12 @@ class InteropApp < SOAP::CGIStub
     SOAP::SOAPTime.new( clone( inputXSDTime ))
   end
 
-  # for PolyMorph
-  def echoPolyMorph( inputPolyMorph )
-    clone( inputPolyMorph )
+  def echoPolyMorph( anObject )
+    clone( anObject )
   end
 
-  def echoPolyMorphStruct( inputPolyMorphStruct )
-    clone( inputPolyMorphStruct )
-  end
-
-  def echoPolyMorphArray( inputPolyMorphArray )
-    clone( inputPolyMorphArray )
-  end
+  alias echoPolyMorphStruct echoPolyMorph
+  alias echoPolyMorphArray echoPolyMorph
 end
 
 InteropApp.new( 'InteropApp', InterfaceNS ).start

@@ -2,16 +2,17 @@
 
 $serverName = 'GLUE'
 
-$server = 'http://12.106.211.139:8005/glue/round2'
+$serverBase = 'http://www.themindelectric.net:8005/glue/round2.wsdl'
+$serverGroupB = 'http://www.themindelectric.net:8005/glue/round2B.wsdl'
 
 require 'clientBase'
 
-log = Log.new( STDERR )
-log.sevThreshold = Log::SEV_INFO	# Log::SEV_WARN, Log::SEV_DEBUG
+drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
+methodDef( drvBase )
 
-drv = SOAP::Driver.new( log, 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
-methodDef( drv )
+drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
+methodDefGroupB( drvGroupB )
 
-doTestBase( drv )
-#doTestGroupB( drv )
+doTestBase( drvBase )
+doTestGroupB( drvGroupB )
 submitTestResult

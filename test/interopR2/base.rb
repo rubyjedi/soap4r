@@ -134,6 +134,34 @@ class SOAPStructStruct
 end
 
 
+class PolyMorphStruct
+  include SOAP::Marshallable
+
+  attr_reader :varA, :varB, :varC
+
+  def initialize( varA, varB, varC )
+    @varA = varA
+    @varB = varB
+    @varC = varC
+  end
+
+  def ==( rhs )
+    r = if rhs.is_a?( self.type )
+	( self.varA == rhs.varA &&
+	self.varB == rhs.varB &&
+	self.varC == rhs.varC )
+      else
+	false
+      end
+    r
+  end
+
+  def to_s
+    "#{ varA }:#{ varB }:#{ varC }"
+  end
+end
+
+
 class SOAPArrayStruct
   include SOAP::Marshallable
 
@@ -169,6 +197,7 @@ class IntArray < Array; end
 class FloatArray < Array; end
 class SOAPStructArray < Array; end
 class SOAPMapArray < Array; end
+class ArrayOfanyType < Array; end
 
 
 MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
@@ -185,6 +214,13 @@ MappingRegistry.set(
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
   [ TypeNS, "SOAPStructStruct" ]
+)
+
+MappingRegistry.set(
+  ::SOAPBuildersInterop::PolyMorphStruct,
+  ::SOAP::SOAPStruct,
+  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+  [ TypeNS, "PolyMorphStruct" ]
 )
 
 MappingRegistry.set(
@@ -227,6 +263,13 @@ MappingRegistry.set(
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
   [ ApacheNS, 'Map' ]
+)
+
+MappingRegistry.set(
+  ::SOAPBuildersInterop::ArrayOfanyType,
+  ::SOAP::SOAPArray,
+  ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+  [ XSD::Namespace, XSD::AnyTypeLiteral ]
 )
 
 
