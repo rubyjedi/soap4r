@@ -511,6 +511,7 @@ class SOAPElement
 
   # Text interface.
   attr_accessor :text
+  alias data text
 
   # Element interfaces.
   def add(value)
