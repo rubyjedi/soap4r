@@ -80,11 +80,16 @@ module Processor
     else
       begin
 	require 'soap/xmlparser'
-	parser = SOAPXMLParser.new( opt )
+	# parser = SOAPXMLParser.new( opt )
+	# From Ruby/1.7, ruby eventually cannot find this constant in above
+	# style.  Following is a quick hack to avoid this trouble.  It should
+	# be resolved at some time.
+	parser = ::SOAP::SOAPXMLParser.new( opt )
       rescue LoadError
 	require 'soap/nqxmlparser'
-	# parser = SOAPNQXMLStreamingParser.new( opt )
-	parser = SOAPNQXMLLightWeightParser.new( opt )
+	# parser = SOAPNQXMLLightWeightParser.new( opt )
+	# ditto.
+	parser = ::SOAP::SOAPNQXMLLightWeightParser.new( opt )
       end
     end
     parser
