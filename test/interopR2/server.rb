@@ -2,6 +2,8 @@
 
 $KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
 
+#require 'soap/nqxmlparser'
+#require 'soap/rexmlparser'
 require 'soap/standaloneServer'
 require 'base'
 
