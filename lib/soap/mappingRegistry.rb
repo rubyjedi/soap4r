@@ -195,6 +195,35 @@ module RPCUtils
     end
   end
 
+  class DateTimeFactory_ < Factory
+    def obj2soap( soapKlass, obj, info, map )
+      soapObj = begin
+	  soapKlass.new( obj )
+	rescue XSD::ValueSpaceError
+	  # Conversion failed.
+	  nil
+	end
+      markMarshalledObj( obj, soapObj ) if soapObj
+      soapObj
+    end
+
+    def soap2obj( objKlass, node, info, map )
+      obj = nil
+      if objKlass == Time
+	obj = node.to_time
+	if obj.nil?
+	  raise FactoryError.new( "#{ node.data } is out of range as a Time." )
+	end
+      elsif objKlass == Date
+	obj = node.data
+      else
+	raise FactoryError.new( "DateTimeFactory cannot handle #{ objKlass }." )
+      end
+      markUnmarshalledObj( node, obj )
+      obj
+    end
+  end
+
   class Base64Factory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
       soapObj = soapKlass.new( obj )
@@ -748,6 +777,7 @@ module RPCUtils
     end
 
     BasetypeFactory = BasetypeFactory_.new
+    DateTimeFactory = DateTimeFactory_.new
     ArrayFactory = ArrayFactory_.new
     Base64Factory = Base64Factory_.new
     TypedArrayFactory = TypedArrayFactory_.new
