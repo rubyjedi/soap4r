@@ -48,6 +48,8 @@ module SOAPBasetype
   include SOAP
   include NQXML
 
+  attr_reader :encodingStyle
+
   attr_accessor :namespace
   attr_accessor :name
   attr_accessor :id
@@ -59,6 +61,7 @@ public
 
   def initialize( *vars )
     super( *vars )
+    @encodingStyle = EncodingNamespace
     @namespace = EnvelopeNamespace
     @name = nil
     @id = nil
@@ -130,6 +133,8 @@ module SOAPCompoundtype
   include SOAP
   include NQXML
 
+  attr_reader :encodingStyle
+
   attr_accessor :namespace
   attr_accessor :name
   attr_accessor :id
@@ -143,6 +148,7 @@ public
 
   def initialize( typeName )
     super( typeName, nil )
+    @encodingStyle = EncodingNamespace
     @namespace = EnvelopeNamespace
     @name = nil
     @id = nil
@@ -206,6 +212,7 @@ public
 
   # Override the definition in SOAPBasetype.
   def initialize( refId = nil )
+    @encodingStyle = EncodingNamespace
     @namespace = EnvelopeNamespace
     @name = nil
     @id = nil
