@@ -96,7 +96,7 @@ class RPCRouter
 
   # Create fault response string.
   def faultResponseString( e )
-    soapResponse = fault( $! )
+    soapResponse = fault( e )
 
     ns = NS.new
     header = SOAPHeader.new
