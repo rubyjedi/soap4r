@@ -48,12 +48,12 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
     @proxy = proxy
   end
 
-  def send( methodNamespace, methodName, soapString )
+  def send( soapString, soapAction = nil )
     begin
-      s = sendPOST( methodNamespace, methodName, soapString )
+      s = sendPOST( soapString, soapAction )
     rescue PostUnavailableError
       begin
-        s = sendMPOST( methodNamespace, methodName, soapString )
+        s = sendMPOST( soapString, soapAction )
       rescue MPostUnavailableError
         raise HTTPStreamError.new( $! )
       end
@@ -62,7 +62,7 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
 
   private
 
-  def sendPOST( methodNamespace, methodName, soapString )
+  def sendPOST( soapString, soapAction )
     server = URI.create( @server )
 
     retryNo = NofRetry
@@ -88,7 +88,6 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
       absPath = server.path.dup
       absPath << '?' << server.query if server.query
     end
-    action = methodNamespace.dup << '#' << methodName
 
     header = {}
     begin
@@ -99,7 +98,7 @@ Host: #{ server.host }
 Connection: close
 Content-Length: #{ soapString.size }
 Content-Type: #{ MediaType }
-SOAPAction: #{ action }
+SOAPAction: "#{ soapAction }"
 
 EOS
         postData.gsub!( "\n", CRLF )
@@ -171,7 +170,7 @@ EOS
     receiveString
   end
 
-  def sendMPOST( methodNamespace, methodName, soapString )
+  def sendMPOST( soapString, soapAction )
     raise NotImplementError.new()
 
     s = nil
