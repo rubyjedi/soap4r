@@ -34,6 +34,10 @@ class InteropApp < SOAP::StandaloneServer
     return "Hello"
   end
 
+  def echoBoolean( inputBoolean )
+    inputBoolean
+  end
+
   def echoString( inputString )
     clone( inputString )
   end
@@ -52,6 +56,11 @@ class InteropApp < SOAP::StandaloneServer
 
   def echoFloat( inputFloat )
     SOAPFloat.new( inputFloat )
+  end
+
+  def echoDecimal( inputDecimal )
+    # inputDecimal.is_a? String
+    SOAP::SOAPDecimal.new( clone( inputDecimal ))
   end
 
   def echoFloatArray( inputFloatArray )
@@ -84,9 +93,6 @@ class InteropApp < SOAP::StandaloneServer
     SOAP::SOAPHexBinary.new( clone( inputHexBinary ))
   end
 
-  def echoDouble( inputDouble )
-    SOAP::SOAPDouble.new( inputDouble )
-  end
 
   # for Round 2 group B
   def echoStructAsSimpleTypes( inputStruct )
@@ -120,20 +126,6 @@ class InteropApp < SOAP::StandaloneServer
     clone( inputStruct )
   end
 
-  def echoBoolean( inputBoolean )
-    inputBoolean
-  end
-
-  def echoDouble( inputDouble )
-    # inputDouble.is_a? Float
-    clone( inputDouble )
-  end
-
-  def echoDecimal( inputDecimal )
-    # inputDecimal.is_a? String
-    SOAP::SOAPDecimal.new( inputDecimal.to_s )
-  end
-
   def echoMap( inputMap )
     clone( inputMap )
   end
@@ -142,24 +134,99 @@ class InteropApp < SOAP::StandaloneServer
     clone( inputMapArray )
   end
 
-  def echoXSDDateTime( inputXSDDateTime )
-    clone( inputXSDDateTime )
-  end
-
-  def echoXSDDate( inputXSDDate )
-    SOAP::SOAPDate.new( clone( inputXSDDate ))
-  end
-
-  def echoXSDTime( inputXSDTime )
-    SOAP::SOAPTime.new( clone( inputXSDTime ))
-  end
-
   def echoPolyMorph( anObject )
     clone( anObject )
   end
 
   alias echoPolyMorphStruct echoPolyMorph
   alias echoPolyMorphArray echoPolyMorph
+
+
+  def echoXSDBoolean( inputBoolean )
+    inputBoolean
+  end
+
+  def echoXSDString( inputString )
+    clone( inputString )
+  end
+
+  def echoXSDDecimal( inputDecimal )
+    SOAP::SOAPDecimal.new( clone( inputDecimal ))
+  end
+
+  def echoXSDFloat( inputFloat )
+    SOAPFloat.new( inputFloat )
+  end
+
+  def echoXSDDouble( inputDouble )
+    SOAP::SOAPDouble.new( clone( inputDouble ))
+  end
+
+  def echoXSDDuration( inputDuration )
+    SOAP::SOAPDuration.new( clone( inputDuration ))
+  end
+
+  def echoXSDDateTime( inputXSDDateTime )
+    clone( inputXSDDateTime )
+  end
+
+  def echoXSDTime( inputXSDTime )
+    SOAP::SOAPTime.new( clone( inputXSDTime ))
+  end
+
+  def echoXSDDate( inputXSDDate )
+    SOAP::SOAPDate.new( clone( inputXSDDate ))
+  end
+
+  def echoXSDgYearMonth( inputGYearMonth )
+    SOAP::SOAPgYearMonth.new( clone( inputGYearMonth ))
+  end
+
+  def echoXSDgYear( inputGYear )
+    SOAP::SOAPgYear.new( clone( inputGYear ))
+  end
+
+  def echoXSDgMonthDay( inputGMonthDay )
+    SOAP::SOAPgMonthDay.new( clone( inputGMonthDay ))
+  end
+
+  def echoXSDgDay( inputGDay )
+    SOAP::SOAPgDay.new( clone( inputGDay ))
+  end
+
+  def echoXSDgMonth( inputGMonth )
+    SOAP::SOAPgMonth.new( clone( inputGMonth ))
+  end
+
+  def echoXSDHexBinary( inputHexBinary )
+    SOAP::SOAPHexBinary.new( clone( inputHexBinary ))
+  end
+
+  def echoXSDBase64( inputBase64 )
+    o = SOAP::SOAPBase64.new( clone( inputBase64 ))
+    o.asXSD
+    o
+  end
+
+  def echoXSDanyURI( inputAnyURI )
+    clone( inputAnyURI )
+  end
+
+  def echoXSDQName( inputQName )
+    SOAP::SOAPQName.new( clone( inputQName ))
+  end
+
+  def echoXSDInteger( inputXSDInteger )
+    clone( inputXSDInteger )
+  end
+
+  def echoXSDLong( inputLong )
+    SOAP::SOAPLong.new( clone( inputLong ))
+  end
+
+  def echoXSDInt( inputInt )
+    SOAP::SOAPInt.new( clone( inputInteger ))
+  end
 end
 
 InteropApp.new( 'InteropApp', InterfaceNS, '0.0.0.0', 10080 ).start
