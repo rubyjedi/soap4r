@@ -18,8 +18,6 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/soap'
 require 'soap/XMLSchemaDatatypes'
-require 'soap/namespace'
-require 'soap/nqxmlDocument'
 
 
 module SOAP
@@ -46,13 +44,13 @@ end
 #
 module SOAPBasetype
   include SOAP
-  include NQXML
 
-  attr_reader :encodingStyle
+  attr_accessor :encodingStyle
 
   attr_accessor :namespace
   attr_accessor :name
   attr_accessor :id
+  attr_reader :precedents
   attr_accessor :root
   attr_accessor :parent
   attr_accessor :position
@@ -61,67 +59,13 @@ public
 
   def initialize( *vars )
     super( *vars )
-    @encodingStyle = EncodingNamespace
-    @namespace = EnvelopeNamespace
+    @encodingStyle = nil
+    @namespace = nil
     @name = nil
     @id = nil
+    @precedents = []
     @parent = nil
     @position = nil
-  end
-
-  def encode( ns, name, parentEncodingStyle = nil, parentArray = nil )
-    attrs = []
-    addNSDeclAttr( attrs, ns )
-    if parentEncodingStyle != EncodingNamespace
-      addEncodingAttr( attrs, ns )
-    end
-    if parentArray && parentArray.typeNamespace == @typeNamespace &&
-	parentArray.baseTypeName == @typeName
-      # No need to add.
-    else
-      attrs.push( datatypeAttr( ns )) if @typeName
-    end
-
-    if parentArray && parentArray.position
-      attrs.push( positionAttr( parentArray.position, ns ))
-    end
-
-    if ( self.to_s.empty? )
-      # Element.new( name, attrs )
-      Node.initializeWithChildren( name, attrs )
-    else
-      # Element.new( name, attrs, Text.new( self.to_s ))
-      Node.initializeWithChildren( name, attrs, Text.new( self.to_s ))
-    end
-  end
-
-private
-
-  def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @typeNamespace, @typeName ))
-  end
-
-  def positionAttr( position, ns )
-    Attr.new( ns.name( EncodingNamespace, AttrPosition ), '[' << position.join( ',' ) << ']' )
-  end
-
-  def addNSDeclAttr( attrs, ns )
-    unless ns.assigned?( XSD::InstanceNamespace )
-      tag = ns.assign( XSD::InstanceNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, XSD::InstanceNamespace ))
-    end
-    if @typeNamespace and !ns.assigned?( @typeNamespace )
-      tag = ns.assign( @typeNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
-    end
-  end
-
-  def addEncodingAttr( attrs, ns )
-    unless ns.assigned?( EnvelopeNamespace )
-      tag = ns.assign( EnvelopeNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, EnvelopeNamespace ))
-    end
-    attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), EncodingNamespace ))
   end
 end
 
@@ -131,13 +75,14 @@ end
 #
 module SOAPCompoundtype
   include SOAP
-  include NQXML
 
-  attr_reader :encodingStyle
+  attr_accessor :nil
+  attr_accessor :encodingStyle
 
   attr_accessor :namespace
   attr_accessor :name
   attr_accessor :id
+  attr_reader :precedents
   attr_accessor :root
   attr_accessor :parent
   attr_accessor :position
@@ -148,10 +93,11 @@ public
 
   def initialize( typeName )
     super( typeName, nil )
-    @encodingStyle = EncodingNamespace
-    @namespace = EnvelopeNamespace
+    @encodingStyle = nil
+    @namespace = nil
     @name = nil
     @id = nil
+    @precedents = []
     @parent = nil
     @position = nil
     @extraAttributes = []
@@ -173,32 +119,6 @@ private
 end
 
 
-class SOAPExtraAttributes
-  include NQXML
-
-  def initialize( keyNamespace, keyName, valueNamespace, valueName )
-    @keyNamespace = keyNamespace
-    @keyName = keyName
-    @valueNamespace = valueNamespace
-    @valueName = valueName
-  end
-
-  def create( ns )
-    key = if @keyNamespace
-	ns.name( @keyNamespace, @keyName )
-      else
-	@keyName
-      end
-    value = if @valueNamespace
-	ns.name( @valueNamespace, @valueName )
-      else
-	@valueName
-      end
-    Attr.new( key, value )
-  end
-end
-
-
 ###
 ## Basic datatypes.
 #
@@ -212,10 +132,11 @@ public
 
   # Override the definition in SOAPBasetype.
   def initialize( refId = nil )
-    @encodingStyle = EncodingNamespace
-    @namespace = EnvelopeNamespace
+    @encodingStyle = nil
+    @namespace = nil
     @name = nil
     @id = nil
+    @precedents = []
     @parent = nil
     @refId = refId
     @obj = nil
@@ -227,9 +148,12 @@ public
 
   def __setobj__( obj )
     @obj = obj
+    @refId = SOAPReference.createId( @obj )
+    @obj.id = @refId unless @obj.id
+    @obj.precedents << self
     # Copies NSDBase information
-    obj.typeName = @typeName unless obj.typeName
-    obj.typeNamespace = @typeNamespace unless obj.typeNamespace
+    @obj.typeName = @typeName unless obj.typeName
+    @obj.typeNamespace = @typeNamespace unless @obj.typeNamespace
   end
 
   # Why don't I use delegate.rb?
@@ -252,6 +176,10 @@ public
     d = super( ns, name )
     d.refId = refId
     d
+  end
+
+  def SOAPReference.createId( obj )
+    'id' << obj.__id__.to_s
   end
 end
 
@@ -344,17 +272,6 @@ public
     @typeNamespace = XSD::Namespace
     @typeName = XSD::Base64BinaryLiteral
   end
-
-  def addNSDeclAttr( attrs, ns )
-    unless ns.assigned?( XSD::InstanceNamespace )
-      tag = ns.assign( XSD::InstanceNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, XSD::InstanceNamespace ))
-    end
-    if @typeNamespace and !ns.assigned?( @typeNamespace )
-      tag = ns.assign( @typeNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
-    end
-  end
 end
 
 
@@ -424,30 +341,10 @@ public
     end
   end
 
-  def encode( ns, name, parentEncodingStyle = nil, parentArray = nil )
-    attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
-    addNSDeclAttr( attrs, ns )
-    if parentEncodingStyle != EncodingNamespace
-      addEncodingAttr( attrs, ns )
+  def replace
+    members.each do | member |
+      self[ member ] = yield( self[ member ] )
     end
-    if parentArray && parentArray.typeNamespace == @typeNamespace &&
-	parentArray.baseTypeName == @typeName
-      # No need to add.
-    else
-      attrs.push( datatypeAttr( ns )) if @typeName
-    end
-
-    if parentArray && parentArray.position
-      attrs.push( positionAttr( parentArray.position, ns ))
-    end
-
-    children = []
-    0.upto( @array.length - 1 ) do | i |
-      children.push( @data[ i ].encode( ns.clone, @array[ i ], EncodingNamespace ))
-    end
-
-    # Element.new( name, attrs, children )
-    Node.initializeWithChildren( name, attrs, children )
   end
 
   def self.decode( ns, name, typeNamespace, typeName )
@@ -458,29 +355,6 @@ public
   end
 
 private
-
-  def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @typeNamespace, @typeName ))
-  end
-
-  def addNSDeclAttr( attrs, ns )
-    unless ns.assigned?( EncodingNamespace )
-      tag = ns.assign( EncodingNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, EncodingNamespace ))
-    end
-    unless ns.assigned?( @namespace )
-      tag = ns.assign( @namespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
-    end
-    unless ns.assigned?( XSD::InstanceNamespace )
-      tag = ns.assign( XSD::InstanceNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, XSD::InstanceNamespace ))
-    end
-    if @typeNamespace and !ns.assigned?( @typeNamespace )
-      tag = ns.assign( @typeNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
-    end
-  end
 
   def addMember( name, initMember = nil )
     initMember = SOAPNil.new() unless initMember
@@ -502,6 +376,7 @@ private
     end
 
     @array.push( name )
+    initMember.name = name
     @data.push( initMember )
   end
 end
@@ -555,7 +430,7 @@ public
     value = idxAry.slice!( -1 )
 
     if idxAry.size != @rank
-      raise ArgumentError.new( "Given #{ idxAry.size } params does not match rank: #{ @rank }" )
+      raise ArgumentError.new( "Given #{ idxAry.size } params(#{ idxAry }) does not match rank: #{ @rank }" )
     end
 
     0.upto( idxAry.size - 1 ) do | i |
@@ -567,21 +442,43 @@ public
     data = retrieve( idxAry[ 0..-2 ] )
     data[ idxAry.last ] = value
 
-    # Sync type
-    unless @typeName
-      @typeName = SOAPArray.getAtype( value.typeName, @rank )
-      @typeNamespace = value.typeNamespace
-    end
+    if value.is_a?( SOAPBasetype ) || value.is_a?( SOAPCompoundtype )
+      value.name = 'item'
 
-    unless value.typeName
-      value.typeName = @typeName
-      value.typeNamespace = @typeNamespace
+      # Sync type
+      unless @typeName
+	@typeName = SOAPArray.getAtype( value.typeName, @rank )
+	@typeNamespace = value.typeNamespace
+      end
+
+      unless value.typeName
+	value.typeName = @typeName
+	value.typeNamespace = @typeNamespace
+      end
     end
   end
 
   def each
     @data.each do | data |
       yield( data )
+    end
+  end
+
+  def replace
+    @data = doDeepMap( @data ) do | ele |
+      yield( ele )
+    end
+  end
+
+  def doDeepMap( ary, &block )
+    ary.collect do | ele |
+      if ele.is_a?( Array )
+	doDeepMap( ele, &block )
+      else
+	newObj = block.call( ele )
+	newObj.name = 'item'
+	newObj
+      end
     end
   end
 
@@ -597,15 +494,14 @@ public
   def traverse
     traverseData( @data ) do | v, *rank |
       unless @sparse
-	yield( v )
+       yield( v )
       else
-	yield( v, *rank ) unless v.is_a?( SOAPNil )
+       yield( v, *rank ) if v && !v.is_a?( SOAPNil )
       end
     end
   end
 
-  def soap2array
-    ary = []
+  def soap2array( ary )
     traverseData( @data ) do | v, *position |
       iteAry = ary
       1.upto( position.size - 1 ) do | rank |
@@ -622,46 +518,10 @@ public
 	iteAry[ position.last ] = v
       end
     end
-
-    ary
-  end
-
-  def encode( ns, name, parentEncodingStyle = nil, parentArray = nil )
-    attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
-    addNSDeclAttr( attrs, ns )
-    if parentEncodingStyle != EncodingNamespace
-      addEncodingAttr( attrs, ns )
-    end
-
-    attrs.push( arrayTypeAttr( ns ))
-    attrs.push( datatypeAttr( ns )) if @typeName
-
-    if parentArray && parentArray.position
-      attrs.push( positionAttr( parentArray.position, ns ))
-    end
-
-    childTypeName = contentTypeName().gsub( /\[,*\]/, ArrayEncodePostfix ) << ArrayEncodePostfix
-
-    children = []
-    traverse do | child, *rank |
-      unless @sparse
-	@position = nil
-      else
-	@position = rank
-      end
-      children << child.encode( ns.clone, childTypeName, EncodingNamespace, self )
-    end
-
-    # Element.new( name, attrs, children )
-    Node.initializeWithChildren( name, attrs, children )
-  end
-
-  def contentTypeName()
-    @typeName?  @typeName.sub( /\[,*\]$/, '' ) : ''
   end
 
   def baseTypeName()
-    @typeName?  @typeName.sub( /(?:\[,*\])+$/, '' ) : ''
+    @typeName ?  @typeName.sub( /(?:\[,*\])+$/, '' ) : ''
   end
 
   def position
@@ -716,37 +576,6 @@ private
 	move = true
       end
     end
-  end
-
-  def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( EncodingNamespace, 'Array' ))
-  end
-
-  def arrayTypeAttr( ns )
-    Attr.new( ns.name( EncodingNamespace, 'arrayType' ), ns.name( @typeNamespace, arrayTypeValue() ))
-  end
-
-  def addNSDeclAttr( attrs, ns )
-    unless ns.assigned?( EncodingNamespace )
-      tag = ns.assign( EncodingNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, EncodingNamespace ))
-    end
-    unless ns.assigned?( @namespace )
-      tag = ns.assign( @namespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
-    end
-    unless ns.assigned?( XSD::InstanceNamespace )
-      tag = ns.assign( XSD::InstanceNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, XSD::InstanceNamespace ))
-    end
-    if @typeNamespace and !ns.assigned?( @typeNamespace )
-      tag = ns.assign( @typeNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
-    end
-  end
-
-  def arrayTypeValue()
-    contentTypeName() << '[' << @size.join( ',' ) << ']'
   end
 
   # Module function
