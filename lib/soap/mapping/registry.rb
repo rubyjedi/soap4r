@@ -490,10 +490,10 @@ private
   end
 
   def elements2soap(obj, soap_obj, elements)
-    elements.each do |elename, element|
-      child_obj = obj.instance_eval('@' << elename)
-      soap_obj.add(elename,
-        Mapping._obj2soap(child_obj, self, element.type))
+    elements.each do |element|
+      name = element.name
+      child_obj = obj.instance_eval('@' << name)
+      soap_obj.add(name, Mapping._obj2soap(child_obj, self, element.type))
     end
   end
 end
