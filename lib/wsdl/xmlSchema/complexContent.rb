@@ -48,8 +48,8 @@ class ComplexContent < Info
     nil
   end
 
-  RestrictionName = Name.new( XSD::Namespace, 'restriction' )
-  ExtensionName = Name.new( XSD::Namespace, 'extension' )
+  RestrictionName = XSD::QName.new( XSD::Namespace, 'restriction' )
+  ExtensionName = XSD::QName.new( XSD::Namespace, 'extension' )
   def parseElement( element )
     case element
     when RestrictionName
@@ -66,7 +66,7 @@ class ComplexContent < Info
     end
   end
 
-  BaseAttrName = Name.new( nil, 'base' )
+  BaseAttrName = XSD::QName.new( nil, 'base' )
   def parseAttr( attr, value )
     if @deriveType.nil?
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )

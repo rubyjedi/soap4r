@@ -47,7 +47,7 @@ class Port < Info
     root.getBinding( @binding )
   end
 
-  SOAPAddressName = Name.new( SOAPBindingNamespace, 'address' )
+  SOAPAddressName = XSD::QName.new( SOAPBindingNamespace, 'address' )
   def parseElement( element )
     case element
     when SOAPAddressName
@@ -59,12 +59,12 @@ class Port < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
-  BindingAttrName = Name.new( nil, 'binding' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
+  BindingAttrName = XSD::QName.new( nil, 'binding' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = XSD::QName.new( targetNamespace, value )
     when BindingAttrName
       @binding = value
     else

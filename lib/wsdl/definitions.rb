@@ -55,7 +55,7 @@ class Definitions < Info
   def setTargetNamespace( targetNamespace )
     @targetNamespace = targetNamespace
     if @name
-      @name = Name.new( @targetNamespace, @name.name )
+      @name = XSD::QName.new( @targetNamespace, @name.name )
     end
   end
 
@@ -156,12 +156,12 @@ class Definitions < Info
     nil
   end
 
-  TypesName = Name.new( Namespace, 'types' )
-  MessageName = Name.new( Namespace, 'message' )
-  PortTypeName = Name.new( Namespace, 'portType' )
-  BindingName = Name.new( Namespace, 'binding' )
-  ServiceName = Name.new( Namespace, 'service' )
-  ImportName = Name.new( Namespace, 'import' )
+  TypesName = XSD::QName.new( Namespace, 'types' )
+  MessageName = XSD::QName.new( Namespace, 'message' )
+  PortTypeName = XSD::QName.new( Namespace, 'portType' )
+  BindingName = XSD::QName.new( Namespace, 'binding' )
+  ServiceName = XSD::QName.new( Namespace, 'service' )
+  ImportName = XSD::QName.new( Namespace, 'import' )
   def parseElement( element )
     case element
     when ImportName
@@ -193,12 +193,12 @@ class Definitions < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
-  TargetNamespaceAttrName = Name.new( nil, 'targetNamespace' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
+  TargetNamespaceAttrName = XSD::QName.new( nil, 'targetNamespace' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( @targetNamespace, value )
+      @name = XSD::QName.new( @targetNamespace, value )
     when TargetNamespaceAttrName
       setTargetNamespace( value )
     else
@@ -206,7 +206,7 @@ class Definitions < Info
     end
   end
 
-  DefinitionsName = Name.new( Namespace, 'definitions' )
+  DefinitionsName = XSD::QName.new( Namespace, 'definitions' )
   def self.parseElement( element )
     if element == DefinitionsName
       Definitions.new

@@ -199,24 +199,25 @@ private
     handler = getHandler( encodingStyle )
 
     # SOAP Envelope parsing.
-    namespace, lname = ns.parse( name )
-    if (( namespace == EnvelopeNamespace ) ||
-	( @option.has_key?( 'allowUnqualifiedElement' ) && namespace.nil? ))
-      if lname == 'Envelope'
+    element = ns.parse( name )
+    if (( element.namespace == EnvelopeNamespace ) ||
+	( @option.has_key?( 'allowUnqualifiedElement' ) &&
+	element.namespace.nil? ))
+      if element.name == 'Envelope'
 	o = SOAPEnvelope.new
-      elsif lname == 'Header'
+      elsif element.name == 'Header'
 	unless parent.node.is_a?( SOAPEnvelope )
 	  raise FormatDecodeError.new( "Header should be a child of Envelope." )
 	end
 	o = SOAPHeader.new
 	parent.node.header = o
-      elsif lname == 'Body'
+      elsif element.name == 'Body'
 	unless parent.node.is_a?( SOAPEnvelope )
 	  raise FormatDecodeError.new( "Body should be a child of Envelope." )
 	end
 	o = SOAPBody.new
 	parent.node.body = o
-      elsif lname == 'Fault'
+      elsif element.name == 'Fault'
 	unless parent.node.is_a?( SOAPBody )
 	  raise FormatDecodeError.new( "Fault should be a child of Body." )
 	end

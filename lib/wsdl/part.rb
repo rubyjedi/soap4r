@@ -39,9 +39,9 @@ class Part < Info
     nil
   end
 
-  NameAttrName = Name.new( nil, 'name' )
-  ElementAttrName = Name.new( nil, 'element' )
-  TypeAttrName = Name.new( nil, 'type' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
+  ElementAttrName = XSD::QName.new( nil, 'element' )
+  TypeAttrName = XSD::QName.new( nil, 'type' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName

@@ -55,8 +55,8 @@ class SOAPProxy
 
     def initialize( modelMethod, values )
       @method = modelMethod.dup
-      @namespace = @method.namespace
-      @name = @method.name
+      @namespace = @method.elementName.namespace
+      @name = @method.elementName.name
 
       params = {}
     

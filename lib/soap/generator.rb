@@ -71,9 +71,9 @@ public
 
   def encodeData( buf, ns, qualified, obj, parent )
     if @refTarget && !obj.precedents.empty?
-      @refTarget.add( obj.name, obj )
+      @refTarget.add( obj.elementName.name, obj )
       ref = SOAPReference.new
-      ref.name = obj.name
+      ref.elementName.name = obj.elementName.name
       ref.__setobj__( obj )
       obj.precedents.clear	# Avoid cyclic delay.
       obj.encodingStyle = parent.encodingStyle
@@ -112,7 +112,7 @@ public
 
       # Generator knows nothing about RPC.
       # obj.name ||= RPCUtils.getElementNameFromName( obj.type.to_s )
-      if !obj.name
+      if !obj.elementName.name
        	raise FormatEncodeError.new( "Element name not defined: #{ obj }." )
       end
 

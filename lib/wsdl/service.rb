@@ -39,8 +39,8 @@ class Service < Info
     parent.targetNamespace
   end
 
-  PortName = Name.new( Namespace, 'port' )
-  SOAPAddressName = Name.new( SOAPBindingNamespace, 'address' )
+  PortName = XSD::QName.new( Namespace, 'port' )
+  SOAPAddressName = XSD::QName.new( SOAPBindingNamespace, 'address' )
   def parseElement( element )
     case element
     when PortName
@@ -56,11 +56,11 @@ class Service < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = XSD::QName.new( targetNamespace, value )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end

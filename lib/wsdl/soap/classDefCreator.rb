@@ -48,7 +48,7 @@ class ClassDefCreator
 	elsif complexType.complexContent	# ToDo: too ad-hoc
 	  content = complexType.complexContent.content
 	  if content.attributes.size == 1 and content.attributes[ 0 ].ref ==
-	      Name.new( ::SOAP::EncodingNamespace, ::SOAP::AttrArrayType )
+	      XSD::QName.new( ::SOAP::EncodingNamespace, ::SOAP::AttrArrayType )
 	    result << dumpArrayDef( complexType.name )
 	  else
 	    raise RuntimeError.new( "Unknown complexContent definition..." )

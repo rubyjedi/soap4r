@@ -38,17 +38,17 @@ class Attribute < Info
     nil
   end
 
-  RefAttrName = Name.new( nil, 'ref' )
-  ArrayTypeAttrName = Name.new( Namespace, 'arrayType' )
+  RefAttrName = XSD::QName.new( nil, 'ref' )
+  ArrayTypeAttrName = XSD::QName.new( Namespace, 'arrayType' )
   def parseAttr( attr, value )
     case attr
     when RefAttrName
       @ref = value
     when ArrayTypeAttrName
-      @arrayType = if value.is_a?( Name )
+      @arrayType = if value.is_a?( XSD::QName )
 	  value
 	else
-	  Name.new( XSD::Namespace, value )
+	  XSD::QName.new( XSD::Namespace, value )
 	end
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )

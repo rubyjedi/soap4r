@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/charset'
+require 'soap/qname'
 require 'uri'
 
 
@@ -57,6 +58,9 @@ module XSD
   IntLiteral = 'int'
   ShortLiteral = 'short'
 
+  AttrTypeName = QName.new( InstanceNamespace, AttrType )
+  AttrNilName = QName.new( InstanceNamespace, NilLiteral )
+  AnyType = QName.new( Namespace, AnyTypeLiteral )
   class Error < StandardError; end
   class ValueSpaceError < Error; end
 end
@@ -69,8 +73,7 @@ class NSDBase
   @@types = []
 
 public
-  attr_accessor :typeName
-  attr_accessor :typeNamespace
+  attr_reader :type
 
   def self.inherited( klass )
     @@types << klass
@@ -80,17 +83,8 @@ public
     @@types
   end
 
-  def initialize( typeNamespace )
-    @typeName = nil
-    @typeNamespace = typeNamespace
-  end
-
-  def typeEqual( typeNamespace, typeName )
-    ( @typeNamespace == typeNamespace and @typeName == typeName )
-  end
-
-  def typeUName
-    "{#{ @typeNamespace }}#{ @typeName }"
+  def initialize
+    @type = nil
   end
 end
 
@@ -100,7 +94,7 @@ end
 #
 class XSDAnyType < NSDBase
   include XSD
-  Literal = AnyTypeLiteral
+  Type = QName.new( Namespace, AnyTypeLiteral )
 
 public
 
@@ -110,7 +104,7 @@ public
   attr_accessor :isNil
 
   def initialize( initObj = nil )
-    super( Namespace )
+    super()
     @data = nil
     @isNil = true
     set( initObj ) if initObj
@@ -153,13 +147,13 @@ private
 end
 
 class XSDNil < XSDAnyType
-  Literal = NilLiteral
+  Type = QName.new( Namespace, NilLiteral )
   Value = 'true'
 
 public
   def initialize( initNil = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initNil )
   end
 
@@ -174,12 +168,12 @@ end
 ## Primitive datatypes.
 #
 class XSDString < XSDAnyType
-  Literal = StringLiteral
+  Type = QName.new( Namespace, StringLiteral )
 
 public
   def initialize( initString = nil )
     super()
-    @typeName = Literal
+    @type = Type
     @encoding = nil
     set( initString ) if initString
   end
@@ -187,19 +181,19 @@ public
 private
   def _set( newString )
     unless SOAP::Charset.isUTF8( newString )
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newString }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newString }'." )
     end
     @data = newString
   end
 end
 
 class XSDBoolean < XSDAnyType
-  Literal = BooleanLiteral
+  Type = QName.new( Namespace, BooleanLiteral )
 
 public
   def initialize( initBoolean = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initBoolean )
   end
 
@@ -212,7 +206,7 @@ private
       elsif str == 'false' || str == '0'
 	@data = false
       else
-	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+	raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
       end
     else
       @data = newBoolean ? true : false
@@ -221,12 +215,12 @@ private
 end
 
 class XSDDecimal < XSDAnyType
-  Literal = DecimalLiteral
+  Type = QName.new( Namespace, DecimalLiteral )
 
 public
   def initialize( initDecimal = nil )
     super()
-    @typeName = Literal
+    @type = Type
     @sign = ''
     @number = ''
     @point = 0
@@ -249,7 +243,7 @@ private
   def set_str( str )
     /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( str.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
 
     @sign = $1 || '+'
@@ -284,12 +278,12 @@ private
 end
 
 class XSDFloat < XSDAnyType
-  Literal = FloatLiteral
+  Type = QName.new( Namespace, FloatLiteral )
 
 public
   def initialize( initFloat = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initFloat ) if initFloat
   end
 
@@ -310,14 +304,14 @@ private
       @data = -1.0/0.0
     else
       if /^[-+\.\deE]+$/ !~ str
-	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+	raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
       end
       # Float( "-1.4E" ) might fail on some system.
       str << '0' if /e$/i =~ str
       begin
   	@data = narrowTo32bit( Float( str ))
       rescue ArgumentError
-  	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+  	raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
       end
     end
   end
@@ -348,12 +342,12 @@ end
 
 # Ruby's Float is double-precision 64-bit floating point value.
 class XSDDouble < XSDAnyType
-  Literal = DoubleLiteral
+  Type = QName.new( Namespace, DoubleLiteral )
 
 public
   def initialize( initDouble = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initDouble ) if initDouble
   end
 
@@ -376,7 +370,7 @@ private
       begin
 	@data = Float( str )
       rescue ArgumentError
-	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+	raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
       end
     end
   end
@@ -396,7 +390,7 @@ private
 end
 
 class XSDDuration < XSDAnyType
-  Literal = DurationLiteral
+  Type = QName.new( Namespace, DurationLiteral )
 
 public
   attr_accessor :sign
@@ -409,7 +403,7 @@ public
 
   def initialize( initDuration = nil )
     super()
-    @typeName = Literal
+    @type = Type
     @sign = nil
     @year = nil
     @month = nil
@@ -424,12 +418,12 @@ private
   def _set( newDuration )
     /^([+-]?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/ =~ trim( newDuration.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDuration }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newDuration }'." )
     end
 
     if ( $5 and (( !$2 and !$3 and !$4 ) or ( !$6 and !$7 and !$8 )))
       # Should we allow 'PT5S' here?
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDuration }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newDuration }'." )
     end
 
     @sign = $1
@@ -530,12 +524,12 @@ end
 
 class XSDDateTime < XSDAnyType
   include XSDDateTimeImpl
-  Literal = DateTimeLiteral
+  Type = QName.new( Namespace, DateTimeLiteral )
 
 public
   def initialize( initDateTime = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initDateTime ) if initDateTime
   end
 
@@ -543,10 +537,10 @@ private
   def set_str( t )
     /^([+-]?\d\d\d\d\d*)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
     if $1 == '0000'
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
 
     year = $1.to_i
@@ -593,12 +587,12 @@ end
 
 class XSDTime < XSDAnyType
   include XSDDateTimeImpl
-  Literal = TimeLiteral
+  Type = QName.new( Namespace, TimeLiteral )
 
 public
   def initialize( initTime = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initTime ) if initTime
   end
 
@@ -606,7 +600,7 @@ private
   def set_str( t )
     /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
 
     hour = $1.to_i
@@ -636,12 +630,12 @@ end
 
 class XSDDate < XSDAnyType
   include XSDDateTimeImpl
-  Literal = DateLiteral
+  Type = QName.new( Namespace, DateLiteral )
 
 public
   def initialize( initDate = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initDate ) if initDate
   end
 
@@ -649,7 +643,7 @@ private
   def set_str( t )
     /^([+-]?\d\d\d\d\d*)-(\d\d)-(\d\d)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
 
     year = $1.to_i
@@ -672,12 +666,12 @@ end
 
 class XSDGYearMonth < XSDAnyType
   include XSDDateTimeImpl
-  Literal = GYearMonthLiteral
+  Type = QName.new( Namespace, GYearMonthLiteral )
 
 public
   def initialize( initGYearMonth = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initGYearMonth ) if initGYearMonth
   end
 
@@ -685,7 +679,7 @@ private
   def set_str( t )
     /^([+-]?\d\d\d\d\d*)-(\d\d)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
 
     year = $1.to_i
@@ -707,12 +701,12 @@ end
 
 class XSDGYear < XSDAnyType
   include XSDDateTimeImpl
-  Literal = GYearLiteral
+  Type = QName.new( Namespace, GYearLiteral )
 
 public
   def initialize( initGYear = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initGYear ) if initGYear
   end
 
@@ -720,7 +714,7 @@ private
   def set_str( t )
     /^([+-]?\d\d\d\d\d*)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
 
     year = $1.to_i
@@ -741,12 +735,12 @@ end
 
 class XSDGMonthDay < XSDAnyType
   include XSDDateTimeImpl
-  Literal = GMonthDayLiteral
+  Type = QName.new( Namespace, GMonthDayLiteral )
 
 public
   def initialize( initGMonthDay = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initGMonthDay ) if initGMonthDay
   end
 
@@ -754,7 +748,7 @@ private
   def set_str( t )
     /^(\d\d)-(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
 
     mon = $1.to_i
@@ -772,12 +766,12 @@ end
 
 class XSDGDay < XSDAnyType
   include XSDDateTimeImpl
-  Literal = GDayLiteral
+  Type = QName.new( Namespace, GDayLiteral )
 
 public
   def initialize( initGDay = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initGDay ) if initGDay
   end
 
@@ -785,7 +779,7 @@ private
   def set_str( t )
     /^(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
 
     mday = $1.to_i
@@ -802,12 +796,12 @@ end
 
 class XSDGMonth < XSDAnyType
   include XSDDateTimeImpl
-  Literal = GMonthLiteral
+  Type = QName.new( Namespace, GMonthLiteral )
 
 public
   def initialize( initGMonth = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initGMonth ) if initGMonth
   end
 
@@ -815,7 +809,7 @@ private
   def set_str( t )
     /^(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ t }'." )
     end
 
     mon = $1.to_i
@@ -831,19 +825,19 @@ private
 end
 
 class XSDHexBinary < XSDAnyType
-  Literal = HexBinaryLiteral
+  Type = QName.new( Namespace, HexBinaryLiteral )
 
 public
   # String in Ruby could be a binary.
   def initialize( initString = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initString ) if initString
   end
 
   def setEncoded( newHexString )
     if /^[0-9a-fA-F]*$/ !~ newHexString
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newHexString }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newHexString }'." )
     end
     @data = trim( String.new( newHexString ))
     @isNil = false
@@ -861,19 +855,19 @@ private
 end
 
 class XSDBase64Binary < XSDAnyType
-  Literal = Base64BinaryLiteral
+  Type = QName.new( Namespace, Base64BinaryLiteral )
 
 public
   # String in Ruby could be a binary.
   def initialize( initString = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initString ) if initString
   end
 
   def setEncoded( newBase64String )
     if /^[A-Za-z0-9+\/=]*$/ !~ newBase64String
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newBase64String }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newBase64String }'." )
     end
     @data = trim( String.new( newBase64String ))
     @isNil = false
@@ -890,12 +884,12 @@ private
 end
 
 class XSDAnyURI < XSDAnyType
-  Literal = AnyURILiteral
+  Type = QName.new( Namespace, AnyURILiteral )
 
 public
   def initialize( initAnyURI = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initAnyURI ) if initAnyURI
   end
 
@@ -904,18 +898,18 @@ private
     begin
       @data = URI.parse( trim( newAnyURI.to_s ))
     rescue URI::InvalidURIError
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newAnyURI }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newAnyURI }'." )
     end
   end
 end
 
 class XSDQName < XSDAnyType
-  Literal = QNameLiteral
+  Type = QName.new( Namespace, QNameLiteral )
 
 public
   def initialize( initQName = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initQName ) if initQName
   end
 
@@ -923,7 +917,7 @@ private
   def _set( newQName )
     /^(?:([^:]+):)?([^:]+)$/ =~ trim( newQName.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newQName }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newQName }'." )
     end
 
     @prefix = $1
@@ -945,31 +939,31 @@ end
 ## Derived types
 #
 class XSDNormalizedString < XSDString
-  Literal = NormalizedStringLiteral
+  Type = QName.new( Namespace, NormalizedStringLiteral )
 
 public
   def initialize( initNormalizedString = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initNormalizedString ) if initNormalizedString
   end
 
 private
   def _set( newNormalizedString )
     if /[\t\r\n]/ =~ newNormalizedString
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newNormalizedString }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newNormalizedString }'." )
     end
     super
   end
 end
 
 class XSDInteger < XSDDecimal
-  Literal = IntegerLiteral
+  Type = QName.new( Namespace, IntegerLiteral )
 
 public
   def initialize( initInteger = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initInteger ) if initInteger
   end
 
@@ -978,7 +972,7 @@ private
     begin
       @data = Integer( str )
     rescue ArgumentError
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
   end
 
@@ -988,12 +982,12 @@ private
 end
 
 class XSDLong < XSDInteger
-  Literal = LongLiteral
+  Type = QName.new( Namespace, LongLiteral )
 
 public
   def initialize( initLong = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initLong ) if initLong
   end
 
@@ -1002,10 +996,10 @@ private
     begin
       @data = Integer( str )
     rescue ArgumentError
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
     unless validate( @data )
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
   end
 
@@ -1017,12 +1011,12 @@ private
 end
 
 class XSDInt < XSDLong
-  Literal = IntLiteral
+  Type = QName.new( Namespace, IntLiteral )
 
 public
   def initialize( initInt = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initInt ) if initInt
   end
 
@@ -1031,10 +1025,10 @@ private
     begin
       @data = Integer( str )
     rescue ArgumentError
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
     unless validate( @data )
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
   end
 
@@ -1046,12 +1040,12 @@ private
 end
 
 class XSDShort < XSDInt
-  Literal = ShortLiteral
+  Type = QName.new( Namespace, ShortLiteral )
 
 public
   def initialize( initShort = nil )
     super()
-    @typeName = Literal
+    @type = Type
     set( initShort ) if initShort
   end
 
@@ -1060,10 +1054,10 @@ private
     begin
       @data = Integer( str )
     rescue ArgumentError
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
     unless validate( @data )
-      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      raise ValueSpaceError.new( "#{ type }: cannot accept '#{ str }'." )
     end
   end
 

@@ -40,9 +40,9 @@ class Body < Info
     raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
   end
 
-  UseAttrName = Name.new( nil, 'use' )
-  EncodingStyleAttrName = Name.new( nil, 'encodingStyle' )
-  NamespaceAttrName = Name.new( nil, 'namespace' )
+  UseAttrName = XSD::QName.new( nil, 'use' )
+  EncodingStyleAttrName = XSD::QName.new( nil, 'encodingStyle' )
+  NamespaceAttrName = XSD::QName.new( nil, 'namespace' )
   def parseAttr( attr, value )
     case attr
     when UseAttrName

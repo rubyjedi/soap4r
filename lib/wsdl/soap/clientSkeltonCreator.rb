@@ -50,7 +50,7 @@ private
 
     result = ""
     result << <<__EOD__
-endpointUrl = #{ driverName }::DefaultEndpointUrl
+endpointUrl = ARGV.shift || #{ driverName }::DefaultEndpointUrl
 proxyUrl = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
 obj = #{ driverName }.new( endpointUrl, proxyUrl )
 

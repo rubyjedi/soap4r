@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/baseData'
+require 'soap/qname'
 
 
 module SOAP
@@ -27,6 +28,7 @@ module SOAP
 #
 class SOAPFault < SOAPStruct
   include SOAPCompoundtype
+  Name = XSD::QName.new( EnvelopeNamespace, 'Fault' )
 
 public
 
@@ -63,9 +65,8 @@ public
   end
 
   def initialize( faultCode = nil, faultString = nil, faultActor = nil, detail = nil )
-    super( self.type.to_s )
-    @namespace = EnvelopeNamespace
-    @name = 'Fault'
+    super( nil )
+    @elementName = Name
     @encodingStyle = EncodingNamespace
 
     if faultCode
@@ -73,10 +74,10 @@ public
       self.faultstring = faultString
       self.faultactor = faultActor
       self.detail = detail
-      self.faultcode.name = 'faultcode' if self.faultcode
-      self.faultstring.name = 'faultstring' if self.faultstring
-      self.faultactor.name = 'faultactor' if self.faultactor
-      self.detail.name = 'detail' if self.detail
+      self.faultcode.elementName.name = 'faultcode' if self.faultcode
+      self.faultstring.elementName.name = 'faultstring' if self.faultstring
+      self.faultactor.elementName.name = 'faultactor' if self.faultactor
+      self.detail.elementName.name = 'detail' if self.detail
     end
   end
 
@@ -90,9 +91,8 @@ public
       tag = ns.assign( EncodingNamespace )
       attrs[ 'xmlns:' << tag ] = EncodingNamespace
     end
-    attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
-      EncodingNamespace
-    name = ns.name( @namespace, @name )
+    attrs[ ns.name( AttrEncodingStyleName ) ] = EncodingNamespace
+    name = ns.name( @elementName )
     SOAPGenerator.encodeTag( buf, name, attrs, true )
     yield( self.faultcode, false )
     yield( self.faultstring, false)
@@ -104,13 +104,13 @@ end
 
 
 class SOAPBody < SOAPStruct
+  Name = XSD::QName.new( EnvelopeNamespace, 'Body' )
 
 public
 
   def initialize( data = nil, isFault = false )
-    super( self.type.to_s )
-    @namespace = EnvelopeNamespace
-    @name = 'Body'
+    super( nil )
+    @elementName = Name
     @encodingStyle = nil
     @data = []
     @data << data if data
@@ -118,7 +118,7 @@ public
   end
 
   def encode( buf, ns )
-    name = ns.name( @namespace, @name )
+    name = ns.name( @elementName )
     SOAPGenerator.encodeTag( buf, name, nil, true )
     if @isFault
       yield( @data, true )
@@ -158,7 +158,7 @@ public
   attr_accessor :encodingStyle
 
   def initialize( content, mustUnderstand = true, encodingStyle = nil )
-    super( self.type.to_s )
+    super( nil )
     @content = content
     @mustUnderstand = mustUnderstand
     @encodingStyle = encodingStyle || LiteralNamespace
@@ -178,15 +178,16 @@ end
 
 
 class SOAPHeader < SOAPArray
+  Name = XSD::QName.new( EnvelopeNamespace, 'Header' )
+
   def initialize()
-    super( self.type.to_s, 1 )	# rank == 1
-    @namespace = EnvelopeNamespace
-    @name = 'Header'
+    super( nil, 1 )	# rank == 1
+    @elementName = Name
     @encodingStyle = nil
   end
 
   def encode( buf, ns )
-    name = ns.name( @namespace, @name )
+    name = ns.name( @elementName )
     SOAPGenerator.encodeTag( buf, name, nil, true )
     @data.each do | data |
       yield( data, true )
@@ -202,6 +203,7 @@ end
 
 class SOAPEnvelope < NSDBase
   include SOAPCompoundtype
+  Name = XSD::QName.new( EnvelopeNamespace, 'Envelope' )
 
   attr_accessor :header
   attr_accessor :body
@@ -209,9 +211,8 @@ class SOAPEnvelope < NSDBase
   attr_reader :idPool
 
   def initialize( initHeader = nil, initBody = nil )
-    super( self.type.to_s )
-    @namespace = EnvelopeNamespace
-    @name = 'Envelope'
+    super( nil )
+    @elementName = Name
     @encodingStyle = nil
     @header = initHeader
     @body = initBody
@@ -228,7 +229,7 @@ class SOAPEnvelope < NSDBase
     tag = ns.assign( XSD::InstanceNamespace, XSINamespaceTag )
     attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
 
-    name = ns.name( @namespace, @name )
+    name = ns.name( @elementName )
     SOAPGenerator.encodeTag( buf, name, attrs, true )
 
     yield( @header, true ) if @header and @header.length > 0

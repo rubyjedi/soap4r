@@ -38,8 +38,8 @@ class Import < Info
     nil
   end
 
-  NamespaceAttrName = Name.new( nil, 'namespace' )
-  SchemaLocationAttrName = Name.new( nil, 'schemaLocation' )
+  NamespaceAttrName = XSD::QName.new( nil, 'namespace' )
+  SchemaLocationAttrName = XSD::QName.new( nil, 'schemaLocation' )
   def parseAttr( attr, value )
     case attr
     when NamespaceAttrName

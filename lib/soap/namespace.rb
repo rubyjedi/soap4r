@@ -1,6 +1,6 @@
 =begin
 SOAP4R - Namespace library
-Copyright (C) 2000, 2001 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001, 2002 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -39,15 +39,15 @@ public
     @defaultNamespace = nil
   end
 
-  def assign( namespace, name = nil )
-    if ( name == '' )
+  def assign( namespace, tag = nil )
+    if ( tag == '' )
       @defaultNamespace = namespace
-      name
+      tag
     else
-      name ||= NS.assign( namespace )
-      @ns2tag[ namespace ] = name
-      @tag2ns[ name ] = namespace
-      name
+      tag ||= NS.assign( namespace )
+      @ns2tag[ namespace ] = tag
+      @tag2ns[ tag ] = namespace
+      tag
     end
   end
 
@@ -61,6 +61,16 @@ public
     cloned
   end
 
+  def name( name )
+    if ( name.namespace == @defaultNamespace )
+      name.name
+    elsif @ns2tag.has_key?( name.namespace )
+      @ns2tag[ name.namespace ] + ':' << name.name
+    else
+      raise FormatError.new( 'Namespace: ' << namespace << ' not defined yet.' )
+    end
+  end
+=begin
   def name( namespace, name )
     if ( namespace == @defaultNamespace )
       name
@@ -70,19 +80,18 @@ public
       raise FormatError.new( 'Namespace: ' << namespace << ' not defined yet.' )
     end
   end
+=end
 
   def compare( namespace, name, rhs )
     if ( namespace == @defaultNamespace )
       return true if ( name == rhs )
     end
-
     @tag2ns.each do | assignedTag, assignedNS |
       if assignedNS == namespace &&
 	  "#{ assignedTag }:#{ name }" == rhs
 	return true
       end
     end
-
     false
   end
 
@@ -106,7 +115,7 @@ public
     if !name
       raise FormatError.new( "Illegal element format: #{ elem }" )
     end
-    return namespace, name
+    XSD::QName.new( namespace, name )
   end
 
   def eachNamespace
@@ -114,12 +123,6 @@ public
       yield( namespace, tag )
     end
   end
-
-  def NS.normalizedName( namespace, name )
-    "{" << namespace << "}:" << name
-  end
-
-private
 
   AssigningName = [ 0 ]
 

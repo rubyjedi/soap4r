@@ -36,7 +36,7 @@ class Address < Info
     raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
   end
 
-  LocationAttrName = Name.new( nil, 'location' )
+  LocationAttrName = XSD::QName.new( nil, 'location' )
   def parseAttr( attr, value )
     case attr
     when LocationAttrName

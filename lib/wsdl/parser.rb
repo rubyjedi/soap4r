@@ -17,8 +17,8 @@
 
 require 'wsdl/wsdl'
 require 'soap/namespace'
+require 'soap/qname'
 require 'soap/XMLSchemaDatatypes'
-require 'wsdl/name'
 require 'wsdl/data'
 require 'wsdl/xmlSchema/data'
 require 'wsdl/soap/data'
@@ -147,11 +147,10 @@ private
     end
   end
 
-  DefinitionsName = Name.new( Namespace, 'definitions' )
+  DefinitionsName = XSD::QName.new( Namespace, 'definitions' )
   def decodeTag( ns, name, attrs, parent )
     o = nil
-    namespace, lname = ns.parse( name )
-    element = Name.new( namespace, lname )
+    element = ns.parse( name )
     if !parent
       if element == DefinitionsName
 	o = Definitions.parseElement( element )
@@ -168,15 +167,15 @@ private
     attrs.each do | key, value |
       if /^xmlns/ !~ key
 	attr = unless /:/ =~ key
-	    Name.new( nil, key )
+	    XSD::QName.new( nil, key )
 	  else
-	    Name.new( *ns.parse( key ))
+	    ns.parse( key )
 	  end
 	valueEle = unless /:/ =~ value
 	    value
 	  else
 	    begin
-	      Name.new( *ns.parse( value ))
+	      ns.parse( value )
 	    rescue
 	      value
 	    end

@@ -93,20 +93,13 @@ module RPCUtils
     OUT = 'out'
     INOUT = 'inout'
 
-    attr_reader :namespace
-    attr_reader :name
-    attr_accessor :encodingStyle
-
     attr_reader :paramDef
-
     attr_reader :inParam
     attr_reader :outParam
 
     def initialize( namespace, name, paramDef = nil )
-      super( self.type.to_s )
-      @typeName = nil
-      @namespace = namespace
-      @name = name
+      super( nil )
+      @elementName = XSD::QName.new( namespace, name )
       @encodingStyle = nil
   
       @paramDef = paramDef
@@ -138,14 +131,14 @@ module RPCUtils
     def setParams( params )
       params.each do | param, data |
         @inParam[ param ] = data
-	data.name = param
+	data.elementName.name = param
       end
     end
 
     def setOutParams( params )
       params.each do | param, data |
 	@outParam[ param ] = data
-	data.name = param
+	data.elementName.name = param
       end
     end
 
@@ -195,7 +188,6 @@ module RPCUtils
 
 
   class SOAPMethodRequest < SOAPMethod
-
     attr_accessor :soapAction
   
     def SOAPMethodRequest.createRequest( namespace, name, *params )
@@ -229,14 +221,15 @@ module RPCUtils
     end
 
     def dup
-      req = self.type.new( @namespace, @name, @paramDef, @soapAction )
+      req = self.class.new( @elementName.namespace, @elementName.name,
+	@paramDef, @soapAction )
       req.encodingStyle = @encodingStyle
       req
     end
 
     def createMethodResponse
-      response = SOAPMethodResponse.new( @namespace, @name + 'Response',
-	@paramDef )
+      response = SOAPMethodResponse.new( @elementName.namespace,
+	@elementName.name + 'Response', @paramDef )
       response
     end
   end
@@ -251,7 +244,7 @@ module RPCUtils
 
     def setRetVal( retVal )
       @retVal = retVal
-      @retVal.name = 'return'
+      @retVal.elementName.name = 'return'
     end
   
     def each
@@ -277,11 +270,11 @@ module RPCUtils
   class SOAPVoid < XSDAnyType
     include SOAPBasetype
     extend SOAPModuleUtils
+    Name = XSD::QName.new( RubyCustomTypeNamespace, nil )
 
   public
     def initialize()
-      @namespace = RubyCustomTypeNamespace
-      @name = nil
+      @elementName = Name
       @id = nil
       @precedents = []
       @parent = nil
@@ -311,27 +304,23 @@ module RPCUtils
   end
 
 
-  def RPCUtils.ary2soap( ary, typeNamespace = XSD::Namespace, type = XSD::AnyTypeLiteral, mappingRegistry = MappingRegistry.new )
-    soapAry = SOAPArray.new( type )
-    soapAry.typeNamespace = typeNamespace
-
+  def RPCUtils.ary2soap( ary, typeNamespace = XSD::Namespace,
+      typeName = XSD::AnyTypeLiteral, mappingRegistry = MappingRegistry.new )
+    soapAry = SOAPArray.new( XSD::QName.new( typeNamespace, typeName ))
     Thread.current[ :SOAPMarshalDataKey ] = {}
     ary.each do | ele |
       soapAry.add( RPCUtils._obj2soap( ele, mappingRegistry ))
     end
     Thread.current[ :SOAPMarshalDataKey ] = nil
-
     soapAry
   end
 
-  def RPCUtils.ary2md( ary, rank, typeNamespace = XSD::Namespace, type = XSD::AnyTypeLiteral, mappingRegistry = MappingRegistry.new )
-    mdAry = SOAPArray.new( type, rank )
-    mdAry.typeNamespace = typeNamespace
-
+  def RPCUtils.ary2md( ary, rank, typeNamespace = XSD::Namespace,
+      typeName = XSD::AnyTypeLiteral, mappingRegistry = MappingRegistry.new )
+    mdAry = SOAPArray.new( XSD::QName.new( typeNamespace, typeName ), rank )
     Thread.current[ :SOAPMarshalDataKey ] = {}
     addMDAry( mdAry, ary, [], mappingRegistry )
     Thread.current[ :SOAPMarshalDataKey ] = nil
-
     mdAry
   end
 
@@ -378,7 +367,7 @@ module RPCUtils
       soapObj.__setobj__( referent )
       soapObj
     else
-      mappingRegistry.obj2soap( obj.type, obj )
+      mappingRegistry.obj2soap( obj.class, obj )
     end
   end
 
@@ -391,7 +380,7 @@ module RPCUtils
 	return RPCUtils._soap2obj( target, mappingRegistry )
       end
     end
-    return mappingRegistry.soap2obj( node.type, node )
+    return mappingRegistry.soap2obj( node.class, node )
   end
 
 

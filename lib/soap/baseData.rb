@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/soap'
+require 'soap/qname'
 require 'soap/XMLSchemaDatatypes'
 
 
@@ -33,7 +34,7 @@ public
 
   def decode( ns, name )
     d = self.new
-    d.namespace, d.name = ns.parse( name )
+    d.elementName = ns.parse( name )
     d
   end
 end
@@ -47,8 +48,7 @@ module SOAPBasetype
 
   attr_accessor :encodingStyle
 
-  attr_accessor :namespace
-  attr_accessor :name
+  attr_accessor :elementName
   attr_accessor :id
   attr_reader :precedents
   attr_accessor :root
@@ -60,8 +60,7 @@ public
   def initialize( *vars )
     super( *vars )
     @encodingStyle = nil
-    @namespace = nil
-    @name = nil
+    @elementName = XSD::QName.new
     @id = nil
     @precedents = []
     @parent = nil
@@ -78,8 +77,7 @@ module SOAPCompoundtype
 
   attr_accessor :encodingStyle
 
-  attr_accessor :namespace
-  attr_accessor :name
+  attr_accessor :elementName
   attr_accessor :id
   attr_reader :precedents
   attr_accessor :root
@@ -88,12 +86,11 @@ module SOAPCompoundtype
 
 public
 
-  def initialize( typeName )
-    super( nil )
-    @typeName = typeName
+  def initialize( type )
+    super()
+    @type = type
     @encodingStyle = nil
-    @namespace = nil
-    @name = nil
+    @elementName = XSD::QName.new
     @id = nil
     @precedents = []
     @root = false
@@ -113,14 +110,14 @@ class SOAPReference < NSDBase
 public
 
   attr_accessor :refId
+  attr_accessor :elementName
 
   # Override the definition in SOAPBasetype.
   def initialize( refId = nil )
-    super( nil )
-    @typeName = nil
+    super()
+    @type = XSD::QName.new
     @encodingStyle = nil
-    @namespace = nil
-    @name = nil
+    @elementName = XSD::QName.new
     @id = nil
     @precedents = []
     @root = false
@@ -139,8 +136,7 @@ public
     @obj.id = @refId unless @obj.id
     @obj.precedents << self
     # Copies NSDBase information
-    @obj.typeName = @typeName unless obj.typeName
-    @obj.typeNamespace = @typeNamespace unless @obj.typeNamespace
+    @obj.type = @type unless @obj.type
   end
 
   # Why don't I use delegate.rb?
@@ -280,15 +276,13 @@ class SOAPBase64 < XSDBase64Binary
 
 public
   # Override the definition in SOAPBasetype.
-  def initialize( *vars )
-    super( *vars )
-    @typeNamespace = EncodingNamespace
-    @typeName = Base64Literal
+  def initialize( initString = nil )
+    super( initString )
+    @type = XSD::QName.new( EncodingNamespace, Base64Literal )
   end
 
   def asXSD
-    @typeNamespace = XSD::Namespace
-    @typeName = XSD::XSDBase64Binary::Literal
+    @type = XSD::XSDBase64Binary::Type
   end
 end
 
@@ -333,8 +327,8 @@ class SOAPStruct < NSDBase
 
 public
 
-  def initialize( typeName = nil )
-    super( typeName )
+  def initialize( type = nil )
+    super( type || XSD::QName.new )
     @array = []
     @data = []
   end
@@ -356,7 +350,7 @@ public
       @data[ idx ]
     elsif idx.is_a?( Integer )
       if ( idx > @array.size )
-        raise ArrayIndexOutOfBoundsError.new( 'In ' << @typeName )
+        raise ArrayIndexOutOfBoundsError.new( 'In ' << @type.name )
       end
       @data[ idx ]
     else
@@ -396,10 +390,9 @@ public
     end
   end
 
-  def self.decode( ns, name, typeNamespace, typeName )
-    s = SOAPStruct.new( typeName )
-    s.typeNamespace = typeNamespace
-    s.namespace, s.name = ns.parse( name )
+  def self.decode( ns, name, type )
+    s = SOAPStruct.new( type )
+    s.elementName = ns.parse( name )
     s
   end
 
@@ -408,7 +401,7 @@ private
   def addMember( name, initMember = nil )
     initMember = SOAPNil.new() unless initMember
     @array.push( name )
-    initMember.name = name
+    initMember.elementName.name = name
     @data.push( initMember )
   end
 end
@@ -422,11 +415,12 @@ class SOAPElement
 public
 
   attr_accessor :qualified
+  attr_accessor :elementName
 
   def initialize( namespace, name, text = nil )
+    super( nil )
     @encodingStyle = LiteralNamespace
-    @namespace = namespace
-    @name = name
+    @elementName = XSD::QName.new( namespace, name )
 
     @id = nil
     @precedents = []
@@ -486,7 +480,7 @@ public
 
   def self.decode( ns, name )
     o = SOAPElement.new
-    o.namespace, o.name = ns.parse( name )
+    o.elementName = ns.parse( name )
     o
   end
 
@@ -540,8 +534,8 @@ public
   attr_reader :offset, :rank
   attr_accessor :size, :sizeFixed
 
-  def initialize( typeName = nil, rank = 1 )
-    super( typeName )
+  def initialize( type = nil, rank = 1 )
+    super( type )
     @rank = rank
     @data = Array.new
     @sparse = false
@@ -585,19 +579,17 @@ public
     data[ idxAry.last ] = value
 
     if value.is_a?( SOAPBasetype ) || value.is_a?( SOAPCompoundtype )
-      value.name = 'item'
+      value.elementName.name = 'item'
 
       # Sync type
-      unless @typeName
-	@typeName = SOAPArray.getAtype( value.typeName, @rank )
-	@typeNamespace = value.typeNamespace
+      unless @type.name
+	@type = XSD::QName.new( value.type.namespace,
+	  SOAPArray.getAtype( value.type.name, @rank ))
       end
 
-      unless @typeNamespace == XSD::Namespace and
-	  @typeName == XSD::AnyTypeLiteral
-	value.typeName = @typeName
-	value.typeNamespace = @typeNamespace
-      end
+#      unless @type == XSD::AnyType
+#	value.type = @type
+#      end
     end
 
     @offset = idxAry
@@ -622,7 +614,7 @@ public
 	doDeepMap( ele, &block )
       else
 	newObj = block.call( ele )
-	newObj.name = 'item'
+	newObj.elementName.name = 'item'
 	newObj
       end
     end
@@ -667,7 +659,7 @@ public
   end
 
   def baseTypeName()
-    @typeName ?  @typeName.sub( /(?:\[,*\])+$/, '' ) : ''
+    @type.name ?  @type.name.sub( /(?:\[,*\])+$/, '' ) : ''
   end
 
   def position
@@ -729,10 +721,10 @@ private
 public
 
   # DEBT: Check if getArrayType returns non-nil before invoking this method.
-  def self.decode( ns, name, typeNamespace, typeNameString )
-    typeName, nofArray = parseType( typeNameString )
-    o = SOAPArray.new( typeName, nofArray.count( ',' ) + 1 )
-
+  def self.decode( ns, name, type )
+    typeStr, nofArray = parseType( type.name )
+    o = SOAPArray.new( XSD::QName.new( type.namespace, typeStr ),
+      nofArray.count( ',' ) + 1 )
     size = []
     nofArray.split( ',' ).each do | s |
       if s.empty?
@@ -742,14 +734,11 @@ public
 	size << s.to_i
       end
     end
-
     unless size.empty?
       o.size = size
       o.sizeFixed = true
     end
-
-    o.typeNamespace = typeNamespace
-    o.namespace, o.name = ns.parse( name )
+    o.elementName = ns.parse( name )
     o
   end
 
