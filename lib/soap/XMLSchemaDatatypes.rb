@@ -35,6 +35,7 @@ module XSD
   DateTimeLiteral = 'dateTime'
   TimeLiteral = 'time'
   DateLiteral = 'date'
+  HexBinaryLiteral = 'hexBinary'
   Base64BinaryLiteral = 'base64Binary'
   DecimalLiteral = 'decimal'
   IntegerLiteral = 'integer'
@@ -469,11 +470,35 @@ public
   end
 end
 
+class XSDHexBinary < XSDBase
+public
+
+  # String in Ruby could be a binary.
+  def initialize( initString = '' )
+    super( HexBinaryLiteral )
+    set( initString ) if initString
+  end
+
+  def set( newString )
+    @data = newString.unpack( "H*" )[ 0 ]
+    @data.tr!( 'a-f', 'A-F' )
+  end
+
+  def setEncoded( newHexString )
+    @data = String.new( newHexString )
+    @data = trim( @data )
+  end
+
+  def toString
+    [ @data ].pack( "H*" )
+  end
+end
+
 class XSDBase64Binary < XSDBase
 public
 
   # String in Ruby could be a binary.
-  def initialize( initString = nil )
+  def initialize( initString = '' )
     super( Base64BinaryLiteral )
     set( initString ) if initString
   end
