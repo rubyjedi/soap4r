@@ -1,5 +1,5 @@
 =begin
-SOAP4R - Charset encoding converter.
+SOAP4R - Charset encoding handler.
 Copyright (C) 2001 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -23,12 +23,48 @@ module SOAP
 module Charset
   public
 
-  Encoding = [ nil, nil ]
+  ###
+  ## Maps
+  #
+  EncodingConvertMap = {}
+  def setEncodingConvertMap
+    begin
+      require 'nkf'
+      EncodingConvertMap[ [ 'EUC' , 'SJIS' ] ] = Proc.new { |str| NKF.nkf( '-sXm0', str ) }
+      EncodingConvertMap[ [ 'SJIS', 'EUC'  ] ] = Proc.new { |str| NKF.nkf( '-eXm0', str ) }
+    rescue LoadError
+    end
+  
+    begin
+      require 'uconv'
+      EncodingConvertMap[ [ 'UTF8', 'EUC'  ] ] = Uconv.method( :u8toeuc )
+      EncodingConvertMap[ [ 'UTF8', 'SJIS' ] ] = Uconv.method( :u8tosjis )
+      EncodingConvertMap[ [ 'EUC' , 'UTF8' ] ] = Uconv.method( :euctou8 )
+      EncodingConvertMap[ [ 'SJIS', 'UTF8' ] ] = Uconv.method( :sjistou8 )
+    rescue LoadError
+    end
+
+    # ToDo: Iconv support
+  end
+  module_function :setEncodingConvertMap
+  self.setEncodingConvertMap
+
+  CharsetMap = {
+    'NONE' => 'us-ascii',
+    'EUC' => 'euc-jp',
+    'SJIS' => 'shift_jis',
+    'UTF8' => 'utf-8',
+  }
+
+
+  ###
+  ## handlers
+  #
+  Encoding = [ $KCODE, $KCODE ]
   def setEncoding( encoding = $KCODE )
     Encoding[ 0 ] = encoding
   end
   module_function :setEncoding
-  self.setEncoding
 
   def getEncoding
     Encoding[ 0 ]
@@ -39,29 +75,11 @@ module Charset
     Encoding[ 1 ] = streamEncoding
   end
   module_function :setXMLInstanceEncoding
-  self.setXMLInstanceEncoding
 
   def getXMLInstanceEncoding
     Encoding[ 1 ]
   end
   module_function :getXMLInstanceEncoding
-
-  EncodingConvertMap = {}
-  begin
-    require 'nkf'
-    EncodingConvertMap[ [ 'EUC' , 'SJIS' ] ] = Proc.new { |str| NKF.nkf( '-sdXm0', str ) }
-    EncodingConvertMap[ [ 'SJIS', 'EUC'  ] ] = Proc.new { |str| NKF.nkf( '-edXm0', str ) }
-  rescue LoadError
-  end
-  
-  begin
-    require 'uconv'
-    EncodingConvertMap[ [ 'UTF8', 'EUC'  ] ] = Uconv.method( :u8toeuc )
-    EncodingConvertMap[ [ 'UTF8', 'SJIS' ] ] = Uconv.method( :u8tosjis )
-    EncodingConvertMap[ [ 'EUC' , 'UTF8' ] ] = Uconv.method( :euctou8 )
-    EncodingConvertMap[ [ 'SJIS', 'UTF8' ] ] = Uconv.method( :sjistou8 )
-  rescue LoadError
-  end
 
   def encodingToXML( str )
     codeConv( str, getEncoding, getXMLInstanceEncoding )
@@ -89,13 +107,6 @@ module Charset
     getCharsetLabel( getXMLInstanceEncoding )
   end
   module_function :getXMLInstanceEncodingLabel
-
-  CharsetMap = {
-    'NONE' => 'us-ascii',
-    'EUC' => 'euc-jp',
-    'SJIS' => 'shift_jis',
-    'UTF8' => 'utf-8',
-  }
 
   def getCharsetLabel( encoding )
     CharsetMap[ encoding ]
