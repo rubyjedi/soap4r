@@ -1,6 +1,6 @@
-wsdl.rb: Do google search using WSDL.
+wsdlDriver.rb: Do google search using WSDL.
 
 Whole files except wsdl.rb in this directory is created by wsdl2ruby.rb from
 GoogleSearch.wsdl with options;
 
-% wsdl2ruby.rb --wsdl GoogleSearch.wsdl --classDef --clientSkelton --servantSkelton --cgiStub --webrickStub --standaloneServerStub --driver
+% wsdl2ruby.rb --wsdl http://api.google.com/GoogleSearch.wsdl --classDef --clientSkelton --servantSkelton --cgiStub --webrickStub --standaloneServerStub --driver
