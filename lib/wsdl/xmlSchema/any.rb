@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Any < Info
@@ -62,5 +62,6 @@ class Any < Info
   end
 end
 
-  end
+
+end
 end

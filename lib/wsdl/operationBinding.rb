@@ -51,14 +51,11 @@ class OperationBinding < Info
     porttype.operations[@name]
   end
 
-  def inputoperation_sig
+  def input_op_sig
     operation = find_operation
     soapbody = input.soapbody
-
-    if soapbody.use != "encoded"
-      raise NotImplementedError.new("Use '#{ soapbody.use }' not supported.")
-    end
-    if soapbody.encodingstyle != ::SOAP::EncodingNamespace
+    if soapbody.encodingstyle and
+	soapbody.encodingstyle != ::SOAP::EncodingNamespace
       raise NotImplementedError.new(
 	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
     end
@@ -71,14 +68,11 @@ class OperationBinding < Info
     return op_name, msg_name, param_names, soapaction
   end
 
-  def outputoperation_sig
+  def output_op_sig
     operation = find_operation
     soapbody = output.soapbody
-
-    if soapbody.use != "encoded"
-      raise NotImplementedError.new("Use '#{ soapbody.use }' not supported.")
-    end
-    if soapbody.encodingstyle != ::SOAP::EncodingNamespace
+    if soapbody.encodingstyle and
+	soapbody.encodingstyle != ::SOAP::EncodingNamespace
       raise NotImplementedError.new(
 	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
     end

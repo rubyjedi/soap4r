@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class ComplexContent < Info
@@ -84,5 +84,6 @@ class ComplexContent < Info
   end
 end
 
-  end
+
+end
 end

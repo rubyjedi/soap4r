@@ -27,10 +27,11 @@ require 'wsdl/xmlSchema/all'
 require 'wsdl/xmlSchema/choice'
 require 'wsdl/xmlSchema/sequence'
 require 'wsdl/xmlSchema/attribute'
+require 'wsdl/xmlSchema/unique'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 AllName = XSD::QName.new(XSD::Namespace, 'all')
@@ -47,6 +48,7 @@ RestrictionName = XSD::QName.new(XSD::Namespace, 'restriction')
 SequenceName = XSD::QName.new(XSD::Namespace, 'sequence')
 SchemaName = XSD::QName.new(XSD::Namespace, 'schema')
 SimpleTypeName = XSD::QName.new(XSD::Namespace, 'simpleType')
+UniqueName = XSD::QName.new(XSD::Namespace, 'unique')
 
 AttributeFormDefaultAttrName = XSD::QName.new(nil, 'attributeFormDefault')
 BaseAttrName = XSD::QName.new(nil, 'base')
@@ -69,5 +71,5 @@ TypeAttrName = XSD::QName.new(nil, 'type')
 UseAttrName = XSD::QName.new(nil, 'use')
 
 
-  end
+end
 end

@@ -1,5 +1,5 @@
 =begin
-WSDL4R - WSDL SOAP documentation element.
+WSDL4R - XMLSchema unique element.
 Copyright (C) 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -21,9 +21,10 @@ require 'wsdl/info'
 
 
 module WSDL
+module XMLSchema
 
 
-class Documentation < Info
+class Unique < Info
   def initialize
     super
   end
@@ -40,4 +41,5 @@ class Documentation < Info
 end
 
 
+end
 end

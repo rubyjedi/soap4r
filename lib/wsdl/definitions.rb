@@ -79,7 +79,7 @@ class Definitions < Info
   def messages
     result = @messages.dup
     @imports.each do |import|
-      result.concat(import.content.messages)
+      result.concat(import.content.messages) if self.class === import.content
     end
     result
   end
@@ -87,7 +87,7 @@ class Definitions < Info
   def porttypes
     result = @porttypes.dup
     @imports.each do |import|
-      result.concat(import.content.porttypes)
+      result.concat(import.content.porttypes) if self.class === import.content
     end
     result
   end
@@ -95,7 +95,7 @@ class Definitions < Info
   def bindings
     result = @bindings.dup
     @imports.each do |import|
-      result.concat(import.content.bindings)
+      result.concat(import.content.bindings) if self.class === import.content
     end
     result
   end
@@ -103,7 +103,7 @@ class Definitions < Info
   def services
     result = @services.dup
     @imports.each do |import|
-      result.concat(import.content.services)
+      result.concat(import.content.services) if self.class === import.content
     end
     result
   end
@@ -112,7 +112,7 @@ class Definitions < Info
     message = @messages[name]
     return message if message
     @imports.each do |import|
-      message = import.content.message(name)
+      message = import.content.message(name) if self.class === import.content
       return message if message
     end
     nil
@@ -122,7 +122,7 @@ class Definitions < Info
     porttype = @porttypes[name]
     return porttype if porttype
     @imports.each do |import|
-      porttype = import.content.porttype(name)
+      porttype = import.content.porttype(name) if self.class === import.content
       return porttype if porttype
     end
     nil
@@ -132,7 +132,7 @@ class Definitions < Info
     binding = @bindings[name]
     return binding if binding
     @imports.each do |import|
-      binding = import.content.binding(name)
+      binding = import.content.binding(name) if self.class === import.content
       return binding if binding
     end
     nil
@@ -142,7 +142,7 @@ class Definitions < Info
     service = @services[name]
     return service if service
     @imports.each do |import|
-      service = import.content.service(name)
+      service = import.content.service(name) if self.class === import.content
       return service if service
     end
     nil
@@ -152,7 +152,7 @@ class Definitions < Info
     binding = @bindings.find { |item| item.type == name }
     return binding if binding
     @imports.each do |import|
-      binding = import.content.porttype_binding(name)
+      binding = import.content.porttype_binding(name) if self.class === import.content
       return binding if binding
     end
     nil
