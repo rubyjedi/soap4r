@@ -10,7 +10,7 @@ class TestRPC < Test::Unit::TestCase
   end
 
   def test_rpc
-    system("cd #{DIR} && ruby #{pathname("../../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("rpc.wsdl")} --type client --type server --force")
+    system("cd #{DIR} && ruby #{pathname("../../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("rpc.wsdl")} --type client --type server --force --quiet")
     compare("expectedDriver.rb", "echo_versionDriver.rb")
     compare("expectedService.rb", "echo_version_service.rb")
 

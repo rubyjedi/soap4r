@@ -1,15 +1,9 @@
 # urn:example.com:echo-type
-class Foo_bar
+class FooBar
   @@schema_type = "foo.bar"
   @@schema_ns = "urn:example.com:echo-type"
 
-  def any
-    @any
-  end
-
-  def any=(value)
-    @any = value
-  end
+  attr_accessor :any
 
   def initialize(any = nil)
     @any = any

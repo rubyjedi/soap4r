@@ -44,7 +44,7 @@
 
   <service name="echo_service">
     <port name="echo_port" binding="tns:echo_binding">
-      <soap:address location="http://localhost"/>
+      <soap:address location="http://localhost:10080"/>
     </port>
   </service>
 </definitions>

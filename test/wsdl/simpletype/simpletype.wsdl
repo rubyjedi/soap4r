@@ -61,7 +61,7 @@
 
   <service name="ping_service">
     <port name="ping_port" binding="tns:ping_binding">
-      <soap:address location="http://localhost"/>
+      <soap:address location="http://localhost:10080"/>
     </port>
   </service>
 </definitions>

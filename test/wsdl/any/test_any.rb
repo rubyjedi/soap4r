@@ -10,7 +10,7 @@ class TestAny < Test::Unit::TestCase
   end
 
   def test_any
-    system("cd #{DIR} && ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("any.wsdl")} --type client --type server --force")
+    system("cd #{DIR} && ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("any.wsdl")} --type client --type server --force --quiet")
     compare("expectedDriver.rb", "echoDriver.rb")
     compare("expectedEcho.rb", "echo.rb")
     compare("expectedService.rb", "echo_service.rb")

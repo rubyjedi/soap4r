@@ -74,7 +74,7 @@
 
   <service name="echo_version_service">
     <port name="echo_version_port" binding="tns:echo_version_binding">
-      <soap:address location="http://localhost"/>
+      <soap:address location="http://localhost:10080"/>
     </port>
   </service>
 </definitions>
