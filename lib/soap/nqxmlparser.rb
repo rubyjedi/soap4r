@@ -35,7 +35,7 @@ class SOAPNQXMLLightWeightParser < SOAPParser
 
   def prologue
     @charsetBackup = $KCODE
-    $KCODE = Charset.getCharsetStr( charset )
+    $KCODE = ::SOAP::Charset.getCharsetStr( charset )
   end
 
   def epilogue
@@ -45,7 +45,7 @@ class SOAPNQXMLLightWeightParser < SOAPParser
   def setXMLDeclEncoding( charset )
     if self.charset.nil?
       @charsetBackup = $KCODE
-      $KCODE = Charset.getCharsetStr( charset )
+      $KCODE = ::SOAP::Charset.getCharsetStr( charset )
     end
     super
   end
@@ -78,46 +78,6 @@ class SOAPNQXMLLightWeightParser < SOAPParser
 
   setFactory( self )
 end
-
-
-=begin
-class SOAPNQXMLStreamingParser < SOAPParser
-  def initialize( *vars )
-    super( *vars )
-    unless NQXML.const_defined?( "XMLDecl" )
-      NQXML.const_set( "XMLDecl", NilClass )
-    end
-  end
-
-  def doParse( stringOrReadable )
-    parser = NQXML::StreamingParser.new( stringOrReadable )
-    parser.each do | entity |
-      case entity
-      when NQXML::Tag
-	unless entity.isTagEnd
-	  startElement( entity.name, entity.attrs )
-	else
-	  endElement( entity.name )
-	end
-      when NQXML::Text
-	characters( entity.text )
-      # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
-      when NQXML::XMLDecl, NQXML::ProcessingInstruction
-	charset = entity.attrs[ 'encoding' ]
-	if charset
-	  setXMLDeclEncoding( charset )
-	end
-      when NQXML::Comment
-	# Nothing to do.
-      else
-	raise FormatDecodeError.new( "Unexpected XML: #{ entity }." )
-      end
-    end
-  end
-
-  # setFactory( self )
-end
-=end
 
 
 end
