@@ -66,7 +66,7 @@ class InteropApp < SOAP::CGIStub
   end
 
   def echoBase64( inputBase64String )
-    inputBase64String.dup
+    SOAP::SOAPBase64.new( inputBase64String.dup )
   end
 end
 
