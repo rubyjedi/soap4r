@@ -25,23 +25,18 @@ module WSDL
 
 
 class Content < Info
-  TypeAll = Object.new
-  TypeSequence = Object.new
-
   attr_accessor :final
   attr_accessor :mixed
   attr_accessor :type
-  attr_reader :attributes
+  attr_reader :contents
   attr_reader :elements
 
-  def initialize( container )
+  def initialize
     super()
-    @container = container
     @final = nil
     @mixed = false
     @type = nil
-    @attributes = []
-    @parsedElements = []
+    @contents = []
     @elements = []
   end
 
@@ -49,41 +44,33 @@ class Content < Info
     parent.targetNamespace
   end
 
-  def addElement( element )
-    @elements << [ element.name, element ]
+  def <<( content )
+    @contents << content
+    updateElements
   end
 
-  AllName = XSD::QName.new( XSD::Namespace, 'all' )
-  SequenceName = XSD::QName.new( XSD::Namespace, 'sequence' )
-  AttributeName = XSD::QName.new( XSD::Namespace, 'attribute' )
-  ElementName = XSD::QName.new( XSD::Namespace, 'element' )
+  def each
+    @contents.each do | content |
+      yield content
+    end
+  end
+
   def parseElement( element )
     case element
-    when AllName
-      @type = TypeAll
-      self
-    when SequenceName
-      @type = TypeSequence
-      self
-    when AttributeName
-      o = Attribute.new
-      @attributes << o
+    when AllName, SequenceName, ChoiceName
+      o = Content.new
+      o.type = element.name
+      @contents << o
       o
     when ElementName
-      if @type.nil?
-	raise WSDLParser::UnexpectedElementError.new(
-	  "Unexpected element #{ element }." )
-      end
       o = Element.new
-      @parsedElements << o
+      @contents << o
       o
     else
       nil
     end
   end
 
-  FinalAttrName = XSD::QName.new( nil, 'final' )
-  MixedAttrName = XSD::QName.new( nil, 'mixed' )
   def parseAttr( attr, value )
     case attr
     when FinalAttrName
@@ -96,10 +83,18 @@ class Content < Info
   end
 
   def postParse
-    @parsedElements.each do | element |
-      @elements << [ element.name, element ]
+    updateElements
+  end
+
+private
+
+  def updateElements
+    @elements = []
+    @contents.each do | content |
+      if content.is_a?( Element )
+	@elements << [ content.name, content ]
+      end
     end
-    @parsedElements.clear
   end
 end
 

@@ -25,48 +25,41 @@ module WSDL
 
 
 class ComplexContent < Info
-  DeriveTypeRestriction = Object.new
-  DeriveTypeExtension = Object.new
-
   attr_accessor :base
   attr_reader :deriveType
   attr_reader :content
+  attr_reader :attributes
 
   def initialize
     super
     @base = nil
     @deriveType = nil
-    @content = Content.new( self )
+    @content = nil
+    @attributes = NamedElements.new
   end
 
-  def getRefAttribute( ref )
-    content.attributes.each do | attribute |
-      if attribute.ref == ref
-	return attribute
-      end
-    end
-    nil
-  end
-
-  RestrictionName = XSD::QName.new( XSD::Namespace, 'restriction' )
-  ExtensionName = XSD::QName.new( XSD::Namespace, 'extension' )
   def parseElement( element )
     case element
-    when RestrictionName
-      @deriveType = DeriveTypeRestriction
+    when RestrictionName, ExtensionName
+      @deriveType = element.name
       self
-    when ExtensionName
-      @deriveType = DeriveTypeExtension
-      self
-    else
+    when AllName, SequenceName, ChoiceName
       if @deriveType.nil?
 	raise WSDLParser::ElementConstraintError.new( "base attr not found." )
       end
-      @content.parseElement( element )
+      @content = Content.new
+      @content.type = element.name
+      @content
+    when AttributeName
+      if @deriveType.nil?
+	raise WSDLParser::ElementConstraintError.new( "base attr not found." )
+      end
+      o = Attribute.new
+      @attributes << o
+      o
     end
   end
 
-  BaseAttrName = XSD::QName.new( nil, 'base' )
   def parseAttr( attr, value )
     if @deriveType.nil?
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
@@ -75,7 +68,7 @@ class ComplexContent < Info
     when BaseAttrName
       @base = value
     else
-      @content.parseAttr( attr, value )
+      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
   end
 end
