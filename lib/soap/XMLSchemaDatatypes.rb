@@ -30,6 +30,7 @@ module XSD
   BooleanLiteral = 'boolean'
   StringLiteral = 'string'
   FloatLiteral = 'float'
+  DoubleLiteral = 'double'
   DateTimeLiteral = 'dateTime'
   Base64BinaryLiteral = 'base64Binary'
   IntegerLiteral = 'integer'
@@ -139,6 +140,7 @@ class XSDFloat < XSDBase
   end
 
   def set( newFloat )
+    # "NaN".to_f => 0 in some environment.  libc?
     @data = if newFloat.is_a?( Float )
         newFloat
       elsif newFloat == 'NaN'
