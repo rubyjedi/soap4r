@@ -108,9 +108,15 @@ private
     type_or_element.each_element do |element|
       name = element.name.name
       varname = safevarname(name)
-      c.def_attr(name, true, varname)
-      init_lines << "@#{ varname } = #{ varname }\n"
-      params << "#{ varname } = nil"
+      if element.map_as_array?
+        c.def_attr(name, false, varname)
+        init_lines << "@#{ varname } = #{ varname }\n"
+        params << "#{ varname } = []"
+      else
+        c.def_attr(name, true, varname)
+        init_lines << "@#{ varname } = #{ varname }\n"
+        params << "#{ varname } = nil"
+      end
       schema_element << name
     end
     unless type_or_element.attributes.empty?
