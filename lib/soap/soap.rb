@@ -75,6 +75,7 @@ class ArrayIndexOutOfBoundsError < Error; end
 class ArrayStoreError < Error; end
 
 class RPCRoutingError < Error; end
+class EmptyResponseError < Error; end
 
 class UnhandledMustUnderstandHeaderError < Error; end
 
