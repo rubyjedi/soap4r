@@ -274,7 +274,7 @@ private
       f
     else
       packed = [ f ].pack( "f" )
-      ( /^\0*$/ =~ packed )? 0.0 : f
+      ( /\A\0*\z/ =~ packed )? 0.0 : f
     end
   end
 end
