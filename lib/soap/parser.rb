@@ -235,13 +235,11 @@ private
   def decodeText( ns, entity, parent, encodingStyle )
     handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle )
 
-    unless /\A[\r\n\s]+\z/ =~ entity.text	# Ad-hoc...
-      if handler
-	handler.decodeText( ns, entity, parent )
-      else
-	# Try to only set text...
-	parent.node.set( entity.text )
-      end
+    if handler
+      handler.decodeText( ns, entity, parent )
+    else
+      # How should I do?
+      # parent.node.set( entity.text )
     end
   end
 
