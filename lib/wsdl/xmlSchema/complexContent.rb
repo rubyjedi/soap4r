@@ -43,12 +43,23 @@ class ComplexContent < Info
     when RestrictionName, ExtensionName
       @derivetype = element.name
       self
-    when AllName, SequenceName, ChoiceName
+    when AllName
       if @derivetype.nil?
 	raise Parser::ElementConstraintError.new("base attr not found.")
       end
-      @content = Content.new
-      @content.type = element.name
+      @content = All.new
+      @content
+    when SequenceName
+      if @derivetype.nil?
+	raise Parser::ElementConstraintError.new("base attr not found.")
+      end
+      @content = Sequence.new
+      @content
+    when ChoiceName
+      if @derivetype.nil?
+	raise Parser::ElementConstraintError.new("base attr not found.")
+      end
+      @content = Choice.new
       @content
     when AttributeName
       if @derivetype.nil?

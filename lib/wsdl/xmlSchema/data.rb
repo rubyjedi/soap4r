@@ -50,8 +50,11 @@ SimpleTypeName = XSD::QName.new(XSD::Namespace, 'simpleType')
 
 AttributeFormDefaultAttrName = XSD::QName.new(nil, 'attributeFormDefault')
 BaseAttrName = XSD::QName.new(nil, 'base')
+DefaultAttrName = XSD::QName.new(nil, 'default')
 ElementFormDefaultAttrName = XSD::QName.new(nil, 'elementFormDefault')
 FinalAttrName = XSD::QName.new(nil, 'final')
+FixedAttrName = XSD::QName.new(nil, 'fixed')
+FormAttrName = XSD::QName.new(nil, 'form')
 IdAttrName = XSD::QName.new(nil, 'id')
 MaxOccursAttrName = XSD::QName.new(nil, 'maxOccurs')
 MinOccursAttrName = XSD::QName.new(nil, 'minOccurs')
@@ -63,6 +66,7 @@ RefAttrName = XSD::QName.new(nil, 'ref')
 SchemaLocationAttrName = XSD::QName.new(nil, 'schemaLocation')
 TargetNamespaceAttrName = XSD::QName.new(nil, 'targetNamespace')
 TypeAttrName = XSD::QName.new(nil, 'type')
+UseAttrName = XSD::QName.new(nil, 'use')
 
 
   end
