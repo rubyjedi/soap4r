@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.19 2002/06/29 03:38:22 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.20 2002/09/07 03:16:58 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -132,7 +132,7 @@ private
 
     dumpDev << "Wire dump:\n\n" if dumpDev
     begin
-      res = @client.request( 'POST', @server, soapString, extra )
+      res = @client.post( @server, soapString, extra )
     rescue
       @client.reset( @server )
       raise
