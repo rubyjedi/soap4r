@@ -250,7 +250,7 @@ private
 	elsif str == '-INF'
 	  -1.0/0.0
 	else
-	  narrowTo32bit( str.to_f )
+	  narrowTo32bit( Float( str ))
 	end
       end
   end
@@ -273,7 +273,12 @@ private
     if f.nan? || f.infinite?
       f
     else
-      sprintf( "%f", f ).to_f
+      single = [ f ].pack( "f" )
+      if single == "\0\0\0\0"
+	single.unpack( "f" )[ 0 ]
+      else
+	f
+      end
     end
   end
 end
@@ -300,7 +305,7 @@ private
 	elsif str == '-INF'
 	  -1.0/0.0
 	else
-	  str.to_f
+	  Float( str )
 	end
       end
   end
