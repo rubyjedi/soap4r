@@ -43,7 +43,7 @@ end
 
 class TestWSDLMarshal < Test::Unit::TestCase
   def pathname(filename)
-    File.join(File.dirname(__FILE__), filename)
+    File.join(File.dirname(File.expand_path(__FILE__)), filename)
   end
 
   def test_marshal
@@ -57,7 +57,7 @@ class TestWSDLMarshal < Test::Unit::TestCase
 
   def test_classdef
     raise if File.exist?("Person.rb")
-    system("ruby #{pathname("../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("person.wsdl")} --force")
+    system("ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("person.wsdl")} --force")
     person_org = File.open(pathname("person_org.rb")).read
     person_new = File.open("Person.rb").read
     assert_equal(person_org, person_new)
