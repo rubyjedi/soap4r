@@ -63,6 +63,7 @@ class RPCRouter
 
   # Routing...
   def route( soapString )
+    isFault = false
     begin
 
       # Is this right?
@@ -84,6 +85,7 @@ class RPCRouter
 
     rescue Exception
       soapResponse = fault( $! )
+      isFault = true
     end
 
     ns = NS.new
@@ -91,7 +93,7 @@ class RPCRouter
     body = SOAPBody.new( soapResponse )
     responseString = marshal( ns, header, body )
 
-    responseString
+    return responseString, isFault
   end
 
   # Create fault response string.

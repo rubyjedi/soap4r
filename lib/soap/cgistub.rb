@@ -124,6 +124,8 @@ class CGIStub < Application
 	  end
 	  str << dumpItem( "HTTP/1.0 #{ @status } #{ StatusMap[ @status ] }" )
 	  str << dumpItem( "Date: #{ httpDate( Time.now ) }" )
+	else
+	  str << dumpItem( "Status: #{ @status } #{ StatusMap[ @status ] }" )
 	end
 
 	if @bodySize
@@ -251,10 +253,15 @@ private
       requestString = @request.dump
       log( SEV_DEBUG, "XML Request: #{requestString}" )
 
-      responseString = @router.route( requestString )
+      responseString, isFault = @router.route( requestString )
       log( SEV_DEBUG, "XML Response: #{responseString}" )
 
       @response = CGIResponse.new( responseString )
+      unless isFault
+	@response.header.status = 200
+      else
+	@response.header.status = 500
+      end
       @response.body.type = 'text/xml'
       str = @response.dump
       log( SEV_DEBUG, "CGI Response:\n#{ str }" )
