@@ -83,6 +83,8 @@ class SampleDriver
       SOAPString.new( obj )
     when Time
       SOAPTimeInstant.new( obj )
+    when Fixnum
+      SOAPInt.new( obj )
     when Integer
       SOAPInteger.new( obj )
     when Array
