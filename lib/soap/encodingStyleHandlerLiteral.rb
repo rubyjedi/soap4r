@@ -74,7 +74,8 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
       buf << data.text if data.text
       data.each do |key, value|
 	value.elename.namespace = data.elename.namespace if !value.elename.namespace
-        yield(value, data.qualified)
+	#yield(value, data.qualified)
+	yield(value, qualified)
       end
     else
       raise EncodingStyleError.new("Unknown object:#{ data } in this encodingStyle.")
