@@ -16,13 +16,7 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-require 'soap/soap'
-require 'soap/rpcRouter'
-
-# Ruby bundled library
-
-# Redist library
-require 'application'
+require 'soap/server'
 
 
 module SOAP
@@ -35,9 +29,8 @@ module SOAP
 # DESCRIPTION
 #   To be written...
 #
-class CGIStub < Application
+class CGIStub < Server
   include SOAP
-  include RPCUtils
 
   class CGIError < Error; end
 
@@ -223,13 +216,11 @@ class CGIStub < Application
   end
 
   def initialize( appName, namespace )
-    super( appName )
-    @namespace = namespace
+    super( appName, namespace )
     @remote_user = ENV[ 'REMOTE_USER' ] || 'anonymous'
     @remote_host = ENV[ 'REMOTE_HOST' ] || ENV[ 'REMOTE_ADDR' ] || 'unknown'
     @request = nil
     @response = nil
-    @router = RPCRouter.new( appName )
   end
   
 protected
@@ -240,6 +231,8 @@ protected
 private
   
   def run
+    @log.sevThreshold = SEV_INFO
+
     begin
       log( SEV_INFO, "Received a request from '#{ @remote_user }@#{ @remote_host }'." )
     
@@ -247,13 +240,10 @@ private
       @request = CGIRequest.new.init
       log( SEV_INFO, "CGI Request: #{@request}" )
 
-      # Method definition
-      methodDef
-
       requestString = @request.dump
       log( SEV_DEBUG, "XML Request: #{requestString}" )
 
-      responseString, isFault = @router.route( requestString )
+      responseString, isFault = route( requestString )
       log( SEV_DEBUG, "XML Response: #{responseString}" )
 
       @response = CGIResponse.new( responseString )
@@ -269,7 +259,7 @@ private
       print str
 
     rescue Exception
-      responseString = @router.faultResponseString( $! )
+      responseString = createFaultResponseString( $! )
       @response = CGIResponse.new( responseString )
       @response.header.status = 500
       @response.body.type = 'text/xml'
@@ -279,16 +269,6 @@ private
       raise
 
     end
-  end
-
-  # namespace cannot be defined here.
-  def addMethod( receiver, methodName, *paramArg )
-    paramDef = if paramArg.size == 1 and paramArg[ 0 ].is_a?( Array )
-        paramArg[ 0 ]
-      else
-        SOAPMethod.createParamDef( paramArg )
-      end
-    @router.addMethod( @namespace, receiver, methodName, paramDef )
   end
 end
 
