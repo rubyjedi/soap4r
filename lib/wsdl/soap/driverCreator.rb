@@ -63,7 +63,7 @@ require 'soap/proxy'
 require 'soap/rpcUtils'
 require 'soap/streamHandler'
 
-class #{ createClassName( portTypeName.name ) }
+class #{ createClassName( portTypeName ) }
   MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
 
 #{ mrCreator.dump( types ).gsub( /^/, "  " ).chomp }

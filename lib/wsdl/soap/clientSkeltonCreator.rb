@@ -46,7 +46,7 @@ class ClientSkeltonCreator
 private
 
   def dumpPortType( portTypeName )
-    driverName = createClassName( portTypeName.name )
+    driverName = createClassName( portTypeName )
 
     result = ""
     result << <<__EOD__
