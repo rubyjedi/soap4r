@@ -157,9 +157,11 @@ private
   
   def add_attributes2soap(obj, ele)
     attributes = schema_attribute_definition(obj.class)
-    attributes.each do |attrname, param|
-      attr = Mapping.find_attribute(obj, 'attr_' + attrname)
-      ele.extraattr[attrname] = attr
+    if attributes
+      attributes.each do |attrname, param|
+        attr = Mapping.find_attribute(obj, 'attr_' + attrname)
+        ele.extraattr[attrname] = attr
+      end
     end
   end
 
@@ -243,16 +245,18 @@ private
     Mapping.set_instance_vars(obj, {'__soap_attribute' => {}})
     vars = {}
     attributes = schema_attribute_definition(obj.class)
-    attributes.each do |attrname, class_name|
-      attr = node.extraattr[::XSD::QName.new(nil, attrname)]
-      next if attr.nil? or attr.empty?
-      klass = Mapping.class_from_name(class_name)
-      if klass.ancestors.include?(::SOAP::SOAPBasetype)
-        child = klass.new(attr).data
-      else
-        child = attr
+    if attributes
+      attributes.each do |attrname, class_name|
+        attr = node.extraattr[::XSD::QName.new(nil, attrname)]
+        next if attr.nil? or attr.empty?
+        klass = Mapping.class_from_name(class_name)
+        if klass.ancestors.include?(::SOAP::SOAPBasetype)
+          child = klass.new(attr).data
+          else
+          child = attr
+        end
+        vars['attr_' + attrname] = child
       end
-      vars['attr_' + attrname] = child
     end
     Mapping.set_instance_vars(obj, vars)
   end
@@ -277,7 +281,7 @@ private
   end
 
   def schema_attribute_definition(klass)
-    attributes = klass.class_eval('@@schema_attribute')
+    klass.class_eval('@@schema_attribute')
   end
 end
 
