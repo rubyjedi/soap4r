@@ -25,49 +25,50 @@ require 'uri'
 ## XMLSchamaDatatypes general definitions.
 #
 module XSD
-  Namespace = 'http://www.w3.org/2001/XMLSchema'
-  InstanceNamespace = 'http://www.w3.org/2001/XMLSchema-instance'
 
-  AttrType = 'type'
-  NilValue = 'true'
 
-  AnyTypeLiteral = 'anyType'
-  AnySimpleTypeLiteral = 'anySimpleType'
-  NilLiteral = 'nil'
-  StringLiteral = 'string'
-  BooleanLiteral = 'boolean'
-  DecimalLiteral = 'decimal'
-  FloatLiteral = 'float'
-  DoubleLiteral = 'double'
-  DurationLiteral = 'duration'
-  DateTimeLiteral = 'dateTime'
-  TimeLiteral = 'time'
-  DateLiteral = 'date'
-  GYearMonthLiteral = 'gYearMonth'
-  GYearLiteral = 'gYear'
-  GMonthDayLiteral = 'gMonthDay'
-  GDayLiteral = 'gDay'
-  GMonthLiteral = 'gMonth'
-  HexBinaryLiteral = 'hexBinary'
-  Base64BinaryLiteral = 'base64Binary'
-  AnyURILiteral = 'anyURI'
-  QNameLiteral = 'QName'
+Namespace = 'http://www.w3.org/2001/XMLSchema'
+InstanceNamespace = 'http://www.w3.org/2001/XMLSchema-instance'
 
-  NormalizedStringLiteral = 'normalizedString'
-  IntegerLiteral = 'integer'
-  LongLiteral = 'long'
-  IntLiteral = 'int'
-  ShortLiteral = 'short'
+AttrType = 'type'
+NilValue = 'true'
 
-  AttrTypeName = QName.new( InstanceNamespace, AttrType )
-  AttrNilName = QName.new( InstanceNamespace, NilLiteral )
+AnyTypeLiteral = 'anyType'
+AnySimpleTypeLiteral = 'anySimpleType'
+NilLiteral = 'nil'
+StringLiteral = 'string'
+BooleanLiteral = 'boolean'
+DecimalLiteral = 'decimal'
+FloatLiteral = 'float'
+DoubleLiteral = 'double'
+DurationLiteral = 'duration'
+DateTimeLiteral = 'dateTime'
+TimeLiteral = 'time'
+DateLiteral = 'date'
+GYearMonthLiteral = 'gYearMonth'
+GYearLiteral = 'gYear'
+GMonthDayLiteral = 'gMonthDay'
+GDayLiteral = 'gDay'
+GMonthLiteral = 'gMonth'
+HexBinaryLiteral = 'hexBinary'
+Base64BinaryLiteral = 'base64Binary'
+AnyURILiteral = 'anyURI'
+QNameLiteral = 'QName'
 
-  AnyTypeName = QName.new( Namespace, AnyTypeLiteral )
-  AnySimpleTypeName = QName.new( Namespace, AnySimpleTypeLiteral )
+NormalizedStringLiteral = 'normalizedString'
+IntegerLiteral = 'integer'
+LongLiteral = 'long'
+IntLiteral = 'int'
+ShortLiteral = 'short'
 
-  class Error < StandardError; end
-  class ValueSpaceError < Error; end
-end
+AttrTypeName = QName.new( InstanceNamespace, AttrType )
+AttrNilName = QName.new( InstanceNamespace, NilLiteral )
+
+AnyTypeName = QName.new( Namespace, AnyTypeLiteral )
+AnySimpleTypeName = QName.new( Namespace, AnySimpleTypeLiteral )
+
+class Error < StandardError; end
+class ValueSpaceError < Error; end
 
 
 ###
@@ -1090,3 +1091,9 @@ private
     (( MinInclusive <= v ) && ( v <= MaxInclusive ))
   end
 end
+
+
+end
+
+
+include XSD	# Include XSD's constants to toplevel.
