@@ -11,6 +11,11 @@ def methodDef( drv )
   drv.addMethod( 'echoStructArray', 'inputStructArray' )
   drv.addMethod( 'echoDate', 'inputDate' )
   drv.addMethod( 'echoBase64', 'inputBase64' )
+
+  drv.addMethod( 'echoSimpleTypesAsStruct', 'inputString', 'inputInteger', 'inputFloat' )
+  drv.addMethod( 'echo2DStringArray', 'input2DStringArray' )
+  drv.addMethod( 'echoNestedStruct', 'inputStruct' )
+  drv.addMethod( 'echoArrayStruct', 'inputStruct' )
 end
 
 def methodDefWithSOAPAction( drv, soapAction )
@@ -25,4 +30,9 @@ def methodDefWithSOAPAction( drv, soapAction )
   drv.addMethodWithSOAPAction( 'echoStructArray', soapAction + 'echoStructArray', 'inputStructArray' )
   drv.addMethodWithSOAPAction( 'echoDate', soapAction + 'echoDate', 'inputDate' )
   drv.addMethodWithSOAPAction( 'echoBase64', soapAction + 'echoBase64', 'inputBase64' )
+
+  drv.addMethodWithSOAPAction( 'echoSimpleTypesAsStruct', soapAction + 'echoSimpleTypesAsStruct', 'inputString', 'inputInteger', 'inputFloat' )
+  drv.addMethodWithSOAPAction( 'echo2DStringArray', soapAction + 'echo2DStringArray', 'inputStringArray' )
+  drv.addMethodWithSOAPAction( 'echoNestedStruct', soapAction + 'echoNestedStruct', 'inputStruct' )
+  drv.addMethodWithSOAPAction( 'echoArrayStruct', soapAction + 'echoArrayStruct', 'inputStruct' )
 end
