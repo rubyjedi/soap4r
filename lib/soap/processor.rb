@@ -62,7 +62,7 @@ module Processor
   end
   module_function :unmarshal
 
-  def setDefaultParser( opt )
+  def setDefaultParser( opt = {} )
     DefaultParser[ 0 ] = loadParser( opt )
   end
   module_function :setDefaultParser

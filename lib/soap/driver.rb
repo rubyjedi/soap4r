@@ -21,7 +21,7 @@ require 'soap/rpcUtils'
 require 'soap/streamHandler'
 require 'soap/charset'
 
-require 'application'
+require 'devel/logger'
 
 
 module SOAP

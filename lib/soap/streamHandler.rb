@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.17 2001/12/07 09:06:23 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.18 2002/01/25 14:52:46 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -133,7 +133,7 @@ private
       res = @client.request( 'POST', @server, soapString, extra )
     rescue
       @client.reset( @server )
-      raise PostUnavailableError.new( "Timeout." )
+      raise
     end
     dumpDev << "\n\n" if dumpDev
 
