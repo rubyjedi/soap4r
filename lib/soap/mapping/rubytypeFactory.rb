@@ -167,8 +167,8 @@ class RubytypeFactory < Factory
       unless @allow_original_mapping
         return nil
       end
-      if obj.name.empty?
-        raise TypeError.new("Can't dump anonymous class #{ obj }.")
+      if obj.to_s[0] == ?#
+        raise TypeError.new("can't dump anonymous class #{ obj }")
       end
       param = SOAPStruct.new(TYPE_CLASS)
       mark_marshalled_obj(obj, param)
@@ -178,8 +178,8 @@ class RubytypeFactory < Factory
       unless @allow_original_mapping
         return nil
       end
-      if obj.name.empty?
-        raise TypeError.new("Can't dump anonymous module #{ obj }.")
+      if obj.to_s[0] == ?#
+        raise TypeError.new("can't dump anonymous module #{ obj }")
       end
       param = SOAPStruct.new(TYPE_MODULE)
       mark_marshalled_obj(obj, param)
@@ -249,7 +249,7 @@ private
 
   def unknownobj2soap(soap_class, obj, info, map)
     if obj.class.name.empty?
-      raise TypeError.new("Can't dump anonymous class #{ obj }.")
+      raise TypeError.new("can't dump anonymous class #{ obj }")
     end
     singleton_class = class << obj; self; end
     if !singleton_methods_true(obj).empty? or
