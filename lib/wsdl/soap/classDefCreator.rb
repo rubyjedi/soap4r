@@ -142,8 +142,10 @@ __EOD__
     result = []
     definitions.porttypes.each do |porttype|
       porttype.operations.each do |operation|
-	if operation.fault && result.index(operation.fault.message).nil?
-	  result << operation.fault.message
+	operation.fault.each do |fault|
+	  if result.index(fault.message).nil?
+	    result << fault.message
+	  end
 	end
       end
     end
