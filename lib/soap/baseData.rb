@@ -282,6 +282,16 @@ class SOAPDateTime < XSDDateTime
   extend SOAPModuleUtils
 end
 
+class SOAPDate < XSDDate
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPTime < XSDTime
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
 class SOAPBase64 < XSDBase64Binary
   include SOAPBasetype
   extend SOAPModuleUtils
