@@ -11,4 +11,4 @@ class TestXMLSchemaParser < Test::Unit::TestCase
   end
 end
 
-TestXMLSchemaParser.setup('xmlschema.xml')
+TestXMLSchemaParser.setup(File.join(File.dirname(__FILE__), 'xmlschema.xml'))
