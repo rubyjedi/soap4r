@@ -442,8 +442,8 @@ def doTestBase( drv )
     begin
       arg = FakeInt.new( "2147483648" )
       var = drv.echoInteger( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -456,8 +456,8 @@ def doTestBase( drv )
     begin
       arg = FakeInt.new( "-2147483649" )
       var = drv.echoInteger( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -470,8 +470,8 @@ def doTestBase( drv )
     begin
       arg = FakeInt.new( "0.0" )
       var = drv.echoInteger( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -484,8 +484,8 @@ def doTestBase( drv )
     begin
       arg = FakeInt.new( "-5.2" )
       var = drv.echoInteger( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -498,8 +498,8 @@ def doTestBase( drv )
     begin
       arg = FakeInt.new( "0.000000000a" )
       var = drv.echoInteger( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -512,8 +512,8 @@ def doTestBase( drv )
     begin
       arg = FakeInt.new( "+-5" )
       var = drv.echoInteger( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -689,8 +689,8 @@ def doTestBase( drv )
     begin
       arg = FakeFloat.new( "0.0000000000000000a" )
       var = drv.echoFloat( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -703,8 +703,8 @@ def doTestBase( drv )
     begin
       arg = FakeFloat.new( "00a.000000000000001" )
       var = drv.echoFloat( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -717,8 +717,8 @@ def doTestBase( drv )
     begin
       arg = FakeFloat.new( "+-5" )
       var = drv.echoFloat( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -731,8 +731,8 @@ def doTestBase( drv )
     begin
       arg = FakeFloat.new( "5_0" )
       var = drv.echoFloat( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1151,8 +1151,8 @@ def doTestBase( drv )
     begin
       arg = FakeDateTime.new( "0000-05-18T16:52:20Z" )
       var = drv.echoDate( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1165,8 +1165,8 @@ def doTestBase( drv )
     begin
       arg = FakeDateTime.new( "05-05-18T16:52:20Z" )
       var = drv.echoDate( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1179,8 +1179,8 @@ def doTestBase( drv )
     begin
       arg = FakeDateTime.new( "2002-05T16:52:20Z" )
       var = drv.echoDate( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1193,8 +1193,8 @@ def doTestBase( drv )
     begin
       arg = FakeDateTime.new( "2002-05-18T16:52Z" )
       var = drv.echoDate( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1207,8 +1207,8 @@ def doTestBase( drv )
     begin
       arg = FakeDateTime.new( "" )
       var = drv.echoDate( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1279,8 +1279,8 @@ def doTestBase( drv )
       arg = SOAP::SOAPBase64.new( "dummy" )
       arg.instance_eval { @data = '-' }
       var = drv.echoBase64( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1350,8 +1350,8 @@ def doTestBase( drv )
       arg = SOAP::SOAPHexBinary.new( "dummy" )
       arg.instance_eval { @data = '0FG7' }
       var = drv.echoHexBinary( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1385,8 +1385,8 @@ def doTestBase( drv )
       arg = SOAP::SOAPBoolean.new( true )
       arg.instance_eval { @data = 'junk' }
       var = drv.echoBoolean( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1464,8 +1464,8 @@ def doTestBase( drv )
     begin
       arg = FakeDecimal.new( "0.0000000000000000a" )
       var = drv.echoDecimal( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1478,8 +1478,8 @@ def doTestBase( drv )
     begin
       arg = FakeDecimal.new( "00a.000000000000001" )
       var = drv.echoDecimal( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1492,8 +1492,8 @@ def doTestBase( drv )
     begin
       arg = FakeDecimal.new( "+-5" )
       var = drv.echoDecimal( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
@@ -1506,8 +1506,8 @@ def doTestBase( drv )
     begin
       arg = FakeDecimal.new( "5_0" )
       var = drv.echoDecimal( arg )
-      dumpNormal( title, true, 'No error occurred.' )
-    rescue SOAP::RPCServerException
+      dumpNormal( title, 'Fault', 'No error occurred.' )
+    rescue SOAP::RPCServerException, SOAP::FaultError
       dumpNormal( title, true, true )
     end
   rescue Exception
