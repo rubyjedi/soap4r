@@ -85,8 +85,7 @@ class SOAPXMLScanner < SOAPParser
       p msg if $DEBUG
     end
 
-    def on_xmldecl
-    end
+    # def on_xmldecl; end
 
     def on_xmldecl_version( str )
       # 1.0 expected.
@@ -96,37 +95,25 @@ class SOAPXMLScanner < SOAPParser
       @dest.setScannerKCode( str )
     end
 
-    def on_xmldecl_standalone( str )
-    end
+    # def on_xmldecl_standalone( str ); end
 
-    def on_xmldecl_other( name, value )
-    end
+    # def on_xmldecl_other( name, value ); end
 
-    def on_xmldecl_end
-    end
+    # def on_xmldecl_end; end
 
-    def on_doctype( root, pubid, sysid )
-      raise FormatDecodeError.new( "SOAP does not allow doctype." )
-    end
+    # def on_doctype( root, pubid, sysid ); end
 
-    def on_prolog_space( str )
-    end
+    # def on_prolog_space( str ); end
 
-    def on_comment( str )
-      raise FormatDecodeError.new( "SOAP does not allow comment." )
-    end
+    # def on_comment( str ); end
 
-    def on_pi( target, pi )
-      raise FormatDecodeError.new( "SOAP does not allow PI." )
-    end
+    # def on_pi( target, pi ); end
 
     def on_chardata( str )
       @dest.characters( str )
     end
 
-    def on_cdata( str )
-      raise FormatDecodeError.new( "SOAP does not allow CDATA." )
-    end
+    # def on_cdata( str ); end
 
     def on_etag( name )
       @dest.endElement( name )
@@ -144,11 +131,9 @@ class SOAPXMLScanner < SOAPParser
       on_charref( code )
     end
 
-    def on_start_document
-    end
+    # def on_start_document; end
 
-    def on_end_document
-    end
+    # def on_end_document; end
 
     def on_stag( name )
       @attrs = {}
@@ -174,8 +159,7 @@ class SOAPXMLScanner < SOAPParser
       on_attr_charref( code )
     end
 
-    def on_attribute_end( name )
-    end
+    # def on_attribute_end( name ); end
 
     def on_stag_end_empty( name )
       on_stag_end( name )
