@@ -108,32 +108,15 @@ class SOAPProxy
   def call( headers, methodName, *values )
     req = createRequest( methodName, *values )
     data = invoke( headers, req.method, req.method.soapAction || @soapAction )
-    return nil, nil if data.receiveString.empty?
+    if data.receiveString.empty?
+      return nil, nil
+    end
 
+    # Received charset might be different from request.
     receiveCharset = StreamHandler.parseMediaType( data.receiveContentType )
-    kcodeAdjusted = false
-    charsetStrBackup = nil
-    if receiveCharset
-      charsetStr = Charset.getCharsetStr( receiveCharset )
-      Charset.setXMLInstanceEncoding( charsetStr )
-
-      if SOAPParser.factory.adjustKCode
-	charsetStrBackup = $KCODE.to_s.dup
-	$KCODE = charsetStr
-	kcodeAdjusted = true
-      end
-    end
-
-    header = body = nil
-    begin
-      # SOAP tree parsing.
-      header, body = Processor.unmarshal( data.receiveString, getOpt )
-    ensure
-      if kcodeAdjusted
-       	$KCODE = charsetStrBackup
-      end
-    end
-
+    opt = getOpt
+    opt[ :charset ] = receiveCharset
+    header, body = Processor.unmarshal( data.receiveString, opt )
     return header, body
   end
 
@@ -164,11 +147,9 @@ class SOAPProxy
 
   def getOpt
     opt = {}
-    if @defaultEncodingStyle
-      opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
-    end
+    opt[ :defaultEncodingStyle ] = @defaultEncodingStyle
     if @allowUnqualifiedElement
-      opt[ 'allowUnqualifiedElement' ] = true
+      opt[ :allowUnqualifiedElement ] = true
     end
     opt
   end
