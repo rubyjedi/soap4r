@@ -39,7 +39,7 @@ class SOAPXMLParser < SOAPParser
       when XML::Parser::CDATA
 	cdata( data )
       else
-	raise FormatDecodeError.new( "Unexpected XML: #{ entity }." )
+	raise FormatDecodeError.new( "Unexpected XML: #{ type }/#{ name }/#{ data }." )
       end
     end
   end
