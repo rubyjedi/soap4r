@@ -35,17 +35,23 @@ module Marshal
     ::SOAP::RPCUtils::MappingRegistry::DateTimeFactory
   )
 
-  def Marshal.marshal( obj, mappingRegistry = MarshalMappingRegistry )
-    elementName = RPCUtils.getElementNameFromName( obj.type.to_s )
-    soapObj = RPCUtils.obj2soap( obj, mappingRegistry )
-    body = SOAPBody.new
-    body.add( elementName, soapObj )
-    SOAP::Processor.marshal( nil, body )
-  end
+  class << self
+  public
+    def marshal( obj, mappingRegistry = MarshalMappingRegistry )
+      elementName = RPCUtils.getElementNameFromName( obj.type.to_s )
+      soapObj = RPCUtils.obj2soap( obj, mappingRegistry )
+      body = SOAPBody.new
+      body.add( elementName, soapObj )
+      SOAP::Processor.marshal( nil, body )
+    end
 
-  def Marshal.unmarshal( str, mappingRegistry = MarshalMappingRegistry )
-    header, body = SOAP::Processor.unmarshal( str )
-    RPCUtils.soap2obj( body.rootNode, mappingRegistry )
+    def unmarshal( str, mappingRegistry = MarshalMappingRegistry )
+      header, body = SOAP::Processor.unmarshal( str )
+      RPCUtils.soap2obj( body.rootNode, mappingRegistry )
+    end
+
+    alias_method :dump, :marshal
+    alias_method :load, :unmarshal
   end
 
 end
