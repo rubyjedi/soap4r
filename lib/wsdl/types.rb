@@ -31,7 +31,7 @@ class Types < Info
     @schema = nil
   end
 
-  SchemaName = Name.new( XSD::Namespace, 'schema' )
+  SchemaName = XSD::QName.new( XSD::Namespace, 'schema' )
   def parseElement( element )
     case element
     when SchemaName

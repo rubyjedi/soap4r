@@ -49,6 +49,8 @@ class MethodDefCreator
     return result, @types
   end
 
+private
+
   # methodNameAs, methodName, params, soapAction, namespace
   def dumpMethod( operation, binding )
     methodName = createMethodName( operation.name.name )
@@ -56,8 +58,7 @@ class MethodDefCreator
     params = collectParams( operation )
     soapAction = binding.soapOperation.soapAction
     namespace = binding.input.soapBody.namespace
-    ary2str( [ dq( methodNameAs ), dq( methodName ), params, dq( soapAction ),
-      dq( namespace ) ] )
+    ary2str( [ methodNameAs, methodName, params, soapAction, namespace ] )
   end
 
   def collectParams( operation )
@@ -65,22 +66,26 @@ class MethodDefCreator
     outParam = @definitions.getMessage( operation.output.message )
     result = inParam.parts.collect { | part |
       collectTypes( part.type )
-      paramSet( 'in', createClassName( part.type ), part.name )
+      paramSet( 'in', typeDef( part.type ), part.name )
     }
     if outParam.parts.size > 0
       retval = outParam.parts[ 0 ]
       collectTypes( retval.type )
-      result << paramSet( 'retval', createClassName( retval.type ), retval.name )
+      result << paramSet( 'retval', typeDef( retval.type ), retval.name )
       cdr( outParam.parts ).each { | part |
 	collectTypes( part.type )
-	result << paramSet( 'out', createClassName( part.type ), part.name )
+	result << paramSet( 'out', typeDef( part.type ), part.name )
       }
     end
     sortParameterOrder( operation, result )
   end
 
-  def paramSet( ioType, klassName, name )
-    [ dq( ioType ), klassName, dq( name ) ]
+  def typeDef( type )
+    "#{ createClassName( type ) } #{ type }"
+  end
+
+  def paramSet( ioType, type, name )
+    [ ioType, type, name ]
   end
 
   def sortParameterOrder( operation, params )
@@ -107,7 +112,7 @@ class MethodDefCreator
 
   def ary2str( ary )
     "[ " << ary.collect { | item |
-      item.is_a?( Array ) ? ary2str( item ) : item
+      item.is_a?( Array ) ? ary2str( item ) : dq( item )
     }.join( ", " ) << " ]"
   end
 

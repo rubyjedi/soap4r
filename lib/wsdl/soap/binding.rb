@@ -38,8 +38,8 @@ class Binding < Info
     raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
   end
 
-  StyleAttrName = Name.new( nil, 'style' )
-  TransportAttrName = Name.new( nil, 'transport' )
+  StyleAttrName = XSD::QName.new( nil, 'style' )
+  TransportAttrName = XSD::QName.new( nil, 'transport' )
   def parseAttr( attr, value )
     case attr
     when StyleAttrName

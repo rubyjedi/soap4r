@@ -50,8 +50,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 	  tag = ns.assign( EncodingNamespace )
 	  attrs[ 'xmlns:' << tag ] = EncodingNamespace
 	end
-	attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
-	  EncodingNamespace
+	attrs[ ns.name( AttrEncodingStyleName ) ] = EncodingNamespace
 	data.encodingStyle = EncodingNamespace
       end
 
@@ -60,30 +59,26 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 	attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
       end
 
-      if data.typeNamespace and !ns.assigned?( data.typeNamespace )
-	tag = ns.assign( data.typeNamespace )
-	attrs[ 'xmlns:' << tag ] = data.typeNamespace
+      if data.type.namespace and !ns.assigned?( data.type.namespace )
+	tag = ns.assign( data.type.namespace )
+	attrs[ 'xmlns:' << tag ] = data.type.namespace
       end
 
       if data.is_a?( SOAPArray )
-	attrs[ ns.name( EncodingNamespace, AttrArrayType ) ] =
-	  ns.name( data.typeNamespace, arrayTypeValue( ns, data ) ) 
-	if data.typeName
-	  attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
-	    ns.name( EncodingNamespace, 'Array' )
+	attrs[ ns.name( AttrArrayTypeName ) ] = ns.name( XSD::QName.new(
+	  data.type.namespace, arrayTypeValue( ns, data ))) 
+	if data.type.name
+	  attrs[ ns.name( XSD::AttrTypeName ) ] = ns.name( ValueArrayName )
 	end
-      elsif parent && parent.is_a?( SOAPArray ) &&
-	  parent.typeNamespace == data.typeNamespace &&
-	  parent.baseTypeName == data.typeName
+      elsif parent && parent.is_a?( SOAPArray ) && XSD::QName.new(
+	  parent.type.namespace, parent.baseTypeName ) == data.type
 	# No need to add.
-      elsif !data.typeName
+      elsif !data.type.name
 	# No need to add.
       elsif data.is_a?( SOAPNil )
-	attrs[ ns.name( XSD::InstanceNamespace, XSD::XSDNil::Literal ) ] =
-	  XSD::XSDNil::Value
+	attrs[ ns.name( XSD::AttrNilName ) ] = XSD::NilValue
       else
-	attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
-	  ns.name( data.typeNamespace, data.typeName )
+	attrs[ ns.name( XSD::AttrTypeName ) ] = ns.name( data.type )
       end
 
       if data.id
@@ -92,19 +87,19 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     end
 
     if parent && parent.is_a?( SOAPArray ) && parent.position
-      attrs[ ns.name( EncodingNamespace, AttrPosition ) ] =
+      attrs[ ns.name( AttrPositionName ) ] =
 	'[' << parent.position.join( ',' ) << ']'
     end
 
     name = nil
-    if qualified and data.namespace
-      if !ns.assigned?( data.namespace )
-	tag = ns.assign( data.namespace )
-	attrs[ 'xmlns:' << tag ] = data.namespace
+    if qualified and data.elementName.namespace
+      if !ns.assigned?( data.elementName.namespace )
+	tag = ns.assign( data.elementName.namespace )
+	attrs[ 'xmlns:' << tag ] = data.elementName.namespace
       end
-      name = ns.name( data.namespace, data.name )
+      name = ns.name( data.elementName )
     else
-      name = data.name
+      name = data.elementName.name
     end
 
     case data
@@ -142,10 +137,10 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 
   def encodeDataEnd( buf, ns, qualified, data, parent )
     name = nil
-    if qualified and data.namespace
-      name = ns.name( data.namespace, data.name )
+    if qualified and data.elementName.namespace
+      name = ns.name( data.elementName )
     else
-      name = data.name
+      name = data.elementName.name
     end
     SOAPGenerator.encodeTagEnd( buf, name, true )
   end
@@ -169,17 +164,16 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   end
 
   class SOAPUnknown < SOAPTemporalObject
-    def initialize( handler, ns, name, typeNamespace, typeName )
+    def initialize( handler, ns, name, type )
       super()
       @handler = handler
       @ns = ns
       @name = name
-      @typeNamespace = typeNamespace
-      @typeName = typeName
+      @type = type
     end
 
     def toStruct
-      o = SOAPStruct.decode( @ns, @name, @typeNamespace, @typeName )
+      o = SOAPStruct.decode( @ns, @name, @type )
       o.id = @id
       o.root = @root
       o.parent = @parent
@@ -218,8 +212,8 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     if isNil
       o = SOAPNil.decode( ns, name )
     elsif arrayType
-      typeNamespace, typeNameString = ns.parse( arrayType )
-      o = SOAPArray.decode( ns, name, typeNamespace, typeNameString )
+      type = ns.parse( arrayType )
+      o = SOAPArray.decode( ns, name, type )
       if offset
 	o.offset = decodeArrayPosition( offset )
 	o.sparse = true
@@ -291,7 +285,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       decodeParent( parent, node )
 
     when SOAPStruct
-      parent.node.add( node.name, node )
+      parent.node.add( node.elementName.name, node )
       node.parent = parent.node
 
     when SOAPArray
@@ -315,92 +309,91 @@ private
 
   ArrayEncodePostfix = 'Ary'
 
-  def contentTypeName( data )
-    data.typeName ? data.typeName.sub( /\[,*\]$/, '' ) : ''
+  def contentTypeName( type )
+    type.name ? type.name.sub( /\[,*\]$/, '' ) : ''
   end
 
   def arrayTypeValue( ns, data )
-    contentTypeName( data ) << '[' << data.size.join( ',' ) << ']'
+    contentTypeName( data.type ) << '[' << data.size.join( ',' ) << ']'
   end
 
-  def decodeTagByType( ns, name, type, parentNode )
-    typeNamespace = typeNameString = nil
-    if type
-      typeNamespace, typeNameString = ns.parse( type )
+  def decodeTagByType( ns, name, typeStr, parentNode )
+    type = nil
+    if typeStr
+      type = ns.parse( typeStr )
     elsif parentNode.is_a?( SOAPArray )
-      typeNamespace, typeNameString =
-	parentNode.typeNamespace, parentNode.typeName
+      type = parentNode.type
     else
       # Since it's in dynamic(without any type) encoding process,
       # assumes entity as its type itself.
       #   <SOAP-ENC:Array ...> => type Array in SOAP-ENC.
       #   <Country xmlns="foo"> => type Country in foo.
-      typeNamespace, typeNameString = ns.parse( name )
+      type = ns.parse( name )
     end
 
     o = nil
-    if typeNamespace == XSD::Namespace
-      o = decodeTagAsXSD( ns, typeNameString, name )
+    if type.namespace == XSD::Namespace
+      o = decodeTagAsXSD( ns, type.name, name )
       unless o
 	# Not supported...
-	raise EncodingStyleError.new( "Type xsd:#{ typeNameString } have not supported." )
+	raise EncodingStyleError.new( "Type xsd:#{ type.name } have not supported." )
       end
-    elsif typeNamespace == EncodingNamespace
-      o = decodeTagAsSOAPENC( ns, typeNameString, name )
+    elsif type.namespace == EncodingNamespace
+      o = decodeTagAsSOAPENC( ns, type.name, name )
       unless o
 	# Not supported...
-	raise EncodingStyleError.new( "Type SOAP-ENC:#{ typeNameString } have not supported." )
+	raise EncodingStyleError.new( "Type SOAP-ENC:#{ type.name } have not supported." )
       end
     else
       # Unknown type... Struct or String
-      o = SOAPUnknown.new( self, ns, name, typeNamespace, typeNameString )
+      o = SOAPUnknown.new( self, ns, name, type )
     end
     o
   end
 
   XSDBaseTypeMap = {
-    XSD::XSDAnyType::Literal => SOAPAnyType,
-    XSD::XSDString::Literal => SOAPString,
-    XSD::XSDBoolean::Literal => SOAPBoolean,
-    XSD::XSDDecimal::Literal => SOAPDecimal,
-    XSD::XSDFloat::Literal => SOAPFloat,
-    XSD::XSDDouble::Literal => SOAPDouble,
-    XSD::XSDDuration::Literal => SOAPDuration,
-    XSD::XSDDateTime::Literal => SOAPDateTime,
-    XSD::XSDTime::Literal => SOAPTime,
-    XSD::XSDDate::Literal => SOAPDate,
-    XSD::XSDGYearMonth::Literal => SOAPGYearMonth,
-    XSD::XSDGYear::Literal => SOAPGYear,
-    XSD::XSDGMonthDay::Literal => SOAPGMonthDay,
-    XSD::XSDGDay::Literal => SOAPGDay,
-    XSD::XSDGMonth::Literal => SOAPGMonth,
-    XSD::XSDHexBinary::Literal => SOAPHexBinary,
-    XSD::XSDBase64Binary::Literal => SOAPBase64,
-    XSD::XSDAnyURI::Literal => SOAPAnyURI,
-    XSD::XSDQName::Literal => SOAPQName,
-    XSD::XSDInteger::Literal => SOAPInteger,
-    XSD::XSDLong::Literal => SOAPLong,
-    XSD::XSDInt::Literal => SOAPInt,
-    XSD::XSDShort::Literal => SOAPShort,
+    XSD::XSDAnyType::Type.name => SOAPAnyType,
+    XSD::XSDString::Type.name => SOAPString,
+    XSD::XSDBoolean::Type.name => SOAPBoolean,
+    XSD::XSDDecimal::Type.name => SOAPDecimal,
+    XSD::XSDFloat::Type.name => SOAPFloat,
+    XSD::XSDDouble::Type.name => SOAPDouble,
+    XSD::XSDDuration::Type.name => SOAPDuration,
+    XSD::XSDDateTime::Type.name => SOAPDateTime,
+    XSD::XSDTime::Type.name => SOAPTime,
+    XSD::XSDDate::Type.name => SOAPDate,
+    XSD::XSDGYearMonth::Type.name => SOAPGYearMonth,
+    XSD::XSDGYear::Type.name => SOAPGYear,
+    XSD::XSDGMonthDay::Type.name => SOAPGMonthDay,
+    XSD::XSDGDay::Type.name => SOAPGDay,
+    XSD::XSDGMonth::Type.name => SOAPGMonth,
+    XSD::XSDHexBinary::Type.name => SOAPHexBinary,
+    XSD::XSDBase64Binary::Type.name => SOAPBase64,
+    XSD::XSDAnyURI::Type.name => SOAPAnyURI,
+    XSD::XSDQName::Type.name => SOAPQName,
+    XSD::XSDInteger::Type.name => SOAPInteger,
+    XSD::XSDLong::Type.name => SOAPLong,
+    XSD::XSDInt::Type.name => SOAPInt,
+    XSD::XSDShort::Type.name => SOAPShort,
   }
 
   SOAPBaseTypeMap = {
     SOAP::Base64Literal => SOAPBase64,
   }
 
-  def decodeTagAsXSD( ns, typeNameString, name )
-    if XSDBaseTypeMap.has_key?( typeNameString )
-      XSDBaseTypeMap[ typeNameString ].decode( ns, name )
+  def decodeTagAsXSD( ns, typeStr, name )
+    if XSDBaseTypeMap.has_key?( typeStr )
+      XSDBaseTypeMap[ typeStr ].decode( ns, name )
     else
       nil
     end
   end
 
-  def decodeTagAsSOAPENC( ns, typeNameString, name )
-    if XSDBaseTypeMap.has_key?( typeNameString )
-      XSDBaseTypeMap[ typeNameString ].decode( ns, name )
-    elsif SOAPBaseTypeMap.has_key?( typeNameString )
-      SOAPBaseTypeMap[ typeNameString ].decode( ns, name )
+  def decodeTagAsSOAPENC( ns, typeStr, name )
+    if XSDBaseTypeMap.has_key?( typeStr )
+      XSDBaseTypeMap[ typeStr ].decode( ns, name )
+    elsif SOAPBaseTypeMap.has_key?( typeStr )
+      SOAPBaseTypeMap[ typeStr ].decode( ns, name )
     else
       nil
     end
@@ -433,14 +426,14 @@ private
     position = nil
 
     attrs.each do | key, value |
-      if ( ns.compare( XSD::InstanceNamespace, XSD::XSDNil::Literal, key ))
+      if ( ns.compare( XSD::InstanceNamespace, XSD::NilLiteral, key ))
 	# isNil = (( value == 'true' ) || ( value == '1' ))
 	if (( value == 'true' ) || ( value == '1' ))
 	  isNil = true
 	elsif (( value == 'false' ) || ( value == '0' ))
 	  isNil = false
 	else
-	  raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::XSDNil::Literal } (expected 'true', 'false', '1', or '0')." )
+	  raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true', 'false', '1', or '0')." )
 	end
       elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	type = value

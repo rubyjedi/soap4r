@@ -48,10 +48,10 @@ class Content < Info
     parent.targetNamespace
   end
 
-  AllName = Name.new( XSD::Namespace, 'all' )
-  SequenceName = Name.new( XSD::Namespace, 'sequence' )
-  AttributeName = Name.new( XSD::Namespace, 'attribute' )
-  ElementName = Name.new( XSD::Namespace, 'element' )
+  AllName = XSD::QName.new( XSD::Namespace, 'all' )
+  SequenceName = XSD::QName.new( XSD::Namespace, 'sequence' )
+  AttributeName = XSD::QName.new( XSD::Namespace, 'attribute' )
+  ElementName = XSD::QName.new( XSD::Namespace, 'element' )
   def parseElement( element )
     case element
     when AllName
@@ -77,8 +77,8 @@ class Content < Info
     end
   end
 
-  FinalAttrName = Name.new( nil, 'final' )
-  MixedAttrName = Name.new( nil, 'mixed' )
+  FinalAttrName = XSD::QName.new( nil, 'final' )
+  MixedAttrName = XSD::QName.new( nil, 'mixed' )
   def parseAttr( attr, value )
     case attr
     when FinalAttrName

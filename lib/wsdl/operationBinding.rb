@@ -43,10 +43,10 @@ class OperationBinding < Info
     parent.targetNamespace
   end
 
-  InputName = Name.new( Namespace, 'input' )
-  OutputName = Name.new( Namespace, 'output' )
-  FaultName = Name.new( Namespace, 'fault' )
-  SOAPOperationName = Name.new( SOAPBindingNamespace, 'operation' )
+  InputName = XSD::QName.new( Namespace, 'input' )
+  OutputName = XSD::QName.new( Namespace, 'output' )
+  FaultName = XSD::QName.new( Namespace, 'fault' )
+  SOAPOperationName = XSD::QName.new( SOAPBindingNamespace, 'operation' )
   def parseElement( element )
     case element
     when InputName
@@ -70,11 +70,11 @@ class OperationBinding < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = XSD::QName.new( targetNamespace, value )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end

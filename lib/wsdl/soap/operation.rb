@@ -36,7 +36,7 @@ class Operation < Info
     raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
   end
 
-  SOAPActionAttrName = Name.new( nil, 'soapAction' )
+  SOAPActionAttrName = XSD::QName.new( nil, 'soapAction' )
   def parseAttr( attr, value )
     case attr
     when SOAPActionAttrName

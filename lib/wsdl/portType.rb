@@ -54,7 +54,7 @@ class PortType < Info
     result
   end
 
-  OperationName = Name.new( Namespace, 'operation' )
+  OperationName = XSD::QName.new( Namespace, 'operation' )
   def parseElement( element )
     case element
     when OperationName
@@ -66,11 +66,11 @@ class PortType < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = XSD::QName.new( targetNamespace, value )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end

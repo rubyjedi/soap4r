@@ -41,8 +41,8 @@ class Binding < Info
     parent.targetNamespace
   end
 
-  OperationName = Name.new( Namespace, 'operation' )
-  SOAPBindingName = Name.new( SOAPBindingNamespace, 'binding' )
+  OperationName = XSD::QName.new( Namespace, 'operation' )
+  SOAPBindingName = XSD::QName.new( SOAPBindingNamespace, 'binding' )
   def parseElement( element )
     case element
     when OperationName
@@ -58,12 +58,12 @@ class Binding < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
-  TypeAttrName = Name.new( nil, 'type' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
+  TypeAttrName = XSD::QName.new( nil, 'type' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = XSD::QName.new( targetNamespace, value )
     when TypeAttrName
       @type = value
     else

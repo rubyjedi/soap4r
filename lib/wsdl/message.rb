@@ -37,7 +37,7 @@ class Message < Info
     parent.targetNamespace
   end
 
-  PartName = Name.new( Namespace, 'part' )
+  PartName = XSD::QName.new( Namespace, 'part' )
   def parseElement( element )
     case element
     when PartName
@@ -49,11 +49,11 @@ class Message < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( parent.targetNamespace, value )
+      @name = XSD::QName.new( parent.targetNamespace, value )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end

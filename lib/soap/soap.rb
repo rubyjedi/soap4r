@@ -15,6 +15,9 @@
 # Ave, Cambridge, MA 02139, USA.
 
 
+require 'soap/qname'
+
+
 module SOAP
 
 
@@ -34,6 +37,14 @@ AttrRoot = 'root'
 AttrArrayType = 'arrayType'
 AttrOffset = 'offset'
 AttrPosition = 'position'
+ValueArray = 'Array'
+
+AttrEncodingStyleName = XSD::QName.new( EnvelopeNamespace, AttrEncodingStyle )
+AttrRootName = XSD::QName.new( EncodingNamespace, AttrRoot )
+AttrArrayTypeName = XSD::QName.new( EncodingNamespace, AttrArrayType )
+AttrOffsetName = XSD::QName.new( EncodingNamespace, AttrOffset )
+AttrPositionName = XSD::QName.new( EncodingNamespace, AttrPosition )
+ValueArrayName = XSD::QName.new( EncodingNamespace, ValueArray )
 
 Base64Literal = 'base64'
 

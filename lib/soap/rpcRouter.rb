@@ -152,8 +152,8 @@ private
 
   # Dispatch to defined method.
   def dispatch( soapMethod )
-    namespace = soapMethod.namespace
-    methodName = soapMethod.typeName || soapMethod.name
+    namespace = soapMethod.elementName.namespace
+    methodName = soapMethod.elementName.name || soapMethod.name
 
     requestStruct = RPCUtils.soap2obj( soapMethod, @mappingRegistry )
     values = soapMethod.collect { | key, value | requestStruct[ key ] }

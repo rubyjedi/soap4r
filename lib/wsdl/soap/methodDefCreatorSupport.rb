@@ -31,7 +31,7 @@ module MethodDefCreatorSupport
   XSD::NSDBase.types.each do | klass |
     begin
       obj = klass.new
-      SOAPBaseMap[ Name.new( obj.typeNamespace, obj.typeName ) ] = klass
+      SOAPBaseMap[ obj.type ] = klass
     rescue ArgumentError
     end
   end

@@ -43,8 +43,8 @@ class Param < Info
     root.getMessage( @message )
   end
 
-  SOAPBodyName = Name.new( SOAPBindingNamespace, 'body' )
-  SOAPFaultName = Name.new( SOAPBindingNamespace, 'fault' )
+  SOAPBodyName = XSD::QName.new( SOAPBindingNamespace, 'body' )
+  SOAPFaultName = XSD::QName.new( SOAPBindingNamespace, 'fault' )
   def parseElement( element )
     case element
     when SOAPBodyName, SOAPFaultName
@@ -56,14 +56,14 @@ class Param < Info
     end
   end
 
-  MessageAttrName = Name.new( nil, 'message' )
-  NameAttrName = Name.new( nil, 'name' )
+  MessageAttrName = XSD::QName.new( nil, 'message' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
   def parseAttr( attr, value )
     case attr
     when MessageAttrName
       @message = value
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = XSD::QName.new( targetNamespace, value )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end

@@ -58,7 +58,7 @@ private
     if typeDef.content
       dumpTypeMapStruct( typeDef )
     elsif typeDef.complexContent and
-	typeDef.complexContent.base == Name.new( ::SOAP::EncodingNamespace, 'Array' )
+	typeDef.complexContent.base == XSD::QName.new( ::SOAP::EncodingNamespace, 'Array' )
       dumpTypeMapArray( typeDef )
     else
       raise NotImplementedError.new( "Must not reach here." )
@@ -79,9 +79,8 @@ __EOD__
 
   def dumpTypeMapArray( typeDef )
     ele = typeDef.name
-    arrayType = typeDef.complexContent.getRefAttribute(
-      Name.new( ::SOAP::EncodingNamespace, ::SOAP::AttrArrayType )).arrayType
-    contentType = Name.new( arrayType.namespace,
+    arrayType = typeDef.complexContent.getRefAttribute( ::SOAP::AttrArrayTypeName ).arrayType
+    contentType = XSD::QName.new( arrayType.namespace,
       arrayType.name.sub( /\[(?:,)*\]$/, '' ))
     @types << contentType
     return <<__EOD__

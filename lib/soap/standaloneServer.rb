@@ -128,6 +128,7 @@ private
 
     begin
       trap( 'INT' ) { @server.shutdown }
+      trap( 'HUP' ) { @server.shutdown }
     rescue ArgumentError
       # mswin32 ruby cannot handle SIGHUP because of Windows' restriction.
     end

@@ -45,9 +45,9 @@ class Operation < Info
     parent.targetNamespace
   end
 
-  InputName = Name.new( Namespace, 'input' )
-  OutputName = Name.new( Namespace, 'output' )
-  FaultName = Name.new( Namespace, 'fault' )
+  InputName = XSD::QName.new( Namespace, 'input' )
+  OutputName = XSD::QName.new( Namespace, 'output' )
+  FaultName = XSD::QName.new( Namespace, 'fault' )
   def parseElement( element )
     case element
     when InputName
@@ -67,13 +67,13 @@ class Operation < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
-  TypeAttrName = Name.new( nil, 'type' )
-  ParameterOrderName = Name.new( nil, 'parameterOrder' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
+  TypeAttrName = XSD::QName.new( nil, 'type' )
+  ParameterOrderName = XSD::QName.new( nil, 'parameterOrder' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = XSD::QName.new( targetNamespace, value )
     when TypeAttrName
       @type = value
     when ParameterOrderName

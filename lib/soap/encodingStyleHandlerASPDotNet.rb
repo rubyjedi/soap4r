@@ -37,14 +37,14 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
   def encodeData( buf, ns, qualified, data, parent )
     attrs = {}
     name = nil
-    if qualified and data.namespace
-      if !ns.assigned?( data.namespace )
-        tag = ns.assign( data.namespace )
-        attrs[ 'xmlns:' << tag ] = data.namespace
+    if qualified and data.elementName.namespace
+      if !ns.assigned?( data.elementName.namespace )
+        tag = ns.assign( data.elementName.namespace )
+        attrs[ 'xmlns:' << tag ] = data.elementName.namespace
       end
-      name = ns.name( data.namespace, data.name )
+      name = ns.name( data.elementName )
     else
-      name = data.name
+      name = data.elementName.name
     end
 
     case data
@@ -60,7 +60,7 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
     when SOAPStruct
       SOAPGenerator.encodeTag( buf, name, attrs, true )
       data.each do | key, value |
-	value.namespace = data.namespace if !value.namespace
+	value.elementName.namespace = data.elementName.namespace if !value.elementName.namespace
         yield( value, true )
       end
     when SOAPArray
@@ -77,10 +77,10 @@ yle." )
 
   def encodeDataEnd( buf, ns, qualified, data, parent )
     name = nil
-    if qualified and data.namespace
-      name = ns.name( data.namespace, data.name )
+    if qualified and data.elementName.namespace
+      name = ns.name( data.elementName )
     else
-      name = data.name
+      name = data.elementName.name
     end
     SOAPGenerator.encodeTagEnd( buf, name, true )
   end
@@ -106,9 +106,9 @@ yle." )
     end
 
     def toStruct
-      o = SOAPStruct.decode( @ns, @name, XSD::Namespace, XSD::AnyTypeLiteral )
+      o = SOAPStruct.decode( @ns, @name, XSD::AnyType )
       o.parent = @parent
-      o.typeName = @name
+      o.type.name = @name
       @handler.decodeParent( @parent, o )
       o
     end
@@ -178,17 +178,17 @@ yle." )
       when nil
 	parent.node.add( node.name, node )
       when SOAPArray
-	name, typeNamespace = node.name, node.typeNamespace
+	name, typeNamespace = node.name, node.type.namespace
 	data.add( node )
-	node.name, node.typeNamespace = name, typeNamespace
+	node.name, node.type.namespace = name, typeNamespace
       else
 	parent.node[ node.name ] = SOAPArray.new
-	name, typeNamespace = data.name, data.typeNamespace
+	name, typeNamespace = data.elementName.name, data.type.namespace
 	parent.node[ node.name ].add( data )
-	data.name, data.typeNamespace = name, typeNamespace
-	name, typeNamespace = node.name, node.typeNamespace
+	data.elementName.name, data.type.namespace = name, typeNamespace
+	name, typeNamespace = node.elementName.name, node.type.namespace
 	parent.node[ node.name ].add( node )
-	node.name, node.typeNamespace = name, typeNamespace
+	node.elementName.name, node.type.namespace = name, typeNamespace
       end
 
     when SOAPArray

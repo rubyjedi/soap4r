@@ -30,7 +30,7 @@ class Element < Info
   attr_reader :maxOccurs
   attr_reader :minOccurs
 
-  AnyType = Name.new( XSD::Namespace, XSD::AnyTypeLiteral )
+  AnyType = XSD::QName.new( XSD::Namespace, XSD::AnyTypeLiteral )
   def initialize
     super()
     @name = nil
@@ -47,12 +47,12 @@ class Element < Info
     parent.parent
   end
   
-  ComplexTypeName = Name.new( XSD::Namespace, 'complexType' )
+  ComplexTypeName = XSD::QName.new( XSD::Namespace, 'complexType' )
   def parseElement( element )
     case element
     when ComplexTypeName
       o = ComplexType.new
-      @type = Name.new( targetNamespace, createAnonymousTypeName )
+      @type = XSD::QName.new( targetNamespace, createAnonymousTypeName )
       o.setAnonymousTypeName( @type )
       root.addType( o )
       o
@@ -61,19 +61,19 @@ class Element < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
-  TypeAttrName = Name.new( nil, 'type' )
-  MaxOccursAttrName = Name.new( nil, 'maxOccurs' )
-  MinOccursAttrName = Name.new( nil, 'minOccurs' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
+  TypeAttrName = XSD::QName.new( nil, 'type' )
+  MaxOccursAttrName = XSD::QName.new( nil, 'maxOccurs' )
+  MinOccursAttrName = XSD::QName.new( nil, 'minOccurs' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
       @name = value
     when TypeAttrName
-      @type = if value.is_a?( Name )
+      @type = if value.is_a?( XSD::QName )
 	  value
 	else
-	  Name.new( XSD::Namespace, value )
+	  XSD::QName.new( XSD::Namespace, value )
 	end
     when MaxOccursAttrName
       if parent.type == Content::TypeAll

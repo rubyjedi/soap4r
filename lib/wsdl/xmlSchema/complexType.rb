@@ -51,7 +51,7 @@ class ComplexType < Info
     parent.targetNamespace
   end
 
-  ComplexContentName = Name.new( XSD::Namespace, 'complexContent' )
+  ComplexContentName = XSD::QName.new( XSD::Namespace, 'complexContent' )
   def parseElement( element )
     case element
     when ComplexContentName
@@ -64,11 +64,11 @@ class ComplexType < Info
     end
   end
 
-  NameAttrName = Name.new( nil, 'name' )
+  NameAttrName = XSD::QName.new( nil, 'name' )
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = XSD::QName.new( targetNamespace, value )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end

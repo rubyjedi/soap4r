@@ -37,14 +37,14 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
   def encodeData( buf, ns, qualified, data, parent )
     attrs = {}
     name = nil
-    if qualified and data.namespace
-      if !ns.assigned?( data.namespace )
-        tag = ns.assign( data.namespace )
-        attrs[ 'xmlns:' << tag ] = data.namespace
+    if qualified and data.elementName.namespace
+      if !ns.assigned?( data.elementName.namespace )
+        tag = ns.assign( data.elementName.namespace )
+        attrs[ 'xmlns:' << tag ] = data.elementName.namespace
       end
-      name = ns.name( data.namespace, data.name )
+      name = ns.name( data.elementName )
     else
-      name = data.name
+      name = data.elementName.name
     end
 
     case data
@@ -60,7 +60,7 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
     when SOAPStruct
       SOAPGenerator.encodeTag( buf, name, attrs, true )
       data.each do | key, value |
-	value.namespace = data.namespace if !value.namespace
+	value.elementName.namespace = data.elementName.namespace if !value.elementName.namespace
         yield( value, true )
       end
     when SOAPArray
@@ -73,7 +73,7 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
       SOAPGenerator.encodeTag( buf, name, attrs.update( data.attr ), true )
       buf << data.text if data.text
       data.each do | key, value |
-	value.namespace = data.namespace if !value.namespace
+	value.elementName.namespace = data.elementName.namespace if !value.elementName.namespace
         yield( value, data.qualified )
       end
     else
@@ -83,10 +83,10 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
 
   def encodeDataEnd( buf, ns, qualified, data, parent )
     name = nil
-    if qualified and data.namespace
-      name = ns.name( data.namespace, data.name )
+    if qualified and data.elementName.namespace
+      name = ns.name( data.elementName )
     else
-      name = data.name
+      name = data.elementName.name
     end
     SOAPGenerator.encodeTagEnd( buf, name, true )
   end
@@ -112,7 +112,7 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
     end
 
     def toStruct
-      o = SOAPStruct.decode( @ns, @name, XSD::Namespace, XSD::AnyTypeLiteral )
+      o = SOAPStruct.decode( @ns, @name, XSD::AnyType )
       o.parent = @parent
       @handler.decodeParent( @parent, o )
       o
