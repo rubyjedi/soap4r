@@ -16,6 +16,9 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+require 'soap/charset'
+
+
 ###
 ## XMLSchamaDatatypes general definitions.
 #
@@ -170,14 +173,13 @@ class XSDString < XSDBase
 public
   def initialize( initString = nil )
     super( StringLiteral )
+    @encoding = nil
     set( initString ) if initString
   end
 
 private
-  CharsRegexp = Regexp.new( '\A[\x9\xa\xd\x20-\xd7ff\xe000-\xfffd\x10000\x10ffff]*\z', nil, 'NONE' )
-
   def _set( newString )
-    unless CharsRegexp =~ newString
+    unless SOAP::Charset.isUTF8( newString )
       raise ValueSpaceError.new( "String: #{ newString } is not acceptable." )
     end
     @data = newString

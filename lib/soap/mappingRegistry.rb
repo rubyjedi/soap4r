@@ -169,7 +169,7 @@ module RPCUtils
     def obj2soap( soapKlass, obj, info, map )
       soapObj = begin
 	  if soapKlass.ancestors.include?( XSD::XSDString )
-	    encoded = Charset.encodingToXML( obj )
+	    encoded = Charset.codeConv( obj, $KCODE, 'UTF8' )
 	    soapKlass.new( encoded )
 	  else
 	    soapKlass.new( obj )
@@ -189,7 +189,11 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
-      obj = node.data
+      obj = if objKlass.ancestors.include?( ::String )
+	  Charset.codeConv( node.data, 'UTF8', $KCODE )
+	else
+	  node.data
+	end
       markUnmarshalledObj( node, obj )
       obj
     end

@@ -32,24 +32,20 @@ class SOAPREXMLParser < SOAPParser
     super( *vars )
   end
 
-  def adjustKCode
-    true
-  end
-
   def prologue
-    @charsetStrBackup = $KCODE.to_s.dup
-    Charset.setXMLInstanceEncoding( 'UTF8' )
+    @encodingBackup = nil
   end
 
   def doParse( stringNotReadable )
-    str = Charset.codeConv( stringNotReadable, $KCODE, 'UTF8' )
+    @encodingBackup = Charset.getXMLInstanceEncoding
     Charset.setXMLInstanceEncoding( 'UTF8' )
+    str = Charset.codeConv( stringNotReadable, @encodingBackup, 'UTF8' )
     REXML::Document.parse_stream( str, self )
   end
 
   def epilogue
-    $KCODE = @charsetStrBackup
-    Charset.setXMLInstanceEncoding( $KCODE )
+    Charset.setXMLInstanceEncoding( @encodingBackup )
+    @encodingBackup = nil
   end
 
   def tag_start( name, attrs )

@@ -118,13 +118,13 @@ class SOAPProxy
     kcodeAdjusted = false
     charsetStrBackup = nil
     if receiveCharset
-      receiveString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
+      #receiveString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
+      charsetStr = Charset.getCharsetStr( receiveCharset )
+      Charset.setXMLInstanceEncoding( charsetStr )
 
       if parser.adjustKCode
-	charsetStr = Charset.getCharsetStr( receiveCharset )
 	charsetStrBackup = $KCODE.to_s.dup
 	$KCODE = charsetStr
-	Charset.setXMLInstanceEncoding( charsetStr )
 	kcodeAdjusted = true
       end
     end
@@ -140,7 +140,6 @@ class SOAPProxy
     ensure
       if kcodeAdjusted
        	$KCODE = charsetStrBackup
-	Charset.setXMLInstanceEncoding( $KCODE )
       end
     end
 
