@@ -1,6 +1,6 @@
 =begin
 SOAP4R - Ruby type mapping factory.
-Copyright (C) 2000, 2001, 2002, 2003 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -135,7 +135,7 @@ class RubytypeFactory < Factory
         return nil
       end
       if obj.respond_to?(:default_proc) && obj.default_proc
-        raise ArgumentError.new("cannot dump hash with default proc")
+        raise TypeError.new("cannot dump hash with default proc")
       end
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_HASH))
       mark_marshalled_obj(obj, param)
@@ -152,7 +152,7 @@ class RubytypeFactory < Factory
       addiv2soap(param, obj, map)
     when Class
       if obj.name.empty?
-        raise ArgumentError.new("Can't dump anonymous class #{ obj }.")
+        raise TypeError.new("Can't dump anonymous class #{ obj }.")
       end
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_CLASS))
       mark_marshalled_obj(obj, param)
@@ -160,7 +160,7 @@ class RubytypeFactory < Factory
       addiv2soap(param, obj, map)
     when Module
       if obj.name.empty?
-        raise ArgumentError.new("Can't dump anonymous module #{ obj }.")
+        raise TypeError.new("Can't dump anonymous module #{ obj }.")
       end
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_MODULE))
       mark_marshalled_obj(obj, param)
@@ -198,13 +198,9 @@ class RubytypeFactory < Factory
       setiv2soap(param, obj, map)   # addiv2soap?
     else
       if obj.class.name.empty?
-        raise ArgumentError.new("Can't dump anonymous class #{ obj }.")
+        raise TypeError.new("Can't dump anonymous class #{ obj }.")
       end
-      singleton_class = class << obj; self; end
-      unless singleton_class.instance_methods(false).empty?
-        raise TypeError.new("singleton can't be dumped #{ obj }")
-      end
-      unless singleton_class.instance_variables.empty?
+      if check_singleton(obj)
         raise TypeError.new("singleton can't be dumped #{ obj }")
       end
       type = Mapping.class2element(obj.class)
@@ -231,6 +227,27 @@ class RubytypeFactory < Factory
   end
 
 private
+
+  def check_singleton(obj)
+=begin
+      singleton_class = class << obj; self; end
+      unless singleton_class.instance_methods(false).empty?
+        raise TypeError.new("singleton can't be dumped #{ obj }")
+      end
+      unless singleton_class.instance_variables.empty?
+        raise TypeError.new("singleton can't be dumped #{ obj }")
+      end
+=end
+    unless obj.singleton_methods(true).empty?
+      return true
+    end
+    singleton_class = class << obj; self; end
+    unless singleton_class.instance_variables.empty? or
+	(singleton_class.ancestors - obj.class.ancestors).empty?
+      return true
+    end
+    false
+  end
 
   def rubytype2obj(node, map, rubytype)
     obj = nil
