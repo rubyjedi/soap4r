@@ -45,7 +45,7 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
 
   def initialize( endPointUri, proxy = nil )
     super( endPointUri )
-    @server = URIModule::URI.create( endPointUri )
+    @server = URI.create( endPointUri )
     @proxy = proxy
   end
 
