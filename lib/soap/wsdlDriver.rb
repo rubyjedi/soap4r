@@ -1,5 +1,5 @@
 # SOAP4R - SOAP WSDL driver
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -48,7 +48,7 @@ class WSDLDriverFactory
 	@wsdl.services[0]
       end
     if service.nil?
-      raise FactoryError.new("Service #{ servicename } not found in WSDL.")
+      raise FactoryError.new("service #{ servicename } not found in WSDL")
     end
     port = if portname
 	service.ports[XSD::QName.new(@wsdl.targetnamespace, portname)]
@@ -56,10 +56,10 @@ class WSDLDriverFactory
 	service.ports[0]
       end
     if port.nil?
-      raise FactoryError.new("Port #{ portname } not found in WSDL.")
+      raise FactoryError.new("port #{ portname } not found in WSDL")
     end
     if port.soap_address.nil?
-      raise FactoryError.new("soap:address element not found in WSDL.")
+      raise FactoryError.new("soap:address element not found in WSDL")
     end
     WSDLDriver.new(@wsdl, port, @logdev)
   end
@@ -222,7 +222,7 @@ class WSDLDriver
     def rpc_call(name, *values)
       set_wiredump_file_base(name)
       unless op_info = @operation[name]
-        raise MethodDefinitionError, "Method: #{name} not defined."
+        raise RuntimeError, "method: #{name} not defined"
       end
       req_header = create_request_header
       req_body = create_request_body(op_info, *values)
@@ -230,7 +230,7 @@ class WSDLDriver
         :soapaction => op_info.soapaction || @soapaction,
         :decode_typemap => @rpc_decode_typemap})
       env = @proxy.invoke(req_header, req_body, opt)
-      raise EmptyResponseError.new("Empty response.") unless env
+      raise EmptyResponseError.new("empty response") unless env
       receive_headers(env.header)
       begin
         @proxy.check_fault(env.body)
@@ -255,7 +255,7 @@ class WSDLDriver
       req_header = header_from_obj(header_obj, op_info)
       req_body = body_from_obj(body_obj, op_info)
       env = @proxy.invoke(req_header, req_body, op_info.soapaction || @soapaction, @wsdl_types)
-      raise EmptyResponseError.new("Empty response.") unless env
+      raise EmptyResponseError.new("empty response") unless env
       if env.body.fault
 	raise ::SOAP::FaultError.new(env.body.fault)
       end
@@ -275,7 +275,7 @@ class WSDLDriver
         :soapaction => op_info.soapaction || @soapaction,
         :decode_typemap => @wsdl_types})
       env = @proxy.invoke(req_header, req_body, opt)
-      raise EmptyResponseError.new("Empty response.") unless env
+      raise EmptyResponseError.new("empty response") unless env
       if env.body.fault
 	raise ::SOAP::FaultError.new(env.body.fault)
       end
@@ -356,7 +356,7 @@ class WSDLDriver
 	if obj.nil?
 	  nil
 	else
-	  raise RuntimeError.new("No header definition in schema.")
+	  raise RuntimeError.new("no header definition in schema")
 	end
       elsif op_info.headerparts.size == 1
        	part = op_info.headerparts[0]
@@ -391,7 +391,7 @@ class WSDLDriver
 	if obj.nil?
 	  nil
 	else
-	  raise RuntimeError.new("No body found in schema.")
+	  raise RuntimeError.new("no body found in schema")
 	end
       elsif op_info.bodyparts.size == 1
        	part = op_info.bodyparts[0]
@@ -425,6 +425,10 @@ class WSDLDriver
 	add_document_method_interface(name)
       when :rpc
 	parts_names = op_info.bodyparts.collect { |part| part.name }
+        orgname = op_info.op_name.name
+        if orgname != name and orgname.capitalize == name.capitalize
+          add_rpc_method_interface(orgname, parts_names)
+        end
 	add_rpc_method_interface(name, parts_names)
       else
 	raise RuntimeError.new("Unknown style: #{op_info.style}")
