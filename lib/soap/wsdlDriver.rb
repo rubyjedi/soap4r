@@ -363,7 +363,7 @@ class WSDLDriver
       elsif obj.is_a?(SOAPHeaderItem)
 	obj
       else
-	@doc_mapper.obj2ele(obj, name)
+	@doc_mapper.obj2soap(nil, obj, name)
       end
     end
 
@@ -397,7 +397,7 @@ class WSDLDriver
       elsif obj.is_a?(SOAPElement)
 	obj
       else
-	@doc_mapper.obj2ele(obj, name)
+	@doc_mapper.obj2soap(nil, obj, name)
       end
     end
 
