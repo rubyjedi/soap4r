@@ -83,8 +83,16 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
 
     begin
       timeout( CallTimeout ) do
-	drv.request_post( @server.path, soapString, requestHeaders )
+	relative_uri = @server.path.dup
+	if @server.query
+	  relative_uri << '?' << @server.query
+	end
+	if @server.fragment
+	  relative_uri << '#' << @server.fragment
+	end
+	drv.request_post( relative_uri, soapString, requestHeaders )
 	rh = drv.get_header
+	puts rh if $DEBUG
 	responseHeaders = {}
 	rh.each do | header |
 	  /^([^:]+):\s*([^\r]*)\r?\n/ =~ header
