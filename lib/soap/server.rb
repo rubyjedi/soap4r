@@ -71,6 +71,16 @@ protected
     @router.addMethod( @namespace, receiver, methodName, paramDef )
   end
 
+  def addServant( obj )
+   ( obj.methods - Kernel.instance_methods ).each do | methodName |
+      method = obj.method( methodName )
+      paramDef = RPCUtils::SOAPMethod.createParamDef(
+	( 1..method.arity.abs ).collect { |i| "p#{ i }" } )
+      @router.addMethod( @namespace, obj, methodName, paramDef )
+    end
+  end
+
+
   def route( requestString )
     @router.route( requestString )
   end
