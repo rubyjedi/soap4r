@@ -162,7 +162,6 @@ class XSDString < XSDAnySimpleType
   def initialize(value = nil)
     super()
     @type = Type
-    @encoding = nil
     set(value) if value
   end
 
@@ -254,6 +253,7 @@ private
     end
 
     @data = _to_s
+    @data.freeze
   end
 
   # 0.0 -> 0; right?
@@ -440,6 +440,7 @@ private
     @min = $7.to_i
     @sec = $8 ? XSDDecimal.new($8) : 0
     @data = _to_s
+    @data.freeze
   end
 
   def _to_s
@@ -516,6 +517,7 @@ module XSDDateTimeImpl
   end
 
   def _set(t)
+    set_datetime_init
     if (t.is_a?(Date))
       @data = t
     elsif (t.is_a?(Time))
@@ -541,10 +543,15 @@ class XSDDateTime < XSDAnySimpleType
   def initialize(value = nil)
     super()
     @type = Type
+    @secfrac = nil
     set(value) if value
   end
 
 private
+
+  def set_datetime_init
+    @secfrac = nil
+  end
 
   def set_str(t)
     /^([+\-]?\d{4,})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
@@ -568,6 +575,7 @@ private
     zonestr = $8
 
     @data = DateTime.civil(year, mon, mday, hour, min, sec, tz2of(zonestr))
+    @secfrac = secfrac
 
     if secfrac
       diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / SecInDay
@@ -588,10 +596,11 @@ private
     s = format('%.4d-%02d-%02dT%02d:%02d:%02d',
       year, @data.mon, @data.mday, @data.hour, @data.min, @data.sec)
     if @data.sec_fraction.nonzero?
-      fr = @data.sec_fraction * SecInDay
-      shiftsize = fr.denominator.to_s.size + 1
-      fr_s = (fr * (10 ** shiftsize)).to_i.to_s
-      s << '.' << '0' * (shiftsize - fr_s.size) << fr_s.sub(/0+$/, '')
+      if @secfrac
+  	s << ".#{ @secfrac }"
+      else
+	s << ".#{ (@data.sec_fraction * SecInDay).to_f.to_s }"
+      end
     end
     add_tz(s)
   end
@@ -604,10 +613,15 @@ class XSDTime < XSDAnySimpleType
   def initialize(value = nil)
     super()
     @type = Type
+    @secfrac = nil
     set(value) if value
   end
 
 private
+
+  def set_datetime_init
+    @secfrac = nil
+  end
 
   def set_str(t)
     /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:([+\-])(\d\d):(\d\d))?)?$/ =~ t.to_s.strip
@@ -622,19 +636,22 @@ private
     zonestr = $5
 
     @data = DateTime.civil(1, 1, 1, hour, min, sec, tz2of(zonestr))
+    @secfrac = secfrac
 
     if secfrac
-      @data += secfrac.to_i.to_r / (10 ** secfrac.size) / SecInDay
+      diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / SecInDay
+      @data += diffday
     end
   end
 
   def _to_s
     s = format('%02d:%02d:%02d', @data.hour, @data.min, @data.sec)
     if @data.sec_fraction.nonzero?
-      fr = @data.sec_fraction * SecInDay
-      shiftsize = fr.denominator.to_s.size + 1
-      fr_s = (fr * (10 ** shiftsize)).to_i.to_s
-      s << '.' << '0' * (shiftsize - fr_s.size) << fr_s.sub(/0+$/, '')
+      if @secfrac
+  	s << ".#{ @secfrac }"
+      else
+	s << ".#{ (@data.sec_fraction * SecInDay).to_f.to_s }"
+      end
     end
     add_tz(s)
   end
@@ -651,6 +668,9 @@ class XSDDate < XSDAnySimpleType
   end
 
 private
+
+  def set_datetime_init
+  end
 
   def set_str(t)
     /^([+\-]?\d{4,})-(\d\d)-(\d\d)(Z|(?:([+\-])(\d\d):(\d\d))?)?$/ =~ t.to_s.strip
@@ -688,6 +708,9 @@ class XSDGYearMonth < XSDAnySimpleType
 
 private
 
+  def set_datetime_init
+  end
+
   def set_str(t)
     /^([+\-]?\d{4,})-(\d\d)(Z|(?:([+\-])(\d\d):(\d\d))?)?$/ =~ t.to_s.strip
     unless Regexp.last_match
@@ -723,6 +746,9 @@ class XSDGYear < XSDAnySimpleType
 
 private
 
+  def set_datetime_init
+  end
+
   def set_str(t)
     /^([+\-]?\d{4,})(Z|(?:([+\-])(\d\d):(\d\d))?)?$/ =~ t.to_s.strip
     unless Regexp.last_match
@@ -757,6 +783,9 @@ class XSDGMonthDay < XSDAnySimpleType
 
 private
 
+  def set_datetime_init
+  end
+
   def set_str(t)
     /^(\d\d)-(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
     unless Regexp.last_match
@@ -788,6 +817,9 @@ class XSDGDay < XSDAnySimpleType
 
 private
 
+  def set_datetime_init
+  end
+
   def set_str(t)
     /^(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
     unless Regexp.last_match
@@ -817,6 +849,9 @@ class XSDGMonth < XSDAnySimpleType
   end
 
 private
+
+  def set_datetime_init
+  end
 
   def set_str(t)
     /^(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
@@ -935,6 +970,7 @@ private
     @prefix = $1
     @localpart = $2
     @data = _to_s
+    @data.freeze
   end
 
   def _to_s
