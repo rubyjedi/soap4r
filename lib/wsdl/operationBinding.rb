@@ -53,18 +53,18 @@ class OperationBinding < Info
 
   def inputoperation_sig
     operation = find_operation
-    soap_body = input.soap_body
+    soapbody = input.soapbody
 
-    if soap_body.use != "encoded"
-      raise NotImplementedError.new("Use '#{ soap_body.use }' not supported.")
+    if soapbody.use != "encoded"
+      raise NotImplementedError.new("Use '#{ soapbody.use }' not supported.")
     end
-    if soap_body.encodingstyle != ::SOAP::EncodingNamespace
+    if soapbody.encodingstyle != ::SOAP::EncodingNamespace
       raise NotImplementedError.new(
-	"EncodingStyle '#{ soap_body.encodingstyle }' not supported.")
+	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
     end
 
     op_name = operation.name.dup
-    op_name.namespace = soap_body.namespace if soap_body.namespace
+    op_name.namespace = soapbody.namespace if soapbody.namespace
     msg_name = operation.inputname
     param_names = operation.inputparts.collect { |part| part.name }
     soapaction = soap_operation.soapaction
@@ -73,18 +73,18 @@ class OperationBinding < Info
 
   def outputoperation_sig
     operation = find_operation
-    soap_body = output.soap_body
+    soapbody = output.soapbody
 
-    if soap_body.use != "encoded"
-      raise NotImplementedError.new("Use '#{ soap_body.use }' not supported.")
+    if soapbody.use != "encoded"
+      raise NotImplementedError.new("Use '#{ soapbody.use }' not supported.")
     end
-    if soap_body.encodingstyle != ::SOAP::EncodingNamespace
+    if soapbody.encodingstyle != ::SOAP::EncodingNamespace
       raise NotImplementedError.new(
-	"EncodingStyle '#{ soap_body.encodingstyle }' not supported.")
+	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
     end
 
     op_name = operation.name.dup
-    op_name.namespace = soap_body.namespace if soap_body.namespace
+    op_name.namespace = soapbody.namespace if soapbody.namespace
     msg_name = operation.outputname
     param_names = operation.outputparts.collect { |part| part.name }
     return op_name, msg_name, param_names

@@ -1,5 +1,5 @@
 =begin
-WSDL4R - WSDL REXMLParser library.
+XSD4R - REXMLParser XML parser library.
 Copyright (C) 2002, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -16,23 +16,18 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-require 'wsdl/parser'
+
+require 'xsd/xmlparser'
 require 'rexml/streamlistener'
 require 'rexml/document'
 
 
-module WSDL
+module XSD
+module XMLParser
 
 
-class WSDLREXMLParser < WSDLParser
+class REXMLParser < XSD::XMLParser::Parser
   include REXML::StreamListener
-
-  def initialize(*vars)
-    super(*vars)
-  end
-
-  def prologue
-  end
 
   def do_parse(string_or_readable)
     source = nil
@@ -66,4 +61,5 @@ class WSDLREXMLParser < WSDLParser
 end
 
 
+end
 end

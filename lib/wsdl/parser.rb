@@ -16,10 +16,12 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'xsd/qname'
 require 'xsd/ns'
 require 'xsd/charset'
 require 'xsd/datatypes'
+require 'xsd/xmlparser'
 require 'wsdl/wsdl'
 require 'wsdl/data'
 require 'wsdl/xmlSchema/data'
@@ -39,22 +41,7 @@ class WSDLParser
   class UnexpectedElementError < FormatDecodeError; end
   class ElementConstraintError < FormatDecodeError; end
 
-  @@parser_factory = nil
-
-  def self.factory
-    @@parser_factory
-  end
-
-  def self.create_parser(opt = {})
-    @@parser_factory.new(opt)
-  end
-
-  def self.add_factory(factory)
-    if $DEBUG
-      puts "Set #{ factory } as XML processor."
-    end
-    @@parser_factory = factory
-  end
+private
 
   class ParseFrame
     attr_reader :ns
@@ -70,31 +57,19 @@ class WSDLParser
   end
 
 public
-  attr_accessor :charset
 
   def initialize(opt = {})
+    @parser = XSD::XMLParser.create_parser(self, opt)
     @parsestack = nil
     @lastnode = nil
-    @charset = opt[:charset]
   end
 
   def parse(string_or_readable)
     @parsestack = []
     @lastnode = nil
     @textbuf = ''
-
-    prologue
-
-    do_parse(string_or_readable)
-
-    epilogue
-
+    @parser.do_parse(string_or_readable)
     @lastnode
-  end
-
-  def do_parse(string_or_readable)
-    raise NotImplementError.new(
-      'Method do_parse must be defined in derived class.')
   end
 
   def start_element(name, attrs)
@@ -107,11 +82,8 @@ public
       ns = ::SOAP::NS.new
       parent = nil
     end
-
-    parse_ns(ns, attrs)
-
+    attrs = XSD::XMLParser.filter_ns(ns, attrs)
     node = decode_tag(ns, name, attrs, parent)
-
     @parsestack << ParseFrame.new(ns, name, node)
   end
 
@@ -136,33 +108,6 @@ public
   end
 
 private
-  def prologue
-  end
-
-  def epilogue
-  end
-
-  def xmldecl_encoding=(charset)
-    if @charset.nil?
-      @charset = charset
-    else
-      # Definition in a stream (like HTTP) has a priority.
-      p "encoding definition: #{ charset } is ignored." if $DEBUG
-    end
-  end
-
-  # $1 is necessary.
-  NSParseRegexp = Regexp.new('^xmlns:?(.*)$')
-
-  def parse_ns(ns, attrs)
-    return unless attrs
-    attrs.each do |key, value|
-      next unless (NSParseRegexp =~ key)
-      # '' means 'default namespace'.
-      tag = $1 || ''
-      ns.assign(value, tag)
-    end
-  end
 
   def decode_tag(ns, name, attrs, parent)
     o = nil
@@ -181,25 +126,23 @@ private
       o.parent = parent
     end
     attrs.each do |key, value|
-      if /^xmlns/ !~ key
-	attr = unless /:/ =~ key
-	    XSD::QName.new(nil, key)
-	  else
-	    ns.parse(key)
-	  end
-	value_ele = if /:/ !~ value
+      attr = unless /:/ =~ key
+	  XSD::QName.new(nil, key)
+	else
+	  ns.parse(key)
+	end
+      value_ele = if /:/ !~ value
+	  value
+	elsif /^http:\/\// =~ value	# ToDo: ugly.
+	  value
+	else
+	  begin
+	    ns.parse(value)
+	  rescue
 	    value
-	  elsif /^http:\/\// =~ value	# ToDo: ugly.
-	    value
-	  else
-	    begin
-	      ns.parse(value)
-	    rescue
-	      value
-	    end
 	  end
-	o.parse_attr(attr, value_ele)
-      end
+	end
+      o.parse_attr(attr, value_ele)
     end
     o
   end
@@ -214,24 +157,4 @@ private
 end
 
 
-end
-
-
-# Try to load XML processor.
-loaded = false
-[
-  'wsdl/xmlscanner',
-  'wsdl/xmlparser',
-  'wsdl/rexmlparser',
-  'wsdl/nqxmlparser',
-].each do |lib|
-  begin
-    require lib
-    loaded = true
-    break
-  rescue LoadError
-  end
-end
-unless loaded
-  raise RuntimeError.new("XML processor module not found.")
 end

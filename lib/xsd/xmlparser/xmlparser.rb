@@ -1,5 +1,5 @@
 =begin
-WSDL4R - WSDL xmlparser library.
+XSD4R - XMLParser XML parser library.
 Copyright (C) 2001, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -16,14 +16,16 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-require 'wsdl/parser'
+
+require 'xsd/xmlparser'
 require 'xml/parser'
 
 
-module WSDL
+module XSD
+module XMLParser
 
 
-class WSDLXMLParser < WSDLParser
+class XMLParser < XSD::XMLParser::Parser
   class Listener < XML::Parser
     begin
       require 'xml/encoding-ja'
@@ -31,10 +33,6 @@ class WSDLXMLParser < WSDLParser
     rescue LoadError
       # uconv may not be installed.
     end
-  end
-
-  def initialize(*vars)
-    super(*vars)
   end
 
   def do_parse(string_or_readable)
@@ -59,4 +57,5 @@ class WSDLXMLParser < WSDLParser
 end
 
 
+end
 end

@@ -64,7 +64,7 @@ class NetHttpClient
     url = URI.parse(url)
     extra = header.dup
     extra['User-Agent'] = @agent if @agent
-    res = start(url, header) { |http|
+    res = start(url) { |http|
 	http.post(url.instance_eval('path_query'), req_body, extra)
       }
     Response.new(res)
