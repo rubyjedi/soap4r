@@ -38,7 +38,7 @@ class MethodDefCreator
   def dump( portType )
     @types = []
     result = ""
-    operations = @definitions.portTypes[ portType ].operations
+    operations = @definitions.getPortType( portType ).operations
     binding = @definitions.getPortTypeBinding( portType )
     operations.each do | operation |
       opBinding = binding.operations[ operation.name ]
@@ -59,8 +59,8 @@ class MethodDefCreator
   end
 
   def collectParams( operation )
-    inParam = @definitions.messages[ operation.input.message ]
-    outParam = @definitions.messages[ operation.output.message ]
+    inParam = @definitions.getMessage( operation.input.message )
+    outParam = @definitions.getMessage( operation.output.message )
     result = inParam.parts.collect { | part |
       @types << part.type
       [ 'in', part.name ]

@@ -54,8 +54,7 @@ class Binding < Info
       @soapBinding = o
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 

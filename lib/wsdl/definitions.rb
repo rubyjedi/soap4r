@@ -24,30 +24,129 @@ module WSDL
 
 
 class Definitions < Info
-  attr_reader :name		# optional
-  attr_reader :targetNamespace	# optional
-  attr_reader :types
-  attr_reader :messages
-  attr_reader :portTypes
-  attr_reader :bindings
-  attr_reader :services
+  attr_reader :name
+  attr_reader :targetNamespace
+  attr_reader :imports
+
+  # Overrides Info#root
+  def root
+    @root
+  end
+
+  def root=( newRoot )
+    @root = newRoot
+  end
 
   def initialize
     super
     @name = nil
     @targetNamespace = nil
     @types = nil
+    @imports = []
     @messages = NamedElements.new
     @portTypes = NamedElements.new
     @bindings = NamedElements.new
     @services = NamedElements.new
+
+    @root = self
+  end
+
+  def setTargetNamespace( targetNamespace )
+    @targetNamespace = targetNamespace
+    if @name
+      @name = Name.new( @targetNamespace, @name.name )
+    end
+  end
+
+  def complexTypes
+    result = NamedElements.new
+    if @types
+      result.concat( @types.schema.complexTypes )
+    end
+    @imports.each do | import |
+      result.concat( import.content.complexTypes )
+    end
+    result
+  end
+
+  def messages
+    result = @messages.dup
+    @imports.each do | import |
+      result.concat( import.content.messages )
+    end
+    result
+  end
+
+  def portTypes
+    result = @portTypes.dup
+    @imports.each do | import |
+      result.concat( import.content.portTypes )
+    end
+    result
+  end
+
+  def bindings
+    result = @bindings.dup
+    @imports.each do | import |
+      result.concat( import.content.bindings )
+    end
+    result
+  end
+
+  def services
+    result = @services.dup
+    @imports.each do | import |
+      result.concat( import.content.services )
+    end
+    result
+  end
+
+  def getMessage( name )
+    message = @messages[ name ]
+    return message if message
+    @imports.each do | import |
+      message = import.content.getMessage( name )
+      return message if message
+    end
+    nil
+  end
+
+  def getPortType( name )
+    portType = @portTypes[ name ]
+    return portType if portType
+    @imports.each do | import |
+      portType = import.content.getPortType( name )
+      return portType if portType
+    end
+    nil
+  end
+
+  def getBinding( name )
+    binding = @bindings[ name ]
+    return binding if binding
+    @imports.each do | import |
+      binding = import.content.getBinding( name )
+      return binding if binding
+    end
+    nil
+  end
+
+  def getService( name )
+    service = @services[ name ]
+    return service if service
+    @imports.each do | import |
+      service = import.content.getService( name )
+      return service if service
+    end
+    nil
   end
 
   def getPortTypeBinding( portTypeName )
-    @bindings.each do | binding |
-      if ( binding.type == portTypeName )
-	return binding
-      end
+    binding = @bindings.find { | item | item.type == portTypeName }
+    return binding if binding
+    @imports.each do | import |
+      binding = import.content.getPortTypeBinding( portTypeName )
+      return binding if binding
     end
     nil
   end
@@ -57,8 +156,13 @@ class Definitions < Info
   PortTypeName = Name.new( Namespace, 'portType' )
   BindingName = Name.new( Namespace, 'binding' )
   ServiceName = Name.new( Namespace, 'service' )
+  ImportName = Name.new( Namespace, 'import' )
   def parseElement( element )
     case element
+    when ImportName
+      o = Import.new
+      @imports << o
+      o
     when TypesName
       o = Types.new
       @types = o
@@ -79,6 +183,8 @@ class Definitions < Info
       o = Service.new
       @services << o
       o
+    else
+      nil
     end
   end
 
@@ -89,12 +195,9 @@ class Definitions < Info
     when NameAttrName
       @name = Name.new( @targetNamespace, value )
     when TargetNamespaceAttrName
-      @targetNamespace = value
-      if @name
-	@name = Name.new( @targetNamespace, @name.name )
-      end
+      setTargetNamespace( value )
     else
-      raise UnknownElementError.new( "Unknown element #{ element }." )
+      raise UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
   end
 
@@ -106,6 +209,9 @@ class Definitions < Info
       raise UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
   end
+
+private
+
 end
 
 

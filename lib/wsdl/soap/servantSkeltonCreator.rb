@@ -50,7 +50,7 @@ class ServantSkeltonCreator
 private
 
   def dumpPortType( portType )
-    operations = @definitions.portTypes[ portType ].operations
+    operations = @definitions.getPortType( portType ).operations
     dumpOperations = ""
     operations.each do | operation |
       dumpOperations << dumpOperation( operation )

@@ -39,7 +39,7 @@ class Types < Info
       @schema = o
       o
     else
-      raise UnknownElementError.new( "Unknown element #{ element }." )
+      nil
     end
   end
 

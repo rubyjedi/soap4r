@@ -52,8 +52,7 @@ class Service < Info
       @soapAddress = o
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 

@@ -36,7 +36,7 @@ class Part < Info
   end
 
   def parseElement( element )
-    raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
+    nil
   end
 
   NameAttrName = Name.new( nil, 'name' )

@@ -147,7 +147,6 @@ private
     end
   end
 
-  ImportName = Name.new( XSD::Namespace, 'import' )
   DefinitionsName = Name.new( Namespace, 'definitions' )
   def decodeTag( ns, name, attrs, parent )
     o = nil
@@ -156,13 +155,16 @@ private
     if !parent
       if element == DefinitionsName
 	o = Definitions.parseElement( element )
+      else
+	raise UnknownElementError.new( "Unknown element #{ element }." )
       end
-    elsif element == ImportName
-      o = Import.new
     else
       o = parent.parseElement( element )
+      unless o
+	raise UnknownElementError.new( "Unknown element #{ element }." )
+      end
+      o.parent = parent
     end
-    o.parent = parent
     attrs.each do | key, value |
       if /^xmlns/ !~ key
 	attr = unless /:/ =~ key

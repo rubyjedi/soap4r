@@ -41,7 +41,7 @@ class StandaloneServerStubCreator
     STDERR.puts "- Standalone stub can only 1 port for now.  Creating stub for the first port...  Rests are ignored."
     STDERR.puts "- Standalone server stub ignores port location defined in WSDL.  Location is http://localhost:10080/ by default.  Generated client from WSDL must be configured to point this endpoint by hand."
     STDERR.puts "!!! IMPORTANT !!!"
-    port = @definitions.services[ serviceName ].ports[ 0 ]
+    port = @definitions.getService( serviceName ).ports[ 0 ]
     dumpPortType( port.getPortType.name )
   end
 

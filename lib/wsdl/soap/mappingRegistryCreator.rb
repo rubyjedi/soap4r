@@ -29,6 +29,7 @@ class MappingRegistryCreator
 
   def initialize( definitions )
     @definitions = definitions
+    @complexTypes = @definitions.complexTypes
     @types = nil
   end
 
@@ -53,7 +54,7 @@ __EOD__
 private
 
   def dumpTypeMap( type )
-    typeDef = getTypeDef( type )
+    typeDef = @complexTypes[ type ]
     if typeDef.content
       dumpTypeMapStruct( typeDef )
     elsif typeDef.complexContent and
@@ -62,10 +63,6 @@ private
     else
       raise NotImplementedError.new( "Must not reach here." )
     end
-  end
-
-  def getTypeDef( type )
-    @definitions.types.schema.complexTypes[ type ]
   end
 
   def dumpTypeMapStruct( typeDef )

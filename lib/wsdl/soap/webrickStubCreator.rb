@@ -65,7 +65,7 @@ require 'soap/rpcUtils'
 MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
 __EOD__
 
-    @definitions.services[ serviceName ].ports.each do | port |
+    @definitions.getService( serviceName ).ports.each do | port |
       result << dumpPortType( port.getPortType.name )
       result << "\n"
     end

@@ -27,6 +27,10 @@ class Info
     @parent = nil
   end
 
+  def root
+    @parent.root
+  end
+
   def parseElement( element ); end	# abstract
   
   def parseAttr( attr, value ); end	# abstract

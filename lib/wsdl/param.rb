@@ -39,12 +39,8 @@ class Param < Info
     parent.targetNamespace
   end
 
-  def getDefinitions
-    parent.parent.parent
-  end
-
   def getMessage
-    getDefinitions.messages[ @message ]
+    root.getMessage( @message )
   end
 
   SOAPBodyName = Name.new( SOAPBindingNamespace, 'body' )
@@ -56,8 +52,7 @@ class Param < Info
       @soapBody = o
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 

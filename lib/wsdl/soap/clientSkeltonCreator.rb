@@ -36,7 +36,7 @@ class ClientSkeltonCreator
 
   def dump( serviceName )
     result = ""
-    @definitions.services[ serviceName ].ports.each do | port |
+    @definitions.getService( serviceName ).ports.each do | port |
       result << dumpPortType( port.getPortType.name )
       result << "\n"
     end
@@ -59,7 +59,7 @@ obj = #{ driverName }.new( endpointUrl, proxyUrl )
 
 
 __EOD__
-    @definitions.portTypes[ portTypeName ].operations.each do | operation |
+    @definitions.getPortType( portTypeName ).operations.each do | operation |
       result << dumpSignature( operation )
       result << dumpInputInitialize( operation.input ) << "\n"
       result << dumpOperation( operation ) << "\n\n"

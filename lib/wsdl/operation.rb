@@ -63,8 +63,7 @@ class Operation < Info
       @fault = o
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 
