@@ -120,9 +120,11 @@ module RPCUtils
       end
     else
       def createEmptyObject( klass )
+	yaName = '__original__initialize__renamed_by_SOAP4R__'
+	Thread.critical = true
 	klass.module_eval <<-EOS
 	  begin
-	    alias __initialize initialize
+	    alias #{ yaName } initialize
 	  rescue NameError
 	  end
 	  def initialize; end
@@ -131,10 +133,11 @@ module RPCUtils
    	klass.module_eval <<-EOS
   	  undef initialize
   	  begin
-  	    alias initialize __initialize
+	    alias initialize #{ yaName }
   	  rescue NameError
   	  end
    	EOS
+	Thread.critical = false
    	obj
       end
     end
