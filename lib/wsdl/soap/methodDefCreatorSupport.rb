@@ -27,6 +27,7 @@ module WSDL
 
 
 module MethodDefCreatorSupport
+  BaseMappingRegistry = ::SOAP::RPCUtils::MappingRegistry.new
   SOAPBaseMap = {}
   XSD::NSDBase.types.each do | klass |
     begin
@@ -36,15 +37,20 @@ module MethodDefCreatorSupport
     end
   end
 
+  def getBaseTypeMappedClass( name )
+    SOAPBaseMap[ name ]
+  end
+
   def createClassName( name )
     if SOAPBaseMap[ name ]
-      return SOAPBaseMap[ name ].to_s
+      BaseMappingRegistry.searchMappedRubyClass( SOAPBaseMap[ name ] ).to_s
+    else
+      result = capitalize( name.name )
+      unless /^[A-Z]/ =~ result
+	result = "C_#{ name }"
+      end
+      result
     end
-    result = capitalize( name.name )
-    unless /^[A-Z]/ =~ result
-      result = "C_#{ name }"
-    end
-    result
   end
   module_function :createClassName
 
@@ -81,7 +87,7 @@ __EOD__
       message = param.getMessage
       params = ""
       message.parts.each do | part |
-        params << "#   #{ part.name }\t\t#{ part.type }\n"
+        params << "#   #{ part.name }\t\t#{ createClassName( part.type ) } - #{ part.type }\n"
       end
       unless params.empty?
         return params
