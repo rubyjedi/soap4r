@@ -14,13 +14,33 @@ module XMLSchema
 
 
 class Element < Info
-  attr_accessor :name	# required
-  attr_accessor :type
-  attr_accessor :local_complextype
-  attr_accessor :constraint
-  attr_accessor :maxoccurs
-  attr_accessor :minoccurs
-  attr_accessor :nillable
+  class << self
+    def attr_reader_ref(symbol)
+      name = symbol.to_s
+      self.__send__(:define_method, name, proc {
+        instance_variable_get("@#{name}") ||
+          (refelement ? refelement.__send__(name) : nil)
+      })
+    end
+  end
+
+  attr_writer :name	# required
+  attr_writer :type
+  attr_writer :local_complextype
+  attr_writer :constraint
+  attr_writer :maxoccurs
+  attr_writer :minoccurs
+  attr_writer :nillable
+
+  attr_reader_ref :name
+  attr_reader_ref :type
+  attr_reader_ref :local_complextype
+  attr_reader_ref :constraint
+  attr_reader_ref :maxoccurs
+  attr_reader_ref :minoccurs
+  attr_reader_ref :nillable
+
+  attr_accessor :ref
 
   def initialize(name = nil, type = XSD::AnyTypeName)
     super()
@@ -31,6 +51,12 @@ class Element < Info
     @maxoccurs = '1'
     @minoccurs = '1'
     @nillable = nil
+    @ref = nil
+    @refelement = nil
+  end
+
+  def refelement
+    @refelement ||= root.collect_elements[@ref]
   end
 
   def targetnamespace
@@ -62,6 +88,8 @@ class Element < Info
       @name = XSD::QName.new(targetnamespace, value.source)
     when TypeAttrName
       @type = value
+    when RefAttrName
+      @ref = value
     when MaxOccursAttrName
       if parent.is_a?(All)
 	if value.source != '1'
