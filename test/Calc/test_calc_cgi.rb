@@ -7,7 +7,7 @@ class TestCalcCGI < Test::Unit::TestCase
     @server = WEBrick::HTTPServer.new(
       :BindAddress => "0.0.0.0",
       :Port => 8808,
-      :DocumentRoot => File.dirname(__FILE__),
+      :DocumentRoot => File.dirname(File.expand_path(__FILE__)),
       :CGIPathEnv => ENV['PATH']
     )
     @t = Thread.new {
