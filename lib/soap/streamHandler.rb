@@ -28,7 +28,7 @@ class StreamHandler
   public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.13 2001/07/27 11:23:25 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.14 2001/07/27 13:21:50 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   attr_reader :endPoint
@@ -103,7 +103,7 @@ public
     dumpDev << "Wire dump:\n\n" if dumpDev
     begin
       res = @client.request( 'POST', @server, soapString, extra )
-    rescue TimeoutError
+    rescue
       @client.reset( @server )
       raise PostUnavailableError.new( "Timeout." )
     end
