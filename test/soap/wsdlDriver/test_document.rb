@@ -3,22 +3,19 @@ require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
 
 
-module WSDL
-module SimpleType
+module SOAP
 
 
-class TestSimpleType < Test::Unit::TestCase
+class TestDocument < Test::Unit::TestCase
+  Namespace = 'urn:example.com:document'
+
   class Server < ::SOAP::RPC::StandaloneServer
     def on_init
-      add_document_method(self, 'urn:example.com:simpletype', 'ruby',
-        XSD::QName.new('urn:example.com:simpletype', 'ruby'),
-        XSD::QName.new('http://www.w3.org/2001/XMLSchema', 'string'))
+      add_document_method(self, 'urn:example.com:document#submit', 'submit', XSD::QName.new(Namespace, 'ruby'), XSD::QName.new(Namespace, 'ruby'))
     end
   
-    def ruby(ruby)
-      version = ruby["version"]
-      date = ruby["date"]
-      "#{version} (#{date})"
+    def submit(ruby)
+      ruby
     end
   end
 
@@ -32,16 +29,15 @@ class TestSimpleType < Test::Unit::TestCase
   end
 
   def setup_server
-    @server = Server.new('Test', "urn:example.com:simpletype", '0.0.0.0', Port)
+    @server = Server.new('Test', Namespace, '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
     @server_thread = start_server_thread(@server)
   end
 
   def setup_client
-    wsdl = File.join(DIR, 'simpletype.wsdl')
+    wsdl = File.join(DIR, 'document.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.generate_explicit_type = false
     @client.wiredump_dev = STDOUT if $DEBUG
   end
 
@@ -68,12 +64,12 @@ class TestSimpleType < Test::Unit::TestCase
     t
   end
 
-  def test_ping
-    ret = @client.ping({:version => "1.9", :date => "2004-01-01T00:00:00Z"})
-    assert_equal("1.9 (2004-01-01T00:00:00Z)", ret)
+  def test_document
+    msg = {'version' => "1.9", 'date' => "2004-01-01T00:00:00Z"}
+    reply_msg = @client.submit(msg)
+    assert_equal(msg, reply_msg)
   end
 end
 
 
-end
 end

@@ -18,9 +18,9 @@ methodDefGroupB(drvGroupB)
 =end
 
 require 'soap/wsdlDriver'
-drvBase = SOAP::WSDLDriverFactory.new($wsdlBase).create_driver
+drvBase = SOAP::WSDLDriverFactory.new($wsdlBase).create_rpc_driver
 drvBase.endpoint_url = $serverBase
-drvGroupB = SOAP::WSDLDriverFactory.new($wsdlGroupB).create_driver
+drvGroupB = SOAP::WSDLDriverFactory.new($wsdlGroupB).create_rpc_driver
 drvGroupB.endpoint_url = $serverGroupB
 
 doTestBase(drvBase)

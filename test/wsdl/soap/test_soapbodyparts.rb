@@ -46,7 +46,7 @@ class TestSOAPBodyParts < Test::Unit::TestCase
 
   def setup_client
     wsdl = File.join(DIR, 'soapbodyparts.wsdl')
-    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_driver
+    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDERR if $DEBUG
   end

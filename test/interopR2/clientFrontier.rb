@@ -17,7 +17,7 @@ methodDefBase(drvBase)
 =end
 
 require 'soap/wsdlDriver'
-drvBase = SOAP::WSDLDriverFactory.new($wsdlBase).create_driver
+drvBase = SOAP::WSDLDriverFactory.new($wsdlBase).create_rpc_driver
 drvBase.endpoint_url = $serverBase
 
 doTestBase(drvBase)

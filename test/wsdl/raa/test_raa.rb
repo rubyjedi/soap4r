@@ -30,7 +30,7 @@ class TestRAA < Test::Unit::TestCase
 
   def setup_client
     wsdl = File.join(DIR, 'raa.wsdl')
-    @raa = ::SOAP::WSDLDriverFactory.new(wsdl).create_driver
+    @raa = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @raa.endpoint_url = "http://localhost:#{Port}/"
   end
 
