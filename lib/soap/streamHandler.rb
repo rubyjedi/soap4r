@@ -28,7 +28,7 @@ class StreamHandler
   public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.14 2001/07/27 13:21:50 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.15 2001/08/24 03:25:39 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   attr_reader :endPoint
@@ -71,11 +71,12 @@ public
     begin
       sendPOST( soapString, soapAction, charset )
     rescue PostUnavailableError
-      begin
-        sendMPOST( soapString, soapAction, charset )
-      rescue MPostUnavailableError
-        raise HTTPStreamError.new( $! )
-      end
+#      begin
+#        sendMPOST( soapString, soapAction, charset )
+#      rescue MPostUnavailableError
+#        raise HTTPStreamError.new( $! )
+#      end
+      raise
     end
   end
 
