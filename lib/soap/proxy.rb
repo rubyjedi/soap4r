@@ -43,6 +43,7 @@ class SOAPProxy
     @soapAction = soapAction
     @method = {}
     @allowUnqualifiedElement = false
+    initParser
   end
 
   class Request
@@ -100,15 +101,12 @@ class SOAPProxy
     # Send request.
     receiveString = sendRequest( req, sendString )
 
-    # SOAP tree parsing.
-    opt = {}
-    opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
-    opt[ 'defaultEncodingStyleHandler' ] = EncodingStyleHandler.getHandler( EncodingNamespace )
-
     # Is this right?
     receiveString.gsub!( "\r\n", "\n" )
     receiveString.gsub!( "\r", "\n" )
-    header, body = unmarshal( receiveString, opt )
+
+    # SOAP tree parsing.
+    header, body = unmarshal( receiveString )
 
     return header, body
   end
@@ -145,6 +143,15 @@ class SOAPProxy
     if ( body.fault )
       raise SOAP::FaultError.new( body.fault )
     end
+  end
+
+private
+
+  def initParser
+    opt = {}
+    opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
+    opt[ 'defaultEncodingStyleHandler' ] = EncodingStyleHandler.getHandler( EncodingNamespace )
+    Processor.setDefaultParser( opt )
   end
 end
 

@@ -47,6 +47,7 @@ class RPCRouter
     @method = {}
     @allowUnqualifiedElement = false
     @mappingRegistry = nil
+    initParser
   end
 
   # Method definition.
@@ -63,14 +64,12 @@ class RPCRouter
   # Routing...
   def route( soapString )
     begin
-      opt = {}
-      opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
 
       # Is this right?
       soapString = soapString.dup
       soapString.gsub!( "\r\n", "\n" )
       soapString.gsub!( "\r", "\n" )
-      header, body = unmarshal( soapString, opt )
+      header, body = unmarshal( soapString )
 
       # So far, header is omitted...
 
@@ -108,6 +107,12 @@ class RPCRouter
   end
 
 private
+
+  def initParser
+    opt = {}
+    opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
+    Processor.setDefaultParser( opt )
+  end
 
   # Create new response.
   def createResponse( namespace, methodName, *values )

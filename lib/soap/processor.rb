@@ -50,25 +50,58 @@ module Processor
     NQXML::Writer.new( marshalledString ).writeDocument( doc )
     marshalledString
   end
+  module_function :marshal
 
   ###
   ## SOAP unmarshalling
   #
+  DefaultParser = [ nil ]
   def unmarshal( stream, opt = {} )
-    # parser = SOAPNQXMLStreamingParser.new( opt )
-    parser = SOAPNQXMLLightWeightParser.new( opt )
-    require 'soap/encodingStyleHandlerDynamic'
+    if opt.empty?
+      parser = DefaultParser[ 0 ] || loadParser( opt )
+    else
+      parser = loadParser( opt )
+    end
 
     envelopeNode = parser.parse( stream )
 
     return envelopeNode.header, envelopeNode.body
   end
+  module_function :unmarshal
+
+  def setDefaultParser( opt )
+    DefaultParser[ 0 ] = loadParser( opt )
+  end
+  module_function :setDefaultParser
+
+  def clearDefaultParser
+    DefaultParser[ 0 ] = nil
+  end
+  module_function :clearDefaultParser
 
   private
+
+  def self.loadParser( opt )
+    # parser = SOAPNQXMLStreamingParser.new( opt )
+    # parser = SOAPNQXMLLightWeightParser.new( opt )
+    if SOAP.const_defined?( "SOAPXMLParser" )
+      parser = SOAPXMLParser.new( opt )
+    elsif SOAP.const_defined?( "SOAPSAXDriver" )
+      parser = SOAPSAXDriver.new( opt )
+    else
+      parser = SOAPNQXMLLightWeightParser.new( opt )
+    end
+    require 'soap/encodingStyleHandlerDynamic'
+    parser
+  end
 
   SOAPNamespaceTag = 'SOAP-ENV'
   XSDNamespaceTag = 'xsd'
   XSINamespaceTag = 'xsi'
+
+  def xmlDecl
+    '<?xml version="1.0" ?>'
+  end
 end
 
 
