@@ -140,6 +140,10 @@ class Driver < RPC::Driver
     add_method_with_soapaction_as(name, name_as, soapaction, *params)
   end
 
+  def setLogDev(logdev)
+    self.logdev = logdev
+  end
+
 private
 
   def log(sev)
@@ -156,7 +160,7 @@ module RPC
 
     def add(obj_class, soap_class, factory, info = nil)
       if (info.size > 1)
-	raise RuntimeError.new("Parameter signature changed.")
+	raise RuntimeError.new("Parameter signature changed.  [namespace, name] should be { :type => XSD::QName.new(namespace, name) } from 1.5.0.")
       end
       @map.add(obj_class, soap_class, factory, { :type => info[0] })
     end
