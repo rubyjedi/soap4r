@@ -84,6 +84,18 @@ class Driver
     call( msg_id.id2name, *params )
   end
 
+
+  ###
+  ## Encoding style inteface.
+  #
+  def setDefaultEncodingStyle( encodingStyle )
+    @proxy.defaultEncodingStyle = encodingStyle
+  end
+
+  def getDefaultEncodingStyle
+    @proxy.defaultEncodingStyle
+  end
+
 private
 
   def addMethodInterface( name )

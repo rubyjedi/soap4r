@@ -32,7 +32,7 @@ class SOAPProxy
   public
 
   attr_reader :namespace
-  attr_accessor :soapAction, :allowUnqualifiedElement
+  attr_accessor :soapAction, :allowUnqualifiedElement, :defaultEncodingStyle
 
   def initialize( namespace, streamHandler, soapAction = nil )
     @namespace = namespace
@@ -40,6 +40,7 @@ class SOAPProxy
     @soapAction = soapAction
     @method = {}
     @allowUnqualifiedElement = false
+    @defaultEncodingStyle = nil
     initParser
   end
 
@@ -53,7 +54,7 @@ class SOAPProxy
     attr_reader :name
 
     def initialize( modelMethod, values )
-      @method = SOAPMethodRequest.new( modelMethod.namespace, modelMethod.name, modelMethod.paramDef, modelMethod.soapAction )
+      @method = modelMethod.dup
       @namespace = @method.namespace
       @name = @method.name
 
@@ -81,6 +82,7 @@ class SOAPProxy
   def createRequest( methodName, *values )
     if ( @method.has_key?( methodName ))
       method = @method[ methodName ]
+      method.encodingStyle = @defaultEncodingStyle if @defaultEncodingStyle
     else
       raise SOAP::RPCUtils::MethodDefinitionError.new( 'Method: ' << methodName << ' not defined.' )
     end
@@ -117,7 +119,9 @@ class SOAPProxy
     receiveString.gsub!( "\r", "\n" )
 
     # SOAP tree parsing.
-    header, body = unmarshal( receiveString )
+    opt = {}
+    opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle if @defaultEncodingStyle
+    header, body = unmarshal( receiveString, opt )
 
     if receiveCharset
       # For NQXML Parser.
@@ -144,7 +148,9 @@ class SOAPProxy
     body = SOAPBody.new( request.method )
 
     # Marshal.
-    marshalledString = marshal( header, body )
+    opt = {}
+    opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle if @defaultEncodingStyle
+    marshalledString = marshal( header, body, opt )
 
     return marshalledString
   end

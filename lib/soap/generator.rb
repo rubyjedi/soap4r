@@ -39,9 +39,9 @@ public
   def initialize( opt = {} )
     @option = opt
     @refTarget = nil
-    if @option.has_key?( 'defaultEncodingStyleHandler' )
-      EncodingStyleHandler.defaultHandler = @option[ 'defaultEncodingStyleHandler' ]
-    end
+    EncodingStyleHandler.defaultHandler =
+      EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
+      EncodingNamespace )
   end
 
   def generate( obj )

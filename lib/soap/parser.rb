@@ -73,11 +73,8 @@ public
     @lastNode = nil
     @option = opt
     EncodingStyleHandler.defaultHandler =
-      if @option.has_key?( 'defaultEncodingStyleHandler' )
-	@option[ 'defaultEncodingStyleHandler' ]
-      else
-	EncodingStyleHandler.getHandler( SOAPEncodingStyleHandlerLiteral::LiteralEncodingNamespace )
-      end
+      EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
+      EncodingNamespace )
   end
 
   def parse( stringOrReadable )
