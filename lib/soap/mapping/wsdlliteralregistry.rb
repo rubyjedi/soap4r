@@ -185,7 +185,7 @@ private
     elements = {}
     as_array = []
     obj.class.class_eval('@@schema_element').each do |name, class_name|
-      if class_name.sub!(/\[\]$/, '')
+      if class_name and class_name.sub!(/\[\]$/, '')
         as_array << class_name
       end
       elements[name] = class_name
@@ -194,7 +194,7 @@ private
     node.each do |name, value|
       class_name = elements[name]
       klass = Mapping.class_from_name(class_name)
-      if klass.ancestors.include?(::SOAP::SOAPBasetype)
+      if klass and klass.ancestors.include?(::SOAP::SOAPBasetype)
         child = klass.new(value.data).data
       else
         child = soapele2obj(value, klass)
