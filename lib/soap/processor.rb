@@ -23,6 +23,9 @@ require 'soap/parser'
 require 'soap/charset'
 require 'soap/nqxmlDocument'
 
+require 'soap/encodingStyleHandlerDynamic'
+require 'soap/encodingStyleHandlerLiteral'
+
 require 'nqxml/writer'
 
 
@@ -91,7 +94,6 @@ module Processor
       # parser = SOAPNQXMLStreamingParser.new( opt )
       parser = SOAPNQXMLLightWeightParser.new( opt )
     end
-    require 'soap/encodingStyleHandlerDynamic'
     parser
   end
   module_function :loadParser

@@ -19,7 +19,6 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/rpcUtils'
-require 'soap/encodingStyleHandlerDynamic'
 
 
 module SOAP
@@ -168,7 +167,8 @@ private
   def initParser
     opt = {}
     opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
-    opt[ 'defaultEncodingStyleHandler' ] = EncodingStyleHandler.getHandler( EncodingNamespace )
+    opt[ 'defaultEncodingStyleHandler' ] = EncodingStyleHandler.getHandler(
+      SOAPEncodingStyleHandlerLiteral::LiteralEncodingNamespace )
     Processor.setDefaultParser( opt )
   end
 end
