@@ -21,6 +21,7 @@ require 'soap/element'
 require 'soap/XMLSchemaDatatypes'
 require 'soap/parser'
 require 'soap/charset'
+require 'soap/nqxmlDocument'
 
 require 'nqxml/writer'
 
@@ -80,20 +81,22 @@ module Processor
   end
   module_function :clearDefaultParser
 
-  private
-
-  def self.loadParser( opt )
+  def loadParser( opt = {} )
     if SOAP.const_defined?( "SOAPXMLParser" )
       parser = SOAPXMLParser.new( opt )
     elsif SOAP.const_defined?( "SOAPSAXDriver" )
       parser = SOAPSAXDriver.new( opt )
     else
+      require 'soap/nqxmlparser'
       # parser = SOAPNQXMLStreamingParser.new( opt )
       parser = SOAPNQXMLLightWeightParser.new( opt )
     end
     require 'soap/encodingStyleHandlerDynamic'
     parser
   end
+  module_function :loadParser
+
+private
 
   SOAPNamespaceTag = 'SOAP-ENV'
   XSDNamespaceTag = 'xsd'
@@ -106,6 +109,7 @@ module Processor
       "<?xml version=\"1.0\" encoding=\"#{ Charset.getXMLInstanceEncodingLabel }\" ?>\n"
     end
   end
+  module_function :xmlDecl
 end
 
 
