@@ -40,6 +40,7 @@ module MappedException; end
 
 RubyTypeName = XSD::QName.new(RubyTypeInstanceNamespace, 'rubyType')
 RubyExtendName = XSD::QName.new(RubyTypeInstanceNamespace, 'extends')
+RubyIVarName = XSD::QName.new(RubyTypeInstanceNamespace, 'ivars')
 
 
 # Inner class to pass an exception.
@@ -340,7 +341,8 @@ class Registry
   def soap2obj(klass, node)
     obj = _soap2obj(klass, node)
     if @allow_original_mapping
-      setextend2obj(obj, node.extraattr[RubyExtendName])
+      addextend2obj(obj, node.extraattr[RubyExtendName])
+      addiv2obj(obj, node.extraattr[RubyIVarName])
     end
     obj
   end
@@ -415,7 +417,16 @@ private
     raise MappingError.new("Cannot map #{ node.type.name } to Ruby object.")
   end
 
-  def setextend2obj(obj, attr)
+  def addiv2obj(obj, attr)
+    return unless attr
+    vars = {}
+    attr.__getobj__.each do |name, value|
+      vars[name] = Mapping._soap2obj(value, self)
+    end
+    Mapping.set_instance_vars(obj, vars)
+  end
+
+  def addextend2obj(obj, attr)
     return unless attr
     attr.split(/ /).reverse_each do |mstr|
       obj.extend(Mapping.class_from_name(mstr))
