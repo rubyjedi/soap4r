@@ -28,15 +28,19 @@ class Operation < Info
   class OperationInfo
     attr_reader :style
     attr_reader :op_name
-    attr_reader :msg_name
-    attr_reader :param_names
+    attr_reader :optype_name
+    attr_reader :headerparts
+    attr_reader :bodyparts
+    attr_reader :faultpart
     attr_reader :soapaction
     
-    def initialize(style, name_info, soapaction = nil)
+    def initialize(style, op_name, optype_name, headerparts, bodyparts, faultpart, soapaction)
       @style = style
-      @op_name = name_info.op_name
-      @msg_name = name_info.msg_name
-      @param_names = name_info.param_names
+      @op_name = op_name
+      @optype_name = optype_name
+      @headerparts = headerparts
+      @bodyparts = bodyparts
+      @faultpart = faultpart
       @soapaction = soapaction
     end
   end
@@ -71,27 +75,20 @@ class Operation < Info
 
   def input_info
     name_info = parent.find_operation.input_info
-    soapbody = parent.input.soapbody
-    if soapbody.encodingstyle and
-	soapbody.encodingstyle != ::SOAP::EncodingNamespace
-      raise NotImplementedError.new(
-	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
-    end
-    name_info.op_name.namespace = soapbody.namespace if soapbody.namespace
-    soapaction = parent.soapoperation.soapaction
-    OperationInfo.new(retrieve_style, name_info, soapaction)
+    param_info(name_info, parent.input)
   end
 
   def output_info
     name_info = parent.find_operation.output_info
-    soapbody = output.soapbody
-    if soapbody.encodingstyle and
-	soapbody.encodingstyle != ::SOAP::EncodingNamespace
-      raise NotImplementedError.new(
-	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
+    param_info(name_info, parent.output)
+  end
+
+  def operation_style
+    return @style if @style
+    if parent_binding.soapbinding
+      return parent_binding.soapbinding.style
     end
-    name_info.op_name.namespace = soapbody.namespace if soapbody.namespace
-    OperationInfo.new(retrieve_style, name_info)
+    nil
   end
 
 private
@@ -100,12 +97,32 @@ private
     parent.parent
   end
 
-  def retrieve_style
-    return @style if @style
-    if parent_binding.soapbinding
-      return parent_binding.soapbinding.style
+  def param_info(name_info, param)
+    op_name = name_info.op_name
+    optype_name = name_info.optype_name
+
+    soapheader = param.soapheader
+    headerparts = soapheader.collect { |item| item.find_part }
+
+    soapbody = param.soapbody
+    if soapbody.encodingstyle and
+	soapbody.encodingstyle != ::SOAP::EncodingNamespace
+      raise NotImplementedError.new(
+	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
     end
-    nil
+    if soapbody.namespace
+      op_name = op_name.dup
+      op_name.namespace = soapbody.namespace
+    end
+    if soapbody.parts
+      raise NotImplementedError.new("soap:body parts")
+    else
+      bodyparts = name_info.parts
+    end
+
+    faultpart = nil
+    soapaction = parent.soapoperation.soapaction
+    OperationInfo.new(operation_style, op_name, optype_name, headerparts, bodyparts, faultpart, soapaction)
   end
 end
 
