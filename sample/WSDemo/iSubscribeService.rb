@@ -1,6 +1,6 @@
-module ISeminarService
-  MSGInterfaceNS = 'urn:sarion.com:WSDemo_v1:SeminarSubscriptionServiceMessage'
-  RPCInterfaceNS = 'urn:sarion.com:WSDemo_v1:SeminarSubscriptionServiceRPC'
+module ISubscribeService
+  MSGInterfaceNS = 'urn:org.tempuri:subscribeMessage'
+  RPCInterfaceNS = 'urn:org.tempuri:subscribeRPC'
 
   MSGInterface = [
     [ 'subscribe', 'address' ],

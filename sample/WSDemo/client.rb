@@ -1,10 +1,7 @@
 #!/usr/bin/env ruby
 
-$KCODE = 'SJIS'
-
 require 'soap/driver'
-require 'soap/XMLSchemaDatatypes1999'
-require 'iSeminarService'
+require 'iSubscribeService'
 require 'sha1'
 require 'base64'
 include SOAP
@@ -18,16 +15,16 @@ msgRouterURL = 'http://localhost:8081/soap/servlet/messagerouter'
 rpcRouterURL = 'http://localhost:8081/soap/servlet/rpcrouter'
 $privateKey = "private!"
 $userId = 'SOAP4R user #1'
-$subscribeAddress = 'http://localhost:8083/'
+$subscribeAddress = 'nahi@keynauts.com'
 
 # Create drivers for RPC interface and Messaging interface.
-msgDrv = Driver.new( nil, $0, ISeminarService::MSGInterfaceNS,
+msgDrv = Driver.new( nil, $0, ISubscribeService::MSGInterfaceNS,
   msgRouterURL, proxy )
-ISeminarService::addMSGMethod( msgDrv )
+ISubscribeService::addMSGMethod( msgDrv )
 
-rpcDrv = Driver.new( nil, $0, ISeminarService::RPCInterfaceNS,
+rpcDrv = Driver.new( nil, $0, ISubscribeService::RPCInterfaceNS,
   rpcRouterURL, proxy )
-ISeminarService::addRPCMethod( rpcDrv )
+ISubscribeService::addRPCMethod( rpcDrv )
 
 def calcDigest( userId, token )
   encode64( SHA1.new( $privateKey + userId + token ).digest )
@@ -35,7 +32,7 @@ end
 
 
 ###
-## サーバーに接続してチケットを取得するメソッド
+## Connect RPC server to get a ticket.
 #
 def getTicket( drv )
   token = drv.challenge( $userId )
@@ -43,7 +40,7 @@ def getTicket( drv )
   encodedResponse = calcDigest( $userId, token )
 
   # Preparing header items in SOAP Header.
-  authEle = SOAPElement.new( ISeminarService::MSGInterfaceNS, 'auth' )
+  authEle = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'auth' )
   authEle.add( SOAPElement.new( nil, 'token', token ))
   authEle.add( SOAPElement.new( nil, 'response', encodedResponse ))
   return authEle
@@ -51,15 +48,15 @@ end
 
 
 ###
-## 登録
+## Send submit request to message server.
 #
 # Preparing headerItems in SOAP Header.
 headerItems = [ getTicket(rpcDrv) ]
 
 # Preparing message in SOAP Body.
-msg = SOAPElement.new( ISeminarService::MSGInterfaceNS, 'subscribe' )
+msg = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'subscribe' )
 address = SOAPElement.new( nil, 'address', $subscribeAddress )
-address.attr[ 'type' ] = 'soap'
+address.attr[ 'type' ] = 'mailto'
 msg.add( address )
 
 # Invoke.
@@ -67,13 +64,13 @@ msgDrv.invoke( headerItems, msg )
 
 
 ###
-## 一覧
+## Send a request to message server and get list.
 #
 # Preparing headerItems in SOAP Header.
 headerItems = [ getTicket(rpcDrv) ]
 
 # Preparing message in SOAP Body.
-msg = SOAPElement.new( ISeminarService::MSGInterfaceNS, 'list' )
+msg = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'list' )
 
 # Invoke.
 data = msgDrv.invoke( headerItems, msg )
@@ -82,15 +79,15 @@ puts data.receiveString
 
 sleep 10;
 ###
-## 削除
+## Send delete request to message server.
 #
 # Preparing headerItems in SOAP Header.
 headerItems = [ getTicket(rpcDrv) ]
 
 # Preparing message in SOAP Body.
-msg = SOAPElement.new( ISeminarService::MSGInterfaceNS, 'bye' )
+msg = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'bye' )
 address = SOAPElement.new( nil, 'address', $subscribeAddress )
-address.attr[ 'type' ] = 'soap'
+address.attr[ 'type' ] = 'mailto'
 msg.add( address )
 
 # Invoke.
@@ -98,13 +95,13 @@ msgDrv.invoke( headerItems, msg )
 
 
 ###
-## 一覧
+## Send listing request again.
 #
 # Preparing headerItems in SOAP Header.
 headerItems = [ getTicket(rpcDrv) ]
 
 # Preparing message in SOAP Body.
-msg = SOAPElement.new( ISeminarService::MSGInterfaceNS, 'list' )
+msg = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'list' )
 
 # Invoke.
 data = msgDrv.invoke( headerItems, msg )
