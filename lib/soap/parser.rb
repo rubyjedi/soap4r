@@ -31,8 +31,8 @@ class Parser
   include SOAP
 
   class ParseError < Error; end
-  class FormatDecodeError < Error; end
-  class UnexpectedElementError < Error; end
+  class FormatDecodeError < ParseError; end
+  class UnexpectedElementError < ParseError; end
 
 private
 
