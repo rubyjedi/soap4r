@@ -35,6 +35,7 @@ class MethodDefCreator
     binding = @definitions.porttype_binding(porttype)
     operations.each do |operation|
       op_bind = binding.operations[operation.name]
+      next unless op_bind.soapoperation # not a SOAP operation binding
       result << ",\n" unless result.empty?
       result << dump_method(operation, op_bind).chomp
     end
@@ -47,15 +48,13 @@ private
     name = safemethodname(operation.name.name)
     name_as = operation.name.name
     stylestr = binding.soapoperation.operation_style.id2name
+    soapaction = binding.soapoperation.soapaction
+    namespace = binding.input.soapbody.namespace
     if binding.soapoperation.operation_style == :rpc
-      soapaction = binding.soapoperation.soapaction
-      namespace = binding.input.soapbody.namespace
-      params = collect_rpcparameter(operation)
+      paramstr = param2str(collect_rpcparameter(operation))
     else
-      soapaction = namespace = nil
-      params = collect_documentparameter(operation)
+      paramstr = param2str(collect_documentparameter(operation))
     end
-    paramstr = param2str(params)
     if paramstr.empty?
       paramstr = '[]'
     else
