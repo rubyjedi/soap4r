@@ -12,6 +12,7 @@ class TestAuthHeader < Test::Unit::TestCase
   Port = 17171
   PortName = 'http://tempuri.org/authHeaderPort'
   MyHeaderName = XSD::QName.new("http://tempuri.org/authHeader", "auth")
+  DummyHeaderName = XSD::QName.new("http://tempuri.org/authHeader", "dummy")
 
   class AuthHeaderPortServer < SOAP::RPC::StandaloneServer
     class AuthHeaderService
@@ -110,11 +111,12 @@ class TestAuthHeader < Test::Unit::TestCase
   end
 
   class ClientAuthHeaderHandler < SOAP::Header::SimpleHandler
-    def initialize(userid, passwd)
+    def initialize(userid, passwd, mustunderstand)
       super(MyHeaderName)
       @sessionid = nil
       @userid = userid
       @passwd = passwd
+      @mustunderstand = mustunderstand
     end
 
     def on_simple_outbound
@@ -131,6 +133,20 @@ class TestAuthHeader < Test::Unit::TestCase
 
     def sessionid
       @sessionid
+    end
+  end
+
+  class DummyHeaderHandler < SOAP::Header::SimpleHandler
+    def initialize(mustunderstand)
+      super(DummyHeaderName)
+      @mustunderstand = mustunderstand
+    end
+
+    def on_simple_outbound
+      { XSD::QName.new("foo", "bar") => nil }
+    end
+
+    def on_simple_inbound(my_header, mustunderstand)
     end
   end
 
@@ -177,9 +193,38 @@ class TestAuthHeader < Test::Unit::TestCase
     @client.reset_stream
   end
 
-  def test_success
-    h = ClientAuthHeaderHandler.new('NaHi', 'passwd')
+  def test_success_no_mu
+    h = ClientAuthHeaderHandler.new('NaHi', 'passwd', false)
     @client.headerhandler << h
+    do_transaction_check(h)
+  end
+
+  def test_success_mu
+    h = ClientAuthHeaderHandler.new('NaHi', 'passwd', true)
+    @client.headerhandler << h
+    do_transaction_check(h)
+  end
+
+  def test_no_mu
+    h = ClientAuthHeaderHandler.new('NaHi', 'passwd', true)
+    @client.headerhandler << h
+    @client.headerhandler << DummyHeaderHandler.new(false)
+    do_transaction_check(h)
+  end
+
+  def test_mu
+    h = ClientAuthHeaderHandler.new('NaHi', 'passwd', true)
+    @client.headerhandler << h
+    @client.headerhandler << (h2 = DummyHeaderHandler.new(true))
+    assert_raise(SOAP::UnhandledMustUnderstandHeaderError) do
+      assert_equal("deposit 150 OK", @client.deposit(150))
+    end
+    @client.headerhandler.delete(h2)
+    @client.headerhandler << (h2 = DummyHeaderHandler.new(false))
+    do_transaction_check(h)
+  end
+
+  def do_transaction_check(h)
     assert_equal("deposit 150 OK", @client.deposit(150))
     serversess = AuthHeaderPortServer::ServerAuthHeaderHandler.sessions[h.sessionid]
     assert_equal("NaHi", serversess[0])
@@ -189,7 +234,7 @@ class TestAuthHeader < Test::Unit::TestCase
   end
 
   def test_authfailure
-    h = ClientAuthHeaderHandler.new('NaHi', 'pa')
+    h = ClientAuthHeaderHandler.new('NaHi', 'pa', false)
     @client.headerhandler << h
     assert_raises(RuntimeError) do
       @client.deposit(150)
