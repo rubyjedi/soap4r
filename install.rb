@@ -36,6 +36,10 @@ end
 
 begin
   installDir( join( SRCPATH, 'lib', 'soap' ), join( DSTPATH, 'soap' ))
+  installDir( join( SRCPATH, 'lib', 'soap', 'rpc' ),
+    join( DSTPATH, 'soap', 'rpc' ))
+  installDir( join( SRCPATH, 'lib', 'soap', 'mapping' ),
+    join( DSTPATH, 'soap', 'mapping' ))
   installDir( join( SRCPATH, 'lib', 'wsdl' ), join( DSTPATH, 'wsdl' ))
   installDir( join( SRCPATH, 'lib', 'wsdl', 'xmlSchema' ),
     join( DSTPATH, 'wsdl', 'xmlSchema' ))
