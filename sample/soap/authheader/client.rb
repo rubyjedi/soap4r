@@ -11,6 +11,7 @@ class ClientAuthHeaderHandler < SOAP::Header::SimpleHandler
     @sessionid = nil
     @userid = userid
     @passwd = passwd
+    @mustunderstand = true
   end
 
   def on_simple_outbound
