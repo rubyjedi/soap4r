@@ -500,6 +500,9 @@ private
     unless Regexp.last_match
       raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
     end
+    if $1 == '0000'
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+    end
 
     year = $1.to_i
     mon = $2.to_i
@@ -562,7 +565,7 @@ private
     sec_frac = $4
     zoneStr = $5
 
-    @data = DateTime.civil( 0, 1, 1, hour, min, sec, ofFromTZ( zoneStr ))
+    @data = DateTime.civil( 1, 1, 1, hour, min, sec, ofFromTZ( zoneStr ))
 
     if sec_frac
       @data += sec_frac.to_i.to_r / ( 10 ** sec_frac.size ) / SecInDay
@@ -686,7 +689,7 @@ private
     mday = $2.to_i
     zoneStr = $3
 
-    @data = DateTime.civil( 0, mon, mday, 0, 0, 0, ofFromTZ( zoneStr ))
+    @data = DateTime.civil( 1, mon, mday, 0, 0, 0, ofFromTZ( zoneStr ))
   end
 
   def _to_s
@@ -713,7 +716,7 @@ private
     mday = $1.to_i
     zoneStr = $2
 
-    @data = DateTime.civil( 0, 1, mday, 0, 0, 0, ofFromTZ( zoneStr ))
+    @data = DateTime.civil( 1, 1, mday, 0, 0, 0, ofFromTZ( zoneStr ))
   end
 
   def _to_s
@@ -740,7 +743,7 @@ private
     mon = $1.to_i
     zoneStr = $2
 
-    @data = DateTime.civil( 0, mon, 1, 0, 0, 0, ofFromTZ( zoneStr ))
+    @data = DateTime.civil( 1, mon, 1, 0, 0, 0, ofFromTZ( zoneStr ))
   end
 
   def _to_s
