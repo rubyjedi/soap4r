@@ -11,6 +11,7 @@ raa.mapping_registry = RAA::MappingRegistry
 RAA::Methods.each do |name, *params|
   raa.add_method(name, params)
 end
+raa.wiredump_dev = STDOUT
 
 p raa.getAllListings().sort
 

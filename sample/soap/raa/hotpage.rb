@@ -1,6 +1,6 @@
 # hotpage.rb
 #
-# $Id: hotpage.rb,v 1.1 2002/02/10 17:39:06 nahi Exp $
+# $Id: hotpage.rb,v 1.1 2003/09/24 13:52:06 nahi Exp $
 # Copyright (c) 2002 NAKAMURA, Hiroshi
 #
 # hotpage.rb is copyrighted free software by NAKAMURA, Hiroshi

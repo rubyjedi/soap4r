@@ -39,3 +39,5 @@ p newnode.first.first.__id__
 p newnode.second.first.__id__
 p newnode.first.first.first.first.__id__
 p newnode.second.first.second.first.__id__
+
+File.unlink("digraph_marshalled_string.soap")
