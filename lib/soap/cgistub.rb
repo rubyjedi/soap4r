@@ -17,7 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'soap/server'
+require 'soap/rpc/server'
 require 'soap/streamHandler'
 require 'http-access2/http'
 
@@ -32,7 +32,7 @@ module SOAP
 # DESCRIPTION
 #   To be written...
 #
-class CGIStub < Server
+class CGIStub < RPC::Server
   include SOAP
 
   # There is a client which does not accept the media-type which is defined in
