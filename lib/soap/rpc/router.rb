@@ -113,7 +113,7 @@ class Router
   end
 
   def route(conn_data)
-    header = body = default_encodingstyle = nil
+    soap_response = default_encodingstyle = nil
     begin
       env = unmarshal(conn_data)
       if env.nil?
@@ -127,40 +127,32 @@ class Router
       receive_headers(headerhandler, env.header)
       soap_response =
         op.call(env.body, @mapping_registry, @literal_mapping_registry)
-      body = SOAPBody.new(soap_response)
-      header = call_headers(headerhandler)
       if op.response_use == :document
         default_encodingstyle =
           ::SOAP::EncodingStyle::ASPDotNetHandler::Namespace
       end
     rescue Exception
       soap_response = fault($!)
-      body = SOAPBody.new(soap_response)
-      conn_data.is_fault = true
     end
-    marshal(conn_data, header, body, default_encodingstyle)
+    conn_data.is_fault = true if soap_response.is_a?(SOAPFault)
+    header = call_headers(headerhandler)
+    body = SOAPBody.new(soap_response)
+    env = SOAPEnvelope.new(header, body)
+    marshal(conn_data, env, default_encodingstyle)
   end
 
   # Create fault response string.
-  def create_fault_response(e, charset = nil)
+  def create_fault_response(e)
     header = SOAPHeader.new
     body = SOAPBody.new(fault(e))
     env = SOAPEnvelope.new(header, body)
     opt = {}
     opt[:external_content] = nil
-    opt[:charset] = charset
     response_string = Processor.marshal(env, opt)
     conn_data = StreamHandler::ConnectionData.new(response_string)
     conn_data.is_fault = true
     if ext = opt[:external_content]
-      mime = MIMEMessage.new
-      ext.each do |k, v|
-      	mime.add_attachment(v.data)
-      end
-      mime.add_part(conn_data.send_string + "\r\n")
-      mime.close
-      conn_data.send_string = mime.content_str
-      conn_data.send_contenttype = mime.headers['content-type'].str
+      mimeize(conn_data, ext)
     end
     conn_data
   end
@@ -239,23 +231,27 @@ private
     env
   end
 
-  def marshal(conn_data, header, body, default_encodingstyle = nil)
+  def marshal(conn_data, env, default_encodingstyle = nil)
     opt = {}
     opt[:external_content] = nil
     opt[:default_encodingstyle] = default_encodingstyle
-    env = SOAPEnvelope.new(header, body)
     response_string = Processor.marshal(env, opt)
     conn_data.send_string = response_string
     if ext = opt[:external_content]
-      mime = MIMEMessage.new
-      ext.each do |k, v|
-      	mime.add_attachment(v.data)
-      end
-      mime.add_part(conn_data.send_string + "\r\n")
-      mime.close
-      conn_data.send_string = mime.content_str
-      conn_data.send_contenttype = mime.headers['content-type'].str
+      mimeize(conn_data, ext)
     end
+    conn_data
+  end
+
+  def mimeize(conn_data, ext)
+    mime = MIMEMessage.new
+    ext.each do |k, v|
+      mime.add_attachment(v.data)
+    end
+    mime.add_part(conn_data.send_string + "\r\n")
+    mime.close
+    conn_data.send_string = mime.content_str
+    conn_data.send_contenttype = mime.headers['content-type'].str
     conn_data
   end
 
@@ -321,6 +317,7 @@ private
       else
         raise "unknown request style: #{@request_type}"
       end
+      return result if result.is_a?(SOAPFault)
       case @response_style
       when :rpc
         response_rpc(result, mapping_registry)
