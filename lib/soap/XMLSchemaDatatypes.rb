@@ -75,15 +75,31 @@ class XSDBase < NSDBase
 
 public
 
-  attr_accessor :data
+  attr_reader :data
+  attr_accessor :isNil
 
   def initialize( typeName )
     super( typeName, Namespace )
     @data = nil
+    @isNil = true
+  end
+
+  def set( newData )
+    if newData.nil?
+      @isNil = true
+      @data = nil
+    else
+      @isNil = false
+      _set( newData )
+    end
   end
 
   def to_s()
-    @data.to_s
+    if @isNil
+      ""
+    else
+      _to_s
+    end
   end
 
   def method_missing( msg_id, *params )
@@ -98,6 +114,15 @@ protected
   def trim( data )
     data.sub( /\A\s*(\S*)\s*\z/, '\1' )
   end
+
+private
+  def _set( newData )
+    raise NotImplementedError.new
+  end
+
+  def _to_s
+    @data.to_s
+  end
 end
 
 
@@ -105,25 +130,27 @@ end
 ## Basic datatypes.
 #
 class XSDNil < XSDBase
+public
   def initialize( initNil = nil )
     super( XSD::NilLiteral )
     set( initNil )
   end
 
-  def set( newNil )
+private
+  def _set( newNil )
     @data = newNil
   end
 end
 
 class XSDBoolean < XSDBase
 public
-
-  def initialize( initBoolean = false )
+  def initialize( initBoolean = nil )
     super( BooleanLiteral )
     set( initBoolean )
   end
 
-  def set( newBoolean )
+private
+  def _set( newBoolean )
     if newBoolean.is_a?( String )
       str = trim( newBoolean )
       if str == 'true' || str == '1'
@@ -140,16 +167,16 @@ public
 end
 
 class XSDString < XSDBase
-  CharsRegexp = Regexp.new( '\A[\x9\xa\xd\x20-\xd7ff\xe000-\xfffd\x10000\x10ffff]*\z', nil, 'NONE' )
-
 public
-
-  def initialize( initString = '' )
+  def initialize( initString = nil )
     super( StringLiteral )
     set( initString ) if initString
   end
 
-  def set( newString )
+private
+  CharsRegexp = Regexp.new( '\A[\x9\xa\xd\x20-\xd7ff\xe000-\xfffd\x10000\x10ffff]*\z', nil, 'NONE' )
+
+  def _set( newString )
     unless CharsRegexp =~ newString
       raise ValueSpaceError.new( "String: #{ newString } is not acceptable." )
     end
@@ -159,7 +186,6 @@ end
 
 class XSDDecimal < XSDBase
 public
-
   def initialize( initDecimal = nil )
     super( DecimalLiteral )
     @sign = ''
@@ -168,7 +194,13 @@ public
     set( initDecimal ) if initDecimal
   end
 
-  def set( newDecimal )
+  # override original definition.
+  def data
+    _to_s
+  end
+
+private
+  def _set( newDecimal )
     /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( newDecimal.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "Decimal: #{ newDecimal } is not acceptable." )
@@ -187,12 +219,8 @@ public
     @sign = '' if @sign == '+'
   end
 
-  def data
-    self.to_s
-  end
-
   # 0.0 -> 0; right?
-  def to_s
+  def _to_s
     str = @number.dup
     if @point.nonzero?
       str[ @number.size + @point, 0 ] = '.'
@@ -203,13 +231,13 @@ end
 
 class XSDFloat < XSDBase
 public
-
   def initialize( initFloat = nil )
     super( FloatLiteral )
     set( initFloat ) if initFloat
   end
 
-  def set( newFloat )
+private
+  def _set( newFloat )
     # "NaN".to_f => 0 in some environment.  libc?
     @data = if newFloat.is_a?( Float )
 	narrowTo32bit( newFloat )
@@ -228,7 +256,7 @@ public
   end
 
   # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
-  def to_s
+  def _to_s
     if @data.nan?
       'NaN'
     elsif @data.infinite? == 1
@@ -240,7 +268,6 @@ public
     end
   end
 
-private
   # Convert to single-precision 32-bit floating point value.
   def narrowTo32bit( f )
     if f.nan? || f.infinite?
@@ -254,13 +281,13 @@ end
 # Ruby's Float is double-precision 64-bit floating point value.
 class XSDDouble < XSDBase
 public
-
   def initialize( initDouble = nil )
     super( DoubleLiteral )
     set( initDouble ) if initDouble
   end
 
-  def set( newDouble )
+private
+  def _set( newDouble )
     # "NaN".to_f => 0 in some environment.  libc?
     @data = if newDouble.is_a?( Float )
 	newDouble
@@ -279,7 +306,7 @@ public
   end
 
   # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
-  def to_s
+  def _to_s
     if @data.nan?
       'NaN'
     elsif @data.infinite? == 1
@@ -297,61 +324,9 @@ require 'date3'
 require 'parsedate3'
 class XSDDateTime < XSDBase
 public
-
   def initialize( initDateTime = nil )
     super( DateTimeLiteral )
     set( initDateTime ) if initDateTime
-  end
-
-  def set( t )
-    if ( t.is_a?( Date ))
-      @data = t.dup
-    elsif ( t.is_a?( Time ))
-      gt = t.dup.gmtime
-      @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
-    else
-      /^([+-]?\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
-      unless Regexp.last_match
-	raise ValueSpaceError.new( "DateTime: #{ t } is not acceptable." )
-      end
-
-      year = $1.to_i
-      mon = $2.to_i
-      mday = $3.to_i
-      hour = $4.to_i
-      min = $5.to_i
-      sec = $6.to_i
-      usec = $7
-      zoneStr = $8
-
-      @data = Date.new3( year, mon, mday, hour, min, sec )
-
-      if usec
-	diffDay = usec.to_i.to_r / ( 10 ** usec.size ) / SecInDay
-	jd = @data.jd
-	fr1 = @data.fr1 + diffDay
-	@data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
-      end
-
-      @data = XSDDateTime.tzAdjust( @data, zoneStr )
-    end
-  end
-
-  def to_s
-    d = @data
-    s = format('%.4d-%02d-%02dT%02d:%02d:%02d',
-      d.year, d.mon, d.mday, d.hour, d.min, d.sec )
-    if d.fr2.nonzero?
-      fr = d.fr2 * SecInDay
-      shiftSize = fr.denominator.to_s.size
-      fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
-      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
-    end
-
-    # @data is adjusted to UTC.
-    s << 'Z'
-
-    s
   end
 
   # Debt: collect syntax.
@@ -388,17 +363,68 @@ public
 
 private
   SecInDay = 86400	# 24 * 60 * 60
+
+  def _set( t )
+    if ( t.is_a?( Date ))
+      @data = t.dup
+    elsif ( t.is_a?( Time ))
+      gt = t.dup.gmtime
+      @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
+    else
+      /^([+-]?\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+      unless Regexp.last_match
+	raise ValueSpaceError.new( "DateTime: #{ t } is not acceptable." )
+      end
+
+      year = $1.to_i
+      mon = $2.to_i
+      mday = $3.to_i
+      hour = $4.to_i
+      min = $5.to_i
+      sec = $6.to_i
+      usec = $7
+      zoneStr = $8
+
+      @data = Date.new3( year, mon, mday, hour, min, sec )
+
+      if usec
+	diffDay = usec.to_i.to_r / ( 10 ** usec.size ) / SecInDay
+	jd = @data.jd
+	fr1 = @data.fr1 + diffDay
+	@data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
+      end
+
+      @data = XSDDateTime.tzAdjust( @data, zoneStr )
+    end
+  end
+
+  def _to_s
+    d = @data
+    s = format('%.4d-%02d-%02dT%02d:%02d:%02d',
+      d.year, d.mon, d.mday, d.hour, d.min, d.sec )
+    if d.fr2.nonzero?
+      fr = d.fr2 * SecInDay
+      shiftSize = fr.denominator.to_s.size
+      fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
+      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
+    end
+
+    # @data is adjusted to UTC.
+    s << 'Z'
+
+    s
+  end
 end
 
 class XSDTime < XSDBase
 public
-
   def initialize( initTime = nil )
     super( TimeLiteral )
     set( initTime ) if initTime
   end
 
-  def set( t )
+private
+  def _set( t )
     if ( t.is_a?( Time ))
       @data = t
     else
@@ -436,7 +462,7 @@ public
     end
   end
 
-  def to_s
+  def _to_s
     s = if @data.usec.zero?
       format( '%02d:%02d:%02d', @data.hour, @data.min, @data.sec )
     else
@@ -452,13 +478,13 @@ end
 
 class XSDDate < XSDBase
 public
-
   def initialize( initDate = nil )
     super( DateLiteral )
     set( initDate ) if initDate
   end
 
-  def set( t )
+private
+  def _set( t )
     if ( t.is_a?( Date ))
       @data = t.dup
     elsif ( t.is_a?( Time ))
@@ -480,7 +506,7 @@ public
     end
   end
 
-  def to_s
+  def _to_s
     s = @data.to_s.sub( /T.*$/, '' )
 
     # @data is adjusted to UTC.
@@ -492,48 +518,48 @@ end
 
 class XSDHexBinary < XSDBase
 public
-
   # String in Ruby could be a binary.
   def initialize( initString = '' )
     super( HexBinaryLiteral )
     set( initString ) if initString
   end
 
-  def set( newString )
-    @data = newString.unpack( "H*" )[ 0 ]
-    @data.tr!( 'a-f', 'A-F' )
-  end
-
   def setEncoded( newHexString )
-    @data = String.new( newHexString )
-    @data = trim( @data )
+    @data = trim( String.new( newHexString ))
+    @isNil = false
   end
 
   def toString
     [ @data ].pack( "H*" )
   end
+
+private
+  def _set( newString )
+    @data = newString.unpack( "H*" )[ 0 ]
+    @data.tr!( 'a-f', 'A-F' )
+  end
 end
 
 class XSDBase64Binary < XSDBase
 public
-
   # String in Ruby could be a binary.
   def initialize( initString = '' )
     super( Base64BinaryLiteral )
     set( initString ) if initString
   end
 
-  def set( newString )
-    @data = setEncoded( [ newString ].pack( "m" ))
-  end
-
   def setEncoded( newBase64String )
-    @data = String.new( newBase64String )
-    @data = trim( @data )
+    @data = trim( String.new( newBase64String ))
+    @isNil = false
   end
 
   def toString
     @data.unpack( "m" )[ 0 ]
+  end
+
+private
+  def _set( newString )
+    @data = trim( [ newString ].pack( "m" ))
   end
 end
 
@@ -543,36 +569,37 @@ end
 #
 class XSDInteger < XSDDecimal
 public
-
   def initialize( initInteger = nil )
     super()
     @typeName = IntegerLiteral
     set( initInteger ) if initInteger
   end
 
-  def set( newInteger )
-    @data = Integer(newInteger)
-  end
-
+  # re-override to recover original definition.
   def data
     @data
   end
 
-  def to_s()
+private
+  def _set( newInteger )
+    @data = Integer(newInteger)
+  end
+
+  def _to_s()
     @data.to_s
   end
 end
 
 class XSDLong < XSDInteger
 public
-
   def initialize( initLong = nil )
     super()
     @typeName = LongLiteral
     set( initLong ) if initLong
   end
 
-  def set( newLong )
+private
+  def _set( newLong )
     @data = Integer(newLong)
 
     unless validate( @data )
@@ -580,7 +607,6 @@ public
     end
   end
 
-private
   MaxInclusive = +9223372036854775807
   MinInclusive = -9223372036854775808
 
@@ -591,14 +617,14 @@ end
 
 class XSDInt < XSDLong
 public
-
   def initialize( initInt = nil )
     super()
     @typeName = IntLiteral
     set( initInt ) if initInt
   end
 
-  def set( newInt )
+private
+  def _set( newInt )
     @data = Integer(newInt)
 
     unless validate( @data )
@@ -606,7 +632,6 @@ public
     end
   end
 
-private
   MaxInclusive = +2147483647
   MinInclusive = -2147483648
 
