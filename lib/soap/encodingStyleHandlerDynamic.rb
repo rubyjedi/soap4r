@@ -327,12 +327,12 @@ private
       else
 	attrs[ns.name(XSD::AttrTypeName)] = ns.name(data.type)
       end
-      data.extraattr.each do |key, value|
-        SOAPGenerator.assign_ns(attrs, ns, key.namespace)
-        attrs[ns.name(key)] = value       # ns.name(value) ?
-      end
     end
 
+    data.extraattr.each do |key, value|
+      SOAPGenerator.assign_ns(attrs, ns, key.namespace)
+      attrs[ns.name(key)] = value       # ns.name(value) ?
+    end
     if data.id
       attrs['id'] = data.id
     end
