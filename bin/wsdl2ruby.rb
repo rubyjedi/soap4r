@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'getoptlong'
+require 'soap/qname'
 require 'wsdl/parser'
-require 'wsdl/name'
 require 'wsdl/soap/classDefCreator'
 require 'wsdl/soap/servantSkeltonCreator'
 require 'wsdl/soap/driverCreator'
@@ -19,13 +19,14 @@ private
   OptSet = [
     ['--wsdl','-w', GetoptLong::REQUIRED_ARGUMENT],
     ['--type','-t', GetoptLong::REQUIRED_ARGUMENT],
-    ['--classDef','-f', GetoptLong::NO_ARGUMENT],
+    ['--classDef','-e', GetoptLong::NO_ARGUMENT],
     ['--clientSkelton','-c', GetoptLong::OPTIONAL_ARGUMENT],
     ['--servantSkelton','-s', GetoptLong::OPTIONAL_ARGUMENT],
     ['--cgiStub','-g', GetoptLong::OPTIONAL_ARGUMENT],
     ['--webrickStub','-b', GetoptLong::OPTIONAL_ARGUMENT],
     ['--standaloneServerStub','-a', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--driver','-d', GetoptLong::OPTIONAL_ARGUMENT]
+    ['--driver','-d', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--force','-f', GetoptLong::NO_ARGUMENT],
   ]
 
   def initialize
@@ -83,6 +84,7 @@ Options:
   --webrickStub [serviceName]
   --standaloneServerStub [serviceName]
   --driver [portTypeName]
+  --force
 
 Terminology:
   Client <-> Driver <-(SOAP)-> Stub <-> Servant
@@ -117,6 +119,8 @@ __EOU__
    	when "--classDef", "--clientSkelton", "--servantSkelton", "--cgiStub",
     	    "--webrickStub", "--standaloneServerStub", "--driver"
   	  opt[ name.sub( /^--/, '' ) ] = arg.empty? ? nil : arg
+	when "--force"
+	  opt[ 'force' ] = true
    	else
   	  raise ArgumentError.new( "Unknown type #{ arg }" )
    	end
@@ -212,9 +216,17 @@ __EOU__
 
   def checkFile( filename )
     if FileTest.exist?( filename )
-      log( SEV_WARN ) {
-	"File '#{ filename }' exists.  #{ $0 } did not override it." }
-      false
+      if @opt.has_key?( 'force' )
+	log( SEV_WARN ) {
+	  "File '#{ filename }' exists but overrides it."
+	}
+	true
+      else
+	log( SEV_WARN ) {
+	  "File '#{ filename }' exists.  #{ $0 } did not override it."
+	}
+	false
+      end
     else
       log( SEV_INFO ) { "Creates file '#{ filename }'." }
       true
