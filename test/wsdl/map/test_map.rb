@@ -45,7 +45,7 @@ class TestMap < Test::Unit::TestCase
 
   def setup_client
     wsdl = File.join(DIR, 'map.wsdl')
-    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_driver
+    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.generate_explicit_type = true
   end
