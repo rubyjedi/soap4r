@@ -25,8 +25,8 @@ module WSDL
 
 
 class Attribute < Info
-  attr_reader :ref
-  attr_reader :arrayType
+  attr_accessor :ref
+  attr_accessor :arrayType
 
   def initialize
     super

@@ -28,7 +28,7 @@ class ComplexContent < Info
   DeriveTypeRestriction = Object.new
   DeriveTypeExtension = Object.new
 
-  attr_reader :base
+  attr_accessor :base
   attr_reader :deriveType
   attr_reader :content
 
