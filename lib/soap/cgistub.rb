@@ -214,10 +214,10 @@ class CGIStub < Application
 
     def sync
       if @header and @body
-	@header.bodyType = body.type
-	@header.bodyCharset = body.charset
-	@header.bodySize = body.size
-	@header.bodyDate = body.date
+	@header.bodyType = @body.type
+	@header.bodyCharset = @body.charset
+	@header.bodySize = @body.size
+	@header.bodyDate = @body.date
       end
     end
   end
