@@ -26,6 +26,9 @@ module SOAP
 class StreamHandler
   Client = begin
       require 'http-access2'
+      if HTTPAccess2::VERSION < "2.0"
+	raise LoadError.new("http-access/2.0 or later is required.")
+      end
       HTTPAccess2::Client
     rescue LoadError
       STDERR.puts "Loading http-access2 failed.  Net/http is used." if $DEBUG
@@ -34,7 +37,7 @@ class StreamHandler
     end
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.33 2003/08/23 03:16:50 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.34 2003/09/10 14:08:40 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
