@@ -57,7 +57,7 @@ class WSDLDriverFactory
       raise RuntimeError.new( "Port #{ portName } not found in WSDL." )
     end
     drv = WSDLDriver.new( @wsdl, port, @logDev, opt )
-    drv.wsdlMappingRegistry = RPC::WSDLMappingRegistry.new( @wsdl,
+    drv.wsdlMappingRegistry = Mapping::WSDLMappingRegistry.new( @wsdl,
       port.getPortType )
     drv
   end
