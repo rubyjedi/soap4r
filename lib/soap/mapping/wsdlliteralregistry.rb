@@ -96,21 +96,37 @@ private
 
   def unknownobj2ele(obj, name)
     if obj.class.class_variables.include?("@@schema_element")
-      o = SOAPElement.new(name)
-      elements = obj.class.class_eval("@@schema_element")
-      elements.each do |elename|
-        o.add(obj2ele(Mapping.find_attribute(obj, elename), elename))
-      end
-      attributes = obj.class.class_eval("@@schema_attribute")
-      attributes.each do |attrname|
-        attr = Mapping.find_attribute(obj, "attr_" + attrname)
-        o.extraattr[attrname] = attr
-      end
-      o
-    else
+      ele = SOAPElement.new(name)
+      add_elements(obj, ele)
+      add_attributes(obj, ele)
+      ele
+    else        # expected to be a basetype.
       o = Mapping.obj2soap(obj)
       o.elename = name
       o
+    end
+  end
+
+  def add_elements(obj, ele)
+    elements = obj.class.class_eval("@@schema_element")
+    elements.each do |elename|
+      child = Mapping.find_attribute(obj, elename)
+      name = ::XSD::QName.new(nil, elename)
+      if child.is_a?(::Array)
+        child.each do |item|
+          ele.add(obj2ele(item, name))
+        end
+      else
+        ele.add(obj2ele(child, name))
+      end
+    end
+  end
+  
+  def add_attributes(obj, ele)
+    attributes = obj.class.class_eval("@@schema_attribute")
+    attributes.each do |attrname|
+      attr = Mapping.find_attribute(obj, "attr_" + attrname)
+      ele.extraattr[attrname] = attr
     end
   end
 
