@@ -20,6 +20,7 @@ Ave, Cambridge, MA 02139, USA.
 require 'wsdl/info'
 require 'wsdl/soap/mappingRegistryCreator'
 require 'wsdl/soap/methodDefCreator'
+require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
@@ -27,6 +28,8 @@ module WSDL
 
 
 class StubCreator
+  include MethodDefCreatorSupport
+
   attr_reader :definitions
 
   def initialize( definitions )
@@ -68,18 +71,6 @@ class #{ createClassName( portType.name ) }
   ]
 end
 __EOD__
-  end
-
-  def capitalize( target )
-    target.gsub( /^([a-z])/ ) { $1.tr!( '[a-z]', '[A-Z]' ) }
-  end
-
-  def createClassName( name )
-    result = capitalize( name )
-    unless /^[A-Z]/ =~ result
-      result = "C_#{ name }"
-    end
-    result
   end
 
   def dumpOperation( operation )
