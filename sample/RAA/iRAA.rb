@@ -18,6 +18,9 @@ Methods = [
 class Category
   include SOAP::Marshallable
 
+  @@typeName = 'Category'
+  @@typeNamespace = InterfaceNS
+
   attr_reader :major, :minor
 
   def initialize( major, minor = nil )
@@ -44,17 +47,21 @@ MappingRegistry.set(
   ::RAA::Category,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ InterfaceNS, "Category" ]
+  [ XSD::QName.new( InterfaceNS, "Category" ) ]
 )
 
 class Product
   include SOAP::Marshallable
 
-  attr_reader :name
-  attr_accessor :version, :status, :homepage, :download, :license, :description
+  @@typeName = 'Product'
+  @@typeNamespace = InterfaceNS
 
-  def initialize( name, version = nil, status = nil, homepage = nil, download = nil, license = nil, description = nil )
+  attr_reader :id, :name
+  attr_accessor :short_description, :version, :status, :homepage, :download, :license, :description
+
+  def initialize( name, short_description = nil, version = nil, status = nil, homepage = nil, download = nil, license = nil, description = nil )
     @name = name
+    @short_description = short_description
     @version = version
     @status = status
     @homepage = homepage
@@ -68,11 +75,14 @@ MappingRegistry.set(
   ::RAA::Product,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ InterfaceNS, "Product" ]
+  [ XSD::QName.new( InterfaceNS, "Product" ) ]
 )
 
 class Owner
   include SOAP::Marshallable
+
+  @@typeName = 'Owner'
+  @@typeNamespace = InterfaceNS
 
   attr_reader :id
   attr_accessor :email, :name
@@ -88,11 +98,14 @@ MappingRegistry.set(
   ::RAA::Owner,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ InterfaceNS, "Owner" ]
+  [ XSD::QName.new( InterfaceNS, "Owner" ) ]
 )
 
 class Info
   include SOAP::Marshallable
+
+  @@typeName = 'Info'
+  @@typeNamespace = InterfaceNS
 
   attr_accessor :category, :product, :owner, :update
 
@@ -116,7 +129,7 @@ MappingRegistry.set(
   ::RAA::Info,
   ::SOAP::SOAPStruct,
   ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-  [ InterfaceNS, "Info" ]
+  [ XSD::QName.new( InterfaceNS, "Info" ) ]
 )
 
 class StringArray < Array; end
@@ -124,7 +137,7 @@ MappingRegistry.set(
   ::RAA::StringArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ XSD::Namespace, XSD::StringLiteral ]
+  [ XSD::XSDString::Type ]
 )
 
 class InfoArray < Array; end
@@ -132,7 +145,7 @@ MappingRegistry.set(
   ::RAA::InfoArray,
   ::SOAP::SOAPArray,
   ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-  [ InterfaceNS, 'Info' ]
+  [ XSD::QName.new( InterfaceNS, 'Info' ) ]
 )
 
 
