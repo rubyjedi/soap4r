@@ -85,14 +85,16 @@ private
       if mappingRegistry
 	self.mappingRegistry = mappingRegistry
       end
+      @namespace = namespace
       @klass = klass
     end
 
     def route( soapString )
       obj = @klass.new
       namespace = self.actor
-      SOAPlet.addServantToRouter( self, namespace, obj )
-      super
+      router = SOAP::RPCRouter.new( @namespace )
+      SOAPlet.addServantToRouter( router, namespace, obj )
+      router.route( soapString )
     end
   end
 
@@ -112,7 +114,7 @@ private
 
   def lookupRouter( namespace )
     if namespace
-      @routerMap[ namespace ]
+      @routerMap[ namespace ] || @appScopeRouter
     else
       @appScopeRouter
     end
