@@ -48,6 +48,9 @@ class SOAPParser
 
   private
     def setFactory( factory )
+      if $DEBUG
+	puts "Set #{ factory } as XML processor."
+      end
       @@parserFactory = factory
     end
   end
