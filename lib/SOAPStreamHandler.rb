@@ -76,9 +76,10 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
       end
       raise
     end
-
     action = methodNamespace.dup << '#' << methodName
     requestHeaders = { 'SOAPAction' => action, 'Content-Type' => MediaType }
+
+    puts soapString if $DEBUG
 
     begin
       timeout( CallTimeout ) do
@@ -115,6 +116,7 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
       raise HTTPStreamError.new( 'Read timeout' )
     end
 
+    puts receiveString if $DEBUG
     receiveString
   end
 
