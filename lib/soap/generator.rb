@@ -74,6 +74,11 @@ public
   end
 
   def encodeData( buf, ns, qualified, obj, parent )
+    if obj.is_a?( SOAPEnvelopeElement )
+      encodeElement( buf, ns, qualified, obj, parent )
+      return
+    end
+
     if @refTarget && !obj.precedents.empty?
       @refTarget.add( obj.elementName.name, obj )
       ref = SOAPReference.new
@@ -91,33 +96,46 @@ public
     obj.encodingStyle = encodingStyle
 
     handler = getHandler( encodingStyle || @defaultEncodingStyle )
+    unless handler
+      raise FormatEncodeError.new(
+        "Unknown encodingStyle: #{ encodingStyle }." )
+    end
 
-    attrs = {}
-    elementName = nil
+    if !obj.elementName.name
+      raise FormatEncodeError.new( "Element name not defined: #{ obj }." )
+    end
 
-    if obj.is_a?( SOAPEnvelopeElement )
-      if obj.is_a?( SOAPBody )
-        @refTarget = obj
-      end
+    handler.encodeData( buf, ns, qualified, obj, parent ) do | child, childQualified |
+      encodeData( buf, ns.clone, childQualified, child, obj )
+    end
+    handler.encodeDataEnd( buf, ns, qualified, obj, parent )
+  end
+
+  def encodeElement( buf, ns, qualified, obj, parent )
+    if obj.is_a?( SOAPBody )
+      @refTarget = obj
       obj.encode( buf, ns ) do | child, childQualified |
-	encodeData( buf, ns.clone, childQualified, child, obj )
+        encodeData( buf, ns.clone, childQualified, child, obj )
       end
-      if obj.is_a?( SOAPBody )
-        @refTarget = nil
-      end
+      @refTarget = nil
     else
-      unless handler
-       	raise FormatEncodeError.new( "Unknown encodingStyle: #{ encodingStyle }." )
+      attrs = {}
+      if obj.is_a?( SOAPEnvelope ) and @generateEncodeType
+        SOAPGenerator.assignNamespace( attrs, ns, XSD::Namespace,
+          XSDNamespaceTag )
+        SOAPGenerator.assignNamespace( attrs, ns, XSD::InstanceNamespace,
+          XSINamespaceTag )
       end
+      obj.encode( buf, ns, attrs ) do | child, childQualified |
+        encodeData( buf, ns.clone, childQualified, child, obj )
+      end
+    end
+  end
 
-      if !obj.elementName.name
-       	raise FormatEncodeError.new( "Element name not defined: #{ obj }." )
-      end
-
-      handler.encodeData( buf, ns, qualified, obj, parent ) do | child, childQualified |
-	encodeData( buf, ns.clone, childQualified, child, obj )
-      end
-      handler.encodeDataEnd( buf, ns, qualified, obj, parent )
+  def self.assignNamespace( attrs, ns, namespace, tag = nil )
+    unless ns.assigned?( namespace )
+      tag = ns.assign( namespace, tag )
+      attrs[ 'xmlns:' << tag ] = namespace
     end
   end
 
@@ -139,14 +157,17 @@ public
     buf << "\n" if pretty
   end
 
+  EncodeMap = {
+    '&' => '&amp;',
+    '<' => '&lt;',
+    '>' => '&gt;',
+    '"' => '&quot;',
+    '\'' => '&apos;',
+    "\r" => '&#xd;'
+  }
+  EncodeCharRegexp = Regexp.new( "[#{EncodeMap.keys.join}]" )
   def self.encodeStr( str )
-    copy = str.gsub( '&', '&amp;' )
-    copy.gsub!( '<', '&lt;' )
-    copy.gsub!( '>', '&gt;' )
-    copy.gsub!( '"', '&quot;' )
-    copy.gsub!( '\'', '&apos;' )
-    copy.gsub!( "\r", '&#xd;' )
-    copy
+    str.gsub(EncodeCharRegexp) { |c| EncodeMap[c] }
   end
 
 private
