@@ -5,6 +5,58 @@ TypeNS = 'http://soapinterop.org/xsd'
 module SOAPBuildersInterop
 
 
+MethodsBase = [
+  ['echoVoid'],
+  ['echoString',
+    ['in', 'inputString'], ['retval', 'return']],
+  ['echoStringArray',
+    ['in', 'inputStringArray'], ['retval', 'return']],
+  ['echoInteger',
+    ['in', 'inputInteger'], ['retval', 'return']],
+  ['echoIntegerArray',
+    ['in', 'inputIntegerArray'], ['retval', 'return']],
+  ['echoFloat',
+    ['in', 'inputFloat'], ['retval', 'return']],
+  ['echoFloatArray',
+    ['in', 'inputFloatArray'], ['retval', 'return']],
+  ['echoStruct',
+    ['in', 'inputStruct'], ['retval', 'return']],
+  ['echoStructArray',
+    ['in', 'inputStructArray'], ['retval', 'return']],
+  ['echoDate',
+    ['in', 'inputDate'], ['retval', 'return']],
+  ['echoBase64',
+    ['in', 'inputBase64'], ['retval', 'return']],
+]
+
+MethodsGroupB = [
+  ['echoStructAsSimpleTypes',
+    ['in', 'inputStruct'], ['retval', 'outputString'], ['out', 'outputInteger'], ['out', 'outputFloat']],
+  ['echoSimpleTypesAsStruct',
+    ['in', 'inputString'], ['in', 'inputInteger'], ['in', 'inputFloat'], ['retval', 'return']],
+  ['echo2DStringArray',
+    ['in', 'input2DStringArray'], ['retval', 'return']],
+  ['echoNestedStruct',
+    ['in', 'inputStruct'], ['retval', 'return']],
+  ['echoNestedArray',
+    ['in', 'inputStruct'], ['retval', 'return']],
+  ['echoBoolean',
+    ['in', 'inputBoolean'], ['retval', 'return']],
+  ['echoDecimal',
+    ['in', 'inputDecimal'], ['retval', 'return']],
+
+  ['echoDouble',
+    ['in', 'inputDouble'], ['retval', 'return']],
+  ['echoXSDDateTime',
+    ['in', 'inputXSDDateTime'], ['retval', 'return']],
+  ['echoXSDDate',
+    ['in', 'inputXSDDate'], ['retval', 'return']],
+  ['echoXSDTime',
+    ['in', 'inputXSDTime'], ['retval', 'return']],
+]
+
+
+
 class SOAPStruct
   include SOAP::Marshallable
 
