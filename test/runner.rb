@@ -2,7 +2,9 @@ require 'test/unit/testsuite'
 require 'test/unit/testcase'
 require 'optparse'
 
-rcsid = %w$Id: runner.rb,v 1.1 2003/09/09 16:24:29 nahi Exp $
+$KCODE = 'UTF8'
+
+rcsid = %w$Id: runner.rb,v 1.2 2003/09/13 10:39:42 nahi Exp $
 Version = rcsid[2].scan(/\d+/).collect!(&method(:Integer)).freeze
 Release = rcsid[3].freeze
 
