@@ -52,9 +52,15 @@ class EncodingStyleHandler
   end
 
   attr_reader :charset
+  attr_accessor :generateEncodeType
+  def decodeComplexTypes=( complexTypes )
+    @decodeComplexTypes = complexTypes
+  end
 
   def initialize( charset )
     @charset = charset
+    @generateEncodeType = true
+    @decodeComplexTypes = nil
   end
 
   ###
