@@ -37,7 +37,6 @@ class WSDLDriverFactory
   def initialize( wsdl, logDev = nil )
     @logDev = logDev
     @wsdl = parse( wsdl )
-    @wsdlMappingRegistry = RPCUtils::WSDLMappingRegistry.new( @wsdl )
   end
 
   def createDriver( serviceName = nil, portName = nil, opt = {} )
@@ -58,7 +57,8 @@ class WSDLDriverFactory
       raise RuntimeError.new( "Port #{ portName } not found in WSDL." )
     end
     drv = WSDLDriver.new( @wsdl, port, @logDev, opt )
-    drv.wsdlMappingRegistry = @wsdlMappingRegistry
+    drv.wsdlMappingRegistry = RPCUtils::WSDLMappingRegistry.new( @wsdl,
+      port.getPortType )
     drv
   end
 
@@ -113,7 +113,7 @@ public
     @httpProxy = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
 
     @opt = opt.dup
-    @opt[ :decodeComplexTypes ] = @wsdl.getComplexTypesWithMessages
+    @decodeComplexTypes = @wsdl.getComplexTypesWithMessages( port.getPortType )
     @defaultEncodingStyle = EncodingNamespace
     @allowUnqualifiedElement = true
     @generateEncodeType = false
@@ -185,7 +185,7 @@ private
     begin
       header, body = invoke( nil, method, soapAction )
       unless body
-   	raise EmptyResponseError.new( "Empty response." )
+	raise EmptyResponseError.new( "Empty response." )
       end
     rescue SOAP::FaultError => e
       RPCUtils.fault2exception( e )
@@ -236,6 +236,11 @@ private
   end
 
   def addMethodInterface( name, paramNames )
+    i = 0
+    paramNames = paramNames.collect { | paramName |
+      i += 1
+      "arg#{ i }"
+    }
     callParamStr = if paramNames.empty?
 	""
       else
@@ -246,10 +251,20 @@ private
 	call( "#{ name }"#{ callParamStr } )
       end
     EOS
+=begin
+    To use default argument value.
+
+    self.instance_eval <<-EOS
+      def #{ name }( *arg )
+	call( "#{ name }", *arg )
+      end
+    EOS
+=end
   end
 
   def getOpt
     opt = @opt.dup
+    opt[ :decodeComplexTypes ] = @decodeComplexTypes
     opt[ :defaultEncodingStyle ] = @defaultEncodingStyle
     opt[ :allowUnqualifiedElement ] = @allowUnqualifiedElement
     opt[ :generateEncodeType ] = @generateEncodeType
