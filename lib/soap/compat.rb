@@ -79,6 +79,7 @@ end
 class StandaloneServer < RPC::StandaloneServer
   def initialize(*arg)
     super
+    @router = @soaplet.app_scope_router
     methodDef if respond_to?('methodDef')
   end
 
@@ -160,6 +161,11 @@ module RPC
       @map.add(obj_class, soap_class, factory, { :type => info[0] })
     end
     alias :set :add
+  end
+
+  class Router
+    alias mappingRegistry mapping_registry
+    alias mappingRegistry= mapping_registry=
   end
 end
 
