@@ -22,4 +22,4 @@ drvBase.endpoint_url = $serverBase
 
 doTestBase(drvBase)
 #doTestGroupB(drvGroupB)
-#submitTestResult
+submitTestResult
