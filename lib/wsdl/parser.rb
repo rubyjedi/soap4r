@@ -40,6 +40,7 @@ class Parser
   class UnknownAttributeError < FormatDecodeError; end
   class UnexpectedElementError < FormatDecodeError; end
   class ElementConstraintError < FormatDecodeError; end
+  class AttributeConstraintError < FormatDecodeError; end
 
 private
 
