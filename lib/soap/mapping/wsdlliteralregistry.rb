@@ -9,6 +9,7 @@
 require 'soap/baseData'
 require 'soap/mapping/mapping'
 require 'soap/mapping/typeMap'
+require 'xsd/codegen/gensupport'
 
 
 module SOAP
@@ -179,7 +180,8 @@ private
 
   def soapele2obj(node, obj_class = nil)
     unless obj_class
-      typestr = Mapping.elename2name(node.elename.name)
+      typestr = ::XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
+      #typestr = Mapping.elename2name(node.elename.name)
       obj_class = Mapping.class_from_name(typestr)
     end
     if obj_class and obj_class.class_variables.include?('@@schema_element')
@@ -253,7 +255,8 @@ private
     elements = {}
     as_array = []
     klass.class_eval('@@schema_element').each do |name, class_name|
-      if class_name and class_name.sub!(/\[\]$/, '')
+      if /\[\]$/ =~ class_name
+        class_name = class_name.sub(/\[\]$/, '')
         as_array << class_name
       end
       elements[name] = class_name
