@@ -71,10 +71,10 @@ private
       when :TYPE_ARRAY
         dump_arraydef(type)
       when :TYPE_SIMPLE
-        STDERR.puts("not implemented: ToDo")
+        dump_simpleclassdef(type)
       else
         raise RuntimeError.new(
-          "Unknown kind of complexContent: #{type.compoundtype}")
+          "unknown kind of complexContent: #{type.compoundtype}")
       end
     }.join("\n")
   end
@@ -90,6 +90,14 @@ private
     simpletype.restriction.enumeration.each do |value|
       c.def_const(safeconstname(value), value.dump)
     end
+    c.dump
+  end
+
+  def dump_simpleclassdef(type_or_element)
+    qname = type_or_element.name
+    base = create_class_name(type_or_element.simplecontent.base)
+    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), base)
+    c.comment = "#{qname.namespace}"
     c.dump
   end
 
@@ -109,12 +117,13 @@ private
     init_lines = ''
     params = []
     type_or_element.each_element do |element|
-      next unless element.name
       name = element.name.name
       if element.type == XSD::AnyTypeName
         type = nil
       elsif basetype = basetype_class(element.type)
         type = basetype.name
+      elsif element.type.nil?
+        raise RuntimeError.new("ToDo: local complexType not supported for now")
       else
         type = create_class_name(element.type)
       end
@@ -124,7 +133,7 @@ private
       init_lines << "@#{varname} = #{varname}\n"
       if element.map_as_array?
         params << "#{varname} = []"
-        type << '[]'
+        type << '[]' if type
       else
         params << "#{varname} = nil"
       end

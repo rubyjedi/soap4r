@@ -21,7 +21,7 @@ module ClassDefCreatorSupport
 
   def create_class_name(qname)
     if klass = basetype_mapped_class(qname)
-      ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass.name)
+      ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass)
     else
       safeconstname(qname.name)
     end
