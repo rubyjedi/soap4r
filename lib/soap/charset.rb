@@ -102,11 +102,11 @@ public
   end
 
   def Charset.getCharsetLabel( encoding )
-    CharsetMap[ encoding ]
+    CharsetMap[ encoding.upcase ]
   end
 
   def Charset.getCharsetStr( label )
-    CharsetMap.index( label ) || 'NONE'
+    CharsetMap.index( label.downcase ) || 'NONE'
   end
 
   # Original regexps: http://www.din.or.jp/~ohzaki/perl.htm

@@ -44,7 +44,7 @@ class SOAPXMLParser < SOAPParser
       when XML::Parser::CDATA
 	characters( data )
       when XML::Parser::XML_DECL
-	encoding = Charset.getCharsetStr( data[ 1 ] )
+	encoding = Charset.getCharsetStr( data[ 1 ] || 'us-ascii' )
 	if encoding != Charset.getXMLInstanceEncoding
 	  raise FormatDecodeError.new( "Illegal encoding: #{ encoding }/#{ Charset.getXMLInstanceEncoding }" )
 	end

@@ -125,7 +125,7 @@ private
 
       parser = Processor.getDefaultParser
       kcodeAdjusted = false
-      requestCharset = @request.charset.dup
+      requestCharset = @request.charset
       charsetStrBackup = nil
       if requestCharset
        	#requestString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
