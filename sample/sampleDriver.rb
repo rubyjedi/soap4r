@@ -44,7 +44,7 @@ class SampleDriver
     log( SEV_DEBUG, "call: parameters '#{ params.inspect }'." )
 
     # Convert parameters
-    params = params.filter { |param| paramConv( param ) }
+    params.collect! { |param| paramConv( param ) }
     log( SEV_DEBUG, "call: parameters '#{ params.inspect }'." )
 
     # Prepare SOAP header.
