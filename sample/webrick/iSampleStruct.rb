@@ -8,12 +8,12 @@ class SampleStruct; include SOAP::Marshallable
 
   def initialize
     @sampleArray = SampleArray[ "cyclic", self ]
-    @date = Time.now
+    @date = DateTime.now
   end
 
-  def copy( rhs )
-    @sampleArray = rhs.sampleArray.dup
-    @date = rhs.date.dup
+  def wrap( rhs )
+    @sampleArray = SampleArray[ "wrap", rhs.dup ]
+    @date = DateTime.now
     self
   end
 end
