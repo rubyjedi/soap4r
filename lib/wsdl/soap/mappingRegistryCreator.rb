@@ -82,7 +82,7 @@ __EOD__
     arrayType = typeDef.complexContent.getRefAttribute(
       Name.new( ::SOAP::EncodingNamespace, ::SOAP::AttrArrayType )).arrayType
     contentType = Name.new( arrayType.namespace,
-      arrayType.name.sub( /\[\]$/, '' ))
+      arrayType.name.sub( /\[(?:,)*\]$/, '' ))
     @types << contentType
     return <<__EOD__
 MappingRegistry.set(
