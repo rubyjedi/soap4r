@@ -54,16 +54,6 @@ class Factory
     end
   end
 
-  # It breaks Thread.current[:SOAPMarshalDataKey].
-  def mark_marshalled_obj(obj, soap_obj)
-    Thread.current[:SOAPMarshalDataKey][obj.__id__] = soap_obj
-  end
-
-  # It breaks Thread.current[:SOAPMarshalDataKey].
-  def mark_unmarshalled_obj(node, obj)
-    Thread.current[:SOAPMarshalDataKey][node.id] = obj
-  end
-
 private
 
   def setiv2ary(obj, node, map)
