@@ -65,8 +65,8 @@ private
     @#{ var_name }
   end
 
-  def #{ name }=(new_#{ name })
-    @#{ var_name } = new_#{ name }
+  def #{ name }=(value)
+    @#{ var_name } = value
   end
 
 __EOD__
@@ -110,7 +110,7 @@ __EOD__
 # #{ name.namespace }
 class #{ name.name } < Array
   # Contents type should be dumped here...
-  #@@schema_type = "#{ name.name }"
+  @@schema_type = "#{ name.name }"
   @@schema_ns = "#{ name.namespace }"
 end
 __EOD__

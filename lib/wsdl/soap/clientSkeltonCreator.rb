@@ -50,13 +50,11 @@ private
 
     result = ""
     result << <<__EOD__
-endpoint_url = ARGV.shift || #{ drv_name }::DefaultEndpointUrl
-proxyUrl = ENV['http_proxy'] || ENV['HTTP_PROXY']
-obj = #{ drv_name }.new(endpoint_url, proxy_uri)
+endpoint_url = ARGV.shift
+obj = #{ drv_name }.new(endpoint_url)
 
 # Uncomment the below line to see SOAP wiredumps.
 # obj.wiredump_dev = STDERR
-
 
 __EOD__
     @definitions.porttype(name).operations.each do |operation|
@@ -70,7 +68,7 @@ __EOD__
   def dump_operation(operation)
     name = operation.name.name
     input = operation.input
-    "puts obj.#{ create_method_name(name) }#{ dump_input_param(input) }"
+    "puts obj.#{ create_method_name(name) }#{ dump_inputparam(input) }"
   end
 
   def dump_input_init(input)

@@ -58,14 +58,10 @@ private
     addresses = @definitions.porttype(name).locations
 
     return <<__EOD__
-require 'soap/proxy'
-require 'soap/rpcUtils'
-require 'soap/streamHandler'
+require 'soap/rpc/driver'
 
-class #{ create_class_name(name) }
-  class EmptyResponseError < ::SOAP::Error; end
-
-  MappingRegistry = ::SOAP::RPCUtils::MappingRegistry.new
+class #{ create_class_name(name) } < SOAP::RPC::Driver
+  MappingRegistry = ::SOAP::Mapping::Registry.new
 
 #{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
   Methods = [
@@ -74,94 +70,21 @@ class #{ create_class_name(name) }
 
   DefaultEndpointUrl = "#{ addresses[0] }"
 
-  attr_accessor :mapping_registry
-  attr_reader :endpoint_url
-  attr_reader :wiredump_dev
-  attr_reader :wiredump_file_base
-  attr_reader :httpproxy
-
-  def initialize(endpoint_url = DefaultEndpointUrl, httpproxy = nil)
-    @endpoint_url = endpoint_url
-    @mapping_registry = MappingRegistry
-    @wiredump_dev = nil
-    @wiredump_file_base = nil
-    @httpproxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
-    @handler = ::SOAP::HTTPPostStreamHandler.new(@endpoint_url, @httpproxy,
-      ::SOAP::Charset.encoding_label)
-    @proxy = ::SOAP::SOAPProxy.new(@handler, @namespace)
-    @proxy.allow_unqualified_element = true
-    add_method
-  end
-
-  def endpoint_url=(endpoint_url)
-    @endpoint_url = endpoint_url
-    @handler.endpoint_url = @endpoint_url if @handler
-  end
-
-  def wiredump_dev=(dev)
-    @wiredump_dev = dev
-    @handler.wiredump_dev = @wiredump_dev if @handler
-  end
-
-  def wiredump_file_base=(base)
-    @wiredump_file_base = base
-  end
-
-  def httpproxy=(httpproxy)
-    @httpproxy = httpproxy
-    @handler.proxy = @httpproxy if @handler
-  end
-
-  def default_encodingstyle=(encodingstyle)
-    @proxy.default_encodingstyle = encodingstyle
-  end
-
-  def default_encodingstyle
-    @proxy.default_encodingstyle
-  end
-
-  def call(name, *params)
-    # Convert parameters: params array => SOAPArray => members array
-    params = ::SOAP::RPCUtils.obj2soap(params, @mapping_registry).to_a
-    header, body = @proxy.call(nil, name, *params)
-    unless body
-      raise EmptyResponseError.new("Empty response.")
-    end
-
-    # Check Fault.
-    begin
-      @proxy.check_fault(body)
-    rescue ::SOAP::FaultError => e
-      ::SOAP::RPCUtils.fault2exception(e)
-    end
-
-    ret = body.response ?
-      ::SOAP::RPCUtils.soap2obj(body.response, @mapping_registry) : nil
-    if body.outparams
-      outparams = body.outparams.collect { |outparam|
-	::SOAP::RPCUtils.soap2obj(outparam)
-      }
-      return [ret].concat(outparams)
-    else
-      return ret
-    end
+  def initialize(endpoint_url = nil)
+    endpoint_url ||= DefaultEndpointUrl
+    super(endpoint_url, nil)
+    self.mapping_registry = MappingRegistry
+    init_methods
   end
 
 private 
 
-  def add_method
+  def init_methods
     Methods.each do |name_as, name, params, soapaction, namespace|
-      @proxy.add_method(XSD::QName.new(namespace, name), soapaction, name_as, params)
+      qname = XSD::QName.new(namespace, name_as)
+      @proxy.add_method(qname, soapaction, name, params)
       add_method_interface(name, params)
     end
-  end
-
-  def add_method_interface(name, params)
-    self.instance_eval <<-EOD
-      def \#{ name }(*params)
-	call("\#{ name }", *params)
-      end
-    EOD
   end
 end
 __EOD__
