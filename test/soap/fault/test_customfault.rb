@@ -29,13 +29,6 @@ class TestCustomFault < Test::Unit::TestCase
       Thread.current.abort_on_exception = true
       @server.start
     }
-    while @server.status != :Running
-      sleep 0.1
-      unless @t.alive?
-	@t.join
-	raise
-      end
-    end
     @endpoint = "http://localhost:#{Port}/"
     @client = SOAP::RPC::Driver.new(@endpoint, 'urn:customfault')
     @client.wiredump_dev = STDERR if $DEBUG
