@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: May 6, 2002<br />
+Last modified: May 25, 2002<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.4.4.1
+Target SOAP4R version: SOAP4R/1.4.5
 </p>
 
 <ol>
@@ -53,51 +53,86 @@ Target SOAP4R version: SOAP4R/1.4.4.1
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-SOAP4R/1.4.4 still had a bug around detecting XML processor.
-SOAP4R/1.4.4.1 fixes this problem.  REXML users should update to 1.4.4.1.
-I'm sorry for unstable and frequent release.
+This version has these enhancements;
 </p>
-
-<p>
-This is a bug fix release.
-Following users should update.
-</p>
-
 <ul>
-<li>Users who use DateTime datatype.</li>
-<li>Developers of SOAP client/server which works under multi-thread condition.</li>
-<li>REXML users.</li>
+<li>Supports all primitive datatypes of XML Schema Part2 Datatypes except NOTATION.
+Added types are Duration, gYearMonth, anyURI, QName and so on.</li>
+<li>Runs much faster than earlier versions.
+Some performance check and tuning has been done.</li>
+<li>Supports all Ruby objects marshalling/unmarshalling
+except some special objects.  See below for more detail.</li>
 </ul>
 
 <p>
-Fixed bugs.
+CAUTION: This version requires
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a> version 3.2 or later and
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
+Please make sure the versions you use.
 </p>
 
+<p>
+Here is detail of change.
+</p>
+
+<dl>
+<dt>Datatypes (XMLSchemaDatatypes.rb and baseData.rb)</dt>
+<dd>
 <ul>
-<li>XSDDataTime: Changed variable name usec to sec_frac.  It's not a micro sec so name usec is misleading.</li>
-<li>XSDTime: Fixed bugs in usec part.</li>
-<li>date.rb in standard library and date2 version 3 conflicts because date2.rb is a successor of date.rb and not designed for dual use.
-(ex. using a module which requires date.rb like DBI and another module which requires date2.rb).
-Added a workaround for this.</li>
-<li>SOAP::Processor was not MT-safe.  Fixed.
-Projected feature regards to MT are follows.
-At least I hope so.  Tell me if you find these wrong.
+<li>Added duration, gYearMonth, gYear, gMonthDay, gDay, gMonth, anyURI and QName datetypes.
+All primitive datatypes in XML Schema Part 2 section 3.2 except NOTAION are supported now.</li>
+<li>Modified XSDDataTime, XSDDate and XSDTime implementation.  These use a DataTime as a data holder.</li>
+<li>Follow date/3.2: date2.rb -&gt; date.rb.</li>
+<li>Changed to_s representations of single float and double float.  Thanks to gotoken.</li>
+<li>XSDFloat: Add '0' if given str ends with 'E'.  Float( "-1.4E" ) might fail on some system.</li>
+<li>Added SOAPRawString class.  Given string is embedded into XML instance directly.
+You can use this class to embed (numeric) character references manually.</li>
+<li>Fixed UTF8 regexp bug.  XSDString uses this regexp to check a given string.</li>
+<li>Added UT for XMLSchemaDatatypes.rb.  See test/xsd_ut.rb and test/baseData_ut.rb.</li>
+</ul></dd>
+
+<dt>SOAP &lt;-&gt; Ruby object mapping (mappingRegistry.rb and rpcUtils.rb)</dt>
+<dd>
 <ul>
-<li>Driver: safe</li>
-<li>Proxy: safe</li>
-<li>Server: safe</li>
-<li>CGIStub: safe</li>
-<li>StandaloneServer: safe</li>
-<li>RPCRouter: safe</li>
-<li>StreamHandler: safe</li>
-<li>Processor: safe</li>
-<li>SOAPParser: unsafe</li>
-<li>SOAPGenerator: unsafe</li>
-<li>EncodingStyleHandler: unsafe</li>
+<li>Exception raised from server side could not be mapped to specific exception.  Fixed.</li>
+<li>Refactoring to avoid *_eval.  Reduced warnings.</li>
+<li>Added Range marshalling support.</li>
+<li>Regexp#options support under ruby/1.6.</li>
+<li>Supports cyclic Range such as;
+<pre>
+  class Foo
+    attr_accessor :foo
+    def succ; end
+    def &lt;=&gt;( rhs ); end
+  end
+
+  o1 = Foo.new
+  o2 = Foo.new
+  r = o1..o2
+  o1.foo = r
+
+  p SOAPMarshal.load( SOAPMarshal.dump( r ))
+</pre></li>
+<li>Supports some instance variable of ruby standard class.
+But instance variable of Array, Hash, String, Float and Bignum are not supported because of restriction of SOAP encoding format...</li>
+<li>Alias ::SOAPMarshal to ::SOAP::Marshal.</li>
+<li>Added Marshal.load and Marshal.dump as aliases to Marshal.unmarshal and
+  Marshal.unmarshal.</li>
+</ul></dd>
+
+<dt>misc</dt>
+<dd>
+<ul>
+<li>Dumps what parser is used when $DEBUG.  Try 'ruby -d -rsoap/processor -e 0'</li>
+<li>Added CGI samples in sample/.</li>
+<li>Some performance check and tuning has been done on both client and server side.
+One bottle neck is Kernel.methods which SOAP4R use(d) while mapping SOAP Data Model &lt;-&gt; Ruby object.
+I replaced it with Object.respond_to? .
+Another bottle neck of client side is delegate.rb which is used by http-access2.
+Get <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
 </ul>
-</li>
-<li>SOAP4R/1.4.3 supports REXML/2.1.3 but it did not detect REXML processor automatically.</li>
-</ul>
+</dd>
+</dl>
 
 <h2 id="install" name="install">2. Install</h2>
 
@@ -210,17 +245,17 @@ For now, one of following XML processor must be installed
 <ul>
 <li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">[RAA:NQXML]</a></li>
 <li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">[RAA:XMLParser]</a></li>
-<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=REXML">[RAA:REXML]</a></li>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=REXML">[RAA:REXML]</a> version 2.1.3 or later</li>
 </ul></dd>
 
-<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a></dt>
+<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a> version 3.2 or later</dt>
 <dd>Date and DateTime implementation by Todayoshi Funaba.
 Note: This module is scheduled to be included in standard distribution instead of lib/date.rb.  Ruby/1.7 or later.</dd>
 
 <dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Devel%3A%3ALogger">[RAA:Devel::Logger]</a></dt>
 <dd>Logging utility by NaHi.</dd>
 
-<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a></dt>
+<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F or later</dt>
 <dd>Yet another HTTP client implementation by NaHi.</dd>
 
 <dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Uconv">[RAA:Uconv]</a> (optional)</dt>
@@ -295,14 +330,21 @@ client.rb is for server.rb, client2.rb is for server2.rb.
 <dd>Calc server definition using module and module methods.
 This module responds 'add', 'sub', 'multi' and 'div'.</dd>
 <dt>server.rb</dt>
-<dd>It requires calc.rb and serve module methods of this module.
+<dd>Standalone server.
+It requires calc.rb and serve module methods of this module.
 To run this server;
 <pre class="path">
 $ ./server.rb
 </pre>
 </dd>
+<dt>server.cgi</dt>
+<dd>CGI version.
+To run this server, copy server.cgi and calc.rb to suitable directory
+of your WWW server.
+</dd>
 <dt>client.rb</dt>
-<dd>It connects to server.rb and hit methods served by calc.rb.
+<dd>It connects to server.rb or server.cgi,
+and hit methods served by calc.rb.
 To run the client;
 <pre class="path">
 $ ./client.rb
@@ -324,8 +366,13 @@ Since '+', '-' and so on of calc2.rb are not valid name as an element
 in XML instance,
 this sample register the method '+' as 'add', '-' as 'sub', and so on.
 </dd>
+<dt>server2.cgi</dt>
+<dd>CGI version.
+To run this server, copy server2.cgi and calc2.rb to suitable directory
+of your WWW server.
+</dd>
 <dt>client2.rb</dt>
-<dd>It connects to server2.rb.
+<dd>It connects to server2.rb or server2.cgi.
 Set a value at first and call methods like 'puts objAtServer + 2'.</dd>
 </dl>
 </dd>
@@ -352,6 +399,11 @@ To run this server;
 <pre class="path">
 $ ./server.rb
 </pre>
+</dd>
+<dt>server.cgi</dt>
+<dd>CGI version.
+To run this server, copy server.cgi and exchange.rb to suitable directory
+of your WWW server.
 </dd>
 <dt>client.rb</dt>
 <dd>It connects to server.rb.
@@ -385,6 +437,11 @@ To run this server;
 <pre class="path">
 $ ./server.rb
 </pre>
+</dd>
+<dt>server.cgi</dt>
+<dd>CGI version.
+To run this server, copy server.cgi and sampleStruct.rb to suitable directory
+of your WWW server.
 </dd>
 <dt>client.rb</dt>
 <dd>It connects to server.rb.
@@ -537,6 +594,85 @@ Any comments are welcomed. (as always)</dd>
 <h2 id="history" name="history">9. History</h2>
 
 <dl>
+<dt>1.4.5 - May 25, 2002</dt>
+<dd>
+This version has these enhancements;
+<ul>
+<li>Supports all primitive datatypes of XML Schema Part2 Datatypes except NOTATION.
+Added types are Duration, gYearMonth, anyURI, QName and so on.</li>
+<li>Runs much faster than earlier versions.
+Some performance check and tuning has been done.</li>
+<li>Supports all Ruby objects marshalling/unmarshalling
+except some special objects.  See below for more detail.</li>
+</ul>
+
+CAUTION: This version requires
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a> version 3.2 or later and
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
+Please make sure the versions you use.
+<br/><br/>
+
+Here is detail of change.
+<dl>
+<dt>Datatypes (XMLSchemaDatatypes.rb and baseData.rb)</dt>
+<dd>
+<ul>
+<li>Added duration, gYearMonth, gYear, gMonthDay, gDay, gMonth, anyURI and QName datetypes.
+All primitive datatypes in XML Schema Part 2 section 3.2 except NOTAION are supported now.</li>
+<li>Modified XSDDataTime, XSDDate and XSDTime implementation.  These use a DataTime as a data holder.</li>
+<li>Follow date/3.2: date2.rb -&gt; date.rb.</li>
+<li>Changed to_s representations of single float and double float.  Thanks to gotoken.</li>
+<li>XSDFloat: Add '0' if given str ends with 'E'.  Float( "-1.4E" ) might fail on some system.</li>
+<li>Added SOAPRawString class.  Given string is embedded into XML instance directly.
+You can use this class to embed (numeric) character references manually.</li>
+<li>Fixed UTF8 regexp bug.  XSDString uses this regexp to check a given string.</li>
+<li>Added UT for XMLSchemaDatatypes.rb.  See test/xsd_ut.rb and test/baseData_ut.rb.</li>
+</ul></dd>
+
+<dt>SOAP &lt;-&gt; Ruby object mapping (mappingRegistry.rb and rpcUtils.rb)</dt>
+<dd>
+<ul>
+<li>Exception raised from server side could not be mapped to specific exception.  Fixed.</li>
+<li>Refactoring to avoid *_eval.  Reduced warnings.</li>
+<li>Added Range marshalling support.</li>
+<li>Regexp#options support under ruby/1.6.</li>
+<li>Supports cyclic Range such as;
+<pre>
+  class Foo
+    attr_accessor :foo
+    def succ; end
+    def &lt;=&gt;( rhs ); end
+  end
+
+  o1 = Foo.new
+  o2 = Foo.new
+  r = o1..o2
+  o1.foo = r
+
+  p SOAPMarshal.load( SOAPMarshal.dump( r ))
+</pre></li>
+<li>Supports some instance variable of ruby standard class.
+But instance variable of Array, Hash, String, Float and Bignum are not supported because of restriction of SOAP encoding format...</li>
+<li>Alias ::SOAPMarshal to ::SOAP::Marshal.</li>
+<li>Added Marshal.load and Marshal.dump as aliases to Marshal.unmarshal and
+  Marshal.unmarshal.</li>
+</ul></dd>
+
+<dt>misc</dt>
+<dd>
+<ul>
+<li>Dumps what parser is used when $DEBUG.  Try 'ruby -d -rsoap/processor -e 0'</li>
+<li>Added CGI samples in sample/.</li>
+<li>Some performance check and tuning has been done on both client and server side.
+One bottle neck is Kernel.methods which SOAP4R use(d) while mapping SOAP Data Model &lt;-&gt; Ruby object.
+I replaced it with Object.respond_to? .
+Another bottle neck of client side is delegate.rb which is used by http-access2.
+Get <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
+</ul>
+</dd>
+</dl>
+</dd>
+
 <dt>1.4.4 - May 6, 2002</dt>
 <dd>
 This is a bug fix release.
