@@ -23,6 +23,7 @@ module SOAP
 
   EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
   EncodingNamespace = 'http://schemas.xmlsoap.org/soap/encoding/'
+  LiteralNamespace = 'http://xml.apache.org/xml-soap/literalxml'
 
   NextActor = 'http://schemas.xmlsoap.org/soap/actor/next'
 
@@ -64,11 +65,15 @@ module SOAP
       @faultString = fault.faultstring
       @faultActor = fault.faultactor
       @detail = fault.detail
+      super( self.to_s )
     end
 
     def to_s
-      return @faultString.data if @faultString && @faultString.respond_to?( 'data' )
-      '(No faultString)'
+      str = nil
+      if @faultString && @faultString.respond_to?( 'data' )
+	str = @faultString.data
+      end
+      str || '(No faultString)'
     end
   end
 end
