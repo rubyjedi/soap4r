@@ -69,6 +69,7 @@ __EOD__
       message = param.find_message
       params = ""
       message.parts.each do |part|
+        next unless part.type
         params << "#   #{ uncapitalize(part.name) }\t\t#{ create_class_name(part.type) } - #{ part.type }\n"
       end
       unless params.empty?
