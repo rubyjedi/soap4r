@@ -88,7 +88,7 @@ class Driver
     options["protocol.wiredump_file_base"] = wiredump_file_base
   end
 
-  def initialize(endpoint_url, namespace, soapaction = nil)
+  def initialize(endpoint_url, namespace = nil, soapaction = nil)
     @namespace = namespace
     @soapaction = soapaction
     @options = setup_options
@@ -201,19 +201,15 @@ private
   def add_rpc_method_interface(name, param_def)
     param_count = RPC::SOAPMethod.param_count(param_def,
       RPC::SOAPMethod::IN, RPC::SOAPMethod::INOUT)
-    sclass = class << self; self; end
-    sclass.__send__(:define_method, name, proc { |*arg|
-      unless arg.size == param_count
-        raise ArgumentError.new(
-          "wrong number of arguments (#{arg.size} for #{param_count})")
-      end
-      call(name, *arg)
-    })
-    self.method(name)
+    add_method_interface(name, param_count)
   end
 
   def add_document_method_interface(name, param_def)
     param_count = RPC::SOAPMethod.param_count(param_def, RPC::SOAPMethod::IN)
+    add_method_interface(name, param_count)
+  end
+
+  def add_method_interface(name, param_count)
     sclass = class << self; self; end
     sclass.__send__(:define_method, name, proc { |*arg|
       unless arg.size == param_count
