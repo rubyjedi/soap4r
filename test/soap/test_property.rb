@@ -129,6 +129,30 @@ class TestProperty < Test::Unit::TestCase
     assert(@prop["a"].keys.member?(:c))
   end
 
+  def test_lshift
+    assert(@prop.empty?)
+    @prop << 1
+    assert_equal([1], @prop.values)
+    assert_equal(1, @prop["0"])
+    @prop << 1
+    assert_equal([1, 1], @prop.values)
+    assert_equal(1, @prop["1"])
+    @prop << 1
+    assert_equal([1, 1, 1], @prop.values)
+    assert_equal(1, @prop["2"])
+    #
+    @prop["abc.def"] = o = SOAP::Property.new
+    tested = 0
+    o.add_hook do |k, v|
+      tested += 1
+    end
+    @prop["abc.def"] << 1
+    @prop["abc.def"] << 2
+    @prop["abc.def"] << 3
+    @prop["abc.def"] << 4
+    assert_equal(4, tested)
+  end
+
   def test_lock
     @prop["a.a"] = nil
     @prop["a.b.c"] = 1
@@ -138,13 +162,23 @@ class TestProperty < Test::Unit::TestCase
     assert_equal(1, @prop["a.b.c"])
     assert_equal(false, @prop["b"])
     assert_raises(TypeError) do
-      assert_nil(@prop["c"])
+      @prop["c"]
     end
     assert_raises(TypeError) do
       @prop["c"] = 2
     end
     assert_raises(TypeError) do
       @prop["a.b.R"]
+    end
+    assert_raises(TypeError) do
+      @prop.add_hook do
+	assert(false)
+      end
+    end
+    assert_raises(TypeError) do
+      @prop.add_hook("c") do
+	assert(false)
+      end
     end
     assert_raises(TypeError) do
       @prop.add_hook("a.c") do
