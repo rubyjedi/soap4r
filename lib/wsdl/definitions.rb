@@ -43,8 +43,7 @@ class Definitions < Info
   end
 
   def inspect
-    name = @name || '(unnamed)'
-    "#<#{self.class}:#{name}>"
+    sprintf("#<%s:0x%x %s>", self.class.name, object_id, @name || '(unnamed)')
   end
 
   def targetnamespace=(targetnamespace)

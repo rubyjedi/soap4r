@@ -6,6 +6,7 @@
 # either the dual license version in 2003, or any later version.
 
 
+require 'xsd/datatypes'
 require 'wsdl/xmlSchema/schema'
 require 'wsdl/xmlSchema/import'
 require 'wsdl/xmlSchema/simpleType'

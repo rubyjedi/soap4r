@@ -36,7 +36,7 @@ class Sequence < Info
   def parse_element(element)
     case element
     when AnyName
-      o = Any.new
+      o = Element.new(XSD::QName.new(nil, 'any'), XSD::AnyTypeName)
       @elements << o
       o
     when ElementName
