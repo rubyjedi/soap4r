@@ -48,7 +48,7 @@ class AuthHeaderPortServer < SOAP::RPC::CGIStub
       super(MyHeaderName)
       @db = PStore.new(SessionDB)
       @db.transaction do
-	@db["root"] ||= {}
+	@db["root"] = {} unless @db.root?("root")
       end
       @userid = @sessionid = nil
     end
