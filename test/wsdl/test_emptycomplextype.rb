@@ -11,4 +11,4 @@ class TestWSDL < Test::Unit::TestCase
   end
 end
 
-TestWSDL.setup('emptycomplextype.wsdl')
+TestWSDL.setup(File.join(File.dirname(__FILE__), 'emptycomplextype.wsdl'))
