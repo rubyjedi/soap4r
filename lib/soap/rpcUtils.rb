@@ -185,7 +185,7 @@ module RPCUtils
 
 	elems = []
 	unless retVal.is_a?( SOAPVoid )
-	  elems << retVal.encode( ns.clone, @retName )
+	  elems << retVal.encode( ns.clone, @retName || 'return' )
 	end
 
 	@outParamNames.each do | param |
