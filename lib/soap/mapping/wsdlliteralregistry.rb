@@ -123,7 +123,7 @@ private
       add_elements2soap(obj, ele)
       add_attributes2soap(obj, ele)
       ele
-    else        # expected to be a basetype.
+    else # expected to be a basetype or anyType.
       o = Mapping.obj2soap(obj)
       o.elename = name
       o
@@ -172,7 +172,7 @@ private
     klass = ::SOAP::Mapping::Object
     obj = klass.new
     node.each do |name, value|
-      obj.__soap_set_property(name, Mapping._soap2obj(value, self))
+      obj.__soap_set_property(name, Mapping.soap2obj(value))
     end
     obj
   end
