@@ -59,6 +59,12 @@ module MarshalTestLib
     marshal_equal(MyArray.new(0, 1,2,3))
   end
 
+  def test_array_ivar
+    o1 = Array.new
+    o1.instance_eval { @iv = 1 }
+    marshal_equal(o1) {|o| o.instance_eval { @iv }}
+  end
+
   class MyException < Exception; def initialize(v, *args) super(*args); @v = v; end; attr_reader :v; end
   def test_exception
     marshal_equal(Exception.new('foo')) {|o| o.message}
@@ -94,6 +100,12 @@ module MarshalTestLib
     assert_raises(TypeError) { marshaltest(h) }
   end
 
+  def test_hash_ivar
+    o1 = Hash.new
+    o1.instance_eval { @iv = 1 }
+    marshal_equal(o1) {|o| o.instance_eval { @iv }}
+  end
+
   def test_bignum
     marshal_equal(-0x4000_0000_0000_0001)
     marshal_equal(-0x4000_0001)
@@ -122,6 +134,14 @@ module MarshalTestLib
     marshal_equal(-0.0) {|o| 1.0/o}
   end
 
+  def test_float_ivar
+    STDERR.puts("Not supported: Instance which has instance variable and is a class which is mapped to SOAP Basetype (true, false, nil, Fixnum, Float, etc.)")
+    return
+    o1 = 1.23
+    o1.instance_eval { @iv = 1 }
+    marshal_equal(o1) {|o| o.instance_eval { @iv }}
+  end
+
   class MyRange < Range; def initialize(v, *args) super(*args); @v = v; end end
   def test_range
     marshal_equal(1..2)
@@ -129,25 +149,29 @@ module MarshalTestLib
   end
 
   def test_range_subclass
-    STDERR.puts("test_range_subclass: known bug should be fixed.")
-    return
     marshal_equal(MyRange.new(4,5,8, false))
   end
 
   class MyRegexp < Regexp; def initialize(v, *args) super(*args); @v = v; end end
   def test_regexp
     marshal_equal(/a/)
+    marshal_equal(/A/i)
+    marshal_equal(/A/mx)
   end
 
   def test_regexp_subclass
-    STDERR.puts("test_regexp_subclass: known bug should be fixed.")
-    return
     marshal_equal(MyRegexp.new(10, "a"))
   end
 
   class MyString < String; def initialize(v, *args) super(*args); @v = v; end end
   def test_string
     marshal_equal("abc")
+  end
+
+  def test_string_ivar
+    o1 = String.new
+    o1.instance_eval { @iv = 1 }
+    marshal_equal(o1) {|o| o.instance_eval { @iv }}
   end
 
   def test_string_subclass
@@ -162,6 +186,12 @@ module MarshalTestLib
 
   def test_struct_subclass
     marshal_equal(MySubStruct.new(10,1,2))
+  end
+
+  def test_struct_ivar
+    o1 = MyStruct.new
+    o1.instance_eval { @iv = 1 }
+    marshal_equal(o1) {|o| o.instance_eval { @iv }}
   end
 
   def test_symbol
@@ -200,15 +230,19 @@ module MarshalTestLib
   class MyTime < Time; def initialize(v, *args) super(*args); @v = v; end end
   def test_time
     # once there was a bug caused by usec overflow.  try a little harder.
-    10.times do
+    50.times do
       marshal_equal(Time.now)
     end
   end
 
   def test_time_subclass
-    STDERR.puts("test_time_subclass: known bug should be fixed.")
-    return
     marshal_equal(MyTime.new(10))
+  end
+
+  def test_time_ivar
+    o1 = Time.now
+    o1.instance_eval { @iv = 1 }
+    marshal_equal(o1) {|o| o.instance_eval { @iv }}
   end
 
   def test_true
@@ -254,18 +288,28 @@ module MarshalTestLib
   module Mod2 end
   def test_extend
     o = Object.new
-    o.extend Module.new
-    assert_raises(TypeError) { marshaltest(o) }
-
-    STDERR.puts("test_range_subclass: known bug should be fixed.")
-    return
-    o = Object.new
     o.extend Mod1
     marshal_equal(o) { |obj| obj.kind_of? Mod1 }
     o = Object.new
     o.extend Mod1
     o.extend Mod2
     marshal_equal(o) {|obj| class << obj; ancestors end}
+    o = Object.new
+    o.extend Module.new
+    assert_raises(TypeError) { marshaltest(o) }
+  end
+
+  def test_extend_string
+    o = String.new
+    o.extend Mod1
+    marshal_equal(o) { |obj| obj.kind_of? Mod1 }
+    o = String.new
+    o.extend Mod1
+    o.extend Mod2
+    marshal_equal(o) {|obj| class << obj; ancestors end}
+    o = String.new
+    o.extend Module.new
+    assert_raises(TypeError) { marshaltest(o) }
   end
 
   def test_anonymous
