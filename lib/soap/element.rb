@@ -84,16 +84,9 @@ public
     end
   end
 
-  def encode( buf, ns )
-    attrs = {}
-    if !ns.assigned?( EnvelopeNamespace )
-      tag = ns.assign( EnvelopeNamespace )
-      attrs[ 'xmlns:' << tag ] = EnvelopeNamespace
-    end
-    if !ns.assigned?( EncodingNamespace )
-      tag = ns.assign( EncodingNamespace )
-      attrs[ 'xmlns:' << tag ] = EncodingNamespace
-    end
+  def encode( buf, ns, attrs = {} )
+    SOAPGenerator.assignNamespace( attrs, ns, EnvelopeNamespace )
+    SOAPGenerator.assignNamespace( attrs, ns, EncodingNamespace )
     attrs[ ns.name( AttrEncodingStyleName ) ] = EncodingNamespace
     name = ns.name( @elementName )
     SOAPGenerator.encodeTag( buf, name, attrs, true )
@@ -121,9 +114,9 @@ public
     @isFault = isFault
   end
 
-  def encode( buf, ns )
+  def encode( buf, ns, attrs = {} )
     name = ns.name( @elementName )
-    SOAPGenerator.encodeTag( buf, name, nil, true )
+    SOAPGenerator.encodeTag( buf, name, attrs, true )
     if @isFault
       yield( @data, true )
     else
@@ -169,7 +162,10 @@ public
     @encodingStyle = encodingStyle || LiteralNamespace
   end
 
-  def encode( buf, ns )
+  def encode( buf, ns, attrs = {} )
+    attrs.each do | key, value |
+      @content.attr[ key ] = value
+    end
     @content.attr[ ns.name( EnvelopeNamespace, AttrMustUnderstand ) ] =
       ( @mustUnderstand ? '1' : '0' )
     if @encodingStyle
@@ -192,9 +188,9 @@ class SOAPHeader < SOAPArray
     @encodingStyle = nil
   end
 
-  def encode( buf, ns )
+  def encode( buf, ns, attrs = {} )
     name = ns.name( @elementName )
-    SOAPGenerator.encodeTag( buf, name, nil, true )
+    SOAPGenerator.encodeTag( buf, name, attrs, true )
     @data.each do | data |
       yield( data, true )
     end
@@ -227,15 +223,9 @@ class SOAPEnvelope < NSDBase
     @idPool = []
   end
 
-  def encode( buf, ns )
-    attrs = {}
-    tag = ns.assign( EnvelopeNamespace, SOAPNamespaceTag )
-    attrs[ 'xmlns:' << tag ] = EnvelopeNamespace
-    tag = ns.assign( XSD::Namespace, XSDNamespaceTag )
-    attrs[ 'xmlns:' << tag ] = XSD::Namespace
-    tag = ns.assign( XSD::InstanceNamespace, XSINamespaceTag )
-    attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
-
+  def encode( buf, ns, attrs = {} )
+    SOAPGenerator.assignNamespace( attrs, ns, EnvelopeNamespace,
+      SOAPNamespaceTag )
     name = ns.name( @elementName )
     SOAPGenerator.encodeTag( buf, name, attrs, true )
 
