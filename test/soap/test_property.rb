@@ -19,15 +19,15 @@ class TestProperty < Test::Unit::TestCase
 
 # comment1
 
-# comment2
+# comment2\r
 # comment2
 
-
+\r
 a.b.0 = 1
 a.b.1 = 2
 a.b.2 = 3
-client.protocol.http.proxy=http://myproxy:8080   
-client.protocol.http.no_proxy:  intranet.example.com,local.example.com
+client.protocol.http.proxy=http://myproxy:8080   \r
+client.protocol.http.no_proxy:  intranet.example.com,local.example.com\r
 client.protocol.http.protocol_version = 1.0
 foo\\:bar\\=baz = qux
 foo\\\\.bar.baz=\tq\\\\ux\ttab
