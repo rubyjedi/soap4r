@@ -314,7 +314,6 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     when SOAPUnknown
       newParent = parent.node.toStruct
       node.parent = newParent
-      # ID entiry was delayed.
       if newParent.id
 	@idPool << newParent
       end
@@ -326,6 +325,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 
     when SOAPStruct
       parent.node.add( node.name, node )
+      node.parent = parent.node
 
     when SOAPArray
       if node.position
@@ -334,6 +334,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       else
 	parent.node.add( node )
       end
+      node.parent = parent.node
 
     when SOAPBasetype
       raise EncodingStyleError.new( "SOAP base type must not have a child." )
