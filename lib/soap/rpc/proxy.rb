@@ -119,8 +119,8 @@ public
     resopt = create_options({
       :default_encodingstyle => op_info.response_default_encodingstyle})
     env = route(req_header, req_body, reqopt, resopt)
+    raise EmptyResponseError unless env
     receive_headers(env.header)
-    raise EmptyResponseError.new("empty response") unless env
     begin
       check_fault(env.body)
     rescue ::SOAP::FaultError => e
@@ -343,16 +343,16 @@ private
 
     def request_doc_enc(values, mapping_registry)
       (0...values.size).collect { |idx|
-        mapping_registry.obj2soap(values[idx], @doc_request_qnames[idx])
+        ele = Mapping.obj2soap(values[idx], mapping_registry)
+        ele.elename = @doc_request_qnames[idx]
+        ele
       }
     end
 
     def request_doc_lit(values, mapping_registry)
       (0...values.size).collect { |idx|
-        item = values[idx]
-        qname = @doc_request_qnames[idx]
-        ele = SOAPElement.from_obj(item, qname.namespace)
-        ele.elename = qname
+        ele = mapping_registry.obj2soap(values[idx], @doc_request_qnames[idx])
+        ele.encodingstyle = LiteralNamespace
         ele
       }
     end
