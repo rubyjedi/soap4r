@@ -260,7 +260,7 @@ private
     else
       raise HTTPStreamError.new("#{ res.status }: #{ res.reason }")
     end
-    if !res.header['content-encoding'].empty? and
+    if res.respond_to?(:header) and !res.header['content-encoding'].empty? and
         res.header['content-encoding'][0].downcase == 'gzip'
       receive_string = decode_gzip(receive_string)
     end
