@@ -10,6 +10,7 @@ require 'xsd/datatypes'
 require 'wsdl/xmlSchema/schema'
 require 'wsdl/xmlSchema/import'
 require 'wsdl/xmlSchema/simpleType'
+require 'wsdl/xmlSchema/simpleRestriction'
 require 'wsdl/xmlSchema/complexType'
 require 'wsdl/xmlSchema/complexContent'
 require 'wsdl/xmlSchema/any'
@@ -19,7 +20,7 @@ require 'wsdl/xmlSchema/choice'
 require 'wsdl/xmlSchema/sequence'
 require 'wsdl/xmlSchema/attribute'
 require 'wsdl/xmlSchema/unique'
-
+require 'wsdl/xmlSchema/enumeration'
 
 module WSDL
 module XMLSchema
@@ -60,6 +61,7 @@ SchemaLocationAttrName = XSD::QName.new(nil, 'schemaLocation')
 TargetNamespaceAttrName = XSD::QName.new(nil, 'targetNamespace')
 TypeAttrName = XSD::QName.new(nil, 'type')
 UseAttrName = XSD::QName.new(nil, 'use')
+ValueAttrName = XSD::QName.new(nil, 'value')
 
 
 end
