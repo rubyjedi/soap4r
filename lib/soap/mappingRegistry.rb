@@ -33,6 +33,8 @@ module RPCServerException; end
 
 
 module RPCUtils
+  RubyTypeName = XSD::QName.new( RubyTypeInstanceNamespace, 'rubyType' )
+
   # Inner class to pass an exception.
   class SOAPException; include Marshallable
     attr_reader :exceptionTypeName, :message, :backtrace, :cause
@@ -157,6 +159,7 @@ module RPCUtils
     end
 
     def setiv2obj( obj, node, map )
+      return if node.nil?
       vars = {}
       node.each do | name, value |
 	vars[ RPCUtils.getNameFromElementName( name ) ] =
@@ -174,6 +177,7 @@ module RPCUtils
     end
 
     def addiv2soap( node, obj, map )
+      return if obj.instance_variables.empty?
       ivars = SOAPStruct.new	# Undefined type.
       setiv2soap( ivars, obj, map )
       node.add( 'ivars', ivars )
@@ -203,6 +207,9 @@ module RPCUtils
       soapObj = nil
       begin
 	if soapKlass <= XSD::XSDString
+          unless obj.class == String
+            return nil
+          end
 	  if Charset.isCES( obj, $KCODE )
 	    encoded = Charset.codeConv( obj, $KCODE, Charset.getEncoding )
 	    soapObj = soapKlass.new( encoded )
@@ -228,6 +235,9 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
+      if node.extraAttrs.has_key?( RubyTypeName )
+        return false
+      end
       obj = if objKlass <= ::String
 	  Charset.codeConv( node.data, Charset.getEncoding, $KCODE )
 	else
@@ -290,16 +300,13 @@ module RPCUtils
     # [ [1], [2] ] is converted to Array of Array, not 2-D Array.
     # To create M-D Array, you must call RPCUtils.ary2md.
     def obj2soap( soapKlass, obj, info, map )
-      if soapKlass != SOAP::SOAPArray
-	return nil
-      end
-      type = getObjType( obj )
-      if type.name
-	type.namespace ||= RubyTypeNamespace
+      arrayType = getObjType( obj )
+      if arrayType.name
+	arrayType.namespace ||= RubyTypeNamespace
       else
-	type = XSD::AnyTypeName
+	arrayType = XSD::AnyTypeName
       end
-      param = SOAPArray.new( ValueArrayName, 1, type )
+      param = SOAPArray.new( ValueArrayName, 1, arrayType )
       markMarshalledObj( obj, param )
       obj.each do | var |
 	param.add( RPCUtils._obj2soap( var, map ))
@@ -308,10 +315,11 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
-      if !node.is_a?( SOAPArray )
-	return false
+      klass = Array
+      if ( rubyType = node.extraAttrs[ RubyTypeName ] )
+        klass = RPCUtils.getClassFromName( rubyType )
       end
-      obj = []
+      obj = createEmptyObject( klass )
       markUnmarshalledObj( node, obj )
       node.soap2array( obj ) do | elem |
 	elem ? RPCUtils._soap2obj( elem, map ) : nil
@@ -322,7 +330,7 @@ module RPCUtils
 
   class TypedArrayFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
-      type = info[0]
+      type = info[ :type ] || info[ 0 ]
       param = SOAPArray.new( ValueArrayName, 1, type )
       markMarshalledObj( obj, param )
       obj.each do | var |
@@ -332,10 +340,13 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
+      if node.extraAttrs.has_key?( RubyTypeName )
+        return false
+      end
       if node.rank > 1
         return false
       end
-      type = info[0]
+      type = info[ :type ] || info[ 0 ]
       unless node.arrayType == type
 	return false
       end
@@ -351,7 +362,7 @@ module RPCUtils
 
   class TypedStructFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
-      type = info[0]
+      type = info[ :type ] || info[ 0 ]
       param = SOAPStruct.new( type  )
       markMarshalledObj( obj, param )
       if obj.class <= SOAP::Marshallable
@@ -363,7 +374,7 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
-      type = info[0]
+      type = info[ :type ] || info[ 0 ]
       unless node.type == type
 	return false
       end
@@ -377,8 +388,11 @@ module RPCUtils
   MapQName = XSD::QName.new( ApacheSOAPTypeNamespace, 'Map' )
   class HashFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
-      if !obj.is_a?( Hash )
+      unless obj.class == Hash
 	return nil
+      end
+      if obj.default or ( obj.respond_to?( :default_proc ) and obj.default_proc )
+        return nil
       end
       param = SOAPStruct.new( MapQName )
       markMarshalledObj( obj, param )
@@ -396,6 +410,9 @@ module RPCUtils
       unless node.type == MapQName
 	return false
       end
+      if node.has_key?( 'default' )
+	return false
+      end
       obj = Hash.new
       markUnmarshalledObj( node, obj )
       node.each do | key, value |
@@ -407,6 +424,8 @@ module RPCUtils
   end
 
   class RubytypeFactory_ < Factory
+    TYPE_STRING = 'String'
+    TYPE_ARRAY = 'Array'
     TYPE_REGEXP = 'Regexp'
     TYPE_RANGE = 'Range'
     TYPE_CLASS = 'Class'
@@ -414,18 +433,68 @@ module RPCUtils
     TYPE_SYMBOL = 'Symbol'
     TYPE_STRUCT = 'Struct'
     TYPE_HASH = 'Map'
-
+    
     def initialize( config = {} )
       @config = config
       @allowUntypedStruct = @config.has_key?( :allowUntypedStruct ) ?
 	@config[ :allowUntypedStruct ] : true
+      @allowOriginalMapping = @config.has_key?( :allowOriginalMapping ) ?
+	@config[ :allowOriginalMapping ] : false
     end
 
     def obj2soap( soapKlass, obj, info, map )
+      param = nil
       case obj
+      when String
+        unless @allowOriginalMapping
+          return nil
+        end
+        unless Charset.isCES( obj, $KCODE )
+          return nil
+        end
+        encoded = Charset.codeConv( obj, $KCODE, Charset.getEncoding )
+        param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_STRING ))
+        markMarshalledObj( obj, param )
+        param.add( 'string', SOAPString.new( encoded ))
+        if obj.class != String
+          param.extraAttrs[ RubyTypeName ] = obj.class.name
+        end
+        addiv2soap( param, obj, map )
+      when Array
+        unless @allowOriginalMapping
+          return nil
+        end
+        arrayType = getObjType( obj )
+        if arrayType.name
+          arrayType.namespace ||= RubyTypeNamespace
+        else
+          arrayType = XSD::AnyTypeName
+        end
+        if obj.instance_variables.empty?
+          param = SOAPArray.new( ValueArrayName, 1, arrayType )
+          markMarshalledObj( obj, param )
+          obj.each do | var |
+            param.add( RPCUtils._obj2soap( var, map ))
+          end
+        else
+          param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_ARRAY ))
+          markMarshalledObj( obj, param )
+          ary = SOAPArray.new( ValueArrayName, 1, arrayType )
+          obj.each do | var |
+            ary.add( RPCUtils._obj2soap( var, map ))
+          end
+          param.add( 'array', ary )
+          addiv2soap( param, obj, map )
+        end
+        if obj.class != Array
+          param.extraAttrs[ RubyTypeName ] = obj.class.name
+        end
       when Regexp
 	param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_REGEXP ))
 	markMarshalledObj( obj, param )
+        if obj.class != Regexp
+          param.extraAttrs[ RubyTypeName ] = obj.class.name
+        end
 	param.add( 'source', SOAPBase64.new( obj.source ))
 	if obj.respond_to?( 'options' )
       	  # Regexp#options is from Ruby/1.7
@@ -452,67 +521,65 @@ module RPCUtils
 	  end
 	end
 	param.add( 'options', SOAPInt.new( options ))
-	unless obj.instance_variables.empty?
-	  addiv2soap( param, obj, map )
-	end
-	param
+        addiv2soap( param, obj, map )
       when Range
 	param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_RANGE ))
 	markMarshalledObj( obj, param )
+        if obj.class != Range
+          param.extraAttrs[ RubyTypeName ] = obj.class.name
+        end
 	param.add( 'begin', RPCUtils._obj2soap( obj.begin, map ))
 	param.add( 'end', RPCUtils._obj2soap( obj.end, map ))
 	param.add( 'exclude_end', SOAP::SOAPBoolean.new( obj.exclude_end? ))
-	unless obj.instance_variables.empty?
-	  addiv2soap( param, obj, map )
-	end
-	param
+        addiv2soap( param, obj, map )
       when Hash
+        unless @allowOriginalMapping
+          return nil
+        end
+        if obj.respond_to?( :default_proc ) && obj.default_proc
+          raise ArgumentError.new( "cannot dump hash with default proc" )
+        end
 	param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_HASH ))
 	markMarshalledObj( obj, param )
+        if obj.class != Hash
+          param.extraAttrs[ RubyTypeName ] = obj.class.name
+        end
 	obj.each do | key, value |
 	  elem = SOAPStruct.new	# Undefined type.
 	  elem.add( "key", RPCUtils._obj2soap( key, map ))
 	  elem.add( "value", RPCUtils._obj2soap( value, map ))
-	  # ApacheAxis allows only 'item' here.
 	  param.add( "item", elem )
 	end
-#	unless obj.instance_variables.empty?
-#	  addiv2soap( param, obj, map )
-#	end
-	param
+        param.add( 'default', RPCUtils._obj2soap( obj.default, map ))
+        addiv2soap( param, obj, map )
       when Class
 	if obj.name.empty?
-	  # raise FactoryError.new( "Can't dump anonymous class #{ obj }." )
-	  return nil
+	  raise ArgumentError.new( "Can't dump anonymous class #{ obj }." )
 	end
 	param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_CLASS ))
 	markMarshalledObj( obj, param )
 	param.add( 'name', SOAPString.new( obj.name ))
-	param
+        addiv2soap( param, obj, map )
       when Module
 	if obj.name.empty?
-	  # raise FactoryError.new( "Can't dump anonymous module #{ obj }." )
-	  return nil
+	  raise ArgumentError.new( "Can't dump anonymous module #{ obj }." )
 	end
 	param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_MODULE ))
 	markMarshalledObj( obj, param )
 	param.add( 'name', SOAPString.new( obj.name ))
-	param
+        addiv2soap( param, obj, map )
       when Symbol
 	param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_SYMBOL ))
 	markMarshalledObj( obj, param )
 	param.add( 'id', SOAPString.new( obj.id2name ))
-	param
+        addiv2soap( param, obj, map )
       when Exception
 	typeStr = RPCUtils.getElementNameFromName( obj.class.to_s )
 	param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, typeStr ))
 	markMarshalledObj( obj, param )
 	param.add( 'message', RPCUtils._obj2soap( obj.message, map ))
 	param.add( 'backtrace', RPCUtils._obj2soap( obj.backtrace, map ))
-	unless obj.instance_variables.empty?
-	  addiv2soap( param, obj, map )
-	end
-	param
+        addiv2soap( param, obj, map )
       when Struct
 	param = SOAPStruct.new( XSD::QName.new( RubyTypeNamespace, TYPE_STRUCT ))
 	markMarshalledObj( obj, param )
@@ -523,19 +590,25 @@ module RPCUtils
 	    RPCUtils._obj2soap( obj[ member ], map ))
 	end
 	param.add( 'member', memberElem )
-	unless obj.instance_variables.empty?
-	  addiv2soap( param, obj, map )
-	end
-	param
+        addiv2soap( param, obj, map )
       when IO, Binding, Continuation, Data, Dir, File::Stat, MatchData, Method,
   	  Proc, Thread, ThreadGroup 
 	return nil
       when ::SOAP::RPCUtils::Object
 	param = SOAPStruct.new( XSD::AnyTypeName )
 	markMarshalledObj( obj, param )
-	setiv2soap( param, obj, map )
-	param
+	setiv2soap( param, obj, map )   # addiv2soap?
       else
+	if obj.class.name.empty?
+	  raise ArgumentError.new( "Can't dump anonymous class #{ obj }." )
+	end
+        unless obj.singleton_methods.empty?
+	  raise TypeError.new( "singleton can't be dumped #{ obj }" )
+        end
+        singleton_class = class << obj; self; end
+        unless singleton_class.instance_variables.empty?
+	  raise TypeError.new( "singleton can't be dumped #{ obj }" )
+        end
 	type = getClassType( obj.class )
 	type.name ||= RPCUtils.getElementNameFromName( obj.class.to_s )
 	type.namespace ||= RubyCustomTypeNamespace
@@ -544,11 +617,10 @@ module RPCUtils
 	if obj.class <= Marshallable
 	  setiv2soap( param, obj, map )
 	else
-	  # Should not be marshalled?
-	  setiv2soap( param, obj, map )
+	  setiv2soap( param, obj, map ) # Should not be marshalled?
 	end
-	param
       end
+      param
     end
 
     def soap2obj( objKlass, node, info, map )
@@ -565,45 +637,105 @@ module RPCUtils
 
     def rubyType2obj( node, map )
       obj = nil
+      case node.class
+      when SOAPString
+        klass = String
+        if ( rubyType = node.extraAttrs[ RubyTypeName ] )
+          klass = RPCUtils.getClassFromName( rubyType )
+        end
+	obj = createEmptyObject( klass )
+	markUnmarshalledObj( node, obj )
+        obj.replace( node.data )
+        return true, obj
+      when SOAPArray
+        klass = Array
+        if ( rubyType = node.extraAttrs[ RubyTypeName ] )
+          klass = RPCUtils.getClassFromName( rubyType )
+        end
+	obj = createEmptyObject( klass )
+        markUnmarshalledObj( node, obj )
+        node.soap2array( obj ) do | elem |
+          elem ? RPCUtils._soap2obj( elem, map ) : nil
+        end
+      end
+
       case node.type.name
+      when TYPE_STRING
+        klass = String
+        if ( rubyType = node.extraAttrs[ RubyTypeName ] )
+          klass = RPCUtils.getClassFromName( rubyType )
+        end
+	obj = createEmptyObject( klass )
+	markUnmarshalledObj( node, obj )
+        obj.replace( node[ 'string' ].data )
+        setiv2obj( obj, node[ 'ivars' ], map )
+      when TYPE_ARRAY
+        klass = Array
+        if ( rubyType = node.extraAttrs[ RubyTypeName ] )
+          klass = RPCUtils.getClassFromName( rubyType )
+        end
+	obj = createEmptyObject( klass )
+        markUnmarshalledObj( node, obj )
+        node[ 'array' ].soap2array( obj ) do | elem |
+          elem ? RPCUtils._soap2obj( elem, map ) : nil
+        end
+        setiv2obj( obj, node[ 'ivars' ], map )
       when TYPE_REGEXP
-	obj = createEmptyObject( Regexp )
+        klass = Regexp
+        if ( rubyType = node.extraAttrs[ RubyTypeName ] )
+          klass = RPCUtils.getClassFromName( rubyType )
+        end
+	obj = createEmptyObject( klass )
 	markUnmarshalledObj( node, obj )
 	source = node[ 'source' ].toString
 	options = node[ 'options' ].data || 0
 	obj.instance_eval { initialize( source, options ) }
-	if node.members.include?( 'ivars' )
-  	  setiv2obj( obj, node[ 'ivars' ], map )
-   	end
+        setiv2obj( obj, node[ 'ivars' ], map )
       when TYPE_RANGE
-	obj = createEmptyObject( Range )
+        klass = Range
+        if ( rubyType = node.extraAttrs[ RubyTypeName ] )
+          klass = RPCUtils.getClassFromName( rubyType )
+        end
+	obj = createEmptyObject( klass )
 	markUnmarshalledObj( node, obj )
 	first = RPCUtils._soap2obj( node[ 'begin' ], map )
 	last = RPCUtils._soap2obj( node[ 'end' ], map )
 	exclude_end = node[ 'exclude_end' ].data
 	obj.instance_eval { initialize( first, last, exclude_end ) }
-	if node.members.include?( 'ivars' )
-  	  setiv2obj( obj, node[ 'ivars' ], map )
-   	end
+        setiv2obj( obj, node[ 'ivars' ], map )
       when TYPE_HASH
-	obj = Hash.new
+        unless @allowOriginalMapping
+          return false
+        end
+        klass = Hash
+        if ( rubyType = node.extraAttrs[ RubyTypeName ] )
+          klass = RPCUtils.getClassFromName( rubyType )
+        end
+	obj = createEmptyObject( klass )
 	markUnmarshalledObj( node, obj )
 	node.each do | key, value |
+          next unless key == 'item'
 	  obj[ RPCUtils._soap2obj( value[ 'key' ], map ) ] =
 	    RPCUtils._soap2obj( value[ 'value' ], map )
 	end
+        if node.has_key?( 'default' )
+          obj.default = RPCUtils._soap2obj( node[ 'default' ], map )
+        end
+        setiv2obj( obj, node[ 'ivars' ], map )
       when TYPE_CLASS
 	obj = RPCUtils.getClassFromName( node[ 'name' ].data )
+        setiv2obj( obj, node[ 'ivars' ], map )
       when TYPE_MODULE
 	obj = RPCUtils.getClassFromName( node[ 'name' ].data )
+        setiv2obj( obj, node[ 'ivars' ], map )
       when TYPE_SYMBOL
 	obj = node[ 'id' ].data.intern
+        setiv2obj( obj, node[ 'ivars' ], map )
       when TYPE_STRUCT
 	typeStr = RPCUtils.getNameFromElementName( node[ 'type' ].data )
 	klass = RPCUtils.getClassFromName( typeStr )
 	if klass.nil?
 	  klass = RPCUtils.getClassFromName( toType( typeStr ))
-	  #klass = self.instance_eval( toType( typeStr ))
 	end
 	if klass.nil?
 	  return false
@@ -611,21 +743,19 @@ module RPCUtils
 	unless klass <= ::Struct
 	  return false
 	end
-	obj = klass.new
+	obj = createEmptyObject( klass )
 	markUnmarshalledObj( node, obj )
 	node[ 'member'].each do | name, value |
 	  obj[ RPCUtils.getNameFromElementName( name ) ] =
 	    RPCUtils._soap2obj( value, map )
 	end
-
-	if node.members.include?( 'ivars' )
-  	  setiv2obj( obj, node[ 'ivars' ], map )
-   	end
+        setiv2obj( obj, node[ 'ivars' ], map )
       else
 	conv, obj = exception2obj( node, map )
 	unless conv
 	  return false
 	end
+        setiv2obj( obj, node[ 'ivars' ], map )
       end
       return true, obj
     end
@@ -641,12 +771,11 @@ module RPCUtils
       end
       message = RPCUtils._soap2obj( node[ 'message' ], map )
       backtrace = RPCUtils._soap2obj( node[ 'backtrace' ], map )
-      obj = klass.new( message )
+      obj = createEmptyObject( klass )
+      obj = obj.exception( message )
       markUnmarshalledObj( node, obj )
       obj.set_backtrace( backtrace )
-      if node.members.include?( 'ivars' )
-	setiv2obj( obj, node[ 'ivars' ], map )
-      end
+      setiv2obj( obj, node[ 'ivars' ], map )
       return true, obj
     end
 
@@ -764,7 +893,8 @@ module RPCUtils
 
       def obj2soap( klass, obj )
 	@map.each do | objKlass, soapKlass, factory, info |
-	  if klass <= objKlass
+	  if klass == objKlass or
+              ( info[ :derivedClass ] and klass <= objKlass )
 	    ret = factory.obj2soap( soapKlass, obj, info, @registry )
 	    return ret if ret
 	  end
@@ -774,7 +904,8 @@ module RPCUtils
 
       def soap2obj( klass, node )
 	@map.each do | objKlass, soapKlass, factory, info |
-	  if klass <= soapKlass
+	  if klass == soapKlass or
+              (info[ :derivedClass ] and klass <= soapKlass )
 	    conv, obj = factory.soap2obj( objKlass, node, info, @registry )
 	    return true, obj if conv
 	  end
@@ -792,6 +923,7 @@ module RPCUtils
 
       # Give priority to latter entry.
       def add( objKlass, soapKlass, factory, info )
+        info ||= {}
 	@map.unshift( [ objKlass, soapKlass, factory, info ] )
       end
 
@@ -836,13 +968,20 @@ module RPCUtils
       [ ::Date,		::SOAP::SOAPDate,	BasetypeFactory ],
       [ ::Time,		::SOAP::SOAPDateTime,	BasetypeFactory ],
       [ ::Time,		::SOAP::SOAPTime,	BasetypeFactory ],
-      [ ::Float,	::SOAP::SOAPDouble,	BasetypeFactory ],
-      [ ::Float,	::SOAP::SOAPFloat,	BasetypeFactory ],
-      [ ::Integer,	::SOAP::SOAPInt,	BasetypeFactory ],
-      [ ::Integer,	::SOAP::SOAPLong,	BasetypeFactory ],
-      [ ::Integer,	::SOAP::SOAPInteger,	BasetypeFactory ],
-      [ ::Integer,	::SOAP::SOAPShort,	BasetypeFactory ],
-      [ ::URI::Generic,	::SOAP::SOAPAnyURI,	BasetypeFactory ],
+      [ ::Float,	::SOAP::SOAPDouble,	BasetypeFactory,
+        { :derivedClass => true } ],
+      [ ::Float,	::SOAP::SOAPFloat,	BasetypeFactory,
+        { :derivedClass => true } ],
+      [ ::Integer,	::SOAP::SOAPInt,	BasetypeFactory,
+        { :derivedClass => true } ],
+      [ ::Integer,	::SOAP::SOAPLong,	BasetypeFactory,
+        { :derivedClass => true } ],
+      [ ::Integer,	::SOAP::SOAPInteger,	BasetypeFactory,
+        { :derivedClass => true } ],
+      [ ::Integer,	::SOAP::SOAPShort,	BasetypeFactory,
+        { :derivedClass => true } ],
+      [ ::URI::Generic,	::SOAP::SOAPAnyURI,	BasetypeFactory,
+        { :derivedClass => true } ],
       [ ::String,	::SOAP::SOAPBase64,	Base64Factory ],
       [ ::String,	::SOAP::SOAPHexBinary,	Base64Factory ],
       [ ::String,	::SOAP::SOAPDecimal,	BasetypeFactory ],
@@ -859,17 +998,22 @@ module RPCUtils
       [ ::Hash,		::SOAP::SOAPStruct,	HashFactory ],
       [ ::SOAP::RPCUtils::SOAPException,
 			::SOAP::SOAPStruct,	TypedStructFactory,
-			[ XSD::QName.new( RubyCustomTypeNamespace, "SOAPException" ) ]],
+        { :type => XSD::QName.new( RubyCustomTypeNamespace, "SOAPException" ) }
+      ],
     ]
 
     def initialize( config = {} )
       @config = config
-      @allowUntypedStruct = @config.has_key?( :allowUntypedStruct ) ?
-	@config[ :allowUntypedStruct ] : true
       @map = Mapping.new( self )
       @map.init( SOAPBaseMapping )
-      @defaultFactory =
-	RubytypeFactory_.new( :allowUntypedStruct => @allowUntypedStruct )
+      allowUntypedStruct = @config.has_key?( :allowUntypedStruct ) ?
+	@config[ :allowUntypedStruct ] : true
+      allowOriginalMapping = @config.has_key?( :allowOriginalMapping ) ?
+	@config[ :allowOriginalMapping ] : false
+      @defaultFactory = RubytypeFactory_.new(
+        :allowUntypedStruct => allowUntypedStruct,
+        :allowOriginalMapping => allowOriginalMapping
+      )
       @obj2soapExceptionHandler = nil
       @soap2objExceptionHandler = nil
     end
