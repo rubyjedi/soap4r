@@ -69,20 +69,28 @@ class Property
     @store.values
   end
 
-  def lock
-    each_key do |key|
-      key.lock
+  def lock(cascade = false)
+    if cascade
+      each_key do |key|
+	key.lock(cascade)
+      end
     end
     @locked = true
     self
   end
 
-  def unlock
+  def unlock(cascade = false)
     @locked = false
-    each_key do |key|
-      key.unlock
+    if cascade
+      each_key do |key|
+	key.unlock(cascade)
+      end
     end
     self
+  end
+
+  def locked?
+    @locked
   end
 
 protected
@@ -141,7 +149,7 @@ private
 
   def local_referent(key)
     check_lock(key)
-    if @locked and propkey?(@store[key])
+    if propkey?(@store[key]) and @store[key].locked?
       raise TypeError.new("cannot split any key from locked property")
     end
     @store[key]
