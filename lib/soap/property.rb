@@ -12,14 +12,15 @@ module SOAP
 class Property
   include Enumerable
 
-  # comment: line which begins with '#' and empty line.
-  # line separator: \r?\n.
-  # key/value separator: ':', '=', or \s.
-  # '\' as escape character.  line separator cannot be escaped (1 line 1 prop).
-  # \s at the head/tail of key/value are trimmed.
+  # Property file format:
+  #   line separator is \r?\n.  1 line per a property.
+  #   line which begins with '#' is comment line.  empty line is ignored.
+  #   key/value separator is ':', '=', or \s.
+  #   '\' as escape character.  but line separator cannot be escaped.
+  #   \s at the head/tail of key/value are trimmed.
   def self.load(stream)
     prop = new
-    stream.each do |line|
+    stream.each_with_index do |line, lineno|
       line.sub!(/\r?\n\z/, '')
       next if /^(#.*|)$/ =~ line
       if /^\s*([^=:\s\\]+(?:\\.[^=:\s\\]*)*)\s*[=:\s]\s*(.*)$/ =~ line
@@ -28,7 +29,7 @@ class Property
 	value = eval("\"#{value.strip}\"")
 	prop[key] = value
       else
-	raise TypeError.new("property format error: #{line}")
+	raise TypeError.new("property format error at line #{lineno + 1}: `#{line}'")
       end
     end
     prop
@@ -42,11 +43,11 @@ class Property
 
   def self.loadproperty(propname)
     $:.each do |path|
-      if File.file?(File.join(path, propname))
-	return open(File.join(path, propname))
+      if File.file?(file = File.join(path, propname))
+	return open(file)
       end
     end
-    raise ArgumentError.new("property `#{propname}' not found")
+    nil
   end
 
   def initialize
