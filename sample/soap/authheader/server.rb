@@ -64,5 +64,9 @@ class AuthHeaderPortServer < SOAP::RPC::StandaloneServer
 end
 
 if $0 == __FILE__
-  status = AuthHeaderPortServer.new('AuthHeaderPortServer', nil, '0.0.0.0', 7000).start
+  svr = AuthHeaderPortServer.new('AuthHeaderPortServer', nil, '0.0.0.0', 7000)
+  trap(:INT) do
+    svr.shutdown
+  end
+  status = svr.start
 end
