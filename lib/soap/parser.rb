@@ -129,7 +129,7 @@ public
     @parseStack << ParseFrame.new( ns, node, encodingStyle )
   end
 
-  def cdata( text )
+  def characters( text )
     lastFrame = @parseStack.last
     if lastFrame
       ns = lastFrame.ns.clone
@@ -243,6 +243,10 @@ private
   end
 
   def epilogue
+  end
+
+  def adjustKCode
+    false
   end
 end
 
