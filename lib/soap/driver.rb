@@ -16,203 +16,50 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-require 'soap/proxy'
-require 'soap/rpcUtils'
-require 'soap/streamHandler'
-require 'soap/charset'
 
-require 'devel/logger'
-Log = Devel::Logger	# for backward compatibility of Devel::Logger.
+require 'soap/rpc/driver'
 
 
 module SOAP
 
-
-class Driver
+  
+class Driver < RPC::Driver
   include Devel::Logger::Severity
-  include RPCUtils
-
-public
-  class EmptyResponseError < Error; end
 
   attr_accessor :logDev
-  attr_accessor :mappingRegistry
-  attr_reader :endPointUrl
-  attr_reader :wireDumpDev
-  attr_reader :wireDumpFileBase
-  attr_reader :httpProxy
 
-  def initialize( log, logId, namespace, endpointUrl, httpProxy = nil, soapAction = nil )
+  def initialize(log, logId, namespace, endpointUrl, httpProxy = nil, soapAction = nil)
+    super(endpointUrl, namespace, soapAction)
     @logDev = log
     @logId = logId
     @logIdPrefix = "<#{ @logId }> "
-    log( SEV_INFO ) { 'initialize: initializing SOAP driver...' }
-    @namespace = namespace
-    @endpointUrl = endpointUrl
-    @mappingRegistry = nil	# for unmarshal
-    @wireDumpDev = nil
-    @dumpFileBase = nil
-    @httpProxy = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
-    @handler = HTTPPostStreamHandler.new( @endpointUrl, @httpProxy,
-      Charset.getEncodingLabel )
-    @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
-    @proxy.allowUnqualifiedElement = true
-  end
-
-  def setEndpointUrl( endpointUrl )
-    @endpointUrl = endpointUrl
-    if @handler
-      @handler.endpointUrl = @endpointUrl
-      @handler.reset
-    end
-  end
-
-  def setWireDumpDev( dumpDev )
-    @wireDumpDev = dumpDev
-    if @handler
-      @handler.dumpDev = @wireDumpDev
-      @handler.reset
-    end
-  end
-
-  def setWireDumpFileBase( base )
-    @dumpFileBase = base
-  end
-
-  def setHttpProxy( httpProxy )
-    @httpProxy = httpProxy
-    if @handler
-      @handler.proxy = @httpProxy
-      @handler.reset
-    end
-  end
-
-
-  ###
-  ## Method definition interfaces.
-  #
-  # paramArg: [ [ paramDef... ] ] or [ paramName, paramName, ... ]
-  # paramDef: See proxy.rb.  Sorry.
-
-  def addMethod( name, *paramArg )
-    addMethodWithSOAPActionAs( name, name, nil, *paramArg )
-  end
-
-  def addMethodAs( nameAs, name, *paramArg )
-    addMethodWithSOAPActionAs( nameAs, name, nil, *paramArg )
-  end
-
-  def addMethodWithSOAPAction( name, soapAction, *paramArg )
-    addMethodWithSOAPActionAs( name, name, soapAction, *paramArg )
-  end
-
-  def addMethodWithSOAPActionAs( nameAs, name, soapAction, *paramArg )
-    paramDef = if paramArg.size == 1 and paramArg[ 0 ].is_a?( Array )
-	paramArg[ 0 ]
-      else
-	SOAPMethod.createParamDef( paramArg )
-      end
-    @proxy.addMethodAs( nameAs, name, paramDef, soapAction )
-    addMethodInterface( name, paramDef )
-  end
-
-
-  ###
-  ## Encoding style inteface.
-  #
-  def setDefaultEncodingStyle( encodingStyle )
-    @proxy.defaultEncodingStyle = encodingStyle
-  end
-
-  def getDefaultEncodingStyle
-    @proxy.defaultEncodingStyle
+    setHttpProxy(httpProxy)
+    log(SEV_INFO) { 'initialize: initializing SOAP driver...' }
   end
 
 
   ###
   ## Driving interface.
   #
-#  def method_missing( msg_id, *params )
-#    log( SEV_INFO ) { "method_missing: invoked '#{ msg_id.id2name }'." }
-#    call( msg_id.id2name, *params )
-#  end
-
-  def invoke( reqHeaders, reqBody )
-    log( SEV_INFO ) { "invoke: invoking message '#{ reqBody.type }'." }
-
-    if @dumpFileBase
-      @handler.dumpFileBase = @dumpFileBase + '_' << reqBody.elementName.name
-    end
-
-    data = @proxy.invoke( reqHeaders, reqBody )
-    return data
+  def invoke(reqHeaders, reqBody)
+    log(SEV_INFO) { "invoke: invoking message '#{ reqBody.type }'." }
+    super
   end
 
-  def call( methodName, *params )
-    log( SEV_INFO ) { "call: calling method '#{ methodName }'." }
-    log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
-
-    # Convert parameters: params array => SOAPArray => members array
-    params = RPCUtils.obj2soap( params, @mappingRegistry ).to_a
-    log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
-
-    # Set dumpDev if needed.
-    if @dumpFileBase
-      @handler.dumpFileBase = @dumpFileBase + '_' << methodName
-    end
-
-    # Then, call @proxy.call like the following.
-    header, body = @proxy.call( nil, methodName, *params )
-    unless body
-      raise EmptyResponseError.new( "Empty response." )
-    end
-
-    log( SEV_INFO ) { "call: checking SOAP-Fault..." }
-    begin
-      @proxy.checkFault( body )
-    rescue SOAP::FaultError => e
-      RPCUtils.fault2exception( e )
-    end
-
-    ret = body.response ?
-      RPCUtils.soap2obj( body.response, @mappingRegistry ) : nil
-    if body.outParams
-      outParams = body.outParams.collect { | outParam |
-	RPCUtils.soap2obj( outParam )
-      }
-      return [ ret ].concat( outParams )
-    else
-      return ret
-    end
-  end
-
-  def resetStream
-    @handler.reset
+  def call(methodName, *params)
+    log(SEV_INFO) { "call: calling method '#{ methodName }'." }
+    log(SEV_DEBUG) { "call: parameters '#{ params.inspect }'." }
+    log(SEV_DEBUG) {
+      params = RPC.obj2soap(params, @mappingRegistry).to_a
+      "call: parameters '#{ params.inspect }'."
+    }
+    super
   end
 
 private
 
-  def addMethodInterface( name, paramDef )
-    paramNames = []
-    i = 0
-    @proxy.method[ name ].eachParamName( RPCUtils::SOAPMethod::IN, RPCUtils::SOAPMethod::INOUT ) do | paramName |
-      i += 1
-      paramNames << "arg#{ i }"
-    end
-    callParamStr = if paramNames.empty?
-	""
-      else
-	", " << paramNames.join( ", " )
-      end
-    self.instance_eval <<-EOS
-      def #{ name }( #{ paramNames.join( ", " ) } )
-	call( "#{ name }"#{ callParamStr } )
-      end
-    EOS
-  end
-
-  def log( sev )
-    @logDev.add( sev, nil, self.class ) { @logIdPrefix + yield } if @logDev
+  def log(sev)
+    @logDev.add(sev, nil, self.class) { @logIdPrefix + yield } if @logDev
   end
 end
 
