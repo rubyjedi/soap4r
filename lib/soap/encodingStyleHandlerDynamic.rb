@@ -48,10 +48,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 
     name = nil
     if qualified and data.elementName.namespace
-      if !ns.assigned?( data.elementName.namespace )
-	tag = ns.assign( data.elementName.namespace )
-	attrs[ 'xmlns:' << tag ] = data.elementName.namespace
-      end
+      assignNamespace( attrs, ns, data.elementName.namespace )
       name = ns.name( data.elementName )
     else
       name = data.elementName.name
@@ -122,12 +119,14 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   class SOAPUnknown < SOAPTemporalObject
     attr_reader :type
     attr_accessor :typeDef
+    attr_reader :extraAttrs
 
-    def initialize( handler, elementName, type )
+    def initialize( handler, elementName, type, extraAttrs )
       super()
       @handler = handler
       @elementName = elementName
       @type = type
+      @extraAttrs = extraAttrs
       @typeDef = nil
     end
 
@@ -137,6 +136,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       o.root = @root
       o.parent = @parent
       o.position = @position
+      o.extraAttrs.update( @extraAttrs )
       @handler.decodeParent( @parent, o )
       o
     end
@@ -147,6 +147,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       o.root = @root
       o.parent = @parent
       o.position = @position
+      o.extraAttrs.update( @extraAttrs )
       @handler.decodeParent( @parent, o )
       o
     end
@@ -157,6 +158,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       o.root = @root
       o.parent = @parent
       o.position = @position
+      o.extraAttrs.update( @extraAttrs )
       @handler.decodeParent( @parent, o )
       o
     end
@@ -165,21 +167,20 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   def decodeTag( ns, elementName, attrs, parent )
     # ToDo: check if @textBuf is empty...
     @textBuf = ''
-    isNil, type, arrayType, reference, id, root, offset, position =
-      decodeAttrs( ns, attrs )
+    isNil, type, arrayType, root, offset, position, extraAttrs = decodeAttrs( ns, attrs )
     o = nil
     if isNil
       o = SOAPNil.decode( elementName )
-    elsif reference
-      o = SOAPReference.decode( elementName, reference )
+    elsif attrs[ 'href' ]
+      o = SOAPReference.decode( elementName, attrs[ 'href' ] )
       @referencePool << o
     elsif @decodeComplexTypes &&
 	( parent.node.class != SOAPBody || @firstTopElement )
       # multi-ref element should be parsed by decodeTagByType.
       @firstTopElement = false
-      o = decodeTagByWSDL( ns, elementName, type, parent.node, arrayType )
+      o = decodeTagByWSDL( ns, elementName, type, parent.node, arrayType, extraAttrs )
     else
-      o = decodeTagByType( ns, elementName, type, parent.node, arrayType )
+      o = decodeTagByType( ns, elementName, type, parent.node, arrayType, extraAttrs )
     end
 
     if o.is_a?( SOAPArray )
@@ -192,7 +193,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     end
 
     o.parent = parent
-    o.id = id 
+    o.id = attrs[ 'id' ] 
     o.root = root
     o.position = position
 
@@ -295,14 +296,8 @@ private
     attrs = {}
 
     if !parent || parent.encodingStyle != EncodingNamespace
-      if !ns.assigned?( EnvelopeNamespace )
-	tag = ns.assign( EnvelopeNamespace )
-	attrs[ 'xmlns:' << tag ] = EnvelopeNamespace
-      end
-      if !ns.assigned?( EncodingNamespace )
-	tag = ns.assign( EncodingNamespace )
-	attrs[ 'xmlns:' << tag ] = EncodingNamespace
-      end
+      assignNamespace( attrs, ns, EnvelopeNamespace )
+      assignNamespace( attrs, ns, EncodingNamespace )
       attrs[ ns.name( AttrEncodingStyleName ) ] = EncodingNamespace
       data.encodingStyle = EncodingNamespace
     end
@@ -312,24 +307,16 @@ private
     end
 
     if data.is_a?( SOAPNil )
-      if !ns.assigned?( XSD::InstanceNamespace )
-       	tag = ns.assign( XSD::InstanceNamespace )
-	attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
-      end
+      assignNamespace( attrs, ns, XSD::InstanceNamespace )
       attrs[ ns.name( XSD::AttrNilName ) ] = XSD::NilValue
     elsif @generateEncodeType
-      if !ns.assigned?( XSD::InstanceNamespace )
-       	tag = ns.assign( XSD::InstanceNamespace )
-	attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
-      end
-      if data.type.namespace and !ns.assigned?( data.type.namespace )
-	tag = ns.assign( data.type.namespace )
-	attrs[ 'xmlns:' << tag ] = data.type.namespace
+      assignNamespace( attrs, ns, XSD::InstanceNamespace )
+      if data.type.namespace
+        assignNamespace( attrs, ns, data.type.namespace )
       end
       if data.is_a?( SOAPArray )
-	if data.arrayType.namespace and !ns.assigned?( data.arrayType.namespace )
-  	  tag = ns.assign( data.arrayType.namespace )
-  	  attrs[ 'xmlns:' << tag ] = data.arrayType.namespace
+	if data.arrayType.namespace
+          assignNamespace( attrs, ns, data.arrayType.namespace )
    	end
 	attrs[ ns.name( AttrArrayTypeName ) ] =
 	  ns.name( arrayTypeValue( ns, data ))
@@ -344,6 +331,10 @@ private
       else
 	attrs[ ns.name( XSD::AttrTypeName ) ] = ns.name( data.type )
       end
+      data.extraAttrs.each do | key, value |
+        assignNamespace( attrs, ns, key.namespace )
+        attrs[ ns.name( key ) ] = value       # ns.name( value ) ?
+      end
     end
 
     if data.id
@@ -352,7 +343,14 @@ private
     attrs
   end
 
-  def decodeTagByWSDL( ns, elementName, typeStr, parent, arrayTypeStr )
+  def assignNamespace( attrs, ns, namespace )
+    unless ns.assigned?( namespace )
+      tag = ns.assign( namespace )
+      attrs[ 'xmlns:' << tag ] = namespace
+    end
+  end
+
+  def decodeTagByWSDL( ns, elementName, typeStr, parent, arrayTypeStr, extraAttrs )
     if parent.class == SOAPBody
       type = @decodeComplexTypes[ elementName ]
       unless type
@@ -364,7 +362,7 @@ private
     end
 
     if parent.type == XSD::AnyTypeName
-      return decodeTagByType( ns, elementName, typeStr, parent, arrayTypeStr )
+      return decodeTagByType( ns, elementName, typeStr, parent, arrayTypeStr, extraAttrs )
     end
 
     # parent.typeDef is nil is the parent is SOAPUnknown.  SOAPUnknown is
@@ -378,7 +376,7 @@ private
       if ( klass = TypeMap[ typeName ] )
 	return klass.decode( elementName )
       elsif typeName == XSD::AnyTypeName
-	return decodeTagByType( ns, elementName, typeStr, parent, arrayTypeStr )
+	return decodeTagByType( ns, elementName, typeStr, parent, arrayTypeStr, extraAttrs )
       end
     end
 
@@ -412,10 +410,12 @@ private
     return nil
   end
 
-  def decodeTagByType( ns, elementName, typeStr, parent, arrayTypeStr )
+  def decodeTagByType( ns, elementName, typeStr, parent, arrayTypeStr, extraAttrs )
     if arrayTypeStr
       type = typeStr ? ns.parse( typeStr ) : ValueArrayName
-      return SOAPArray.decode( elementName, type, ns.parse( arrayTypeStr ))
+      node = SOAPArray.decode( elementName, type, ns.parse( arrayTypeStr ))
+      node.extraAttrs.update( extraAttrs )
+      return node
     end
 
     type = nil
@@ -435,7 +435,7 @@ private
       klass.decode( elementName )
     else
       # Unknown type... Struct or String
-      SOAPUnknown.new( self, elementName, type )
+      SOAPUnknown.new( self, elementName, type, extraAttrs )
     end
   end
 
@@ -458,50 +458,59 @@ private
     end
   end
 
+  NilLiteralMap = {
+    'true' => true,
+    '1' => true,
+    'false' => false,
+    '0' => false
+  }
+  RootLiteralMap = {
+    '1' => 1,
+    '0' => 0
+  }
   def decodeAttrs( ns, attrs )
     isNil = false
     type = nil
     arrayType = nil
-    reference = nil
-    id = nil
     root = nil
     offset = nil
     position = nil
+    extraAttrs = {}
 
     attrs.each do | key, value |
-      if ( ns.compare( XSD::InstanceNamespace, XSD::NilLiteral, key ))
-	# isNil = (( value == 'true' ) || ( value == '1' ))
-	if (( value == 'true' ) || ( value == '1' ))
-	  isNil = true
-	elsif (( value == 'false' ) || ( value == '0' ))
-	  isNil = false
-	else
-	  raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true', 'false', '1', or '0')." )
-	end
-      elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
-	type = value
-      elsif ( ns.compare( EncodingNamespace, AttrArrayType, key ))
-	arrayType = value
-      elsif ( key == 'href' )
-	reference = value
-      elsif ( key == 'id' )
-	id = value
-      elsif ( ns.compare( EncodingNamespace, AttrRoot, key ))
-	if value == '1'
-	  root = 1
-	elsif value == '0'
-	  root = 0
-	else
-	  raise EncodingStyleError.new( "Illegal root attribute value: #{ value }." )
-	end
-      elsif ( ns.compare( EncodingNamespace, AttrOffset, key ))
-	offset = value
-      elsif ( ns.compare( EncodingNamespace, AttrPosition, key ))
-	position = value
+      qname = ns.parse( key )
+      case qname.namespace
+      when XSD::InstanceNamespace
+        case qname.name
+        when XSD::NilLiteral
+          isNil = NilLiteralMap[ value ] or
+            raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true', 'false', '1', or '0')." )
+          next
+        when XSD::AttrType
+          type = value
+          next
+        end
+      when EncodingNamespace
+        case qname.name
+        when AttrArrayType
+          arrayType = value
+          next
+        when AttrRoot
+          root = RootLiteralMap[ value ] or
+            raise EncodingStyleError.new( "Illegal root attribute value: #{ value }." )
+          next
+        when AttrOffset
+          offset = value
+          next
+        when AttrPosition
+          position = value
+          next
+        end
       end
+      extraAttrs[ qname ] = value
     end
 
-    return isNil, type, arrayType, reference, id, root, offset, position
+    return isNil, type, arrayType, root, offset, position, extraAttrs
   end
 
   def decodeArrayPosition( position )
