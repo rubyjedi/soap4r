@@ -80,6 +80,20 @@ class Definitions < Info
     result
   end
 
+  def collect_simpletypes
+    result = XSD::NamedElements.new
+    if @types
+      @types.schemas.each do |schema|
+	result.concat(schema.simpletypes)
+      end
+    end
+    @imports.each do |import|
+      result.concat(import.content.collect_simpletypes)
+    end
+    result
+  end
+
+  # ToDo: simpletype must be accepted...
   def add_type(complextype)
     @anontypes << complextype
   end

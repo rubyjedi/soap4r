@@ -180,7 +180,7 @@ class WSDLDriver
       @mandatorycharset = nil
 
       @wsdl_elements = @wsdl.collect_elements
-      @wsdl_types = @wsdl.collect_complextypes
+      @wsdl_types = @wsdl.collect_complextypes + @wsdl.collect_simpletypes
       @rpc_decode_typemap = @wsdl_types +
 	@wsdl.soap_rpc_complextypes(port.find_binding)
       @wsdl_mapping_registry = Mapping::WSDLRegistry.new(@rpc_decode_typemap)
@@ -544,11 +544,25 @@ class WSDLDriver
       end
 
       def obj2type(obj, type)
-	o = SOAPElement.new(type.name)
-	type.each_element do |child_name, child_ele|
-	  o.add(_obj2ele(Mapper.find_attribute(obj, child_name.name),
-	    child_ele))
-	end
+        if type.is_a?(::WSDL::XMLSchema::SimpleType)
+          simple2soap(obj, TypeMap[type.base])
+        else
+          complext2soap(obj, type)
+        end
+      end
+
+      def simple2soap(obj, type)
+        o = base2soap(obj, TypeMap[type.base])
+        # ToDo: should handle restriction, etc.
+        o
+      end
+
+      def complex2soap(obj, type)
+        o = SOAPElement.new(type.name)
+        type.each_element do |child_name, child_ele|
+          o.add(_obj2ele(Mapper.find_attribute(obj, child_name.name),
+            child_ele))
+        end
 	o
       end
 

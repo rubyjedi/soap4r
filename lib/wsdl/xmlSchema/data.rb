@@ -8,6 +8,7 @@
 
 require 'wsdl/xmlSchema/schema'
 require 'wsdl/xmlSchema/import'
+require 'wsdl/xmlSchema/simpleType'
 require 'wsdl/xmlSchema/complexType'
 require 'wsdl/xmlSchema/complexContent'
 require 'wsdl/xmlSchema/any'
@@ -30,6 +31,7 @@ ChoiceName = XSD::QName.new(XSD::Namespace, 'choice')
 ComplexContentName = XSD::QName.new(XSD::Namespace, 'complexContent')
 ComplexTypeName = XSD::QName.new(XSD::Namespace, 'complexType')
 ElementName = XSD::QName.new(XSD::Namespace, 'element')
+EnumerationName = XSD::QName.new(XSD::Namespace, 'enumeration')
 ExtensionName = XSD::QName.new(XSD::Namespace, 'extension')
 ImportName = XSD::QName.new(XSD::Namespace, 'import')
 RestrictionName = XSD::QName.new(XSD::Namespace, 'restriction')
