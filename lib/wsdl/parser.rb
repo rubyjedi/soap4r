@@ -127,7 +127,8 @@ private
     else
       o = parent.parse_element(element)
       unless o
-	raise UnknownElementError.new("Unknown element #{ element }.")
+	warn("Unknown element #{ element }.")
+	o = Documentation.new	# which accepts any element.
       end
       o.parent = parent
     end
@@ -149,7 +150,8 @@ private
 	  end
 	end
       unless o.parse_attr(attr, value_ele)
-	raise UnknownAttributeError.new("Unknown attr #{ attr }.")
+	warn("Unknown attr #{ attr }.")
+	# raise UnknownAttributeError.new("Unknown attr #{ attr }.")
       end
     end
     o
