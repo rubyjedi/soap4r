@@ -30,6 +30,10 @@ class Driver < RPC::Driver
   attr_accessor :logdev
   alias logDev= logdev=
   alias logDev logdev
+  alias setWireDumpDev wiredump_dev=
+  alias setDefaultEncodingStyle default_encodingstyle=
+  alias mappingRegistry= mapping_registry=
+  alias mappingRegistry mapping_registry
 
   def initialize(log, logid, namespace, endpoint_url, httpproxy = nil, soapaction = nil)
     super(endpoint_url, namespace, soapaction)
@@ -40,10 +44,6 @@ class Driver < RPC::Driver
     log(SEV_INFO) { 'initialize: initializing SOAP driver...' }
   end
 
-
-  ###
-  ## Driving interface.
-  #
   def invoke(headers, body)
     log(SEV_INFO) { "invoke: invoking message '#{ body.type }'." }
     super
@@ -57,6 +57,22 @@ class Driver < RPC::Driver
       "call: parameters '#{ params.inspect }'."
     }
     super
+  end
+
+  def addMethod(name, *params)
+    addMethodWithSOAPActionAs(name, name, nil, *params)
+  end
+
+  def addMethodAs(name_as, name, *params)
+    addMethodWithSOAPActionAs(name_as, name, nil, *params)
+  end
+
+  def addMethodWithSOAPAction(name, soapaction, *params)
+    addMethodWithSOAPActionAs(name, name, soapaction, *params)
+  end
+
+  def addMethodWithSOAPActionAs(name_as, name, soapaction, *params)
+    add_method_with_soapaction_as(name, name_as, soapaction, *params)
   end
 
 private

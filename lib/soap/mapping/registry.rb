@@ -298,7 +298,7 @@ class Registry
     [::SOAP::Mapping::SOAPException,
                      ::SOAP::SOAPStruct,     TypedStructFactory,
       {:type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException")}],
- ]
+  ]
 
   def initialize(config = {})
     @config = config

@@ -20,12 +20,10 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/mapping'
+require 'soap/mappingRegistry'
 
 
 module SOAP
   RPCServerException = RPC::ServerException
-  module RPC
-    MappingRegistry = Mapping::Registry
-  end
   RPCUtils = RPC
 end
