@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: September 20, 2002<br />
+Last modified: January 17, 2003<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.4.7
+Target SOAP4R version: SOAP4R/1.4.8
 </p>
 
 <ol>
@@ -56,33 +56,41 @@ Target SOAP4R version: SOAP4R/1.4.7
 This version has these enhancements and bug fixes;
 </p>
 <ul>
-<li>Includes WSDL4R initial release.
-<ul>
-<li>Bare in mind this is an alpha level code.
-I wrote it halfway at half and a year ago,
-and wrote the rest part in half and a day.
-No comprehensive test, no strict syntax check, unfriendly error message, etc.
-Try it if you want, and find bugs in it.</li>
-<li>WSDL4R can run under XMLParser for now.
-You might be able to let it run under NQXML/REXML if you know SAX
-programming well.  How XML processor is used under WSDL4R
-is as same as under SOAP4R.</li>
-</ul></li>
-<li>Added xsd:short support.</li>
-<li>::Float(double precision float in Ruby) is mapped to xsd:double now.
-It was mapped to xsd:float.</li>
-<li>Fixed a bug of year &lt; 0 handling.  B.C. 1 =&gt; -0001 in XMLSchema.</li>
-<li>Fixed a bug of exception serialization.  Custam mappingRegistry was not used.</li>
-<li>Fixed a bug of regex for MediaType parsing.</li>
+  <li>Avoid warnings;
+  <ul>
+    <li>Use Object#class instead of Object#type.</li>
+    <li>Avoid implicit use a String as a regexp source.</li>
+  </ul></li>
+  <li>Add wsdlDriver which reads WSDL file and allow client to call procedures.  Here is an example to search Google.
+  <pre>
+    require 'soap/wsdlDriver'
+    searchWord = ARGV.shift
+    # You must get key from http://www.google.com/apis/ to use Google Web APIs.
+    key = File.open(File.expand_path("~/.google_key")).read.chomp
+    GOOGLE_WSDL = 'http://api.google.com/GoogleSearch.wsdl'
+    # Load WSDL and create driver.
+    google = SOAP::WSDLDriverFactory.new(GOOGLE_WSDL).createDriver
+    # Just invoke!
+    result = google.doGoogleSearch(key, searchWord, 0, 10, false, "", false, "", 'utf-8', 'utf-8')
+    result.resultElements.each do |ele|
+      puts "== #{ele.title}: #{ele.URL}"
+      puts ele.snippet
+      puts
+    end
+  </pre></li>
+  <li>WSDLDriver client examples of AmazonWebServices, RAA and RNN (Japanese Ruby blog site) are also included in sample/ dir.</li>
+  <li>Support xmlscan XML processor.</li>
+  <li>Changed XML processor detection scheme.  Search xmlscan, REXML, XMLParser and NQXML in this order.</li>
+  <li>Rewrite charset handling of XML processor.
+  <ul>
+    <li>If you only use us-ascii and utf-8, all XML processors should work without uconv module.</li>
+    <li>With xmlscan/0.2 or later, you can handle euc-jp or shift_jis encoded XML instance WITHOUT uconv module.</li>
+    <li>With other XML processors includes xmlscan/0.1, you need to install uconv module to handle euc-jp or shift_jis encoded XML instance.</li>
+  </ul></li>
+  <li>cgistub.rb: Overridable response mediatype.  There exists a http client which does not accept the mediatype text/xml which is specified in SOAP spec.  For example, an i-Mode (smart phone) client does not accept it...  You can set response mediatype to 'text/plain' for such client though it violates SOAP spec...</li>
+  <li>wsdl2ruby: Add --force option to override existing file.</li>
+  <li>Fixed many bugs.</li>
 </ul>
-
-<p>
-CAUTION: This version requires
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a> version 3.2 or later and
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version G.
-http-access2/G is released in this week.
-Please make sure the versions you use.
-</p>
 
 <h2 id="install" name="install">2. Install</h2>
 
@@ -109,7 +117,7 @@ Followings are redistributed files in redist/.
 <dd>by John W. Small: <a href="http://fairfax2.laser.net/~jsmall/rubycorner.html">http://fairfax2.laser.net/~jsmall/rubycorner.html</a></dd>
 
 <dt class="path">httpserver.rb</dt>
-<dd>by Michael Neumann: httpserver.rb in <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XML-RPC">[RAA:XML-RPC]</a></dd>
+<dd>by Michael Neumann: httpserver.rb in <a href="http://www.ruby-lang.org/raa/list.rhtml?name=xml-rpc">[RAA:XML-RPC]</a></dd>
 </dl>
 
 <p>
@@ -118,7 +126,10 @@ Files in archive:
 
 <dl>
 <dt class="path">lib/soap/</dt>
-<dd>SOAP4R library program.</dd>
+<dd>SOAP4R library.</dd>
+
+<dt class="path">lib/wsdl/</dt>
+<dd>WSDL4R library.</dd>
 
 <dt class="path">sample/</dt>
 <dd>SOAP4R samples.
@@ -183,7 +194,7 @@ It does not works on 1.4 series because it does not have class variable.
 
 <p>
 SOAP4R depends on following Ruby modules in
-<a href="http://www.ruby-lang.org/en/raa.html">RAA</a>.
+<a href="http://www.ruby-lang.org/raa/">RAA</a>.
 You also have to install these modules to use SOAP4R.
 </p>
 
@@ -192,34 +203,33 @@ You also have to install these modules to use SOAP4R.
 <dd>SOAP4R requires a XML processor package installed.
 For now, one of following XML processor must be installed
 (SOAP4R automatically detects it in runtime).
+FYI: xmlscan and REXML are scheduled to be included in ruby/1.8's standard
+distribution.  Version following each project is the version tested with soap4r.
 <ul>
-<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">[RAA:NQXML]</a></li>
-<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">[RAA:XMLParser]</a></li>
-<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=REXML">[RAA:REXML]</a> version 2.1.3 or later</li>
+<li><a href="http://www.ruby-lang.org/raa/list.rhtml?name=xmlscan">[RAA:xmlscan]</a> (0.1.3 or 0.2.0-20030116)</li>
+<li><a href="http://www.ruby-lang.org/raa/list.rhtml?name=rexml">[RAA:REXML]</a> (2.5.3)</li>
+<li><a href="http://www.ruby-lang.org/raa/list.rhtml?name=rexml-stable">[RAA:REXML-stable]</a> (2.4.5)</li>
+<li><a href="http://www.ruby-lang.org/raa/list.rhtml?name=xmlparser">[RAA:XMLParser]</a> (0.6.5)</li>
+<li><a href="http://www.ruby-lang.org/raa/list.rhtml?name=nqxml">[RAA:NQXML]</a> (1.1.3p1)</li>
 </ul></dd>
 
-<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a> version 3.2 or later</dt>
+<dt class="path"><a href="http://www.ruby-lang.org/raa/list.rhtml?name=date2">[RAA:date2]</a> (3.2)</dt>
 <dd>Date and DateTime implementation by Todayoshi Funaba.
-Note: This module is scheduled to be included in standard distribution instead of lib/date.rb.  Ruby/1.7 or later.</dd>
+Note: From ruby/1.8, this module is included in standard distribution.
+You don't have to install it if you are using ruby/1.8 or later.</dd>
 
-<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Devel%3A%3ALogger">[RAA:Devel::Logger]</a></dt>
+<dt class="path"><a href="http://www.ruby-lang.org/raa/list.rhtml?name=devel-logger">[RAA:devel-logger]</a> (1.0.1)</dt>
 <dd>Logging utility by NaHi.</dd>
 
-<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version G or later</dt>
+<dt class="path"><a href="http://www.ruby-lang.org/raa/list.rhtml?name=http-access2">[RAA:http-access2]</a> (version j)</dt>
 <dd>Yet another HTTP client implementation by NaHi.</dd>
 
-<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Uconv">[RAA:Uconv]</a> (optional)</dt>
+<dt class="path"><a href="http://www.ruby-lang.org/raa/list.rhtml?name=Uconv">[RAA:Uconv]</a> (optional) (0.4.10)</dt>
 <dd>by Yoshida Masato.
 It is requred when you want automatic CES conversion between
 SJIS &lt;-&gt; UTF8 and EUC &lt;-&gt; UTF8.
 Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
 I will support Iconv for more conversion set.
-</dd>
-
-<dt class="path"><a href="http://www.ruby-lang.org/~knu/cgi-bin/cvsweb.cgi/rough/lib/uri/">uri module</a> (for Ruby/1.6.6 or earlier)</dt>
-<dd>by Yamada Akira.
-Uri module is bundled in Ruby/1.6.7, Ruby/1.7 or later.
-To use SOAP4R under Ruby/1.6.6, get uri module above and install it.
 </dd>
 
 </dl>
@@ -275,6 +285,18 @@ To execute;
 <pre class="path">
 $ ./apacheClient.rb http://localhsot:2020/xml-soap/rpcrouter/rpcrouter.jsp
 </pre>
+</dd>
+
+<dt class="path">GoogleSearch/</dt>
+<dd>A sample client to search with <a href="http://www.google.com/apis/">Google Web API</a> using WSDL.
+You need to get a developer's key to use it.
+See wsdlDriver.rb.
+</dd>
+
+<dt class="path">Amazon/</dt>
+<dd>A sample client to connect with <a href="http://associates.amazon.com/exec/panama/associates/ntg/browse/-/1067662/086-5207681-4585409">AmazonWebServices</a> using WSDL.
+You need to get a developer's token to use it.
+See wsdlDriver.rb.
 </dd>
 
 <dt class="path">Calc/</dt>
@@ -427,7 +449,7 @@ Since the server is (still) under testing phase so stable operation is not expec
 <ul>
 <li>httpd.rb: HTTP server which soaplet.rb mounts to.
 It is powered by WEBrick so you must install
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=WEBrick">[RAA:WEBrick]</a>
+<a href="http://www.ruby-lang.org/raa/list.rhtml?name=webrick">[RAA:WEBrick]</a>
 to run it.</li>
 <li>soaplet.rb: A bricklet to add a SOAP function to WEBrick.
 It hosts exchange.rb, sampleStruct.rb below, and it is mounted to httpd.rb
@@ -515,8 +537,7 @@ spec are <strong>NOT</strong> currently supported:
 </ul></li>
 <li style="margin-top: 2ex;">SOAP Encoding
 <ul>
-<li>encoding/decoding using XML Schema;
-Only xsi:type in SOAP Encoding is checked</li>
+<li>Decoding using XML Schema</li>
 </ul></li>
 <li style="margin-top: 2ex;">Othres
 <ul>
@@ -527,7 +548,7 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="resources" name="resources">8. Resources</h2>
 
 <dl>
-<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=SOAP4R">[RAA:SOAP4R]</a></dt>
+<dt class="path"><a href="http://www.ruby-lang.org/raa/list.rhtml?name=soap4r">[RAA:soap4r]</a></dt>
 <dd>I will post a new release to RAA.
 Check RAA to get a new stable (I hope) version.</dd>
 
@@ -538,7 +559,7 @@ Check here to get most recent (but could be unstable) version.</dd>
 
 <dt class="path"><a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/wiki.cgi">SOAP4R Wiki</a></dt>
 <dd>There is a wiki for SOAP4R, running under
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=RWiki">[RAA:RWiki]</a>.
+<a href="http://www.ruby-lang.org/raa/list.rhtml?name=rwiki">[RAA:RWiki]</a>.
 Feel free to add your comment there.
 Any comments are welcomed. (as always)</dd>
 
@@ -550,6 +571,46 @@ Any comments are welcomed. (as always)</dd>
 <h2 id="history" name="history">9. History</h2>
 
 <dl>
+<dt>1.4.8 - January 17, 2002</dt>
+<dd>
+This version has these enhancements and bug fixes;
+<ul>
+  <li>Avoid warnings;
+  <ul>
+    <li>Use Object#class instead of Object#type.</li>
+    <li>Avoid implicit use a String as a regexp source.</li>
+  </ul></li>
+  <li>Add wsdlDriver which reads WSDL file and allow client to call procedures.  Here is an example to search Google.
+  <pre>
+    require 'soap/wsdlDriver'
+    searchWord = ARGV.shift
+    # You must get key from http://www.google.com/apis/ to use Google Web APIs.
+    key = File.open(File.expand_path("~/.google_key")).read.chomp
+    GOOGLE_WSDL = 'http://api.google.com/GoogleSearch.wsdl'
+    # Load WSDL and create driver.
+    google = SOAP::WSDLDriverFactory.new(GOOGLE_WSDL).createDriver
+    # Just invoke!
+    result = google.doGoogleSearch(key, searchWord, 0, 10, false, "", false, "", 'utf-8', 'utf-8')
+    result.resultElements.each do |ele|
+      puts "== #{ele.title}: #{ele.URL}"
+      puts ele.snippet
+      puts
+    end
+  </pre></li>
+  <li>WSDLDriver client examples of AmazonWebServices, RAA and RNN (Japanese Ruby blog site) are also included in sample/ dir.</li>
+  <li>Support xmlscan XML processor.</li>
+  <li>Changed XML processor detection scheme.  Search xmlscan, REXML, XMLParser and NQXML in this order.</li>
+  <li>Rewrite charset handling of XML processor.
+  <ul>
+    <li>If you only use us-ascii and utf-8, all XML processors should work without uconv module.</li>
+    <li>With xmlscan/0.2 or later, you can handle euc-jp or shift_jis encoded XML instance WITHOUT uconv module.</li>
+    <li>With other XML processors includes xmlscan/0.1, you need to install uconv module to handle euc-jp or shift_jis encoded XML instance.</li>
+  </ul></li>
+  <li>cgistub.rb: Overridable response mediatype.  There exists a http client which does not accept the mediatype text/xml which is specified in SOAP spec.  For example, an i-Mode (smart phone) client does not accept it...  You can set response mediatype to 'text/plain' for such client though it violates SOAP spec...</li>
+  <li>wsdl2ruby: Add --force option to override existing file.</li>
+  <li>Fixed many bugs.</li>
+</ul></dd>
+
 <dt>1.4.7 - September 20, 2002</dt>
 <dd>
 This version has these enhancements and bug fixes;
@@ -588,8 +649,8 @@ except some special objects.  See below for more detail.</li>
 </ul>
 
 CAUTION: This version requires
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a> version 3.2 or later and
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
+<a href="http://www.ruby-lang.org/raa/list.rhtml?name=date2">[RAA:date2]</a> version 3.2 or later and
+<a href="http://www.ruby-lang.org/raa/list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
 Please make sure the versions you use.
 <br/><br/>
 
@@ -648,7 +709,7 @@ But instance variable of Array, Hash, String, Float and Bignum are not supported
 One bottle neck is Kernel.methods which SOAP4R use(d) while mapping SOAP Data Model &lt;-&gt; Ruby object.
 I replaced it with Object.respond_to? .
 Another bottle neck of client side is delegate.rb which is used by http-access2.
-Get <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
+Get <a href="http://www.ruby-lang.org/raa/list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
 </ul>
 </dd>
 </dl>
@@ -700,7 +761,7 @@ At least I hope so.  Tell me if you find these wrong.
 <ul>
 <li>Stopped redistributing packages in RAA from this release.
 Please get <a href="#dependencies">required</a> packages from
-<a href="http://www.ruby-lang.org/en/raa.html">RAA</a>
+<a href="http://www.ruby-lang.org/raa/">RAA</a>
 and install it.</li>
 <li>It still does NOT support WSDL!</li>
 </ul>
@@ -744,9 +805,9 @@ Though my English is poor as you see, numbers of readers of my English document
 should be more than one of my Japanese document.
 Would you please tell me bug of my English composition and of course in the code?</li>
 <li>Use
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Devel%3A%3ALogger">[RAA:Devel::Logger]</a>
+<a href="http://www.ruby-lang.org/raa/list.rhtml?name=devel-logger">[RAA:devel-logger]</a>
 instead of
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Application">[RAA:Application]</a>.
+<a href="http://www.ruby-lang.org/raa/list.rhtml?name=application">[RAA:application]</a>.
 </li>
 <li>Avoided using exception in soap2obj and reduced warnings in runtime.</li>
 <li>XSDDateTime: Use date2 version 3 instead of date3.rb.
@@ -979,7 +1040,7 @@ and Michael Neumann.  Thanks!
 <li>Supported XML parser:
   <ul>
     <li>Added SOAPXMLParser and SOAPSAXDriver for XMLParser which uses expat.
-        You can get the module from RAA: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">XMLParser module</a>.<br/>
+        You can get the module from RAA: <a href="http://www.ruby-lang.org/raa/list.rhtml?name=xmlparser">XMLParser module</a>.<br/>
         To use XMLParser -&gt; add &quot;require 'soap/xmlparser'&quot;.<br/>
         To use SAX driver of XMLParser -&gt; add &quot;require 'soap/saxdriver'&quot;.<br/>
         To use NQXMLParser -&gt; nothing to do.<br/>
@@ -1066,7 +1127,7 @@ whereas &quot;null='1'&quot; in 1999 schema.  Fixed.</li>
 <dt>1.3.0 - May 20, 2001</dt>
 <dd><ul>
 <li>Adopted
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
+<a href="http://www.ruby-lang.org/raa/list.rhtml?name=nqxml">NQXML module</a>
 instead of XMLParser module extensively.
 (You can implement your SOAP parser with XMLParser module.
 See the last part of lib/soap/parser.rb)
@@ -1160,7 +1221,7 @@ around SOAP arrays.</dd>
 
 <p style="text-align: center;">
 SOAP4R<br />
-Copyright &copy; 2000, 2001, 2002 NAKAMURA, Hiroshi.
+Copyright &copy; 2000, 2001, 2002, 2003 NAKAMURA, Hiroshi.
 </p>
 
 <p>
@@ -1182,8 +1243,8 @@ You should have received a copy of the GNU General Public License along with thi
 
 <div class="footer">
 <address>
-<a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/">SOAP4R</a>.<br />
-Copyright &copy; 2000, 2001, 2002
+<a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/wiki.cgi">SOAP4R</a>.<br />
+Copyright &copy; 2000, 2001, 2002, 2003
 <a href="http://www.jin.gr.jp/~nahi/">NAKAMURA, Hiroshi</a>.
 </address>
 </div>
