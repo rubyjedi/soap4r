@@ -68,13 +68,9 @@ class RPCRouter
     opt[ :charset ] = charset
     isFault = false
     begin
-      # Is this right?
-      soapString = soapString.dup
       header, body = Processor.unmarshal( soapString, opt )
-
       # So far, header is omitted...
       soapRequest = body.request
-
       unless soapRequest.is_a?( SOAPStruct )
 	raise RPCRoutingError.new( "Not an RPC style." )
       end
