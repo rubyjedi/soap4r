@@ -121,7 +121,8 @@ class XSDDecimal < XSDBase
 end
 
 class XSDTimeInstant < XSDBase
-  require 'parsedate2'
+  require 'date3'
+  require 'parsedate3'
 
   public
 
@@ -130,12 +131,14 @@ class XSDTimeInstant < XSDBase
     set( initTimeInstant ) if initTimeInstant
   end
 
-  def set( newTimeInstant )
-    if ( newTimeInstant.is_a?( Time ))
-      @data = newTimeInstant.dup
+  def set( t )
+    if ( t.is_a?( Date ))
+      @data = t.dup
+    elsif ( t.is_a?( Time ))
+      @data = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
     else
-      ( year, mon, mday, hour, min, sec, zone, wday ) = ParseDate.parsedate( newTimeInstant.to_s )
-      @data = Time.mktime( year, mon, mday, hour, min, sec )
+      ( year, mon, mday, hour, min, sec, zone, wday ) = ParseDate.parsedate( t.to_s )
+      @data = Date.new3( year, mon, mday, hour, min, sec )
     end
   end
 end
