@@ -27,6 +27,8 @@ class ComplexType < Info
       end
     elsif complexcontent and complexcontent.base == ::SOAP::ValueArrayName
       :TYPE_ARRAY
+    elsif attributes.size > 0
+      :TYPE_STRUCT
     else
       raise NotImplementedError.new("Unknown kind of complexType.")
     end
