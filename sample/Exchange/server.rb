@@ -11,4 +11,6 @@ class ExchangeServer < SOAP::RPC::StandaloneServer
   end
 end
 
-status = ExchangeServer.new('SampleStructServer', ExchangeServiceNamespace, '0.0.0.0', 7000).start
+if $0 == __FILE__
+  status = ExchangeServer.new('SampleStructServer', ExchangeServiceNamespace, '0.0.0.0', 7000).start
+end
