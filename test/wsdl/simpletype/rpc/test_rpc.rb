@@ -14,11 +14,13 @@ class TestRPC < Test::Unit::TestCase
     compare("expectedEchoVersion.rb", "echo_version.rb")
     compare("expectedDriver.rb", "echo_versionDriver.rb")
     compare("expectedService.rb", "echo_version_service.rb")
+    compare("expectedClient.rb", "echo_version_serviceClient.rb")
+    compare("expectedServant.rb", "echo_versionServant.rb")
 
-    File.unlink(pathname("echo_version_service.rb"))
     File.unlink(pathname("echo_version.rb"))
-    File.unlink(pathname("echo_version_serviceClient.rb"))
     File.unlink(pathname("echo_versionDriver.rb"))
+    File.unlink(pathname("echo_version_service.rb"))
+    File.unlink(pathname("echo_version_serviceClient.rb"))
     File.unlink(pathname("echo_versionServant.rb"))
   end
 
