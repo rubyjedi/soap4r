@@ -57,7 +57,7 @@ protected
     paramDef = if paramArg.size == 1 and paramArg[ 0 ].is_a?( Array )
         paramArg[ 0 ]
       else
-        SOAPMethod.createParamDef( paramArg )
+        RPCUtils::SOAPMethod.createParamDef( paramArg )
       end
     @router.addMethod( @namespace, receiver, methodName, paramDef )
   end
