@@ -31,10 +31,6 @@ class SOAPParser
 
   class FormatDecodeError < Error; end
 
-  def self.adjustKCode
-    false
-  end
-
   @@parserFactory = nil
 
   def self.factory
@@ -87,16 +83,19 @@ private
 
 public
 
+  attr_accessor :charset
+  attr_accessor :defaultEncodingStyle
+  attr_accessor :decodeComplexTypes
+  attr_accessor :allowUnqualifiedElement
+
   def initialize( opt = {} )
     @parseStack = nil
     @lastNode = nil
-    @option = opt
     @handlers = {}
-    @decodeComplexTypes = @option[ 'decodeComplexTypes' ] || nil
-    @allowUnqualifiedElement = @option[ 'allowUnqualifiedElement' ] || false
-    EncodingStyleHandler.defaultHandler =
-      EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
-      EncodingNamespace )
+    @charset = opt[ :charset ] || 'us-ascii'
+    @defaultEncodingStyle = opt[ :defaultEncodingStyle ] || EncodingNamespace
+    @decodeComplexTypes = opt[ :decodeComplexTypes ] || nil
+    @allowUnqualifiedElement = opt[ :allowUnqualifiedElement ] || false
   end
 
   def parse( stringOrReadable )
@@ -144,8 +143,7 @@ public
     encodingStyle = getEncodingStyle( ns, attrs )
 
     # Children's encodingStyle is derived from its parent.
-    encodingStyle ||= parentEncodingStyle ||
-      EncodingStyleHandler.defaultHandler.uri
+    encodingStyle ||= parentEncodingStyle || @defaultEncodingStyle
 
     node = decodeTag( ns, name, attrs, parent, encodingStyle )
 
@@ -173,6 +171,15 @@ public
   end
 
 private
+
+  def setXMLDeclEncoding( charset )
+    if @charset.nil?
+      @charset = charset
+    else
+      # Definition in a stream (like HTTP) has a priority.
+      p "encoding definition: #{ charset } is ignored." if $DEBUG
+    end
+  end
 
   # $1 is necessary.
   NSParseRegexp = Regexp.new( '^xmlns:?(.*)$' )
@@ -272,7 +279,8 @@ private
 
   def getHandler( encodingStyle )
     unless @handlers.has_key?( encodingStyle )
-      handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new
+      handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new(
+	@charset )
       handler.decodeComplexTypes = @decodeComplexTypes
       handler.decodePrologue
       @handlers[ encodingStyle ] = handler
