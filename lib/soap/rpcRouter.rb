@@ -131,7 +131,7 @@ private
   # Dispatch to defined method.
   def dispatch( soapMethod )
     namespace = soapMethod.namespace
-    methodName = soapMethod.typeName
+    methodName = soapMethod.typeName || soapMethod.name
 
     requestStruct = soap2obj( soapMethod )
     values = requestStruct.members.collect { |member|
