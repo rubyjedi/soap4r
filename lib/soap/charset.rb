@@ -107,9 +107,10 @@ public
 
   def Charset.getCharsetStr( label )
     if label
-      return CharsetMap.index( label.downcase )
+      CharsetMap.index( label.downcase ) || 'NONE'
+    else
+      'NONE'
     end
-    return 'NONE'
   end
 
   # Original regexps: http://www.din.or.jp/~ohzaki/perl.htm
