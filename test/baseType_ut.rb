@@ -1,9 +1,9 @@
 require 'runit/testcase'
 require 'runit/cui/testrunner'
 
-require 'soap/XMLSchemaDatatypes'
+require 'soap/baseData'
 
-class TestXSD < RUNIT::TestCase
+class TestSOAP < RUNIT::TestCase
 
 public
   def setup
@@ -19,67 +19,43 @@ public
     assert_equal( str, o.to_s )
   end
 
-  def test_NSDBase
-    o = XSD::NSDBase.new( 'name', 'ns' )
-    assert_equal( 'name', o.typeName )
-    assert_equal( 'ns', o.typeNamespace )
-    o.typeName = 'name2'
-    o.typeNamespace = 'ns2'
-    assert_equal( 'name2', o.typeName )
-    assert_equal( 'ns2', o.typeNamespace )
-    assert( o.typeEqual( 'ns2', 'name2' ))
-    assert( !o.typeEqual( 'ns', 'name2' ))
-    assert( !o.typeEqual( 'ns2', 'name' ))
-    assert( !o.typeEqual( 'ns', 'name' ))
-  end
-
-  def test_XSDBase
-    o = XSD::XSDBase.new( 'typeName' )
-    assert_equal( nil, o.data )
-    assert_equal( true, o.isNil )
-    assert_equal( '', o.to_s )
-    assert_exception( NotImplementError ) do
-      o.set( 'newData' )
-    end
-  end
-
-  def test_XSDNil
-    o = XSD::XSDNil.new
+  def test_SOAPNil
+    o = SOAP::SOAPNil.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::NilLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
-    o = XSD::XSDNil.new( nil )
+    o = SOAP::SOAPNil.new( nil )
     assert_equal( true, o.isNil )
     assert_equal( nil, o.data )
     assert_equal( "", o.to_s )
-    o = XSD::XSDNil.new( 'var' )
+    o = SOAP::SOAPNil.new( 'var' )
     assert_equal( false, o.isNil )
     assert_equal( 'var', o.data )
     assert_equal( 'var', o.to_s )
   end
 
-  def test_XSDString
-    o = XSD::XSDString.new
+  def test_SOAPString
+    o = SOAP::SOAPString.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::StringLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
     str = "abc"
-    assert_equal( str, XSD::XSDString.new( str ).data )
-    assert_equal( str, XSD::XSDString.new( str ).to_s )
+    assert_equal( str, SOAP::SOAPString.new( str ).data )
+    assert_equal( str, SOAP::SOAPString.new( str ).to_s )
     assert_exception( XSD::ValueSpaceError ) do
-      XSD::XSDString.new( "\0" )
+      SOAP::SOAPString.new( "\0" )
     end
     assert_exception( XSD::ValueSpaceError ) do
-      p XSD::XSDString.new( "\xC0\xC0" ).to_s
+      p SOAP::SOAPString.new( "\xC0\xC0" ).to_s
     end
   end
 
-  def test_XSDBoolean
-    o = XSD::XSDBoolean.new
+  def test_SOAPBoolean
+    o = SOAP::SOAPBoolean.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::BooleanLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -92,17 +68,17 @@ public
       [ "0", false ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDBoolean.new( data ).data )
-      assert_equal( expected.to_s, XSD::XSDBoolean.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPBoolean.new( data ).data )
+      assert_equal( expected.to_s, SOAP::SOAPBoolean.new( data ).to_s )
     end
 
     assert_exception( XSD::ValueSpaceError ) do
-      XSD::XSDBoolean.new( "nil" ).to_s
+      SOAP::SOAPBoolean.new( "nil" ).to_s
     end
   end
 
-  def test_XSDDecimal
-    o = XSD::XSDDecimal.new
+  def test_SOAPDecimal
+    o = SOAP::SOAPDecimal.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::DecimalLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -117,7 +93,7 @@ public
       -1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789,
     ]
     targets.each do | dec |
-      assert_equal( dec.to_s, XSD::XSDDecimal.new( dec ).data )
+      assert_equal( dec.to_s, SOAP::SOAPDecimal.new( dec ).data )
     end
 
     targets = [
@@ -128,7 +104,7 @@ public
       "-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123.45678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
     ]
     targets.each do | str |
-      assert_equal( str, XSD::XSDDecimal.new( str ).to_s )
+      assert_equal( str, SOAP::SOAPDecimal.new( str ).to_s )
     end
 
     targets = [
@@ -153,7 +129,7 @@ public
       ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDDecimal.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPDecimal.new( data ).to_s )
     end
 
     targets = [
@@ -163,13 +139,13 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSD::XSDDecimal.new( d )
+	SOAP::SOAPDecimal.new( d )
       end
     end
   end
 
-  def test_XSDFloat
-    o = XSD::XSDFloat.new
+  def test_SOAPFloat
+    o = SOAP::SOAPFloat.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::FloatLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -182,7 +158,7 @@ public
       -1.4e-45,
     ]
     targets.each do | f |
-      assert_equal( f, XSD::XSDFloat.new( f ).data )
+      assert_equal( f, SOAP::SOAPFloat.new( f ).data )
     end
 
     targets = [
@@ -192,7 +168,7 @@ public
       "-1.4e-45",
     ]
     targets.each do | f |
-      assert_equal( f, XSD::XSDFloat.new( f ).to_s )
+      assert_equal( f, SOAP::SOAPFloat.new( f ).to_s )
     end
 
     targets = [
@@ -209,16 +185,16 @@ public
       [ "1.4E", "1.4" ],
     ]
     targets.each do | f, str |
-      assert_equal( str, XSD::XSDFloat.new( f ).to_s )
+      assert_equal( str, SOAP::SOAPFloat.new( f ).to_s )
     end
 
-    assert_equal( "0", XSD::XSDFloat.new( +0.0 ).to_s )
-    assert_equal( "-0", XSD::XSDFloat.new( -0.0 ).to_s )
-    assert( XSD::XSDFloat.new( 0.0/0.0 ).data.nan? )
-    assert_equal( "INF", XSD::XSDFloat.new( 1.0/0.0 ).to_s )
-    assert_equal( 1, XSD::XSDFloat.new( 1.0/0.0 ).data.infinite? )
-    assert_equal( "-INF", XSD::XSDFloat.new( -1.0/0.0 ).to_s )
-    assert_equal( -1, XSD::XSDFloat.new( -1.0/0.0 ).data.infinite? )
+    assert_equal( "0", SOAP::SOAPFloat.new( +0.0 ).to_s )
+    assert_equal( "-0", SOAP::SOAPFloat.new( -0.0 ).to_s )
+    assert( SOAP::SOAPFloat.new( 0.0/0.0 ).data.nan? )
+    assert_equal( "INF", SOAP::SOAPFloat.new( 1.0/0.0 ).to_s )
+    assert_equal( 1, SOAP::SOAPFloat.new( 1.0/0.0 ).data.infinite? )
+    assert_equal( "-INF", SOAP::SOAPFloat.new( -1.0/0.0 ).to_s )
+    assert_equal( -1, SOAP::SOAPFloat.new( -1.0/0.0 ).data.infinite? )
 
     targets = [
       "0.000000000000a",
@@ -228,13 +204,13 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSD::XSDFloat.new( d )
+	SOAP::SOAPFloat.new( d )
       end
     end
   end
 
-  def test_XSDDouble
-    o = XSD::XSDDouble.new
+  def test_SOAPDouble
+    o = SOAP::SOAPDouble.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::DoubleLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -247,7 +223,7 @@ public
       -1.4e-45,
     ]
     targets.each do | f |
-      assert_equal( f, XSD::XSDDouble.new( f ).data )
+      assert_equal( f, SOAP::SOAPDouble.new( f ).data )
     end
 
     targets = [
@@ -257,7 +233,7 @@ public
       "-1.4e-45",
     ]
     targets.each do | f |
-      assert_equal( f, XSD::XSDDouble.new( f ).to_s )
+      assert_equal( f, SOAP::SOAPDouble.new( f ).to_s )
     end
 
     targets = [
@@ -274,17 +250,17 @@ public
       [ "1.4E", "1.4" ],
     ]
     targets.each do | f, str |
-      assert_equal( str, XSD::XSDDouble.new( f ).to_s )
+      assert_equal( str, SOAP::SOAPDouble.new( f ).to_s )
     end
 
-    assert_equal( "0", XSD::XSDFloat.new( +0.0 ).to_s )
-    assert_equal( "-0", XSD::XSDFloat.new( -0.0 ).to_s )
-    assert_equal( "NaN", XSD::XSDDouble.new( 0.0/0.0 ).to_s )
-    assert( XSD::XSDDouble.new( 0.0/0.0 ).data.nan? )
-    assert_equal( "INF", XSD::XSDDouble.new( 1.0/0.0 ).to_s )
-    assert_equal( 1, XSD::XSDDouble.new( 1.0/0.0 ).data.infinite? )
-    assert_equal( "-INF", XSD::XSDDouble.new( -1.0/0.0 ).to_s )
-    assert_equal( -1, XSD::XSDDouble.new( -1.0/0.0 ).data.infinite? )
+    assert_equal( "0", SOAP::SOAPFloat.new( +0.0 ).to_s )
+    assert_equal( "-0", SOAP::SOAPFloat.new( -0.0 ).to_s )
+    assert_equal( "NaN", SOAP::SOAPDouble.new( 0.0/0.0 ).to_s )
+    assert( SOAP::SOAPDouble.new( 0.0/0.0 ).data.nan? )
+    assert_equal( "INF", SOAP::SOAPDouble.new( 1.0/0.0 ).to_s )
+    assert_equal( 1, SOAP::SOAPDouble.new( 1.0/0.0 ).data.infinite? )
+    assert_equal( "-INF", SOAP::SOAPDouble.new( -1.0/0.0 ).to_s )
+    assert_equal( -1, SOAP::SOAPDouble.new( -1.0/0.0 ).data.infinite? )
 
     targets = [
       "0.000000000000a",
@@ -293,13 +269,13 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSD::XSDDouble.new( d )
+	SOAP::SOAPDouble.new( d )
       end
     end
   end
 
-  def test_XSDDuration
-    o = XSD::XSDDuration.new
+  def test_SOAPDuration
+    o = SOAP::SOAPDuration.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::DurationLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -328,7 +304,7 @@ public
       "+P9012DT3456H",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDDuration, str )
+      assertParsedResult( SOAP::SOAPDuration, str )
     end
 
     targets = [
@@ -350,12 +326,12 @@ public
         "P1234Y5678M9012DT3456H7890M1234.5678S" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDDuration.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPDuration.new( data ).to_s )
     end
   end
 
-  def test_XSDDateTime
-    o = XSD::XSDDateTime.new
+  def test_SOAPDateTime
+    o = SOAP::SOAPDateTime.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::DateTimeLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -381,7 +357,7 @@ public
       "-0001-12-31T23:59:59.00000000000000000001+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDDateTime, str )
+      assertParsedResult( SOAP::SOAPDateTime, str )
     end
 
     targets = [
@@ -399,7 +375,7 @@ public
 	"-2002-12-31T23:59:59Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDDateTime.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPDateTime.new( data ).to_s )
     end
 
     targets = [
@@ -411,13 +387,13 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError, d.to_s ) do
-	XSD::XSDDateTime.new( d )
+	SOAP::SOAPDateTime.new( d )
       end
     end
   end
 
-  def test_XSDTime
-    o = XSD::XSDTime.new
+  def test_SOAPTime
+    o = SOAP::SOAPTime.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::TimeLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -439,7 +415,7 @@ public
       "23:59:59+00:01",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDTime, str )
+      assertParsedResult( SOAP::SOAPTime, str )
     end
 
     targets = [
@@ -451,12 +427,12 @@ public
 	"23:59:59Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDTime.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPTime.new( data ).to_s )
     end
   end
 
-  def test_XSDDate
-    o = XSD::XSDDate.new
+  def test_SOAPDate
+    o = SOAP::SOAPDate.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::DateLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -478,7 +454,7 @@ public
       "-0001-12-31+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDDate, str )
+      assertParsedResult( SOAP::SOAPDate, str )
     end
 
     targets = [
@@ -496,12 +472,12 @@ public
 	"-2002-12-31Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDDate.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPDate.new( data ).to_s )
     end
   end
 
-  def test_XSDGYearMonth
-    o = XSD::XSDGYearMonth.new
+  def test_SOAPGYearMonth
+    o = SOAP::SOAPGYearMonth.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::GYearMonthLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -523,7 +499,7 @@ public
       "-0001-12+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDGYearMonth, str )
+      assertParsedResult( SOAP::SOAPGYearMonth, str )
     end
 
     targets = [
@@ -541,12 +517,12 @@ public
 	"-2002-12Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDGYearMonth.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPGYearMonth.new( data ).to_s )
     end
   end
 
-  def test_XSDGYear
-    o = XSD::XSDGYear.new
+  def test_SOAPGYear
+    o = SOAP::SOAPGYear.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::GYearLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -568,7 +544,7 @@ public
       "-0001+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDGYear, str )
+      assertParsedResult( SOAP::SOAPGYear, str )
     end
 
     targets = [
@@ -586,12 +562,12 @@ public
 	"-2002Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDGYear.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPGYear.new( data ).to_s )
     end
   end
 
-  def test_XSDGMonthDay
-    o = XSD::XSDGMonthDay.new
+  def test_SOAPGMonthDay
+    o = SOAP::SOAPGMonthDay.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::GMonthDayLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -608,7 +584,7 @@ public
       "12-31+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDGMonthDay, str )
+      assertParsedResult( SOAP::SOAPGMonthDay, str )
     end
 
     targets = [
@@ -620,12 +596,12 @@ public
 	"12-31Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDGMonthDay.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPGMonthDay.new( data ).to_s )
     end
   end
 
-  def test_XSDGDay
-    o = XSD::XSDGDay.new
+  def test_SOAPGDay
+    o = SOAP::SOAPGDay.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::GDayLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -642,7 +618,7 @@ public
       "31+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDGDay, str )
+      assertParsedResult( SOAP::SOAPGDay, str )
     end
 
     targets = [
@@ -654,12 +630,12 @@ public
 	"31Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDGDay.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPGDay.new( data ).to_s )
     end
   end
 
-  def test_XSDGMonth
-    o = XSD::XSDGMonth.new
+  def test_SOAPGMonth
+    o = SOAP::SOAPGMonth.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::GMonthLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -676,7 +652,7 @@ public
       "12+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDGMonth, str )
+      assertParsedResult( SOAP::SOAPGMonth, str )
     end
 
     targets = [
@@ -688,12 +664,12 @@ public
 	"12Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDGMonth.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPGMonth.new( data ).to_s )
     end
   end
 
-  def test_XSDHexBinary
-    o = XSD::XSDHexBinary.new
+  def test_SOAPHexBinary
+    o = SOAP::SOAPHexBinary.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::HexBinaryLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -706,10 +682,10 @@ public
       "",
     ]
     targets.each do | str |
-      assert_equal( str, XSD::XSDHexBinary.new( str ).toString )
+      assert_equal( str, SOAP::SOAPHexBinary.new( str ).toString )
       assert_equal( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ),
-	XSD::XSDHexBinary.new( str ).data )
-      o = XSD::XSDHexBinary.new
+	SOAP::SOAPHexBinary.new( str ).data )
+      o = SOAP::SOAPHexBinary.new
       o.setEncoded( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ))
       assert_equal( str, o.toString )
       o.setEncoded( str.unpack( "H*" )[ 0 ].tr( 'A-F', 'a-f' ))
@@ -722,17 +698,17 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError, d.to_s ) do
-	o = XSD::XSDHexBinary.new
+	o = SOAP::SOAPHexBinary.new
 	o.setEncoded( d )
 	p o.toString
       end
     end
   end
 
-  def test_XSDBase64Binary
-    o = XSD::XSDBase64Binary.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::Base64BinaryLiteral, o.typeName )
+  def test_SOAPBase64Binary
+    o = SOAP::SOAPBase64.new
+    assert_equal( SOAP::EncodingNamespace, o.typeNamespace )
+    assert_equal( SOAP::Base64Literal, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -743,9 +719,9 @@ public
       "",
     ]
     targets.each do | str |
-      assert_equal( str, XSD::XSDBase64Binary.new( str ).toString )
-      assert_equal( [ str ].pack( "m" ).chomp, XSD::XSDBase64Binary.new( str ).data )
-      o = XSD::XSDBase64Binary.new
+      assert_equal( str, SOAP::SOAPBase64.new( str ).toString )
+      assert_equal( [ str ].pack( "m" ).chomp, SOAP::SOAPBase64.new( str ).data )
+      o = SOAP::SOAPBase64.new
       o.setEncoded( [ str ].pack( "m" ).chomp )
       assert_equal( str, o.toString )
     end
@@ -756,15 +732,15 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError, d.to_s ) do
-	o = XSD::XSDBase64Binary.new
+	o = SOAP::SOAPBase64.new
 	o.setEncoded( d )
 	p o.toString
       end
     end
   end
 
-  def test_XSDAnyURI
-    o = XSD::XSDAnyURI.new
+  def test_SOAPAnyURI
+    o = SOAP::SOAPAnyURI.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::AnyURILiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -780,12 +756,12 @@ public
       "HTTP://FOO/BAR%20%20?A+B",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDAnyURI, str )
+      assertParsedResult( SOAP::SOAPAnyURI, str )
     end
   end
 
-  def test_XSDQName
-    o = XSD::XSDQName.new
+  def test_SOAPQName
+    o = SOAP::SOAPQName.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::QNameLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -799,7 +775,7 @@ public
       "a:b",
     ]
     targets.each do | str |
-      assertParsedResult( XSD::XSDQName, str )
+      assertParsedResult( SOAP::SOAPQName, str )
     end
   end
 
@@ -808,8 +784,8 @@ public
   ## Derived types
   #
 
-  def test_XSDInteger
-    o = XSD::XSDInteger.new
+  def test_SOAPInteger
+    o = SOAP::SOAPInteger.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::IntegerLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -824,7 +800,7 @@ public
       -1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789,
     ]
     targets.each do | int |
-      assert_equal( int, XSD::XSDInteger.new( int ).data )
+      assert_equal( int, SOAP::SOAPInteger.new( int ).data )
     end
 
     targets = [
@@ -836,7 +812,7 @@ public
       "-1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
     ]
     targets.each do | str |
-      assert_equal( str, XSD::XSDInteger.new( str ).to_s )
+      assert_equal( str, SOAP::SOAPInteger.new( str ).to_s )
     end
 
     targets = [
@@ -850,7 +826,7 @@ public
       ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDInteger.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPInteger.new( data ).to_s )
     end
 
     targets = [
@@ -862,13 +838,13 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSD::XSDInteger.new( d )
+	SOAP::SOAPInteger.new( d )
       end
     end
   end
 
-  def test_XSDLong
-    o = XSD::XSDLong.new
+  def test_SOAPLong
+    o = SOAP::SOAPLong.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::LongLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -882,7 +858,7 @@ public
       -9223372036854775808,
     ]
     targets.each do | lng |
-      assert_equal( lng, XSD::XSDLong.new( lng ).data )
+      assert_equal( lng, SOAP::SOAPLong.new( lng ).data )
     end
 
     targets = [
@@ -893,7 +869,7 @@ public
       "-9223372036854775808",
     ]
     targets.each do | str |
-      assert_equal( str, XSD::XSDLong.new( str ).to_s )
+      assert_equal( str, SOAP::SOAPLong.new( str ).to_s )
     end
 
     targets = [
@@ -903,7 +879,7 @@ public
       [ "-000123", "-123" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDLong.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPLong.new( data ).to_s )
     end
 
     targets = [
@@ -916,13 +892,13 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSD::XSDLong.new( d )
+	SOAP::SOAPLong.new( d )
       end
     end
   end
 
-  def test_XSDInt
-    o = XSD::XSDInt.new
+  def test_SOAPInt
+    o = SOAP::SOAPInt.new
     assert_equal( XSD::Namespace, o.typeNamespace )
     assert_equal( XSD::IntLiteral, o.typeName )
     assert_equal( nil, o.data )
@@ -936,7 +912,7 @@ public
       -2147483648,
     ]
     targets.each do | lng |
-      assert_equal( lng, XSD::XSDInt.new( lng ).data )
+      assert_equal( lng, SOAP::SOAPInt.new( lng ).data )
     end
 
     targets = [
@@ -947,7 +923,7 @@ public
       "-2147483648",
     ]
     targets.each do | str |
-      assert_equal( str, XSD::XSDInt.new( str ).to_s )
+      assert_equal( str, SOAP::SOAPInt.new( str ).to_s )
     end
 
     targets = [
@@ -957,7 +933,7 @@ public
       [ "-000123", "-123" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSD::XSDInt.new( data ).to_s )
+      assert_equal( expected, SOAP::SOAPInt.new( data ).to_s )
     end
 
     targets = [
@@ -970,7 +946,7 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSD::XSDInt.new( d )
+	SOAP::SOAPInt.new( d )
       end
     end
   end
@@ -979,11 +955,11 @@ end
 if $0 == __FILE__
   testrunner = RUNIT::CUI::TestRunner.new
   if ARGV.size == 0
-    suite = TestXSD.suite
+    suite = TestSOAP.suite
   else
     suite = RUNIT::TestSuite.new
     ARGV.each do | testmethod |
-      suite.add_test( TestXSD.new( testmethod ))
+      suite.add_test( TestSOAP.new( testmethod ))
     end
   end
   testrunner.run(suite)
