@@ -40,7 +40,7 @@ module Marshal
   def Marshal.unmarshal( str, mappingRegistry = RPCUtils::MappingRegistry.new,
       parser = Processor.loadParser )
     header, body = SOAP::Processor.unmarshal( str )
-    RPCUtils.soap2obj( body[0], mappingRegistry )
+    RPCUtils.soap2obj( body.rootNode, mappingRegistry )
   end
 
 end
