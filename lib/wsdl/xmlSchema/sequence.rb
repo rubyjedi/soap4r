@@ -51,9 +51,9 @@ class Sequence < Info
   def parse_attr(attr, value)
     case attr
     when MaxOccursAttrName
-      @maxoccurs = value
+      @maxoccurs = value.source
     when MinOccursAttrName
-      @minoccurs = value
+      @minoccurs = value.source
     else
       nil
     end
