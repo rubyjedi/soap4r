@@ -92,6 +92,11 @@ public
       nil
     end
   end
+
+protected
+  def trim( data )
+    data.sub( /\A\s*(\S*)\s*\z/, '\1' )
+  end
 end
 
 
@@ -119,12 +124,13 @@ public
 
   def set( newBoolean )
     if newBoolean.is_a?( String )
-      if newBoolean == 'true' || newBoolean == '1'
+      str = trim( newBoolean )
+      if str == 'true' || str == '1'
 	@data = true
-      elsif newBoolean == 'false' || newBoolean == '0'
+      elsif str == 'false' || str == '0'
 	@data = false
       else
-	raise ValueSpaceError.new( "Boolean: #{ newBoolean } is not acceptable." )
+	raise ValueSpaceError.new( "Boolean: #{ str } is not acceptable." )
       end
     else
       @data = newBoolean ? true : false
@@ -133,6 +139,8 @@ public
 end
 
 class XSDString < XSDBase
+  CharsRegexp = Regexp.new( '\A[\x9\xa\xd\x20-\xd7ff\xe000-\xfffd\x10000\x10ffff]*\z' )
+
 public
 
   def initialize( initString = '' )
@@ -141,6 +149,9 @@ public
   end
 
   def set( newString )
+    unless CharsRegexp =~ newString
+      raise ValueSpaceError.new( "String: #{ newString } is not acceptable." )
+    end
     @data = newString
   end
 end
@@ -157,7 +168,7 @@ public
   end
 
   def set( newDecimal )
-    /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ newDecimal.to_s
+    /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( newDecimal.to_s )
     unless Regexp.last_match
       raise ValueSpaceError.new( "Decimal: #{ newDecimal } is not acceptable." )
     end
@@ -201,14 +212,17 @@ public
     # "NaN".to_f => 0 in some environment.  libc?
     @data = if newFloat.is_a?( Float )
 	narrowTo32bit( newFloat )
-      elsif newFloat == 'NaN'
-        0.0/0.0
-      elsif newFloat == 'INF'
-        1.0/0.0
-      elsif newFloat == '-INF'
-        -1.0/0.0
       else
-        narrowTo32bit( newFloat.to_f )
+	str = trim( newFloat.to_s )
+	if str == 'NaN'
+	  0.0/0.0
+	elsif str == 'INF'
+	  1.0/0.0
+	elsif str == '-INF'
+	  -1.0/0.0
+	else
+	  narrowTo32bit( str.to_f )
+	end
       end
   end
 
@@ -249,14 +263,17 @@ public
     # "NaN".to_f => 0 in some environment.  libc?
     @data = if newDouble.is_a?( Float )
 	newDouble
-      elsif newDouble == 'NaN'
-        0.0/0.0
-      elsif newDouble == 'INF'
-        1.0/0.0
-      elsif newDouble == '-INF'
-        -1.0/0.0
       else
-        newDouble.to_f
+	str = trim( newDouble.to_s )
+	if str == 'NaN'
+	  0.0/0.0
+	elsif str == 'INF'
+	  1.0/0.0
+	elsif str == '-INF'
+	  -1.0/0.0
+	else
+	  str.to_f
+	end
       end
   end
 
@@ -292,7 +309,7 @@ public
       gt = t.dup.gmtime
       @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
     else
-      /^([+-]?\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ t.to_s
+      /^([+-]?\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
       unless Regexp.last_match
 	raise ValueSpaceError.new( "DateTime: #{ t } is not acceptable." )
       end
@@ -374,7 +391,7 @@ public
     if ( t.is_a?( Time ))
       @data = t
     else
-      /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(?:Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ t.to_s
+      /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(?:Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
       unless Regexp.last_match
 	raise ValueSpaceError.new( "Time: #{ t } is not acceptable." )
       end
@@ -432,7 +449,7 @@ public
       gt = t.dup.gmtime
       @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
     else
-      /^([+-]?\d+)-(\d\d)-(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ t.to_s
+      /^([+-]?\d+)-(\d\d)-(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
       unless Regexp.last_match
 	raise ValueSpaceError.new( "Time: #{ t } is not acceptable." )
       end
@@ -462,13 +479,12 @@ public
   end
 
   def set( newString )
-    @data = [ newString ].pack( "m" )
+    @data = setEncoded( [ newString ].pack( "m" ))
   end
 
   def setEncoded( newBase64String )
     @data = String.new( newBase64String )
-    @data.sub!( /^\s*/, '' )
-    @data.sub!( /\s*$/, '' )
+    @data = trim( @data )
   end
 
   def toString
