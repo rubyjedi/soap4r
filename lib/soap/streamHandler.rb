@@ -28,13 +28,13 @@ class StreamHandler
       require 'http-access2'
       HTTPAccess2::Client
     rescue LoadError
-      puts "Loading http-access2 failed.  Net/http is used." if $DEBUG
+      STDERR.puts "Loading http-access2 failed.  Net/http is used." if $DEBUG
       require 'soap/netHttpClient'
       SOAP::NetHttpClient
     end
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.32 2003/08/21 15:13:46 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.33 2003/08/23 03:16:50 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
