@@ -1,6 +1,6 @@
 =begin
 SOAP4R - SOAP driver
-Copyright (C) 2000, 2001 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -35,20 +35,48 @@ class Driver
 public
   class EmptyResponseError < Error; end
 
+  attr_accessor :logDev
   attr_accessor :mappingRegistry
+  attr_reader :opt
+  attr_reader :endPointUrl
+  attr_reader :wireDumpDev
+  attr_reader :wireDumpFileBase
+  attr_reader :httpProxy
 
-  def initialize( log, logId, namespace, endPoint, httpProxy = nil, soapAction = nil )
-    @log = log
+  def initialize( log, logId, namespace, endpointUrl, httpProxy = nil, soapAction = nil )
+    @logDev = log
     @logId = logId
     @logIdPrefix = "<#{ @logId }> "
     log( SEV_INFO ) { 'initialize: initializing SOAP driver...' }
     @namespace = namespace
-    @handler = HTTPPostStreamHandler.new( endPoint, httpProxy,
+    @endpointUrl = endpointUrl
+    @mappingRegistry = nil	# for unmarshal
+    @wireDumpDev = nil
+    @dumpFileBase = nil
+    @httpProxy = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
+    @handler = HTTPPostStreamHandler.new( @endpointUrl, @httpProxy,
       Charset.getEncodingLabel )
     @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
     @proxy.allowUnqualifiedElement = true
-    @mappingRegistry = nil
-    @dumpFileBase = nil
+  end
+
+  def setEndpointUrl( endpointUrl )
+    @endpointUrl = endpointUrl
+    @handler.endpointUrl = @endpointUrl if @handler
+  end
+
+  def setWireDumpDev( dumpDev )
+    @wireDumpDev = dumpDev
+    @handler.dumpDev = @wireDumpDev if @handler
+  end
+
+  def setWireDumpFileBase( base )
+    @dumpFileBase = base
+  end
+
+  def setHttpProxy( httpProxy )
+    @httpProxy = httpProxy
+    @handler.proxy = @httpProxy if @handler
   end
 
 
@@ -182,7 +210,7 @@ private
   end
 
   def log( sev )
-    @log.add( sev, nil, self.class ) { @logIdPrefix + yield } if @log
+    @logDev.add( sev, nil, self.class ) { @logIdPrefix + yield } if @logDev
   end
 end
 
