@@ -141,7 +141,8 @@ module SOAPModuleUtils
 	''
       end
     d = self.new( value )
-    d.namespace, = ns.parse( elem.nodeName )
+    d.namespace = ns.parse( elem.nodeName )[0]
+    d.id = getId( elem )
     d
   end
 
@@ -149,14 +150,21 @@ module SOAPModuleUtils
 
   def decodeChild( ns, elem, parentArrayType = nil )
     if isNull( ns, elem )
-      return SOAPNull.decode( ns, elem )
-    end
+      SOAPNull.decode( ns, elem )
 
-    if getArrayType( ns, elem )
+    elsif getArrayType( ns, elem )
       SOAPArray.decode( ns, elem )
+
+    elsif ( ref = getReference( elem ))
+      SOAPReference.new( ref )
+
     else
       type = getType( ns, elem ) || parentArrayType
-      typeNamespace, typeNameString = ns.parse( type )
+      typeNamespace = typeNameString = nil
+      if type
+        typeNamespace, typeNameString = ns.parse( type )
+      end
+
       if typeNamespace == XSD::Namespace
 	case typeNameString
 	when 'int'
@@ -167,12 +175,34 @@ module SOAPModuleUtils
 	  SOAPBoolean.decode( ns, elem )
 	when 'string'
 	  SOAPString.decode( ns, elem )
-	when 'timeInstant'
-	  SOAPTimeInstant.decode( ns, elem )
+	when 'dateTime', 'timeInstant'	# For backward compatibility.
+	  SOAPDateTime.decode( ns, elem )
+	when 'base64Binary'
+	  SOAPBase64.decode( ns, elem )
 	else
 	  # Not supported... Decode as SOAPString by default.
 	  SOAPString.decode( ns, elem )
 	end
+
+      elsif typeNamespace == EncodingNamespace
+	case typeNameString
+	when 'int'
+	  SOAPInt.decode( ns, elem )
+	when 'integer'
+	  SOAPInteger.decode( ns, elem )
+	when 'boolean'
+	  SOAPBoolean.decode( ns, elem )
+	when 'string'
+	  SOAPString.decode( ns, elem )
+	when 'dateTime', 'timeInstant'	# For backward compatibility.
+	  SOAPDateTime.decode( ns, elem )
+	when 'base64'
+	  SOAPBase64.decode( ns, elem )
+	else
+	  # Not supported... Decode as SOAPString by default.
+	  SOAPString.decode( ns, elem )
+	end
+
       else
         bOnlyText = true
         elem.childNodes.each do | child |
@@ -225,6 +255,24 @@ module SOAPModuleUtils
     nil
   end
 
+  def getReference( elem )
+    elem.attributes.each do | attr |
+      if attr.nodeName == 'href'
+	return attr.nodeValue
+      end
+    end
+    nil
+  end
+
+  def getId( elem )
+    elem.attributes.each do | attr |
+      if attr.nodeName == 'id'
+	return attr.nodeValue
+      end
+    end
+    nil
+  end
+
   # $1 is necessary.
   NSParseRegexp = Regexp.new( '^xmlns:?(.*)$' )
 
@@ -244,12 +292,14 @@ module SOAPBasetypeUtils
   include XML::SimpleTree
 
   attr_accessor :namespace
+  attr_accessor :id
 
   public
 
   def initialize( *vars )
     super( *vars )
     @namespace = EnvelopeNamespace
+    @id = nil
   end
 
   def encode( ns, name, parentArray = nil )
@@ -267,10 +317,6 @@ module SOAPBasetypeUtils
     else
       Element.new( name, attrs, Text.new( self.to_s ))
     end
-  end
-
-  def ==( rhs )
-    self.data == rhs
   end
 
   private
@@ -291,6 +337,15 @@ end
 ###
 ## Basic datatypes.
 #
+class SOAPReference
+  attr_reader :refId
+
+  def initialize( refId )
+    @refId = refId
+  end
+end
+
+
 class SOAPNull < XSDNull
   extend SOAPModuleUtils
   include SOAPBasetypeUtils
@@ -300,6 +355,7 @@ class SOAPNull < XSDNull
   # Override the definition in SOAPBasetypeUtils.
   def initialize()
     @namespace = EnvelopeNamespace
+    @id = nil
   end
 
   private
@@ -312,7 +368,8 @@ class SOAPNull < XSDNull
   # Override the definition in SOAPModuleUtils
   def self.decode( ns, elem )
     d = self.new()
-    d.namespace, = ns.parse( elem.nodeName )
+    d.namespace = ns.parse( elem.nodeName )[0]
+    d.id = getId( elem )
     d
   end
 end
@@ -337,9 +394,40 @@ class SOAPInt < XSDInt
   include SOAPBasetypeUtils
 end
 
-class SOAPTimeInstant < XSDTimeInstant
+class SOAPDateTime < XSDDateTime
   extend SOAPModuleUtils
   include SOAPBasetypeUtils
+end
+
+class SOAPBase64 < XSDBase64Binary
+  extend SOAPModuleUtils
+  include SOAPBasetypeUtils
+
+  public
+
+  # Override the definition in SOAPBasetypeUtils.
+  def initialize( *vars )
+    super( *vars )
+    @typeNamespace = EnvelopeNamespace
+    @typeName = 'base64'
+  end
+
+  private
+
+  # Override the definition in SOAPModuleUtils
+  def self.decode( ns, elem )
+    elem.normalize
+    value = if elem.childNodes[0]
+	elem.childNodes[0].nodeValue
+      else
+	''
+      end
+    d = self.new()
+    d.setEncoded( value )
+    d.namespace = ns.parse( elem.nodeName )[0]
+    d.id = getId( elem )
+    d
+  end
 end
 
 
@@ -351,12 +439,14 @@ class SOAPCompoundBase < NSDBase
   extend SOAPModuleUtils
 
   attr_accessor :namespace
+  attr_accessor :id
 
   public
 
   def initialize( typeName )
     super( typeName, nil )
     @namespace = EnvelopeNamespace
+    @id = nil
   end
 end
 
@@ -366,13 +456,10 @@ class SOAPStruct < SOAPCompoundBase
 
   public
 
-  attr_reader :array
-  attr_reader :data
-
   def initialize( typeName )
     super( typeName )
     @array = []
-    @data = {}
+    @data = []
   end
 
   def to_s()
@@ -389,13 +476,13 @@ class SOAPStruct < SOAPCompoundBase
 
   def []( idx )
     if idx.is_a?( Integer )
-      if ( idx > array.size )
+      if ( idx > @array.size )
         raise ArrayIndexOutOfBoundsError.new( 'In ' << @typeName )
       end
-      @data[ @array[ idx ]]
+      @data[ idx ]
     else
-      if has_key?( idx )
-	@data[ idx ]
+      if @array.member?( idx )
+	@data[ @array.index( idx ) ]
       else
 	nil
       end
@@ -404,19 +491,29 @@ class SOAPStruct < SOAPCompoundBase
 
   def []=( idx, data )
     if @array.member?( idx )
-      @data[ idx ] = data
+      @data[ @array.index( idx ) ] = data
     else
       add( idx, data )
     end
   end
 
   def has_key?( name )
-    @data.has_key?( name )
+    @array.member?( name )
+  end
+
+  def members
+    @array
   end
 
   def each
-    @array.each do | key |
-      yield( key, @data[ key ] )
+    0.upto( @array.length - 1 ) do | i |
+      yield( @array[ i ], @data[ i ] )
+    end
+  end
+
+  def map!
+    @data.map! do | ele |
+      yield( ele )
     end
   end
 
@@ -430,9 +527,10 @@ class SOAPStruct < SOAPCompoundBase
       attrs.push( datatypeAttr( ns ))
     end
 
-    children = @array.collect { | child |
-      @data[ child ].encode( ns.clone, child )
-    }
+    children = []
+    0.upto( @array.length - 1 ) do | i |
+      children.push( @data[ i ].encode( ns.clone, @array[ i ] ))
+    end
 
     Element.new( name, attrs, children )
   end
@@ -445,9 +543,10 @@ class SOAPStruct < SOAPCompoundBase
       typeNamespace, typeNameString = ns.parse( type )
       s = SOAPStruct.new( typeNameString )
       s.typeNamespace = typeNamespace
+      s.id = getId( elem )
     else
-      # 'return' element?
       s = SOAPStruct.new( name )
+      s.id = getId( elem )
     end
 
     s.namespace = namespace
@@ -486,11 +585,11 @@ class SOAPStruct < SOAPCompoundBase
     begin
       instance_eval <<-EOS
         def #{ methodName }()
-	  @data[ '#{ methodName }' ]
+	  @data[ @array.index( '#{ methodName }' ) ]
         end
 
         def #{ methodName }=( newMember )
-	  @data[ '#{ methodName }' ] = newMember
+	  @data[ @array.index( '#{ methodName }' ) ] = newMember
         end
       EOS
     rescue SyntaxError
@@ -499,7 +598,7 @@ class SOAPStruct < SOAPCompoundBase
     end
 
     @array.push( name )
-    @data[ name ] = initMember
+    @data.push( initMember )
   end
 end
 
@@ -507,8 +606,6 @@ class SOAPArray < SOAPCompoundBase
   include Enumerable
 
   public
-
-  attr_reader :data
 
   ArrayEncodePostfix = 'Ary'
 
@@ -553,6 +650,12 @@ class SOAPArray < SOAPCompoundBase
     end
     @data[ 0 ].each do | datum |
       yield( datum )
+    end
+  end
+
+  def map!
+    @data.map! do | ele |
+      yield( ele )
     end
   end
 
@@ -615,11 +718,13 @@ class SOAPArray < SOAPCompoundBase
 
   public
 
+  # DEBT: Check if getArrayType returns non-nil before invoking this method.
   def self.decode( ns, elem )
     typeNamespace, typeNameString = ns.parse( getArrayType( ns, elem ))
     typeName, nofArray = parseType( typeNameString )
     s = SOAPArray.new( typeName )
-    s.namespace, = ns.parse( elem.nodeName )
+    s.namespace = ns.parse( elem.nodeName )[0]
+    s.id = getId( elem )
 
     i = 0
     elem.childNodes.each do | child |
