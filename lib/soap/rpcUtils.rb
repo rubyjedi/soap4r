@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/baseData'
 
+
 module SOAP
   module RPCUtils
     RubyTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/1.6'
@@ -25,6 +26,7 @@ module SOAP
     ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
   end
 end
+
 
 require 'soap/mappingRegistry'
 
@@ -287,42 +289,40 @@ module RPCUtils
   end
 
 
-  def RPCUtils.obj2soap( obj, mappingRegistry = MappingRegistry.new )
-    mappingRegistry ||= MappingRegistry.new
-
+  def RPCUtils.obj2soap( obj, mappingRegistry = nil, type = nil )
+    mappingRegistry ||= RPCUtils::DefaultMappingRegistry
     Thread.current[ :SOAPMarshalDataKey ] = {}
-    soapObj = RPCUtils._obj2soap( obj, mappingRegistry )
+    soapObj = RPCUtils._obj2soap( obj, mappingRegistry, type )
     Thread.current[ :SOAPMarshalDataKey ] = nil
-
     soapObj
   end
 
-
-  def RPCUtils.soap2obj( node, mappingRegistry = MappingRegistry.new )
-    mappingRegistry ||= MappingRegistry.new
-
+  def RPCUtils.soap2obj( node, mappingRegistry = nil )
+    mappingRegistry ||= RPCUtils::DefaultMappingRegistry
     Thread.current[ :SOAPMarshalDataKey ] = {}
     obj = RPCUtils._soap2obj( node, mappingRegistry )
     Thread.current[ :SOAPMarshalDataKey ] = nil
-
     obj
   end
 
-
   def RPCUtils.ary2soap( ary, typeNamespace = XSD::Namespace,
-      typeName = XSD::AnyTypeLiteral, mappingRegistry = MappingRegistry.new )
-    soapAry = SOAPArray.new( XSD::QName.new( typeNamespace, typeName ))
+      typeName = XSD::AnyTypeLiteral, mappingRegistry = nil )
+    type = XSD::QName.new( typeNamespace, typeName )
+    mappingRegistry ||= RPCUtils::DefaultMappingRegistry
+    soapAry = SOAPArray.new( type )
     Thread.current[ :SOAPMarshalDataKey ] = {}
     ary.each do | ele |
-      soapAry.add( RPCUtils._obj2soap( ele, mappingRegistry ))
+      soapAry.add( RPCUtils._obj2soap( ele, mappingRegistry, type ))
     end
     Thread.current[ :SOAPMarshalDataKey ] = nil
     soapAry
   end
 
   def RPCUtils.ary2md( ary, rank, typeNamespace = XSD::Namespace,
-      typeName = XSD::AnyTypeLiteral, mappingRegistry = MappingRegistry.new )
-    mdAry = SOAPArray.new( XSD::QName.new( typeNamespace, typeName ), rank )
+      typeName = XSD::AnyTypeLiteral, mappingRegistry = nil )
+    type = XSD::QName.new( typeNamespace, typeName )
+    mappingRegistry ||= RPCUtils::DefaultMappingRegistry
+    mdAry = SOAPArray.new( type, rank )
     Thread.current[ :SOAPMarshalDataKey ] = {}
     addMDAry( mdAry, ary, [], mappingRegistry )
     Thread.current[ :SOAPMarshalDataKey ] = nil
@@ -330,6 +330,7 @@ module RPCUtils
   end
 
   def RPCUtils.fault2exception( e, mappingRegistry = nil )
+    mappingRegistry ||= RPCUtils::DefaultMappingRegistry
     detail = if e.detail
 	RPCUtils.soap2obj( e.detail, mappingRegistry ) || ""
       else
@@ -357,22 +358,13 @@ module RPCUtils
     end
   end
 
-
-  def RPCUtils._obj2soap( obj, mappingRegistry )
-    if obj.is_a?( SOAPBasetype )
-      obj
-    elsif obj.is_a?( SOAPStruct ) || obj.is_a?( SOAPArray )
-      # Dive in to search non-SOAP data.
-      obj.replace do | ele |
-	RPCUtils._obj2soap( ele, mappingRegistry )
-      end
-      obj
-    elsif referent = Thread.current[ :SOAPMarshalDataKey ][ obj.__id__ ]
+  def RPCUtils._obj2soap( obj, mappingRegistry, type = nil )
+    if referent = Thread.current[ :SOAPMarshalDataKey ][ obj.__id__ ]
       soapObj = SOAPReference.new
       soapObj.__setobj__( referent )
       soapObj
     else
-      mappingRegistry.obj2soap( obj.class, obj )
+      mappingRegistry.obj2soap( obj.class, obj, type )
     end
   end
 
@@ -429,7 +421,8 @@ module RPCUtils
        	if ary[ idx ].is_a?( Array )
   	  addMDAry( mdAry, ary[ idx ], indices + [ idx ], mappingRegistry )
    	else
-  	  mdAry[ *( indices + [ idx ] ) ] = RPCUtils._obj2soap( ary[ idx ], mappingRegistry )
+  	  mdAry[ *( indices + [ idx ] ) ] =
+	    RPCUtils._obj2soap( ary[ idx ], mappingRegistry )
    	end
       end
     end
