@@ -337,6 +337,34 @@ module RPCUtils
     mdAry
   end
 
+  def RPCUtils.fault2exception( e, mappingRegistry = nil )
+    detail = if e.detail
+	RPCUtils.soap2obj( e.detail, mappingRegistry ) || ""
+      else
+      	""
+      end
+    if detail.is_a?( RPCUtils::SOAPException )
+      begin
+	raise detail.to_e
+      rescue Exception => e2
+  	detail.set_backtrace( e2 )
+	raise
+      end
+    else
+      e.detail = detail
+      e.set_backtrace(
+	if detail.is_a?( Array )
+     	  detail.map! { |s|
+  	    s.sub( /^/, @handler.endPoint + ':' )
+	  }
+     	else
+  	  [ detail.to_s ]
+	end
+      )
+      raise
+    end
+  end
+
 
   def RPCUtils._obj2soap( obj, mappingRegistry )
     if obj.is_a?( SOAPBasetype )
