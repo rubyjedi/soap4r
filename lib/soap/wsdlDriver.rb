@@ -92,17 +92,15 @@ private
     # Convert a map which key is QName, to a Hash which key is String.
     port.find_binding.operations.each do |op_bind|
       op = op_bind.find_operation
-
-      soapaction = op_bind.soapoperation.soapaction
+      soapaction = op_bind.soapoperation ? op_bind.soapoperation.soapaction : ''
       orgname = op.name.name
       name = ::XSD::CodeGen::GenSupport.safemethodname(orgname)
       param_def = create_param_def(op_bind)
       opt = {}
-      opt[:request_style] = opt[:response_style] =
-        op_bind.soapoperation.operation_style || :document
+      opt[:request_style] = opt[:response_style] = op_bind.soapoperation_style
       opt[:request_use] = (op_bind.input.soapbody.use || 'literal').intern
       opt[:response_use] = (op_bind.output.soapbody.use || 'literal').intern
-      if op_bind.soapoperation.operation_style == :rpc
+      if op_bind.soapoperation_style == :rpc
         qname = op.inputname
         drv.add_rpc_operation(qname, soapaction, name, param_def, opt)
       else
@@ -136,7 +134,7 @@ private
     if op_bind.output.soapbody.parts
       outputparts = filter_parts(op_bind.output.soapbody.parts, outputparts)
     end
-    if op_bind.soapoperation.operation_style == :rpc
+    if op_bind.soapoperation_style == :rpc
       part = outputparts.shift
       param_def << param_def(::SOAP::RPC::SOAPMethod::RETVAL, partqname(part))
       outputparts.each do |part|

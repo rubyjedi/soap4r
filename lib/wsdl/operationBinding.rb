@@ -40,6 +40,18 @@ class OperationBinding < Info
     porttype.operations[@name]
   end
 
+  def soapoperation_style
+    style = nil
+    if @soapoperation
+      style = @soapoperation.operation_style
+    elsif parent.soapbinding
+      style = parent.soapbinding.style
+    else
+      raise TypeError.new("operation style definition not found")
+    end
+    style || :document
+  end
+
   def parse_element(element)
     case element
     when InputName
