@@ -150,7 +150,7 @@ private
 	o.id = value_ele
       else
 	unless o.parse_attr(attr, value_ele)
-	  warn("Unknown attr #{ attr }.")
+	  STDERR.puts("Unknown attr #{ attr }.")
 	  # raise UnknownAttributeError.new("Unknown attr #{ attr }.")
    	end
       end
