@@ -1,5 +1,4 @@
 require 'test/unit'
-require 'itemList.rb'
 require 'soap/processor'
 require 'soap/mapping'
 require 'soap/rpc/element'
@@ -11,6 +10,10 @@ module WSDL
 
 class TestAxisArray < Test::Unit::TestCase
   def setup
+    dir = File.dirname(File.expand_path(__FILE__))
+    $:.push(dir)
+    require 'itemList.rb'
+    $:.delete(dir)
     @xml =<<__EOX__
 <?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

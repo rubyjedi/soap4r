@@ -7,7 +7,7 @@ class WSDLMarshaller
   include SOAP
 
   def initialize(wsdlfile)
-    wsdl = WSDL::Parser.new.parse(File.open(wsdlfile).read)
+    wsdl = WSDL::Parser.new.parse(File.open(wsdlfile) { |f| f.read })
     types = wsdl.collect_complextypes
     @opt = {
       :decode_typemap => types,
@@ -58,8 +58,8 @@ class TestWSDLMarshal < Test::Unit::TestCase
   def test_classdef
     raise if File.exist?("Person.rb")
     system("ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("person.wsdl")} --force")
-    person_org = File.open(pathname("person_org.rb")).read
-    person_new = File.open("Person.rb").read
+    person_org = File.open(pathname("person_org.rb")) { |f| f.read }
+    person_new = File.open("Person.rb") { |f| f.read }
     assert_equal(person_org, person_new)
     File.unlink('Person.rb') if File.exist?('Person.rb')
   end
