@@ -4,6 +4,7 @@ $serverName = 'GLUE'
 
 $serverBase = 'http://www.themindelectric.net:8005/glue/round2'
 $serverGroupB = 'http://www.themindelectric.net:8005/glue/round2B'
+$noEchoMap = true
 
 require 'clientBase'
 

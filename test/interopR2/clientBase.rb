@@ -220,15 +220,17 @@ def doTestBase( drv )
     dumpException( title )
   end
 
-  title = 'echoString (Character reference)'
-  dumpTitle( title )
-  begin
-    arg = "\x7f&#x7f;"
-    var = drv.echoString( arg )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
+# Cannot test character reference until SOAPRawString is implemented.
+#
+#  title = 'echoString (Character reference)'
+#  dumpTitle( title )
+#  begin
+#    arg = "\x7f&#x7f;"
+#    var = drv.echoString( arg )
+#    dumpNormal( title, arg, var )
+#  rescue Exception
+#    dumpException( title )
+#  end
 
   title = 'echoString (Leading and trailing whitespace)'
   dumpTitle( title )
@@ -986,7 +988,7 @@ def doTestBase( drv )
   end
 
 
-if $test_echoMap
+unless $noEchoMap
 
   title = 'echoMap'
   dumpTitle( title )

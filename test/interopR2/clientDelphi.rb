@@ -4,6 +4,7 @@ $serverName = 'Delphi'
 
 $serverBase = 'http://soap-server.borland.com/WebServices/Interop/cgi-bin/InteropService.exe/soap/InteropTestPortType'
 $serverGroupB = 'http://soap-server.borland.com/WebServices/Interop/cgi-bin/InteropGroupB.exe/soap/InteropTestPortTypeB'
+$noEchoMap = true
 
 require 'clientBase'
 

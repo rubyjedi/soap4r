@@ -4,6 +4,7 @@ $serverName = 'CapeConnect'
 
 $serverBase = 'http://interop.capeclear.com/ccx/soapbuilders-round2'
 #$serverGroupB = ''
+$noEchoMap = true
 
 require 'clientBase'
 

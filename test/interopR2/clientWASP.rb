@@ -4,6 +4,7 @@ $serverName = 'WASP'
 
 $serverBase =   'http://soap.systinet.net:6060/InteropService/'
 $serverGroupB = 'http://soap.systinet.net:6060/InteropBService/'
+$noEchoMap = true
 
 require 'clientBase'
 
