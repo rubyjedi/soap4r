@@ -27,3 +27,20 @@ module XSD
   NilValue = '1'
   DateTimeLiteral = 'timeInstant'
 end
+
+module SOAP
+  class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
+    XSDBaseTypeMap = {
+      XSD::DecimalLiteral => SOAPDecimal,
+      XSD::IntegerLiteral => SOAPInteger,
+      XSD::LongLiteral => SOAPLong,
+      XSD::IntLiteral => SOAPInt,
+      XSD::FloatLiteral => SOAPFloat,
+      XSD::DoubleLiteral => SOAPDouble,
+      XSD::BooleanLiteral => SOAPBoolean,
+      XSD::StringLiteral => SOAPString,
+      XSD::DateTimeLiteral => SOAPDateTime,
+      XSD::Base64BinaryLiteral => SOAPBase64,
+    }
+  end
+end
