@@ -86,7 +86,16 @@ end
 ###
 ## Create Proxy
 #
+def getWireDumpLogFile
+  logFilename = File.basename( $0 ) + '.log'
+  f = File.open( logFilename, 'w' )
+  f << "File: #{ logFilename } - Wiredumps for SOAP4R client / #{ $serverName } server.\n"
+  f << "Date: #{ Time.now }\n\n"
+end
+
 raa = SOAP::Driver.new( Log.new( STDERR ), 'SampleApp', RAAInterfaceNS, server, proxy )
+raa.setWireDumpDev( getWireDumpLogFile )
+
 
 # Method definition.
 raa.addMethod( 'getAllListings' )
