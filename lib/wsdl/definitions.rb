@@ -87,10 +87,12 @@ class Definitions < Info
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( targetNamespace, value )
+      @name = Name.new( @targetNamespace, value )
     when TargetNamespaceAttrName
       @targetNamespace = value
-      @name = Name.new( targetNamespace, value )
+      if @name
+	@name = Name.new( @targetNamespace, @name.name )
+      end
     else
       raise UnknownElementError.new( "Unknown element #{ element }." )
     end
