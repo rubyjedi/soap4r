@@ -68,34 +68,21 @@ class Element < Info
 	  XSD::QName.new(XSD::Namespace, value)
 	end
     when MaxOccursAttrName
-      case parent
-      when All
+      if parent.is_a?(All)
 	if value != '1'
 	  raise Parser::AttrConstraintError.new(
 	    "Cannot parse #{ value } for #{ attr }.")
 	end
-	@maxoccurs = value
-      when Sequence
-	@maxoccurs = value
-      else
-	raise NotImplementedError.new
       end
-      @maxoccurs
+      @maxoccurs = value
     when MinOccursAttrName
-      case parent
-      when All
-	if ['0', '1'].include?(value)
-	  @minoccurs = value
-	else
+      if parent.is_a?(All)
+	unless ['0', '1'].include?(value)
 	  raise Parser::AttrConstraintError.new(
 	    "Cannot parse #{ value } for #{ attr }.")
 	end
-      when Sequence
-	@minoccurs = value
-      else
-	raise NotImplementedError.new
       end
-      @minoccurs
+      @minoccurs = value
     when NillableAttrName
       @nillable = (value == 'true')
     else
