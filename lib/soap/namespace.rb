@@ -55,7 +55,9 @@ public
   end
 
   def clone
-    NS.new( @tag2ns.dup )
+    cloned = NS.new( @tag2ns.dup )
+    cloned.assign( @defaultNamespace, '' ) if @defaultNamespace
+    cloned
   end
 
   def name( namespace, name )
