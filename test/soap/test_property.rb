@@ -153,11 +153,54 @@ class TestProperty < Test::Unit::TestCase
     assert_equal(4, tested)
   end
 
-  def test_lock
+  def test_lock_each
+    @prop["a.b.c.d.e"] = 1
+    @prop["a.b.d"] = branch = ::SOAP::Property.new
+    @prop["a.b.d.e.f"] = 2
+    @prop.lock
+    assert(@prop.locked?)
+    assert_instance_of(::SOAP::Property, @prop["a"])
+    assert_raises(TypeError) do
+      @prop["b"]
+    end
+    #
+    @prop["a"].lock
+    assert_raises(TypeError) do
+      @prop["a"]
+    end
+    assert_instance_of(::SOAP::Property, @prop["a.b"])
+    #
+    @prop["a.b"].lock
+    assert_raises(TypeError) do
+      @prop["a.b"]
+    end
+    assert_raises(TypeError) do
+      @prop["a"]
+    end
+    #
+    @prop["a.b.c.d"].lock
+    assert_instance_of(::SOAP::Property, @prop["a.b.c"])
+    assert_raises(TypeError) do
+      @prop["a.b.c.d"]
+    end
+    assert_instance_of(::SOAP::Property, @prop["a.b.d"])
+    #
+    branch["e"].lock
+    assert_instance_of(::SOAP::Property, @prop["a.b.d"])
+    assert_raises(TypeError) do
+      @prop["a.b.d.e"]
+    end
+    assert_raises(TypeError) do
+      branch["e"]
+    end
+  end
+
+  def test_lock_cascade
     @prop["a.a"] = nil
     @prop["a.b.c"] = 1
     @prop["b"] = false
-    @prop.lock
+    @prop.lock(true)
+    assert(@prop.locked?)
     assert_equal(nil, @prop["a.a"])
     assert_equal(1, @prop["a.b.c"])
     assert_equal(false, @prop["b"])
@@ -189,7 +232,7 @@ class TestProperty < Test::Unit::TestCase
     @prop["a.a"] = 2
     assert_equal(2, @prop["a.a"])
     #
-    @prop.unlock
+    @prop.unlock(true)
     assert_nil(@prop["c"])
     @prop["c"] = 2
     assert_equal(2, @prop["c"])
@@ -210,7 +253,7 @@ class TestProperty < Test::Unit::TestCase
       assert_equal("a.b.c", name)
       tested = true
     end
-    @prop.lock
+    @prop["a.b"].lock
     assert(!tested)
     @prop["a.b.c"] = 5
     assert(tested)
@@ -232,7 +275,7 @@ class TestProperty < Test::Unit::TestCase
     @prop["a.b.d.e"] = 2
     assert_equal(branch, @prop["a.b.d"])
     assert_equal(branch, @prop[:a][:b][:d])
-    @prop.lock
+    @prop.lock(true)
     # split error 1
     assert_raises(TypeError) do
       @prop["a.b"]
@@ -251,6 +294,21 @@ class TestProperty < Test::Unit::TestCase
     assert_raises(TypeError) do
       @prop["a.b"] = 1
     end
+    #
+    assert_raises(TypeError) do
+      @prop["a.b.d"] << 1
+    end
+    assert_raises(TypeError) do
+      branch << 1
+    end
+    branch.unlock(true)
+    branch << 1
+    branch << 2
+    branch << 3
+    assert_equal(2, @prop["a.b.d.e"])
+    assert_equal(1, @prop["a.b.d.1"])
+    assert_equal(2, @prop["a.b.d.2"])
+    assert_equal(3, @prop["a.b.d.3"])
   end
 end
 
