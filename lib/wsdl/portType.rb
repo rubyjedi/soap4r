@@ -34,7 +34,7 @@ class PortType < Info
   def initialize
     super
     @name = nil
-    @operations = []
+    @operations = NamedElements.new
   end
 
   def getBinding
