@@ -73,13 +73,14 @@ class SOAPProxy
     end
   end
 
-  def addMethod( methodName, paramDef, soapAction = nil )
-    addMethodAs( methodName, methodName, paramDef, soapAction )
+  def addMethod( methodName, paramDef, soapAction = nil, namespace = nil )
+    addMethodAs( methodName, methodName, paramDef, soapAction, namespace )
   end
 
-  def addMethodAs( methodNameAs, methodName, paramDef, soapAction = nil )
-    @method[ methodName ] = SOAPMethodRequest.new( @namespace, methodNameAs,
-      paramDef, soapAction )
+  def addMethodAs( methodNameAs, methodName, paramDef, soapAction = nil,
+      namespace = nil )
+    @method[ methodName ] = SOAPMethodRequest.new( namespace || @namespace,
+      methodNameAs, paramDef, soapAction )
   end
 
   def createRequest( methodName, *values )

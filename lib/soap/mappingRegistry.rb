@@ -34,14 +34,19 @@ module RPCServerException; end
 module RPCUtils
   # Inner class to pass an exception.
   class SOAPException; include Marshallable
-    attr_reader :exceptionTypeName, :message, :backtrace
+    attr_reader :exceptionTypeName, :message, :backtrace, :cause
     def initialize( e )
       @exceptionTypeName = RPCUtils.getElementNameFromName( e.type.to_s )
       @message = e.message
       @backtrace = e.backtrace
+      @cause = e
     end
 
     def to_e
+      if @cause.is_a?( Exception )
+	@cause.extend( ::SOAP::RPCServerException )
+	return @cause
+      end
       klass = RPCUtils.getClassFromName(
 	RPCUtils.getNameFromElementName( @exceptionTypeName.to_s ))
       if klass.nil?
@@ -171,7 +176,7 @@ module RPCUtils
     end
 
     def capitalize( target )
-      target.gsub('^([a-z])') { $1.tr!('[a-z]', '[A-Z]') }
+      target.gsub( /^([a-z])/ ) { $1.tr!( '[a-z]', '[A-Z]' ) }
     end
   end
 
@@ -841,11 +846,12 @@ module RPCUtils
       [ ::Date,		::SOAP::SOAPDate,	BasetypeFactory ],
       [ ::Time,		::SOAP::SOAPDateTime,	BasetypeFactory ],
       [ ::Time,		::SOAP::SOAPTime,	BasetypeFactory ],
-      [ ::Float,	::SOAP::SOAPFloat,	BasetypeFactory ],
       [ ::Float,	::SOAP::SOAPDouble,	BasetypeFactory ],
+      [ ::Float,	::SOAP::SOAPFloat,	BasetypeFactory ],
       [ ::Integer,	::SOAP::SOAPInt,	BasetypeFactory ],
       [ ::Integer,	::SOAP::SOAPLong,	BasetypeFactory ],
       [ ::Integer,	::SOAP::SOAPInteger,	BasetypeFactory ],
+      [ ::Integer,	::SOAP::SOAPShort,	BasetypeFactory ],
       [ ::URI::Generic,	::SOAP::SOAPAnyURI,	BasetypeFactory ],
       [ ::String,	::SOAP::SOAPBase64,	Base64Factory ],
       [ ::String,	::SOAP::SOAPHexBinary,	Base64Factory ],
