@@ -1,5 +1,5 @@
 # SOAP4R - Ruby type mapping factory.
-# Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000-2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -168,7 +168,7 @@ class RubytypeFactory < Factory
         return nil
       end
       if obj.to_s[0] == ?#
-        raise TypeError.new("can't dump anonymous class #{ obj }")
+        raise TypeError.new("can't dump anonymous class #{obj}")
       end
       param = SOAPStruct.new(TYPE_CLASS)
       mark_marshalled_obj(obj, param)
@@ -179,7 +179,7 @@ class RubytypeFactory < Factory
         return nil
       end
       if obj.to_s[0] == ?#
-        raise TypeError.new("can't dump anonymous module #{ obj }")
+        raise TypeError.new("can't dump anonymous module #{obj}")
       end
       param = SOAPStruct.new(TYPE_MODULE)
       mark_marshalled_obj(obj, param)
@@ -258,12 +258,12 @@ private
 
   def unknownobj2soap(soap_class, obj, info, map)
     if obj.class.name.empty?
-      raise TypeError.new("can't dump anonymous class #{ obj }")
+      raise TypeError.new("can't dump anonymous class #{obj}")
     end
     singleton_class = class << obj; self; end
     if !singleton_methods_true(obj).empty? or
 	!singleton_class.instance_variables.empty?
-      raise TypeError.new("singleton can't be dumped #{ obj }")
+      raise TypeError.new("singleton can't be dumped #{obj}")
     end
     if !(singleton_class.ancestors - obj.class.ancestors).empty?
       typestr = Mapping.name2elename(obj.class.to_s)
@@ -387,7 +387,12 @@ private
   end
 
   def unknowntype2obj(node, info, map)
-    if node.is_a?(SOAPStruct)
+    case node
+    when SOAPBasetype
+      return true, node.data
+    when SOAPArray
+      return @array_factory.soap2obj(Array, node, info, map)
+    when SOAPStruct
       obj = unknownstruct2obj(node, info, map)
       return true, obj if obj
       if !@allow_untyped_struct

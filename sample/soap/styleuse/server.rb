@@ -10,8 +10,12 @@ class Server < SOAP::RPC::StandaloneServer
   end
 
   class DocumentServant
-    def doc_serv(obj)
-      obj
+    def doc_serv(hash)
+      hash
+    end
+
+    def doc_serv2(hash)
+      { 'newroot' => hash }
     end
   end
 
@@ -46,8 +50,15 @@ class Server < SOAP::RPC::StandaloneServer
 
   def initialize(*arg)
     super
-    add_rpc_servant(RpcServant.new)
-    add_document_servant(DocumentServant.new)
+    rpcservant = RpcServant.new
+    docservant = DocumentServant.new
+    add_rpc_servant(rpcservant)
+    add_document_method(docservant, 'urn:doc_serv#doc_serv', 'doc_serv',
+      [XSD::QName.new('urn:styleuse', 'req')],
+      [XSD::QName.new('urn:styleuse', 'res')])
+    add_document_method(docservant, 'urn:doc_serv#doc_serv2', 'doc_serv2',
+      [XSD::QName.new('urn:styleuse', 'req')],
+      [XSD::QName.new('urn:styleuse', 'res')])
 
     #servant = Servant.new
     # ToDo: too plain: should add bare test case

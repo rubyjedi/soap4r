@@ -63,7 +63,7 @@ class Router
     ::SOAP::RPC.defined_methods(obj).each do |name|
       begin
         qname = XSD::QName.new(namespace, name)
-        param_def = ::SOAP::RPC::SOAPMethod.derive_param_def(obj, name)
+        param_def = ::SOAP::RPC::SOAPMethod.derive_rpc_param_def(obj, name)
         opt = create_styleuse_option(:rpc, :encoded)
         add_rpc_request_operation(factory, qname, nil, name, param_def, opt)
       rescue SOAP::RPC::MethodDefinitionError => e
@@ -76,7 +76,7 @@ class Router
     ::SOAP::RPC.defined_methods(obj).each do |name|
       begin
         qname = XSD::QName.new(namespace, name)
-        param_def = ::SOAP::RPC::SOAPMethod.derive_param_def(obj, name)
+        param_def = ::SOAP::RPC::SOAPMethod.derive_rpc_param_def(obj, name)
         opt = create_styleuse_option(:rpc, :encoded)
         add_rpc_operation(obj, qname, nil, name, param_def, opt)
       rescue SOAP::RPC::MethodDefinitionError => e
@@ -102,8 +102,7 @@ class Router
   alias add_method add_rpc_operation
   alias add_rpc_method add_rpc_operation
 
-  def add_rpc_request_operation(factory, qname, soapaction, name, param_def,
-      opt = {})
+  def add_rpc_request_operation(factory, qname, soapaction, name, param_def, opt = {})
     ensure_styleuse_option(opt, :rpc, :encoded)
     opt[:request_qname] = qname
     op = RequestScopeOperation.new(soapaction, factory, name, param_def, opt)
@@ -117,7 +116,7 @@ class Router
     unless soapaction
       raise RPCRoutingError.new("soapaction is a must for document method")
     end
-    ensure_styleuse_option(opt, :document, :encoded)
+    ensure_styleuse_option(opt, :document, :literal)
     op = ApplicationScopeOperation.new(soapaction, receiver, name, param_def,
       opt)
     if opt[:request_style] != :document
@@ -127,12 +126,11 @@ class Router
   end
   alias add_document_method add_document_operation
 
-  def add_document_request_operation(factory, soapaction, name, param_def,
-      opt = {})
+  def add_document_request_operation(factory, soapaction, name, param_def, opt = {})
     unless soapaction
       raise RPCRoutingError.new("soapaction is a must for document method")
     end
-    ensure_styleuse_option(opt, :document, :encoded)
+    ensure_styleuse_option(opt, :document, :literal)
     op = RequestScopeOperation.new(soapaction, receiver, name, param_def, opt)
     if opt[:request_style] != :document
       raise RPCRoutingError.new("illegal request_style given")
@@ -155,14 +153,10 @@ class Router
     begin
       soap_response =
         op.call(env.body, @mapping_registry, @literal_mapping_registry)
-      if op.response_use == :document
-        default_encodingstyle =
-          ::SOAP::EncodingStyle::ASPDotNetHandler::Namespace
-      end
     rescue Exception
       soap_response = fault($!)
     end
-    conn_data.is_fault = true if soap_response.is_a?(SOAPFault)
+    conn_data.is_fault = true if soap_response.is_a?(SOAPFault) # To be fixed.
     header = call_headers(headerhandler)
     body = SOAPBody.new(soap_response)
     env = SOAPEnvelope.new(header, body)
@@ -320,51 +314,45 @@ private
       @response_style = opt[:response_style]
       @request_use = opt[:request_use]
       @response_use = opt[:response_use]
-      case @response_style
-      when :rpc
+      check_style(@request_style)
+      check_style(@response_style)
+      check_use(@request_use)
+      check_use(@response_use)
+      if @response_style == :rpc
         request_qname = opt[:request_qname] or raise
         @rpc_method_factory =
           RPC::SOAPMethodRequest.new(request_qname, param_def, @soapaction)
         @rpc_response_qname = opt[:response_qname]
-      when :document
-        @doc_request_qnames = @doc_response_qnames = nil
-        if param_def
-          @doc_request_qnames = []
-          @doc_response_qnames = []
-          param_def.each do |inout, paramname, typeinfo|
-            klass, nsdef, namedef = typeinfo
-            case inout
-            when 'in', 'input'
-              @doc_request_qnames << XSD::QName.new(nsdef, namedef)
-            when 'out', 'output'
-              @doc_response_qnames << XSD::QName.new(nsdef, namedef)
-            else
-                raise ArgumentError.new("illegal inout definition: #{inout}")
-            end
+      else
+        @doc_request_qnames = []
+        @doc_response_qnames = []
+        param_def.each do |inout, paramname, typeinfo|
+          klass, nsdef, namedef = typeinfo
+          case inout
+          when SOAPMethod::IN
+            @doc_request_qnames << XSD::QName.new(nsdef, namedef)
+          when SOAPMethod::OUT
+            @doc_response_qnames << XSD::QName.new(nsdef, namedef)
+          else
+            raise ArgumentError.new(
+              "illegal inout definition for document style: #{inout}")
           end
         end
-      else
-        raise "unknown request style: #{style}"
       end
     end
 
     def call(body, mapping_registry, literal_mapping_registry)
-      case @request_style
-      when :rpc
-        result = request_rpc(body, mapping_registry)
-      when :document
-        result = request_document(body, literal_mapping_registry)
+      if @request_style == :rpc
+        values = request_rpc(body, mapping_registry)
       else
-        raise "unknown request style: #{@request_type}"
+        values = request_document(body, literal_mapping_registry)
       end
+      result = receiver.method(@name.intern).call(*values)
       return result if result.is_a?(SOAPFault)
-      case @response_style
-      when :rpc
+      if @response_style == :rpc
         response_rpc(result, mapping_registry)
-      when :document
-        response_document(result, literal_mapping_registry)
       else
-        raise "unknown response style: #{@response_style}"
+        response_doc(result, literal_mapping_registry)
       end
     end
 
@@ -381,10 +369,8 @@ private
       end
       if @request_use == :encoded
         request_rpc_enc(request, mapping_registry)
-      elsif @request_use == :literal
-        request_rpc_lit(request)
       else
-        raise
+        request_rpc_lit(request)
       end
     end
 
@@ -392,64 +378,56 @@ private
       # ToDo: compare names with @doc_request_qnames
       if @request_use == :encoded
         request_doc_enc(body, mapping_registry)
-      elsif @request_use == :literal
-        request_doc_lit(body)
       else
-        raise
+        request_doc_lit(body)
       end
     end
 
     def request_rpc_enc(request, mapping_registry)
       param = Mapping.soap2obj(request, mapping_registry)
-      values = request.collect { |key, value| param[key] }
-      receiver.method(@name.intern).call(*values)
+      request.collect { |key, value|
+        param[key]
+      }
     end
 
     def request_rpc_lit(request)
-      values = request.collect { |key, value| value.to_obj }
-      receiver.method(@name.intern).call(*values)
+      request.collect { |key, value|
+        value.to_obj
+      }
     end
 
-    def request_doc_enc(body, literal_mapping_registry)
-      param = []
-      body.each do |key, value|
-        param << Mapping.soap2obj(value, literal_mapping_registry)
-      end
-      receiver.method(@name.intern).call(*param)
+    def request_doc_enc(body, mapping_registry)
+      body.collect { |key, value|
+        Mapping.soap2obj(value, mapping_registry)
+      }
     end
 
     def request_doc_lit(body)
-      param = []
-      body.each do |key, value|
-        param << value.to_obj
-      end
-      receiver.method(@name.intern).call(*param)
+      body.collect { |key, value|
+        value.to_obj
+      }
     end
 
     def response_rpc(result, mapping_registry)
       if @response_use == :encoded
         response_rpc_enc(result, mapping_registry)
-      elsif @response_use == :literal
-        response_rpc_lit(result)
       else
-        raise
+        response_rpc_lit(result)
       end
     end
     
-    def response_document(result, mapping_registry)
-      unless result.respond_to?(:size)
+    def response_doc(result, mapping_registry)
+      if @doc_response_qnames.size == 1 and !result.is_a?(Array)
         result = [result]
       end
-      if @doc_response_qnames and result.size != @doc_response_qnames.size
+      if result.size != @doc_response_qnames.size
         raise "required #{@doc_response_qnames.size} responses " +
           "but #{result.size} given"
       end
       if @response_use == :encoded
-        response_doc_enc(result, literal_mapping_registry)
-      elsif @response_use == :literal
-        response_doc_lit(result)
+        response_doc_enc(result, mapping_registry)
       else
-        raise
+        response_doc_lit(result)
       end
     end
 
@@ -462,7 +440,7 @@ private
         end
         outparams = {}
         i = 1
-        soap_response.each_param_name('out', 'inout') do |outparam|
+        soap_response.each_out_param_name do |outparam|
           outparams[outparam] = Mapping.obj2soap(result[i], mapping_registry)
           i += 1
         end
@@ -475,13 +453,31 @@ private
     end
 
     def response_rpc_lit(result)
-      raise NotImplementedError
+      soap_response =
+        @rpc_method_factory.create_method_response(@rpc_response_qname)
+      if soap_response.have_outparam?
+        unless result.is_a?(Array)
+          raise RPCRoutingError.new("out parameter was not returned")
+        end
+        outparams = {}
+        i = 1
+        soap_response.each_out_param_name do |outparam|
+          outparams[outparam] = SOAPElement.from_obj(result[i])
+          i += 1
+        end
+        soap_response.set_outparam(outparams)
+        soap_response.retval = SOAPElement.from_obj(result[0])
+      else
+        soap_response.retval = SOAPElement.from_obj(result)
+      end
+      soap_response
     end
 
-    def response_doc_enc(result, literal_mapping_registry)
+    def response_doc_enc(result, mapping_registry)
       (0...result.size).collect { |idx|
-        literal_mapping_registry.obj2soap(result[idx],
-          @doc_response_qnames[idx])
+        ele = Mapping.obj2soap(result[idx], mapping_registry)
+        ele.elename = @doc_response_qnames[idx]
+        ele
       }
     end
 
@@ -492,11 +488,24 @@ private
           raise ArgumentError.new(
             "result element is expected to be Hash-like object with one key")
         end
-        ele = SOAPElement.from_obj(item)
-        ele.elename =
-          @doc_response_qnames[idx] || XSD::QName.new(nil, item.keys[0])
+        qname = @doc_response_qnames[idx]
+        ele = SOAPElement.from_obj(item, qname.namespace)
+        ele.elename = qname
+        ele.encodingstyle = LiteralNamespace
         ele
       }
+    end
+
+    def check_style(style)
+      unless [:rpc, :document].include?(style)
+        raise ArgumentError.new("unknown style: #{style}")
+      end
+    end
+
+    def check_use(use)
+      unless [:encoded, :literal].include?(use)
+        raise ArgumentError.new("unknown use: #{use}")
+      end
     end
   end
 

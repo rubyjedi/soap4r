@@ -83,43 +83,33 @@ class HTTPServer < Logger::Application
   def add_rpc_method_as(obj, name, name_as, *param)
     qname = XSD::QName.new(@default_namespace, name_as)
     soapaction = nil
-    param_def = create_rpc_param_def(obj, name, param)
+    param_def = SOAPMethod.derive_rpc_param_def(obj, name, *param)
     @router.add_rpc_operation(obj, qname, soapaction, name, param_def)
   end
   alias add_method_as add_rpc_method_as
 
   def add_document_method(obj, soapaction, name, req_qnames, res_qnames)
-    param_def = create_doc_param_def(req_qnames, res_qnames)
+    param_def = SOAPMethod.create_doc_param_def(req_qnames, res_qnames)
     @router.add_document_operation(obj, soapaction, name, param_def)
   end
 
+  def add_rpc_operation(receiver, qname, soapaction, name, param_def, opt = {})
+    @router.add_rpc_operation(receiver, qname, soapaction, name, param_def, opt)
+  end
+
+  def add_rpc_request_operation(factory, qname, soapaction, name, param_def, opt = {})
+    @router.add_rpc_request_operation(factory, qname, soapaction, name, param_def, opt)
+  end
+
+  def add_document_operation(receiver, soapaction, name, param_def, opt = {})
+    @router.add_document_operation(receiver, soapaction, name, param_def, opt)
+  end
+
+  def add_document_request_operation(factory, soapaction, name, param_def, opt = {})
+    @router.add_document_request_operation(factory, soapaction, name, param_def, opt)
+  end
+
 private
-
-  def create_rpc_param_def(obj, name, param = nil)
-    if param.nil? or param.empty?
-      method = obj.method(name)
-      ::SOAP::RPC::SOAPMethod.create_param_def(
-        (1..method.arity.abs).collect { |i| "p#{i}" })
-    elsif param.size == 1 and param[0].is_a?(Array)
-      param[0]
-    else
-      ::SOAP::RPC::SOAPMethod.create_param_def(param)
-    end
-  end
-  alias create_param_def create_rpc_param_def
-
-  def create_doc_param_def(req_qnames, res_qnames)
-    req_qnames = [req_qnames] if req_qnames.is_a?(XSD::QName)
-    res_qnames = [res_qnames] if res_qnames.is_a?(XSD::QName)
-    param_def = []
-    req_qnames.each do |qname|
-      param_def << ['in', qname.name, [nil, qname.namespace, qname.name]]
-    end
-    res_qnames.each do |qname|
-      param_def << ['out', qname.name, [nil, qname.namespace, qname.name]]
-    end
-    param_def
-  end
 
   def run
     @server.start
