@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 17, 2000<br />
+Last modified: July 27, 2000<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.0.0
+Target SOAP4R version: SOAP4R/1.0.1
 </p>
 
 <ol>
@@ -43,15 +43,20 @@ Target SOAP4R version: SOAP4R/1.0.0
 <li><a href="#whats">What is SOAP4R?</a></li>
 <li><a href="#dependencies">Dependencies</a></li>
 <li><a href="#restrictions">Restrictions</a></li>
+<li><a href="#history">History</a></li>
 <li><a href="#author">Author</a></li>
 <li><a href="#copyright">Copyright</a></li>
 </ol>
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<p>
-It is an initial released version of SOAP4R. :-)
-</p>
+<ul>
+<li>Handles SOAP/1.1 arrays.
+1.0.0 cannot handles SOAP/1.1 arrays...
+Bare in mind there still be many
+<a href="#restrictions">restrictions</a>
+around SOAP arrays.</li>
+</ul>
 
 <h2 id="install" name="install">2. Install</h2>
 
@@ -97,7 +102,7 @@ To execute;
 
 <dt class="path">redist/</dt>
 <dd>Redistributed programs which SOAP4R is using.
-I would appriciate to authoers of these programs.
+I would appriciate to authors of these programs.
 </dd>
 
 <dt class="path">redist/archive/</dt>
@@ -173,7 +178,7 @@ Does not support literal XML encoding such as in SOAP for Java</li>
 <li>encodingStyle cannot be changed</li>
 <li>encoding/decoding using XML Schema;
 Only xsi:type in SOAP Encoding is checked</li>
-<li>Partially Transmitted Arrays and Sparse Arrays</li>
+<li>Arrays which has two or more dimensions (rank), Partially Transmitted Arrays, and Sparse Arrays</li>
 <li>SOAP root attribute</li>
 <li>References to values (encoding/decoding)</li>
 </ul></li>
@@ -187,7 +192,14 @@ Does not support 'charset='.
 </ul></li>
 </ul>
 
-<h2 id="author" name="author">7. Author</h2>
+<h2 id="history" name="history">7. History</h2>
+
+<dl>
+<dt>1.0.0 - July 27, 2000</dt>
+<dd>It is the initial released version of SOAP4R. :-)</dd>
+</dl>
+
+<h2 id="author" name="author">8. Author</h2>
 
 <dl>
 <dt>Name</dt>
@@ -200,7 +212,7 @@ Does not support 'charset='.
 <dd><a href="http://www.jin.gr.jp/~nahi/" class="path">http://www.jin.gr.jp/~nahi/</a> (Japanese)</dd>
 </dl>
 
-<h2 id="copyright" name="copyright">8. Copyright</h2>
+<h2 id="copyright" name="copyright">9. Copyright</h2>
 
 <p style="text-align: center;">
 SOAP4R<br />
