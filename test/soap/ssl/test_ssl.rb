@@ -58,8 +58,8 @@ class TestSSL < Test::Unit::TestCase
       assert(@verify_callback_called)
     end
     #
-    cfg["protocol.http.ssl_config.client_cert"] = "client.cert"
-    cfg["protocol.http.ssl_config.client_key"] = "client.key"
+    cfg["protocol.http.ssl_config.client_cert"] = File.join(DIR, "client.cert")
+    cfg["protocol.http.ssl_config.client_key"] = File.join(DIR, "client.key")
     @verify_callback_called = false
     begin
       @client.do_server_proc
@@ -69,7 +69,7 @@ class TestSSL < Test::Unit::TestCase
       assert(@verify_callback_called)
     end
     #
-    cfg["protocol.http.ssl_config.ca_file"] = "ca.cert"
+    cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "ca.cert")
     @verify_callback_called = false
     begin
       @client.do_server_proc
@@ -79,7 +79,7 @@ class TestSSL < Test::Unit::TestCase
       assert(@verify_callback_called)
     end
     #
-    cfg["protocol.http.ssl_config.ca_file"] = "subca.cert"
+    cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "subca.cert")
     @verify_callback_called = false
     assert_equal("hello", @client.do_server_proc)
     assert(@verify_callback_called)
@@ -109,29 +109,46 @@ class TestSSL < Test::Unit::TestCase
   end
 
   def test_property
-    @client.loadproperty('soapclient.properties')
-    @client.options["protocol.http.ssl_config.verify_callback"] = method(:verify_callback).to_proc
-    @verify_callback_called = false
-    begin
-      @client.do_server_proc
-      assert(false)
-    rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
-      assert(@verify_callback_called)
+    testpropertyname = File.join(DIR, 'soapclient.properties')
+    File.open(testpropertyname, "w") do |f|
+      f <<<<__EOP__
+protocol.http.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_PEER
+# depth: 1 causes an error (intentional)
+protocol.http.ssl_config.verify_depth = 1
+protocol.http.ssl_config.client_cert = #{File.join(DIR, 'client.cert')}
+protocol.http.ssl_config.client_key = #{File.join(DIR, 'client.key')}
+protocol.http.ssl_config.ca_file = #{File.join(DIR, 'ca.cert')}
+protocol.http.ssl_config.ca_file = #{File.join(DIR, 'subca.cert')}
+protocol.http.ssl_config.ciphers = ALL
+__EOP__
     end
-    #
-    @client.options["protocol.http.ssl_config.verify_depth"] = ""
-    @verify_callback_called = false
-    assert_equal("hello", @client.do_server_proc)
-    assert(@verify_callback_called)
+    begin
+      @client.loadproperty(testpropertyname)
+      @client.options["protocol.http.ssl_config.verify_callback"] = method(:verify_callback).to_proc
+      @verify_callback_called = false
+      begin
+        @client.do_server_proc
+        assert(false)
+      rescue OpenSSL::SSL::SSLError => ssle
+        assert_equal("certificate verify failed", ssle.message)
+        assert(@verify_callback_called)
+      end
+      #
+      @client.options["protocol.http.ssl_config.verify_depth"] = ""
+      @verify_callback_called = false
+      assert_equal("hello", @client.do_server_proc)
+      assert(@verify_callback_called)
+    ensure
+      File.unlink(testpropertyname)
+    end
   end
 
   def test_ciphers
     cfg = @client.options
-    cfg["protocol.http.ssl_config.client_cert"] = 'client.cert'
-    cfg["protocol.http.ssl_config.client_key"] = 'client.key'
-    cfg["protocol.http.ssl_config.ca_file"] = "ca.cert"
-    cfg["protocol.http.ssl_config.ca_file"] = "subca.cert"
+    cfg["protocol.http.ssl_config.client_cert"] = File.join(DIR, 'client.cert')
+    cfg["protocol.http.ssl_config.client_key"] = File.join(DIR, 'client.key')
+    cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "ca.cert")
+    cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "subca.cert")
     #cfg.timeout = 123
     assert_equal("hello", @client.do_server_proc)
     #
