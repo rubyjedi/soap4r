@@ -60,7 +60,7 @@ module Processor
     def marshal( header, body, opt = {} )
       env = SOAPEnvelope.new( header, body )
       generator = createGenerator( opt )
-      return xmlDecl << generator.generate( env )
+      return generator.generate( env )
     end
 
     def unmarshal( stream, opt = {} )
@@ -88,14 +88,6 @@ module Processor
 	opt = @@defaultParserOption
       end
       SOAPParser.createParser( opt )
-    end
-
-    def xmlDecl
-      if Charset.getXMLInstanceEncoding == 'NONE'
-	"<?xml version=\"1.0\" ?>\n"
-      else
-	"<?xml version=\"1.0\" encoding=\"#{ Charset.getXMLInstanceEncodingLabel }\" ?>\n"
-      end
     end
   end
 end
