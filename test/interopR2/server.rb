@@ -2,17 +2,14 @@
 
 $KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
 
-require 'soap/cgistub'
+require "soap/standaloneServer"
 require 'base'
 
-LogFile = './log'
 
-class InteropApp < SOAP::CGIStub
+class InteropApp < SOAP::StandaloneServer
 
   def initialize( *arg )
     super( *arg )
-    # setLog( LogFile, 'weekly' )
-    setLog( LogFile )
     @router.mappingRegistry = SOAPBuildersInterop::MappingRegistry
   end
 
@@ -20,10 +17,6 @@ class InteropApp < SOAP::CGIStub
     ( SOAPBuildersInterop::MethodsBase + SOAPBuildersInterop::MethodsGroupB ).each do | methodName, *params |
       addMethod( self, methodName, params )
     end
-  end
-
-  def prologue
-    @log.sevThreshold = SEV_DEBUG
   end
   
   # In echoVoid, 'retval' is not defined.  So nothing will be returned.
@@ -142,4 +135,4 @@ class InteropApp < SOAP::CGIStub
   end
 end
 
-InteropApp.new( "InteropApp", InterfaceNS ).start
+InteropApp.new( "Test-Server", InterfaceNS, "0.0.0.0", 10080 ).start
