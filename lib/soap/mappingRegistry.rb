@@ -82,20 +82,34 @@ module RPCUtils
 
   protected
 
-    def getTypeName( klass )
-      if klass.class_variables.include?( "@@typeName" )
-	klass.class_eval( "@@typeName" )
-      else
-	nil
-      end
+    def getClassType( klass )
+      typeName = if klass.class_variables.include?( "@@typeName" )
+	  klass.class_eval( "@@typeName" )
+	else
+	  nil
+	end
+      typeNamespace = if klass.class_variables.include?( "@@typeNamespace" )
+	  klass.class_eval( "@@typeNamespace" )
+	else
+	  nil
+	end
+      return typeName, typeNamespace
     end
 
-    def getNamespace( klass )
-      if klass.class_variables.include?( "@@typeNamespace" )
-	klass.class_eval( "@@typeNamespace" )
-      else
-	nil
+    def getObjType( obj )
+      typeName = typeNamespace = nil
+      ivars = obj.instance_variables
+      if ivars.include?( "@typeName" )
+	typeName = obj.instance_eval( "@typeName" )
       end
+      if ivars.include?( "@typeNamespace" )
+	typeNamespace = obj.instance_eval( "@typeNamespace" )
+      end
+      if !typeName or !typeNamespace
+	# Do not mix type and its namespace.
+	typeName, typeNamespace = getClassType( obj.type )
+      end
+      return typeName, typeNamespace
     end
 
     if Object.respond_to?( :allocate )
@@ -255,20 +269,10 @@ module RPCUtils
       if soapKlass != SOAP::SOAPArray
 	return nil
       end
-      typeName = getTypeName( obj.type )
-      typeNamespace = getNamespace( obj.type )
-      unless typeName
-	ivars = obj.instance_variables
-	if ivars.include?( "@typeName" )
-	  typeName = obj.instance_eval( "@typeName" )
-	  if ivars.include?( "@typeNamespace" )
-	    typeNamespace = obj.instance_eval( "@typeNamespace" )
-	  else
-	    typeNamespace = RubyTypeNamespace
-	  end
-	end
-      end
-      unless typeName
+      typeName, typeNamespace = getObjType( obj )
+      if typeName
+	typeNamespace ||= RubyTypeNamespace
+      else
 	typeName = XSD::AnyTypeLiteral
 	typeNamespace = XSD::Namespace
       end
@@ -548,9 +552,9 @@ module RPCUtils
 	setiv2soap( param, obj, map )
 	param
       else
-	typeName = getTypeName( obj.type ) ||
-	  RPCUtils.getElementNameFromName( obj.type.to_s )
-	typeNamespace = getNamespace( obj.type ) || RubyCustomTypeNamespace
+	typeName, typeNamespace = getClassType( obj.type )
+	typeName ||= RPCUtils.getElementNameFromName( obj.type.to_s )
+	typeNamespace ||= RubyCustomTypeNamespace
 	param = SOAPStruct.new( typeName  )
 	markMarshalledObj( obj, param )
 	param.typeNamespace = typeNamespace
@@ -693,21 +697,18 @@ module RPCUtils
 	klass = RPCUtils.getClassFromName( toType( typeName ))
 	#klass = self.instance_eval( toType( typeName ))
       end
-
       if klass.nil?
 	return nil
       end
-      if ( getNamespace( klass ) and
-	  ( getNamespace( klass ) != node.typeNamespace ))
+      klassTypeName, klassTypeNamespace = getClassType( klass )
+      if ( klassTypeNamespace and ( klassTypeNamespace != node.typeNamespace ))
 	return nil
-      elsif ( getTypeName( klass ) and ( getTypeName( klass ) != typeName ))
+      elsif ( klassTypeName and ( klassTypeName != typeName ))
 	return nil
       end
-
       obj = createEmptyObject( klass )
       markUnmarshalledObj( node, obj )
       setiv2obj( obj, node, map )
-
       obj
     end
   end
@@ -740,7 +741,7 @@ module RPCUtils
     end
 
     def []( name )
-      if self.methods.include?( name )
+      if self.respond_to?( name )
 	self.send( name )
       else
 	self.send( safeName( name ))
@@ -748,7 +749,7 @@ module RPCUtils
     end
 
     def []=( name, value )
-      if self.methods.include?( name )
+      if self.respond_to?( name )
 	self.send( name + '=', value )
       else
 	self.send( safeName( name ) + '=', value )
