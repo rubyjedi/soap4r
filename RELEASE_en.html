@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: May 20, 2001<br />
+Last modified: May 30, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.0
+Target SOAP4R version: SOAP4R/1.3.1
 </p>
 
 <ol>
@@ -50,22 +50,18 @@ Target SOAP4R version: SOAP4R/1.3.0
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<ul>
-<li>Adopted
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
-instead of XMLParser module extensively.
-(You can implement your SOAP parser with XMLParser module.
-See the last part of lib/soap/parser.rb)
-<ul>
-<li>Use NQXML's streamingParser or tokenizer instead of XMLParser's DOMParser for unmarshalling.</li>
-<li>Use NQXML's document instead of XMLParser's DOM for marshalling.</li>
-</ul></li>
-<li>Passed almost inteoperability test in
+<p>
+Feedback from
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
-See test/interop/README.txt.</li>
-<li>Changed module namespace.  SOAPFoo -> SOAP::Foo.</li>
-<li>Added float datatype support.</li>
-<li>Changed dateTime marshalling format.  No timezone was added to marshalled string  because SOAP4R does not support timezone now.</li>
+</p>
+
+<ul>
+<li>Heading and trailing whtespaces in Base64 string could not be processed.  Fixed.</li>
+<li>Illegal typeNamespace of SOAP's base64 type.  Fixed.</li>
+<li>Added NaN, INF, -INF support of Float type.</li>
+<li>Extracted xsd:1999 type support to XMLSchemaDatatypes1999.rb.  Use it with 'require &quot;soap/XMLSchemaDatatypes1999&quot;'.</li>
+<li>Added 'root' attribute support.</li>
+<li>Return status 500 when Fault.</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -222,6 +218,19 @@ Does not support 'charset='.
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.1 - May 30, 2001</dt>
+<dd>Feedback from
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+
+<ul>
+<li>Heading and trailing whtespaces in Base64 string could not be processed.  Fixed.</li>
+<li>Illegal typeNamespace of SOAP's base64 type.  Fixed.</li>
+<li>Added NaN, INF, -INF support of Float type.</li>
+<li>Extracted xsd:1999 type support to XMLSchemaDatatypes1999.rb.  Use it with 'require &quot;soap/XMLSchemaDatatypes1999&quot;'.</li>
+<li>Added 'root' attribute support.</li>
+<li>Return status 500 when Fault.</li>
+</ul></dd>
+
 <dt>1.3.0 - May 20, 2001</dt>
 <dd><ul>
 <li>Adopted

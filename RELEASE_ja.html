@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: May 20, 2001<br />
+Last modified: May 30, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 本文書が対象としているSOAP4Rのバージョンは，
-SOAP4R/1.3.0
+SOAP4R/1.3.1
 です．
 </p>
 
@@ -53,24 +53,18 @@ SOAP4R/1.3.0
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
+<p>
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+で検出された非互換性をいくつか修正しました．
+</p>
+
 <ul>
-<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
-を採用し，marshal/unmarshal共に全面的に書き換えました
-（XMLストリームの解析については，XMLParserを利用して高速化することも可能です．
-lib/soap/parser.rbの末尾を見てください）．
-<ul>
-<li>XMLParserのTreeParserのかわりに，
-NQXMLのstreamingParserもしくはtokenizerを使ってunmarshallingします．</li>
-<li>XMLParserのDOMのかわりに，NQXMLのdocumentおよびwriterを使ってmarshallingします．</li>
-</ul></li>
-<li><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
-で行なわれている互換性テストのうち，なひ環境でテスト可能なものについては全てテストを実施し，全てにパスしました．</li>
-<li>全てのmoduleを，名前空間SOAPに入れました．SOAPCGIStub -&gt; SOAP::CGIStubとなっており，重大な非互換性がありますので注意してください．</li>
-<li>floatデータ型をサポートしました．</li>
-<li>dateTime型において，SOAP4RではTimezoneをサポートしていないので
-（date3.rbではちゃんとサポートされています），
-marshalling formatからTimezoneの部分を削りました．
-いつかちゃんとサポートしたいです．</li>
+<li>Base64型のデータの先頭および末尾に空白があると誤動作していたのを修正しました．</li>
+<li>SOAP-ENCのBase64型のデータタイプ宣言が間違っていました．</li>
+<li>Float型でNaN, INF, -INFを扱えるようにしました．</li>
+<li>xsd:1999型を利用するための各種宣言をXMLSchemaDatatypes1999.rbとして分離しました．'require &quot;soap/XMLSchemaDatatypes1999&quot;'として利用してください．</li>
+<li>root属性をサポートしました．</li>
+<li>Faultを返す時にはHTTP status 500を返すようにしました．</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -237,6 +231,19 @@ charset指定には対応していません．</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.1 - May 30, 2001</dt>
+<dd><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+で検出された非互換性をいくつか修正しました．
+
+<ul>
+<li>Base64型のデータの先頭および末尾に空白があると誤動作していたのを修正しました．</li>
+<li>SOAP-ENCのBase64型のデータタイプ宣言が間違っていました．</li>
+<li>Float型でNaN, INF, -INFを扱えるようにしました．</li>
+<li>xsd:1999型を利用するための各種宣言をXMLSchemaDatatypes1999.rbとして分離しました．'require &quot;soap/XMLSchemaDatatypes1999&quot;'として利用してください．</li>
+<li>root属性をサポートしました．</li>
+<li>Faultを返す時にはHTTP status 500を返すようにしました．</li>
+</ul></dd>
+
 <dt>1.3.0 - May 20, 2001</dt>
 <dd><ul>
 <li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
