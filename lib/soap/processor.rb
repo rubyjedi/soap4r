@@ -31,6 +31,28 @@ module Processor
   public
 
   ###
+  ## Encoding handling for xmlparser ( With NQXML, it does not work )
+  #
+  Encoding = [ nil ]
+  def setEncoding( encoding = $KCODE )
+    if encoding == 'EUC' || encoding == 'SJIS'
+      begin
+	require 'uconv'
+      rescue LoadError
+	encoding = 'NONE'
+      end
+    end
+    Encoding[ 0 ] = encoding
+  end
+  module_function :setEncoding
+  self.setEncoding( 'NONE' )
+
+  def getEncoding
+    Encoding[ 0 ]
+  end
+  module_function :getEncoding
+
+  ###
   ## SOAP marshalling
   #
   def marshal( ns, header, body )
@@ -48,7 +70,7 @@ module Processor
     doc.setRootNode( env.encode( ns ))
     marshalledString = ""
     NQXML::Writer.new( marshalledString ).writeDocument( doc )
-    marshalledString
+    xmlDecl + marshalledString
   end
   module_function :marshal
 
@@ -82,13 +104,12 @@ module Processor
   private
 
   def self.loadParser( opt )
-    # parser = SOAPNQXMLStreamingParser.new( opt )
-    # parser = SOAPNQXMLLightWeightParser.new( opt )
     if SOAP.const_defined?( "SOAPXMLParser" )
       parser = SOAPXMLParser.new( opt )
     elsif SOAP.const_defined?( "SOAPSAXDriver" )
       parser = SOAPSAXDriver.new( opt )
     else
+      # parser = SOAPNQXMLStreamingParser.new( opt )
       parser = SOAPNQXMLLightWeightParser.new( opt )
     end
     require 'soap/encodingStyleHandlerDynamic'
@@ -100,7 +121,11 @@ module Processor
   XSINamespaceTag = 'xsi'
 
   def xmlDecl
-    '<?xml version="1.0" ?>'
+    if Processor.getEncoding == 'NONE'
+      "<?xml version=\"1.0\" ?>\n"
+    else
+      "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+    end
   end
 end
 
