@@ -28,7 +28,7 @@ module SOAP
 
 
 class Driver
-  include Log::Severity
+  include Devel::Logger::Severity
   include RPCUtils
 
   public
