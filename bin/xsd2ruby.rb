@@ -5,7 +5,7 @@ require 'logger'
 require 'xsd/qname'
 require 'xsd/codegen/gensupport'
 require 'wsdl/xmlSchema/parser'
-require 'wsdl/importer'
+require 'wsdl/xmlSchema/importer'
 require 'wsdl/soap/classDefCreator'
 
 class XSD2RubyApp < Logger::Application
@@ -124,7 +124,7 @@ __EOU__
   end
 
   def import(location)
-    WSDL::Importer.import(location)
+    WSDL::XMLSchema::Importer.import(location)
   end
 end
 
