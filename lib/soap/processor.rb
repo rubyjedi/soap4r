@@ -32,12 +32,16 @@ begin
   require 'soap/xmlparser'
 rescue LoadError
   begin
-    require 'soap/nqxmlparser'
+    require 'soap/xmlscanner'
   rescue LoadError
     begin
-      require 'soap/rexmlparser'
+      require 'soap/nqxmlparser'
     rescue LoadError
-      raise RuntimeError.new( "XML processor module not found.  SOAP4R now supports XMLParser, NQXML and REXML." )
+      begin
+	require 'soap/rexmlparser'
+      rescue LoadError
+	raise RuntimeError.new( "XML processor module not found.  SOAP4R now supports XMLParser, NQXML and REXML." )
+      end
     end
   end
 end
