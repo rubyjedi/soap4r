@@ -28,19 +28,39 @@ module Charset
   #
   EncodingConvertMap = {}
   def setEncodingConvertMap
+    trueProc = Proc.new { |str| true }
     begin
       require 'nkf'
-      EncodingConvertMap[ [ 'EUC' , 'SJIS' ] ] = Proc.new { |str| NKF.nkf( '-sXm0', str ) }
-      EncodingConvertMap[ [ 'SJIS', 'EUC'  ] ] = Proc.new { |str| NKF.nkf( '-eXm0', str ) }
+      EncodingConvertMap[ [ 'EUC' , 'SJIS' ] ] = [
+	trueProc,
+	Proc.new { |str| NKF.nkf( '-sXm0', str ) }
+      ]
+      EncodingConvertMap[ [ 'SJIS', 'EUC'  ] ] = [
+	trueProc,
+	Proc.new { |str| NKF.nkf( '-eXm0', str ) }
+      ]
     rescue LoadError
     end
   
     begin
+      require 'nkf'
       require 'uconv'
-      EncodingConvertMap[ [ 'UTF8', 'EUC'  ] ] = Uconv.method( :u8toeuc )
-      EncodingConvertMap[ [ 'UTF8', 'SJIS' ] ] = Uconv.method( :u8tosjis )
-      EncodingConvertMap[ [ 'EUC' , 'UTF8' ] ] = Uconv.method( :euctou8 )
-      EncodingConvertMap[ [ 'SJIS', 'UTF8' ] ] = Uconv.method( :sjistou8 )
+      EncodingConvertMap[ [ 'UTF8', 'EUC'  ] ] = [
+	trueProc,
+	Uconv.method( :u8toeuc )
+      ]
+      EncodingConvertMap[ [ 'UTF8', 'SJIS' ] ] = [
+	trueProc,
+	Uconv.method( :u8tosjis )
+      ]
+      EncodingConvertMap[ [ 'EUC' , 'UTF8' ] ] = [
+	Proc.new { |str| NKF.guess( str ) == NKF::EUC },
+	Uconv.method( :euctou8 )
+      ]
+      EncodingConvertMap[ [ 'SJIS', 'UTF8' ] ] = [
+	Proc.new { |str| NKF.guess( str ) == NKF::SJIS },
+	Uconv.method( :sjistou8 )
+      ]
     rescue LoadError
     end
 
@@ -97,7 +117,10 @@ module Charset
       return retStr
     end
     if m = EncodingConvertMap[ [ encFrom, encTo ] ]
-      retStr = m.call( str )
+      guard, convert = m
+      if guard.call( str )
+	retStr = convert.call( str )
+      end
     end
     retStr
   end
