@@ -18,7 +18,7 @@
 module SOAP
 
 
-Version = '1.4.2'
+Version = '1.4.3'
 
 EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
 EncodingNamespace = 'http://schemas.xmlsoap.org/soap/encoding/'
