@@ -27,6 +27,8 @@ module SOAP
 class NS
   attr_reader :defaultNamespace
 
+  class FormatError < Error; end
+
 public
 
   def initialize( initTag2NS = {} )
@@ -66,7 +68,7 @@ public
     elsif @ns2tag.has_key?( namespace )
       @ns2tag[ namespace ] + ':' << name
     else
-      raise FormatDecodeError.new( 'Namespace: ' << namespace << ' not defined yet.' )
+      raise FormatError.new( 'Namespace: ' << namespace << ' not defined yet.' )
     end
   end
 
@@ -96,14 +98,14 @@ public
       namespace = @tag2ns[ $1 ]
       name = $2
       if !namespace
-	raise FormatDecodeError.new( 'Unknown namespace qualifier: ' << $1 )
+	raise FormatError.new( 'Unknown namespace qualifier: ' << $1 )
       end
     elsif $1
       namespace = @defaultNamespace
       name = $1
     end
     if !name
-      raise FormatDecodeError.new( "Illegal element format: #{ elem }" )
+      raise FormatError.new( "Illegal element format: #{ elem }" )
     end
     return namespace, name
   end

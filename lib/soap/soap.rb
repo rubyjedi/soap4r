@@ -66,7 +66,4 @@ module SOAP
       '(No faultString)'
     end
   end
-
-  class FormatDecodeError < Error; end
-
 end
