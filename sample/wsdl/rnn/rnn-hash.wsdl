@@ -1,0 +1,282 @@
+<?xml version="1.0"?>
+<definitions
+    name="RNN"
+    targetNamespace="http://rnn.sourceforge.jp/cgi-bin/soap"
+    xmlns:tns="http://rnn.sourceforge.jp/cgi-bin/soap"
+    xmlns:txd="http://rnn.sourceforge.jp/cgi-bin/soap"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+    xmlns:apachesoap="http://xml.apache.org/xml-soap">
+
+  <types>
+    <schema
+	xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://rnn.sourceforge.jp/cgi-bin/soap">
+
+      <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+      <complexType name="MapArray">
+	<complexContent>
+  	  <restriction base="soapenc:Array">
+  	    <attribute ref="soapenc:arrayType" wsdl:arrayType="apachesoap:Map[]"/>
+  	  </restriction>
+	</complexContent>
+      </complexType>
+    </schema>
+
+    <!-- type definition for ApacheSOAP's Map -->
+    <schema
+	xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://xml.apache.org/xml-soap">
+      <complexType name="Map">
+	<sequence>
+	  <element name="item" minOccurs="0" maxOccurs="unbounded">
+	    <complexType>
+	      <sequence>
+		<element name="key" type="anyType" />
+		<element name="value" type="anyType" />
+	      </sequence>
+	    </complexType>
+	  </element>
+	</sequence>
+      </complexType>
+    </schema>
+  </types>
+
+  <message name="listRequest">
+    <part name="pos" type="xsd:int"/>
+    <part name="n" type="xsd:int"/>
+    <part name="topicid" type="xsd:int"/>
+  </message>
+  <message name="listResponse">
+    <part name="return" type="txd:MapArray"/>
+  </message>
+
+  <message name="articleRequest">
+    <part name="id" type="xsd:int"/>
+  </message>
+  <message name="articleResponse">
+    <part name="return" type="apachesoap:Map"/>
+  </message>
+
+  <message name="commentsRequest">
+    <part name="id" type="xsd:int"/>
+  </message>
+  <message name="commentsResponse">
+    <part name="return" type="txd:MapArray"/>
+  </message>
+
+  <message name="recent_articlesRequest">
+    <part name="days" type="xsd:int"/>
+    <!-- topic? topicid? -->
+    <part name="topicid" type="xsd:int"/>
+  </message>
+  <message name="recent_articlesResponse">
+    <part name="return" type="txd:MapArray"/>
+  </message>
+
+  <message name="recent_commentsRequest">
+    <part name="days" type="xsd:int"/>
+  </message>
+  <message name="recent_commentsResponse">
+    <part name="return" type="txd:MapArray"/>
+  </message>
+
+  <message name="topicsRequest"/>
+  <message name="topicsResponse">
+    <part name="return" type="txd:MapArray"/>
+  </message>
+
+  <message name="submitRequest">
+    <part name="title" type="xsd:string"/>
+    <part name="text" type="xsd:string"/>
+    <part name="topicid" type="xsd:int"/>
+  </message>
+  <message name="submitResponse">
+    <part name="return" type="xsd:anySimpleType"/>
+  </message>
+
+  <message name="post_commentRequest">
+    <part name="item_id" type="xsd:int"/>
+    <part name="pid" type="xsd:int"/>
+    <part name="subject" type="xsd:string"/>
+    <part name="comment" type="xsd:string"/>
+  </message>
+  <message name="post_commentResponse">
+    <part name="return" type="xsd:anySimpleType"/>
+  </message>
+
+  <portType name="RnnBaseServicePortType">
+    <operation name="list"
+	parameterOrder="pos n topicid">
+      <input name="list" message="tns:listRequest"/>
+      <output name="listResponse" message="tns:recent_articlesResponse"/>
+    </operation>
+
+    <operation name="article"
+	parameterOrder="id">
+      <input message="tns:articleRequest"/>
+      <output message="tns:articleResponse"/>
+    </operation>
+
+    <operation name="comments"
+	parameterOrder="id">
+      <input message="tns:commentsRequest"/>
+      <output message="tns:commentsResponse"/>
+    </operation>
+
+    <operation name="recent_articles"
+	parameterOrder="days topicid">
+      <input message="tns:recent_articlesRequest"/>
+      <output message="tns:recent_articlesResponse"/>
+    </operation>
+
+    <operation name="recent_comments"
+	parameterOrder="days">
+      <input message="tns:recent_commentsRequest"/>
+      <output message="tns:recent_commentsResponse"/>
+    </operation>
+
+    <operation name="topics"
+	parameterOrder="">
+      <input message="tns:topicsRequest"/>
+      <output message="tns:topicsResponse"/>
+    </operation>
+
+    <operation name="submit"
+	parameterOrder="title text topicid">
+      <input message="tns:submitRequest"/>
+      <output message="tns:submitResponse"/>
+    </operation>
+
+    <operation name="post_comment"
+	parameterOrder="item_id pid subject comment">
+      <input message="tns:post_commentRequest"/>
+      <output message="tns:post_commentResponse"/>
+    </operation>
+  </portType>
+
+  <binding name="RnnBaseServicePortBinding" type="tns:RnnBaseServicePortType">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="list">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </output>
+    </operation>
+
+    <operation name="article">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </input>
+      <output>
+	<soap:body use="comments"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </output>
+    </operation>
+
+    <operation name="comments">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </input>
+      <output>
+	<soap:body use="comments"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </output>
+    </operation>
+
+    <operation name="recent_articles">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </output>
+    </operation>
+
+    <operation name="recent_comments">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </output>
+    </operation>
+
+    <operation name="topics">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </output>
+    </operation>
+
+    <operation name="submit">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </output>
+    </operation>
+
+    <operation name="post_comment">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+      </output>
+    </operation>
+  </binding>
+
+  <service name="RnnService">
+    <port name="RnnBaseServicePort" binding="tns:RnnBaseServicePortBinding">
+      <soap:address location="http://rnn.sourceforge.jp/cgi-bin/soap"/>
+    </port>
+  </service>
+</definitions>
