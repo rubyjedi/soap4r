@@ -176,7 +176,7 @@ def doTest( drv )
 
   dumpTitle( dumpDev, 'echoFloatScientificNotation' )
   begin
-    arg = 12.34e56
+    arg = 12.34e36
     var = drv.echoFloat( arg )
     dumpResult( dumpDev, arg, var )
   rescue
