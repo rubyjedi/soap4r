@@ -321,7 +321,7 @@ private
 end
 
 require 'rational'
-require 'date3'
+require 'date'
 module XSDDateTimeImpl
   def to_time
     begin
@@ -330,6 +330,23 @@ module XSDDateTimeImpl
     rescue ArgumentError
       nil
     end
+  end
+
+  def ofFromTZ( zoneStr )
+    /^(?:Z|(?:([+-])(\d\d):(\d\d))?)$/ =~ zoneStr
+    zoneSign = $1
+    zoneHour = $2.to_i
+    zoneMin = $3.to_i
+
+    of = case zoneSign
+      when '+'
+	of = +( zoneHour.to_r * 60 + zoneMin ) / 1440	# 24 * 60
+      when '-'
+	of = -( zoneHour.to_r * 60 + zoneMin ) / 1440	# 24 * 60
+      else
+	0
+      end
+    of
   end
 end
 
@@ -342,49 +359,18 @@ public
     set( initDateTime ) if initDateTime
   end
 
-  # Debt: collect syntax.
-  def self.tzAdjust( date, zoneStr )
-    # From interoperability point of view, a dateTime without "Z" and -/+
-    # is parsed as a UTC.
-    unless zoneStr
-      return date
-    end
-
-    newDate = date
-
-    /^(?:Z|(?:([+-])(\d\d):(\d\d))?)$/ =~ zoneStr
-    zoneSign = $1
-    zoneHour = $2.to_i
-    zoneMin = $3.to_i
-
-    if zoneSign
-      if !zoneHour.zero? || !zoneMin.zero?
-       	diffDay = 0.to_r
-	case zoneSign
-	when '+'
-	  diffDay = +( zoneHour * 3600 + zoneMin * 60 ).to_r / SecInDay
-	when '-'
-	  diffDay = -( zoneHour * 3600 + zoneMin * 60 ).to_r / SecInDay
-	end
-	jd = newDate.jd
-	fr1 = newDate.fr1 - diffDay
-	newDate = Date.new0( Date.jd_to_rjd( jd, fr1 ))
-      end
-    end
-    newDate
-  end
-
 private
   SecInDay = 86400	# 24 * 60 * 60
 
   def _set( t )
-    if ( t.is_a?( Date ))
-      @data = t.dup
+    if ( t.is_a?( DateTime ))
+      @data = t
     elsif ( t.is_a?( Time ))
+      # Should TZ be saved?
       gt = t.dup.gmtime
-      @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
+      @data = DateTime.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
     else
-      /^([+-]?\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+      /^([+-]?\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
       unless Regexp.last_match
 	raise ValueSpaceError.new( "DateTime: #{ t } is not acceptable." )
       end
@@ -398,21 +384,23 @@ private
       usec = $7
       zoneStr = $8
 
-      @data = Date.new3( year, mon, mday, hour, min, sec )
+      @data = DateTime.new3( year, mon, mday, hour, min, sec,
+	ofFromTZ( zoneStr ))
 
       if usec
 	diffDay = usec.to_i.to_r / ( 10 ** usec.size ) / SecInDay
 	jd = @data.jd
 	fr1 = @data.fr1 + diffDay
-	@data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
+	@data = DateTime.new0( DateTime.jd_to_rjd( jd, fr1, @data.of ),
+	  @data.of )
       end
-
-      @data = XSDDateTime.tzAdjust( @data, zoneStr )
     end
   end
 
   def _to_s
-    d = @data
+    # Adjust to UTC.
+    d = @data.newof
+    # This format string is from date.rb of newdate-0.2.
     s = format('%.4d-%02d-%02dT%02d:%02d:%02d',
       d.year, d.mon, d.mday, d.hour, d.min, d.sec )
     if d.fr2.nonzero?
@@ -421,11 +409,7 @@ private
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
       s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
     end
-
-    # @data is adjusted to UTC.
-    s << 'Z'
-
-    s
+    s + 'Z'
   end
 end
 
@@ -483,11 +467,7 @@ private
     else
       format( '%02d:%02d:%02d.%d', @data.hour, @data.min, @data.sec, @data.usec )
     end
-
-    # @data is adjusted to UTC.
-    s << 'Z'
-
-    s
+    s + 'Z'
   end
 end
 
@@ -503,12 +483,12 @@ public
 private
   def _set( t )
     if ( t.is_a?( Date ))
-      @data = t.dup
+      @data = t
     elsif ( t.is_a?( Time ))
       gt = t.dup.gmtime
-      @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
+      @data = Date.new3( gt.year, gt.mon, gt.mday )
     else
-      /^([+-]?\d+)-(\d\d)-(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+      /^([+-]?\d\d\d\d)-(\d\d)-(\d\d)$/ =~ trim( t.to_s )
       unless Regexp.last_match
 	raise ValueSpaceError.new( "Time: #{ t } is not acceptable." )
       end
@@ -516,20 +496,14 @@ private
       year = $1.to_i
       mon = $2.to_i
       mday = $3.to_i
-      zoneStr = $4
 
-      @data = Date.new3( year, mon, mday, 0, 0, 0 )
-      @data = XSDDateTime.tzAdjust( @data, zoneStr )
+      @data = Date.new3( year, mon, mday )
     end
   end
 
   def _to_s
     s = @data.to_s.sub( /T.*$/, '' )
-
-    # @data is adjusted to UTC.
-    s << 'Z'
-
-    s
+    s + 'Z'
   end
 end
 
