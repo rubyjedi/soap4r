@@ -65,7 +65,7 @@ public
   end
 
   def initialize( faultCode = nil, faultString = nil, faultActor = nil, detail = nil )
-    super( nil )
+    super( EleFaultName )
     @elementName = Name
     @encodingStyle = EncodingNamespace
 

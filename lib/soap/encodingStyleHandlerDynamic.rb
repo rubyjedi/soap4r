@@ -344,30 +344,31 @@ private
   end
 
   def decodeTagByWSDL( ns, name, typeStr, parentNode )
-    if parentNode.is_a?( SOAPBody )
+    o = nil
+    if parentNode.class == SOAPBody
       qname = ns.parse( name )
       type = @decodeComplexTypes[ qname ]
       unless type
 	raise EncodingStyleError.new( "Unknown operation '#{ qname }'." )
       end
-      SOAPStruct.new( qname )
+      o = SOAPStruct.new( qname )
     else
       parentType = @decodeComplexTypes[ parentNode.type ]
       typeName = parentType.getChildrenType( name )
       if ( klass = TypeMap[ typeName ] )
-	klass.decode( ns, name )
+	o = klass.decode( ns, name )
       else
 	type = @decodeComplexTypes[ typeName ]
 	case type.compoundType
 	when :TYPE_STRUCT
-	  SOAPStruct.new( typeName.dup )
+	  o = SOAPStruct.new( typeName.dup )
 	when :TYPE_ARRAY
 	  o = SOAPArray.decode( ns, name, type.getArrayType )
 	  o.type = typeName.dup
-	  o
 	end
       end
     end
+    o
   end
 
   def decodeTagByType( ns, name, typeStr, parentNode )
