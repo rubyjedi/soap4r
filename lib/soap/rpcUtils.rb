@@ -186,7 +186,7 @@ module RPCUtils
 	# attrs.push( datatypeAttrResponse( ns ))
 
 	elems = []
-	unless retVal.is_a?( SOAPVoid )
+	if @retName and !retVal.is_a?( SOAPVoid )
 	  elems << retVal.encode( ns.clone, @retName || 'return', EncodingNamespace )
 	end
 

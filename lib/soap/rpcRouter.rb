@@ -125,14 +125,14 @@ private
       raise RPCRoutingError.new( "Method: #{ name } not defined." )
     end
 
-    soapResponse = method.dup
-    if method.outParam?
+    soapResponse = method.clone
+    if soapResponse.outParam?
       unless result.is_a?( Array )
 	raise RPCRoutingError.new( "Out parameter was not returned." )
       end
       outParams = {}
       i = 1
-      method.eachParamName( 'out' ) do | outParam |
+      soapResponse.eachParamName( 'out' ) do | outParam |
 	outParams[ outParam ] = RPCUtils.obj2soap( result[ i ], @mappingRegistry )
 	i += 1
       end
