@@ -42,6 +42,12 @@ private
         @proxy.add_rpc_method(qname, soapaction, name, params)
         add_rpc_method_interface(name, params)
       end
+      if name_as != name and name_as.capitalize == name.capitalize
+        sclass = class << self; self; end
+        sclass.__send__(:define_method, name_as, proc { |*arg|
+          __send__(name, *arg)
+        })
+      end
     end
   end
 end
