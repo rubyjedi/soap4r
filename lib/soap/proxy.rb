@@ -109,8 +109,8 @@ class SOAPProxy
     data = invoke( headers, req.method, req.method.soapAction || @soapAction )
 
     receiveString = data.receiveString
-    receiveString.gsub!( "\r\n", "\n" )
-    receiveString.gsub!( "\r", "\n" )
+#    receiveString.gsub!( "\r\n", "\n" )
+#    receiveString.gsub!( "\r", "\n" )
 
     if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ data.receiveContentType
       raise StreamError.new( "Illegal content-type: #{ data.receiveContentType }" )
