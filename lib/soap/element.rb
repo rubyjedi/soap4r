@@ -32,7 +32,6 @@ module SOAPEnvelopeElement; end
 class SOAPFault < SOAPStruct
   include SOAPEnvelopeElement
   include SOAPCompoundtype
-  Name = XSD::QName.new(EnvelopeNamespace, 'Fault')
 
 public
 
@@ -70,7 +69,7 @@ public
 
   def initialize(faultcode = nil, faultstring = nil, faultactor = nil, detail = nil)
     super(EleFaultName)
-    @elename = Name
+    @elename = EleFaultName
     @encodingstyle = EncodingNamespace
 
     if faultcode
@@ -78,10 +77,10 @@ public
       self.faultstring = faultstring
       self.faultactor = faultactor
       self.detail = detail
-      self.faultcode.elename.name = 'faultcode' if self.faultcode
-      self.faultstring.elename.name = 'faultstring' if self.faultstring
-      self.faultactor.elename.name = 'faultactor' if self.faultactor
-      self.detail.elename.name = 'detail' if self.detail
+      self.faultcode.elename = EleFaultCodeName if self.faultcode
+      self.faultstring.elename = EleFaultStringName if self.faultstring
+      self.faultactor.elename = EleFaultActorName if self.faultactor
+      self.detail.elename = EleFaultDetailName if self.detail
     end
   end
 
@@ -102,13 +101,12 @@ end
 
 class SOAPBody < SOAPStruct
   include SOAPEnvelopeElement
-  Name = XSD::QName.new(EnvelopeNamespace, 'Body')
 
 public
 
   def initialize(data = nil, is_fault = false)
     super(nil)
-    @elename = Name
+    @elename = EleBodyName
     @encodingstyle = nil
     add(data.elename.name, data) if data
     @is_fault = is_fault
@@ -180,11 +178,10 @@ end
 
 class SOAPHeader < SOAPArray
   include SOAPEnvelopeElement
-  Name = XSD::QName.new(EnvelopeNamespace, 'Header')
 
   def initialize()
     super(nil, 1)	# rank == 1
-    @elename = Name
+    @elename = EleHeaderName
     @encodingstyle = nil
   end
 
@@ -206,14 +203,13 @@ end
 class SOAPEnvelope < NSDBase
   include SOAPEnvelopeElement
   include SOAPCompoundtype
-  Name = XSD::QName.new(EnvelopeNamespace, 'Envelope')
 
   attr_accessor :header
   attr_accessor :body
 
   def initialize(header = nil, body = nil)
     super(nil)
-    @elename = Name
+    @elename = EleEnvelopeName
     @encodingstyle = nil
     @header = header
     @body = body

@@ -402,7 +402,7 @@ private
   def add_member(name, value = nil)
     value = SOAPNil.new() unless value
     @array.push(name)
-    value.elename.name = name
+    value.elename = value.elename.dup_name(name)
     @data.push(value)
   end
 end
@@ -485,7 +485,7 @@ private
     value = SOAPNil.new() unless value
     add_accessor(name)
     @array.push(name)
-    value.elename.name = name
+    value.elename = value.elename.dup_name(name)
     @data.push(value)
   end
 
@@ -576,7 +576,7 @@ public
     data[idxary.last] = value
 
     if value.is_a?(SOAPBasetype) || value.is_a?(SOAPCompoundtype)
-      value.elename.name = 'item'
+      value.elename = value.elename.dup_name('item')
       
       # Sync type
       unless @type.name
@@ -615,7 +615,7 @@ public
 	deep_map(ele, &block)
       else
 	new_obj = block.call(ele)
-	new_obj.elename.name = 'item'
+	new_obj.elename = new_obj.elename.dup_name('item')
 	new_obj
       end
     end

@@ -117,7 +117,7 @@ public
   end
 
   def check_fault(body)
-    if (body.fault)
+    if body.fault
       raise SOAP::FaultError.new(body.fault)
     end
   end
