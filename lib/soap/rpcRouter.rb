@@ -96,7 +96,7 @@ class RPCRouter
   end
 
   # Create fault response string.
-  def faultResponseString( e )
+  def createFaultResponseString( e )
     soapResponse = fault( e )
 
     ns = NS.new
@@ -131,7 +131,7 @@ private
       end
       outParams = {}
       i = 1
-      soapResponse.eachParamName( 'out' ) do | outParam |
+      soapResponse.eachParamName( 'out', 'inout' ) do | outParam |
 	outParams[ outParam ] = RPCUtils.obj2soap( result[ i ], @mappingRegistry )
 	i += 1
       end
