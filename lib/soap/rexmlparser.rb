@@ -63,6 +63,8 @@ class SOAPREXMLParser < SOAPParser
   def xmldecl( version, encoding, standalone )
     # Version should be checked.
   end
+
+  setFactory( self )
 end
 
 

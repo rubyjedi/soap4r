@@ -120,6 +120,8 @@ class SOAPNQXMLStreamingParser < SOAPParser
     $KCODE = @charsetStrBackup
     Charset.setXMLInstanceEncoding( $KCODE )
   end
+
+  setFactory( self )
 end
 
 
