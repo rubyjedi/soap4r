@@ -1,12 +1,11 @@
 #!/usr/bin/env ruby
 
-$serverName = 'kSOAP'
+$serverName = 'SilverStream'
 
-$serverBase = 'http://kissen.cs.uni-dortmund.de:8080/ksoapinterop'
+$serverBase = 'http://explorer.ne.mediaone.net/app/interop/interop'
 #$serverGroupB = ''
 
 require 'clientBase'
-require 'soap/XMLSchemaDatatypes1999'
 
 drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
 methodDef( drvBase )

@@ -1,12 +1,11 @@
 #!/usr/bin/env ruby
 
-$serverName = 'kSOAP'
+$serverName = 'CapeConnect'
 
-$serverBase = 'http://kissen.cs.uni-dortmund.de:8080/ksoapinterop'
+$serverBase = 'http://interop.capeclear.com/ccx/soapbuilders-round2'
 #$serverGroupB = ''
 
 require 'clientBase'
-require 'soap/XMLSchemaDatatypes1999'
 
 drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
 methodDef( drvBase )
