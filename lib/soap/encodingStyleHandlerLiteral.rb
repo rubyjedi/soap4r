@@ -17,7 +17,6 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/encoding'
-require 'soap/nqxmlDocument'
 
 
 module SOAP
@@ -29,8 +28,6 @@ class SOAPEncodingStyleHandlerLiteral < EncodingStyleHandler
 
   def initialize
     super( LiteralEncodingNamespace )
-    @referencePool = []
-    @idPool = []
     @textBuf = ''
   end
 
@@ -38,7 +35,49 @@ class SOAPEncodingStyleHandlerLiteral < EncodingStyleHandler
   ###
   ## encode interface.
   #
-  def encodeData( ns, data, name, parent )
+  def encodeData( buf, ns, qualified, data, parent )
+    attrs = {}
+    name = nil
+    if qualified and data.namespace
+      if !ns.assigned?( data.namespace )
+        tag = ns.assign( data.namespace )
+        attrs[ 'xmlns:' << tag ] = data.namespace
+      end
+      name = ns.name( data.namespace, data.name )
+    else
+      name = data.name
+    end
+
+    attrs = {}
+    case data
+    when SOAPBasetype
+      SOAPGenerator.encodeTag( buf, name, attrs, false )
+      buf << SOAPGenerator.encodeStr( data.to_s )
+    when SOAPStruct
+      SOAPGenerator.encodeTag( buf, name, attrs, true )
+      data.each do | key, value |
+        yield( value, false )
+      end
+    when SOAPArray
+      SOAPGenerator.encodeTag( buf, name, attrs, true )
+      data.traverse do | child, *rank |
+	data.position = nil
+        yield( child, false )
+      end
+    else
+      raise EncodingStyleError.new( "Unknown object:#{ data } in this encodingSt
+yle." )
+    end
+  end
+
+  def encodeDataEnd( buf, ns, qualified, data, parent )
+    name = nil
+    if qualified and data.namespace
+      name = ns.name( data.namespace, data.name )
+    else
+      name = data.name
+    end
+    SOAPGenerator.encodeTagEnd( buf, name, true )
   end
 
 
@@ -53,37 +92,57 @@ class SOAPEncodingStyleHandlerLiteral < EncodingStyleHandler
     end
   end
 
-  class SOAPLiteral < SOAPTemporalObject
-    attr_accessor :data
-    attr_reader :name
-
-    def initialize( name )
+  class SOAPUnknown < SOAPTemporalObject
+    def initialize( handler, ns, name )
       super()
+      @handler = handler
+      @ns = ns
       @name = name
-      @data = String.new( '' )
+    end
+
+    def toStruct
+      o = SOAPStruct.decode( @ns, @name, XSD::Namespace, XSD::AnyTypeLiteral )
+      o.parent = @parent
+      @handler.decodeParent( @parent, o )
+      o
+    end
+
+    def toString
+      o = SOAPString.decode( @ns, @name )
+      o.parent = @parent
+      @handler.decodeParent( @parent, o )
+      o
+    end
+
+    def toNil
+      o = SOAPNil.decode( @ns, @name )
+      o.parent = @parent
+      @handler.decodeParent( @parent, o )
+      o
     end
   end
 
   def decodeTag( ns, name, attrs, parent )
     # ToDo: check if @textBuf is empty...
     @textBuf = ''
-    o = SOAPLiteral.new( name )
-    o.data << "<#{ o.name }"
-    attrs.each do | key, value |
-      o.data << " #{ key }=\"#{ value }\""
-    end
-    o.data << ">"
+    o = SOAPUnknown.new( self, ns, name )
     o.parent = parent
     o
   end
 
   def decodeTagEnd( ns, node )
     o = node.node
-    if o.is_a?( SOAPLiteral )
-      decodeTextBuf( o )
-      o.data << "</#{ o.name }>"
+    if o.is_a?( SOAPUnknown )
+      newNode = if /\A\s*\z/ =~ @textBuf
+	  o.toStruct
+	else
+	  o.toString
+	end
+      node.replaceNode( newNode )
+      o = node.node
     end
-    # o.parent.node.data << o.data if o.parent.node
+
+    decodeTextBuf( o )
     @textBuf = ''
   end
 
@@ -98,10 +157,43 @@ class SOAPEncodingStyleHandlerLiteral < EncodingStyleHandler
   def decodeEpilogue
   end
 
+  def decodeParent( parent, node )
+    case parent.node
+    when SOAPUnknown
+      newParent = parent.node.toStruct
+      node.parent = newParent
+      parent.replaceNode( newParent )
+      decodeParent( parent, node )
+
+    when SOAPStruct
+      parent.node.add( node.name, node )
+
+    when SOAPArray
+      if node.position
+	parent.node[ *( decodeArrayPosition( node.position )) ] = node
+	parent.node.sparse = true
+      else
+	parent.node.add( node )
+      end
+
+    when SOAPBasetype
+      raise EncodingStyleError.new( "SOAP base type must not have a child." )
+
+    else
+      # SOAPUnknown does not have parent.
+      # raise EncodingStyleError.new( "Illegal parent: #{ parent }." )
+    end
+  end
+
 private
 
   def decodeTextBuf( node )
-    node.data << @textBuf
+    if node.is_a?( XSDString )
+      encoded = Charset.encodingFromXML( @textBuf )
+      node.set( encoded )
+    else
+      # Nothing to do...
+    end
   end
 end
 
