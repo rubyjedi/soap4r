@@ -43,7 +43,7 @@ module SOAPProcessor
   ###
   ## SOAP unmarshaling
   #
-  def unmarshal( stream )
+  def unmarshal( stream, opt = {} )
 
     # Namespace preparing.
     ns = SOAPNS.new()
@@ -54,7 +54,7 @@ module SOAPProcessor
     tree.documentElement.normalize
 
     # Parse SOAP envelope.
-    env = SOAPEnvelope.decode( ns, tree )
+    env = SOAPEnvelope.decode( ns, tree, opt.has_key?( 'allowUnqualifiedElement' ))
 
     return ns, env.header, env.body
   end
