@@ -33,12 +33,11 @@ module RPC
 #   To be written...
 #
 class Server < Devel::Application
-  include SOAP
-
   def initialize(appName, namespace = nil)
     super(appName)
+    setSevThreshold(SEV_INFO)
     @namespace = namespace
-    @router = RPC::Router.new(appName)
+    @router = SOAP::RPC::Router.new(appName)
     methodDef
   end
  
@@ -55,7 +54,7 @@ class Server < Devel::Application
       qname = XSD::QName.new(namespace, methodName)
       paramSize = obj.method(methodName).arity.abs
       params = (1..paramSize).collect { |i| "p#{ i }" }
-      paramDef = RPC::SOAPMethod.createParamDef(params)
+      paramDef = SOAP::RPC::SOAPMethod.createParamDef(params)
       @router.addMethod(obj, qname, soapAction, methodName, paramDef)
     end
   end
@@ -83,7 +82,7 @@ protected
     paramDef = if paramArg.size == 1 and paramArg[0].is_a?(Array)
         paramArg[0]
       else
-        RPC::SOAPMethod.createParamDef(paramArg)
+        SOAP::RPC::SOAPMethod.createParamDef(paramArg)
       end
     qname = XSD::QName.new(namespace, methodNameAs)
     @router.addMethod(receiver, qname, nil, methodName, paramDef)
