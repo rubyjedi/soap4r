@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: March 30, 2001<br />
+Last modified: May 20, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 $BK\J8=q$,BP>]$H$7$F$$$k(BSOAP4R$B$N%P!<%8%g%s$O!$(B
-SOAP4R/1.2.0
+SOAP4R/1.3.0
 $B$G$9!%(B
 </p>
 
@@ -53,40 +53,24 @@ SOAP4R/1.2.0
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<p>
-<a href="http://www.sarion.co.jp/ml/soap/">SOAP-ml-JP</a>
-$B$N$_$J$5$s$K8f6(NO$rD:$$$F!$(B
-<a href="http://xml.apache.org/soap/">Apache-SOAP</a>$B!$(B
-<a href="http://www.pocketsoap.com">pocketSOAP/0.91</a>$B!$(B
-<a href="http://www.geocities.com/paulclinger/soap.html">SOAP::Lite for Perl</a>$B!$(B
-<a href="http://www.develop.com/soap/">SOAP/Perl/0.28</a>
-$B$H$N@\B3%F%9%H$r9T$J$C$?7k2L$rH?1G$5$;$^$7$?!%(B
-SOAP/Perl/0.28$B0J30$H$O=gD4$KDL?.$G$-$F$^$9!%(B
-</p>
-
 <ul>
-<li>href/id$B$r;H$C$?(BXML$B$r(Bunmarshal$B$G$-$k$h$&$K$J$j$^$7$?(B
-$B!J$^$@;2>H$r(Bhref/id$B$K(Bmarshal$B$9$k$3$H$O$G$-$^$;$s!K(B</li>
-<li>base64$B7?$r%5%]!<%H$7$^$7$?!%(B</li>
-<li>SOAPTimeInstant$B$r(BSOAPDateTime$B$KL>>NJQ99$7$^$7$?!%(B
-XML Schema PR$B$X$NDI=>$G$9!%(B</li>
-<li>SOAPStruct$B$O!$F1$8%"%/%;%5$r;}$DJ#?t$NCM$r07$($k$h$&$K$J$j$^$7$?!%(B
-SOAPStruct$B$H$OJL%/%i%9$K$7$?$[$&$,$h$+$C$?$+$b!%(B</li>
-<li>$B%k!<%?$O0[$J$kL>A06u4V$KB0$9$k%a%=%C%I72$r07$($k$h$&$K$J$j$^$7$?!%(B</li>
-<li>&lt;Envelope&gt;$B$N$h$&$J!$Hs=$>~$JMWAG$r5v2D$9$k$?$a$N%U%i%0$,IU$-$^$7$?!%(B
-$BC1=c$K%F%-%9%H$rO"7k$7$FAw$k$@$1$N%/%i%$%"%s%H$X$NBP1~$,3Z$K$J$j$^$9!%(B</li>
-<li>Apache-SOAP$B$G:NMQ$5$l$F$$$k(BMap$B%?%$%W$r%5%]!<%H$7$^$7$?!%(B
-Ruby$B$N(BHash$B$b$3$N7?$K(Bbind$B$9$k$h$&$K$7$^$7$?!%(B
-$B!J(BSOAP4R/1.1$B$^$G$O!$(BHash$B$rFH<+7A<0$K(Bmarshal$B$7$F$^$7$?!%(B
-1.1$B$G(Bmarshal$B$5$l$?(BXML$B$O!$(B1.2$B$G$b(BHash$B$K(Bunmarshal$B$9$k$3$H$,$G$-$^$9$,!$(B
-1.2$B$G$O?77A<0$K(Bmarshal$B$5$l$k$?$a!$$=$l$r(B1.1$B$G(Bunmarshal$B$9$k$H!$(BHash$B$G$O$J$/(B
-Struct$B$K$J$C$F$7$^$$$^$9!%(B1.2$B$H(B1.1$B$NHs8_49$KCm0U$7$F$/$@$5$$!K(B</li>
-<li>$BK\Mh$J$i(BStruct$B$N%5%V%/%i%9$H$7$F(Bunmarshal$B$9$Y$-7?$N$&$A!$(B
-'unknown:SOAPStruct'$B$H$$$&L>A0$N7?$r!$FbIt%/%i%9$N(BSOAPStruct$B$H$7$F(B
-unmarshal$B$7$F$7$^$C$F$$$^$7$?!%=$@5$7$^$7$?!%(B</li>
-<li>SOAPArray$B$H(BSOAPStruct$B$K!$(Bmap!$B$*$h$S(Bmembers$B%a%=%C%I$rDI2C$7$^$7$?!%(B</li>
-<li>SOAPBody$B$K(Brequest$B!$(Bresponse$B$*$h$S(Bfault$B%a%=%C%I$rDI2C$7$^$7$?!%(B</li>
-<li>$BCN$i$J$$%X%C%@9`L\$r8+$k$HNc30$GMn$A$F$7$^$C$F$$$^$7$?!%L5;k$9$k$h$&$K$7$^$7$?!%(B</li>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
+$B$r:NMQ$7!$(Bmarshal/unmarshal$B6&$KA4LLE*$K=q$-49$($^$7$?(B
+$B!J(BXML$B%9%H%j!<%`$N2r@O$K$D$$$F$O!$(BXMLParser$B$rMxMQ$7$F9bB.2=$9$k$3$H$b2DG=$G$9!%(B
+lib/soap/parser.rb$B$NKvHx$r8+$F$/$@$5$$!K!%(B
+<ul>
+<li>XMLParser$B$N(BTreeParser$B$N$+$o$j$K!$(B
+NQXML$B$N(BstreamingParser$B$b$7$/$O(Btokenizer$B$r;H$C$F(Bunmarshalling$B$7$^$9!%(B</li>
+<li>XMLParser$B$N(BDOM$B$N$+$o$j$K!$(BNQXML$B$N(Bdocument$B$*$h$S(Bwriter$B$r;H$C$F(Bmarshalling$B$7$^$9!%(B</li>
+</ul></li>
+<li><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+$B$G9T$J$o$l$F$$$k8_49@-%F%9%H$N$&$A!$$J$R4D6-$G%F%9%H2DG=$J$b$N$K$D$$$F$OA4$F%F%9%H$r<B;\$7!$A4$F$K%Q%9$7$^$7$?!%(B</li>
+<li>$BA4$F$N(Bmodule$B$r!$L>A06u4V(BSOAP$B$KF~$l$^$7$?!%(BSOAPCGIStub -&gt; SOAP::CGIStub$B$H$J$C$F$*$j!$=EBg$JHs8_49@-$,$"$j$^$9$N$GCm0U$7$F$/$@$5$$!%(B</li>
+<li>float$B%G!<%?7?$r%5%]!<%H$7$^$7$?!%(B</li>
+<li>dateTime$B7?$K$*$$$F!$(BSOAP4R$B$G$O(BTimezone$B$r%5%]!<%H$7$F$$$J$$$N$G(B
+$B!J(Bdate3.rb$B$G$O$A$c$s$H%5%]!<%H$5$l$F$$$^$9!K!$(B
+marshalling format$B$+$i(BTimezone$B$NItJ,$r:o$j$^$7$?!%(B
+$B$$$D$+$A$c$s$H%5%]!<%H$7$?$$$G$9!%(B</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -109,9 +93,6 @@ SOAP4R$B$N%i%$%V%i%j%W%m%0%i%`$,F0:n$9$k$?$a$K$O!$(Bredist$B%G%#%l%/%H%j$K4^$
 <dt class="path">parsedate3.rb</dt>
 <dd>by $B$U$J$P$5$s!J(B<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>$B!K(B</dd>
 
-<dt class="path">http-access.rb</dt>
-<dd>by $BA066$5$s!J(B<a href="http://www.jin.gr.jp/~nahi/Ruby/ruby.shtml#http-access">http://www.jin.gr.jp/~nahi/Ruby/ruby.shtml#http-access</a>$B!K(B</dd>
-
 <dt class="path">uri.rb</dt>
 <dd>by $B1[?e$5$s!J(B<a href="http://www02.so-net.ne.jp/~greentea/ruby/uri/">http://www02.so-net.ne.jp/~greentea/ruby/uri/</a>$B!K(B</dd>
 </dl>
@@ -129,10 +110,10 @@ SOAP4R$B$N%i%$%V%i%j%W%m%0%i%`$,F0:n$9$k$?$a$K$O!$(Bredist$B%G%#%l%/%H%j$K4^$
 
 <dt class="path">sample/apacheClient.rb</dt>
 <dd>SOAP-RPC$B%/%i%$%"%s%H$N%5%s%W%k%W%m%0%i%`!%(B
-IBM$B$N(BSOAP for Java$B$b$7$/$O(BApache SOAP$B$N!$(Bstockquote$B$*$h$S(Baddressbook$B%G%b$K@\B3$9$k!%(B
+Apache SOAP$B$N!$(Bstockquote$B$*$h$S(Baddressbook$B%G%b$K@\B3$9$k!%(B
 $B@h$K%5!<%PB&$N%$%s%9%H!<%k(B &amp; deploy$B$r:Q$^$;$F$*$/$3$H!%(B
 <pre class="path">
-./sampleClient.rb http://localhsot:2020/ibm-soap/rpcrouter.jsp
+./sampleClient.rb http://localhsot:2020/xml-soap/rpcrouter/rpcrouter.jsp
 </pre>
 $B$J$I$H$7$F5/F0$9$k!%(B</dd>
 
@@ -152,6 +133,10 @@ www.ruby-lang.org$B$K$"$k(BRAA$B%5!<%P$K@\B3$9$k%W%m%0%i%`72$G$9!%(B
 </ul>
 $B$3$N%5!<%P$O%F%9%H8x3+Cf$J$N$G!$0BDjF0:n$r4|BT$7$J$$$G$/$@$5$$!%(B
 </dd>
+
+<dt class="path">test/</dt>
+<dd><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+$BMQ$N%/%i%$%"%s%H$*$h$S%5!<%P(B</dd>
 
 <dt class="path">redist/</dt>
 <dd>$B3F<o:FG[I[%Q%C%1!<%8$+$i!$(BSOAP4R$B$GMxMQ$9$k%U%!%$%k72!%(B
@@ -183,11 +168,6 @@ SOAP$B$K$D$$$F$N>\:Y$O!$(B
 </p>
 
 <p>
-<a href="#restrictions">Restrictions</a>
-$B$r8+$k$H$o$+$k$H;W$$$^$9$,!$:#$N$H$3$m(BRPC$B$KFC2=$7$?5!G=$N$_Ds6!$5$l$F$$$^$9!%(B
-</p>
-
-<p>
 $BB><BAu$H$N8_49@-$N>pJs$rJg=8$7$F$$$^$9!%(B
 $B!V!A$K$D$J$$$G$_$?$,>e<j$/$$$+$J$$!W!V>e<j$/$$$C$?!W$H$$$&>pJs$,$"$j$^$7$?$i!$(B
 $B$*5$7Z$K(B
@@ -210,13 +190,11 @@ SOAP4R$B$rMxMQ$9$k$?$a$K$O!$0J2<$N$b$N$,I,MW$G$9!%(B
 $B%/%i%9JQ?t$r;H$C$F$$$k$?$a!$(B1.4$B7O$G$OF0$-$^$;$s!%(B</li>
 
 <li>SOAP4R$B$O(BXML$B4XO"$N=hM}$r(B
-<a href="http://www.yoshidam.net/Ruby.html#xmlparser">XMLParser$B%b%8%e!<%k(B</a>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
 $B$K0MB8$7$F$$$^$9!%(B
-XMLParser$B%b%8%e!<%k$r%$%s%9%H!<%k$7$F$*$/I,MW$,$"$j$^$9!%(B</li>
+NQXML$B%b%8%e!<%k$r%$%s%9%H!<%k$7$F$*$/I,MW$,$"$j$^$9!%(B</li>
 
 <li>SOAP-RPC$B%/%i%$%"%s%H%5%s%W%k$rF0$+$9$?$a$K$O!$(B
-<a href="http://www.alphaworks.ibm.com/tech/soap4j">IBM$B$N(BSOAP for Java</a>
-$B$b$7$/$O(B
 <a href="http://xml.apache.org/soap/">Apache SOAP</a>
 $B$,I,MW$G$9!%(B
 </li>
@@ -241,8 +219,6 @@ SOAP for Java$B$N$h$&$KAG$N(BXML$B$rKd$a$k(Bencoding$B!$$J$I$KBP1~$7$F$$$^$
 </ul></li>
 <li style="margin-top: 2ex;">SOAP Encoding$B$K$D$$$F(B
 <ul>
-<li>encodingStyle$B$O(BSOAP Encoding$B$K8GDj$5$l$F$$$^$9!%(B
-$B%G!<%?9=B$$NESCf$rJL(BencodingStyle$B$K$9$k$3$H$O$G$-$^$;$s!%(B</li>
 <li>XML Schema$B$rFI$s$G(Bencode/decode$B$9$k$3$H$O$G$-$^$;$s!%(B
 SOAP Encoding$BK\BN$KKd$a9~$^$l$?(Bxsi:type$B$N$_$rMxMQ$7$^$9!%(B</li>
 <li>$B<!85$,(B1$B0J30$NG[Ns!$(BPartially Transmitted Arrays$B!JItJ,G[Ns!K!$(BSparse Arrays$B!JAF$JG[Ns!K$KBP1~$7$F$$$^$;$s!%(B</li>
@@ -261,6 +237,27 @@ charset$B;XDj$K$OBP1~$7$F$$$^$;$s!%(B</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.0 - May 20, 2001</dt>
+<dd><ul>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
+$B$r:NMQ$7!$(Bmarshal/unmarshal$B6&$KA4LLE*$K=q$-49$($^$7$?(B
+$B!J(BXML$B%9%H%j!<%`$N2r@O$K$D$$$F$O!$(BXMLParser$B$rMxMQ$7$F9bB.2=$9$k$3$H$b2DG=$G$9!%(B
+lib/soap/parser.rb$B$NKvHx$r8+$F$/$@$5$$!K!%(B
+<ul>
+<li>XMLParser$B$N(BTreeParser$B$N$+$o$j$K!$(B
+NQXML$B$N(BstreamingParser$B$b$7$/$O(Btokenizer$B$r;H$C$F(Bunmarshalling$B$7$^$9!%(B</li>
+<li>XMLParser$B$N(BDOM$B$N$+$o$j$K!$(BNQXML$B$N(Bdocument$B$*$h$S(Bwriter$B$r;H$C$F(Bmarshalling$B$7$^$9!%(B</li>
+</ul></li>
+<li><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+$B$G9T$J$o$l$F$$$k8_49@-%F%9%H$N$&$A!$$J$R4D6-$G%F%9%H2DG=$J$b$N$K$D$$$F$OA4$F%F%9%H$r<B;\$7!$A4$F$K%Q%9$7$^$7$?!%(B</li>
+<li>$BA4$F$N(Bmodule$B$r!$L>A06u4V(BSOAP$B$KF~$l$^$7$?!%(BSOAPCGIStub -&gt; SOAP::CGIStub$B$H$J$C$F$*$j!$=EBg$JHs8_49@-$,$"$j$^$9$N$GCm0U$7$F$/$@$5$$!%(B</li>
+<li>float$B%G!<%?7?$r%5%]!<%H$7$^$7$?!%(B</li>
+<li>dateTime$B7?$K$*$$$F!$(BSOAP4R$B$G$O(BTimezone$B$r%5%]!<%H$7$F$$$J$$$N$G(B
+$B!J(Bdate3.rb$B$G$O$A$c$s$H%5%]!<%H$5$l$F$$$^$9!K!$(B
+marshalling format$B$+$i(BTimezone$B$NItJ,$r:o$j$^$7$?!%(B
+$B$$$D$+$A$c$s$H%5%]!<%H$7$?$$$G$9!%(B</li>
+</ul></dd>
+
 <dt>1.2.0 - March 30, 2001</dt>
 <dd><a href="http://www.sarion.co.jp/ml/soap/">SOAP-ml-JP</a>
 $B$N$_$J$5$s$K8f6(NO$rD:$$$F!$(B
