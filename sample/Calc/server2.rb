@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
 require 'soap/rpc/standaloneServer'
+require 'calc2'
 
-class CalcServer < SOAP::RPC::StandaloneServer
+class CalcServer2 < SOAP::RPC::StandaloneServer
   def on_init
-    require 'calc2'
     servant = CalcService2.new
     add_method(servant, 'set', 'newValue')
     add_method(servant, 'get')
@@ -16,5 +16,5 @@ class CalcServer < SOAP::RPC::StandaloneServer
 end
 
 if $0 == __FILE__
-  status = CalcServer.new('CalcServer', 'http://tempuri.org/calcService', '0.0.0.0', 7000).start
+  status = CalcServer2.new('CalcServer', 'http://tempuri.org/calcService', '0.0.0.0', 7000).start
 end
