@@ -52,10 +52,13 @@ private
     if paramstr.empty?
       paramstr = '[]'
     else
-      paramstr = "[\n" << paramstr << "]"
+      paramstr = "[\n" << paramstr.gsub(/^/, '    ') << "\n  ]"
     end
     return <<__EOD__
-[#{ dq(name_as) }, #{ dq(name) }, #{ paramstr }, #{ soapaction ? dq(soapaction) : "nil" }, #{ dq(namespace) }]
+[#{ dq(name_as) }, #{ dq(name) },
+  #{ paramstr },
+  #{ soapaction ? dq(soapaction) : "nil" }, #{ dq(namespace) }
+]
 __EOD__
   end
 
@@ -117,8 +120,7 @@ __EOD__
 
   def param2str(params)
     params.collect { |param|
-      "  [#{ dq(param[0]) }, #{ dq(param[2]) },\n" <<
-      "   #{ type2str(param[1]) }]"
+      "[#{ dq(param[0]) }, #{ dq(param[2]) }, #{ type2str(param[1]) }]"
     }.join(",\n")
   end
 
