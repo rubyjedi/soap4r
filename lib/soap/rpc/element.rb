@@ -1,5 +1,5 @@
 # SOAP4R - RPC element definition.
-# Copyright (C) 2000, 2001, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -133,6 +133,11 @@ class SOAPMethod < SOAPStruct
     param_def
   end
 
+  def SOAPMethod.derive_param_def(obj, name)
+    method = obj.method(name)
+    create_param_def((1..method.arity.abs).collect { |i| "p#{i}" })
+  end
+
 private
 
   def init_param(param_def)
@@ -153,7 +158,7 @@ private
         end
         @retval_name = name
       else
-        raise MethodDefinitionError.new("Unknown type: #{ io_type }")
+        raise MethodDefinitionError.new("Unknown type: #{io_type}")
       end
     end
   end
@@ -168,7 +173,7 @@ class SOAPMethodRequest < SOAPMethod
     param_value = []
     i = 0
     params.each do |param|
-      param_name = "p#{ i }"
+      param_name = "p#{i}"
       i += 1
       param_def << [IN, param_name, nil]
       param_value << [param_name, param]
@@ -188,7 +193,7 @@ class SOAPMethodRequest < SOAPMethod
   def each
     each_param_name(IN, INOUT) do |name|
       unless @inparam[name]
-        raise ParameterError.new("Parameter: #{ name } was not given.")
+        raise ParameterError.new("parameter: #{name} was not given")
       end
       yield(name, @inparam[name])
     end
@@ -238,7 +243,7 @@ class SOAPMethodResponse < SOAPMethod
 
     each_param_name(OUT, INOUT) do |param_name|
       unless @outparam[param_name]
-        raise ParameterError.new("Parameter: #{ param_name } was not given.")
+        raise ParameterError.new("parameter: #{param_name} was not given")
       end
       yield(param_name, @outparam[param_name])
     end
