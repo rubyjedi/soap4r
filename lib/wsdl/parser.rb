@@ -36,7 +36,7 @@ class WSDLParser
   class UnknownElementError < FormatDecodeError; end
   class UnknownAttributeError < FormatDecodeError; end
   class UnexpectedElementError < FormatDecodeError; end
-  class ElemenConstraintError < FormatDecodeError; end
+  class ElementConstraintError < FormatDecodeError; end
 
   @@parserFactory = nil
 
@@ -57,11 +57,13 @@ class WSDLParser
 
   class ParseFrame
     attr_reader :ns
+    attr_reader :name
     attr_accessor :node
 
   private
-    def initialize( ns = nil, node = nil )
+    def initialize( ns, name, node )
       @ns = ns
+      @name = name
       @node = node
     end
   end
@@ -110,7 +112,7 @@ public
 
     node = decodeTag( ns, name, attrs, parent )
 
-    @parseStack << ParseFrame.new( ns, node )
+    @parseStack << ParseFrame.new( ns, name, node )
   end
 
   def characters( text )
@@ -126,6 +128,9 @@ public
 
   def endElement( name )
     lastFrame = @parseStack.pop
+    unless name == lastFrame.name
+      raise UnexpectedElementError.new( "Closing element name '#{ name }' does not match with opening element '#{ lastFrame.name }'." )
+    end
     decodeTagEnd( lastFrame.ns, lastFrame.node )
     @lastNode = lastFrame.node
   end
@@ -201,7 +206,6 @@ private
   end
 
   def decodeTagEnd( ns, node )
-    # Should check element name.
     node.postParse
   end
 
