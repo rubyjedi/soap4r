@@ -65,6 +65,7 @@ public
   attr_accessor :allow_unqualified_element
 
   def initialize(opt = {})
+    @opt = opt
     @parser = XSD::XMLParser.create_parser(self, opt)
     @parsestack = nil
     @lastnode = nil
@@ -201,6 +202,14 @@ private
     o = nil
     if ele.name == EleEnvelope
       o = SOAPEnvelope.new
+      if mime = @opt[:mimemessage]
+	mime.parts.each do |part|
+	  value = Attachment.new(part.content)
+	  value.contentid = part.contentid
+	  child = SOAPAttachment.new(value)
+	  o.external_content[value.contentid] = child
+	end
+      end
     elsif ele.name == EleHeader
       unless parent.node.is_a?(SOAPEnvelope)
 	raise FormatDecodeError.new("Header should be a child of Envelope.")
@@ -220,7 +229,6 @@ private
       o = SOAPFault.new
       parent.node.fault = o
     end
-    o.parent = parent if o
     o
   end
 
