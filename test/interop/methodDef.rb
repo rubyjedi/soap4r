@@ -9,6 +9,8 @@ def methodDef( drv )
   drv.addMethod( 'echoFloatArray', 'inputFloatArray' )
   drv.addMethod( 'echoStruct', 'inputStruct' )
   drv.addMethod( 'echoStructArray', 'inputStructArray' )
+  drv.addMethod( 'echoDate', 'inputDate' )
+  drv.addMethod( 'echoBase64', 'inputBase64' )
 end
 
 def methodDefWithSOAPAction( drv, soapAction )
@@ -21,4 +23,6 @@ def methodDefWithSOAPAction( drv, soapAction )
   drv.addMethodWithSOAPAction( 'echoFloatArray', soapAction + 'echoFloatArray', 'inputFloatArray' )
   drv.addMethodWithSOAPAction( 'echoStruct', soapAction + 'echoStruct', 'inputStruct' )
   drv.addMethodWithSOAPAction( 'echoStructArray', soapAction + 'echoStructArray', 'inputStructArray' )
+  drv.addMethodWithSOAPAction( 'echoDate', soapAction + 'echoDate', 'inputDate' )
+  drv.addMethodWithSOAPAction( 'echoBase64', soapAction + 'echoBase64', 'inputBase64' )
 end

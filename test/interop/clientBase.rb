@@ -16,8 +16,16 @@ class Float
   Precision = 5
 
   def ==( rhs )
-    if ( rhs - self ).abs <= ( 10 ** ( - Precision ))
-      true
+    if rhs.is_a?( Float )
+      if self.nan? and rhs.nan?
+	true
+      elsif self.infinite? == rhs.infinite?
+	true
+      elsif ( rhs - self ).abs <= ( 10 ** ( - Precision ))
+	true
+      else
+	false
+      end
     else
       false
     end
@@ -28,7 +36,7 @@ def assert( expected, actual )
   if expected == actual
     "OK"
   else
-    "Expected = " << dump( expected ) << " // Actual = " << dump( actual )
+    "Expected = " << expected.inspect << " // Actual = " << actual.inspect
   end
 end
 
@@ -63,12 +71,23 @@ def doTest( drv )
   dumpDev = getWireDumpLogFile
   drv.setWireDumpDev( dumpDev )
 
+#=begin
   dumpTitle( dumpDev, 'echoVoid' )
   var =  drv.echoVoid()
   dumpResult( dumpDev, var, nil )
 
   dumpTitle( dumpDev, 'echoString' )
   arg = "SOAP4R Interoperability Test"
+  var = drv.echoString( arg )
+  dumpResult( dumpDev, arg, var )
+
+  dumpTitle( dumpDev, 'echoString (space)' )
+  arg = ' '
+  var = drv.echoString( arg )
+  dumpResult( dumpDev, arg, var )
+
+  dumpTitle( dumpDev, 'echoString (whitespaces)' )
+  arg = "\r\n\t\r\n\t"
   var = drv.echoString( arg )
   dumpResult( dumpDev, arg, var )
 
@@ -95,7 +114,10 @@ def doTest( drv )
   dumpResult( dumpDev, arg, var )
 
   dumpTitle( dumpDev, 'echoFloatArray' )
-  arg = [ 3.14159265358979, 3.14159265358979, 3.14159265358979 ]
+  nan = 0.0/0.0
+  inf = 1.0/0.0
+  inf_ = -1.0/0.0
+  arg = [ nan, inf, inf_ ]
   var = drv.echoFloatArray( arg )
   dumpResult( dumpDev, arg, var ) << "\n"
 
@@ -111,6 +133,19 @@ def doTest( drv )
   arg = [ s1, s2, s3 ]
   var = drv.echoStructArray( arg )
   dumpResult( dumpDev, arg, var ) 
+
+  dumpTitle( dumpDev, 'echoDate' )
+  t = Time.now.gmtime
+  arg = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
+  var = drv.echoDate( arg )
+  dumpResult( dumpDev, arg, var )
+
+  dumpTitle( dumpDev, 'echoBase64' )
+  str = "Hello (日本語Japanese) こんにちは"
+  arg = SOAP::SOAPBase64.new( str )
+  var = drv.echoBase64( arg )
+  dumpResult( dumpDev, str, var )
+#=end
 
   dumpDev.close
 end

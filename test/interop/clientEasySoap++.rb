@@ -3,12 +3,7 @@
 $serverName = 'EasySoap++'
 
 require 'clientBase'
-
-module XSD
-  Namespace = 'http://www.w3.org/1999/XMLSchema'
-  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  NilLiteral = 'null'
-end
+require 'soap/XMLSchemaDatatypes1999'
 
 
 $server = 'http://www.xmethods.net/c/easysoap.cgi'
