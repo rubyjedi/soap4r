@@ -29,8 +29,10 @@ module SOAP
 
 module Marshal
   # Trying xsd:dateTime data to be recovered as aTime.  aDateTime if it fails.
-  MarshalMappingRegistry = RPCUtils::MappingRegistry.new
-  MarshalMappingRegistry.set(
+  MarshalMappingRegistry = RPCUtils::MappingRegistry.new(
+    :allowOriginalMapping => true
+  )
+  MarshalMappingRegistry.add(
     Time,
     ::SOAP::SOAPDateTime,
     ::SOAP::RPCUtils::MappingRegistry::DateTimeFactory

@@ -22,6 +22,7 @@ require 'soap/baseData'
 module SOAP
   module RPCUtils
     RubyTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/1.6'
+    RubyTypeInstanceNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type-instance'
     RubyCustomTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/custom'
     ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
   end
