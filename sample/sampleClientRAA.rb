@@ -118,7 +118,11 @@ private
     p @drv.getAllListings()
     p @drv.getProductTree()
     p @drv.getInfoFromCategory( Category.new( "Library", "XML" ))
-    p @drv.getModifiedInfoSince( Time.at( Time.now.to_i - 24 * 3600 ))
+
+    t = Time.at( Time.now.to_i - 6 * 3600 )
+    p @drv.getModifiedInfoSince( t )
+    p @drv.getModifiedInfoSince( Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec ))
+
     p @drv.getInfoFromName( "SOAP4R" )
 
 #    # This will take a long time...
@@ -137,10 +141,10 @@ private
   end
 end
 
-#server = ARGV.shift or raise ArgumentError.new( 'Target URL was not given.' )
-#proxy = ARGV.shift || nil
+server = ARGV.shift or raise ArgumentError.new( 'Target URL was not given.' )
+proxy = ARGV.shift || nil
 
-server = 'http://www.ruby-lang.org/~nahi/soap/raa/'
-proxy = nil
+#server = 'http://www.ruby-lang.org/~nahi/soap/raa/'
+#proxy = nil
 
 app = SampleClient.new( server, proxy ).start()
