@@ -1,4 +1,7 @@
+$KCODE = 'EUC'
+
 require 'soap/driver'
+require 'soap/xmlparser'
 
 require 'soap/rpcUtils'
 include SOAP::RPCUtils
@@ -6,13 +9,50 @@ include SOAP::RPCUtils
 require 'base'
 include SOAPBuildersInterop
 
-require 'methodDef'
-
 
 $server = nil
 $soapAction = 'http://soapinterop.org/'
 
 $proxy = ARGV.shift || nil
+
+
+###
+## Method definition.
+#
+def methodDef( drv )
+  methodDefBase( drv )
+  methodDefGroupB( drv )
+end
+
+def methodDefWithSOAPAction( drv, soapAction )
+  methodDefWithSOAPActionBase( drv, soapAction )
+  methodDefWithSOAPActionGroupB( drv, soapAction )
+end
+
+
+def methodDefBase( drv )
+  SOAPBuildersInterop::MethodsBase.each do | methodName, *params |
+    drv.addMethod( methodName, params )
+  end
+end
+
+def methodDefWithSOAPActionBase( drv, soapAction )
+  SOAPBuildersInterop::MethodsBase.each do | methodName, params |
+    drv.addMethodWithSOAPAction( methodName, soapAction + methodName, params )
+  end
+end
+
+def methodDefGroupB( drv )
+  SOAPBuildersInterop::MethodsGroupB.each do | methodName, *params |
+    drv.addMethod( methodName, params )
+  end
+end
+
+def methodDefWithSOAPActionGroupB( drv, soapAction )
+  SOAPBuildersInterop::MethodsGroupB.each do | methodName, params |
+    drv.addMethodWithSOAPAction( methodName, soapAction + methodName, params )
+  end
+end
 
 
 ###
@@ -96,7 +136,7 @@ def doTestBase( drv )
   begin
     var =  drv.echoVoid()
     dumpResult( dumpDev, var, nil )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -105,7 +145,16 @@ def doTestBase( drv )
     arg = "SOAP4R Interoperability Test"
     var = drv.echoString( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoString(EUC encoded)' )
+  begin
+    arg = "Hello (日本語Japanese) こんにちは"
+    var = drv.echoString( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -114,7 +163,7 @@ def doTestBase( drv )
     arg = ' '
     var = drv.echoString( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -123,7 +172,7 @@ def doTestBase( drv )
     arg = "\r\n\t\r\n\t"
     var = drv.echoString( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -132,16 +181,16 @@ def doTestBase( drv )
     arg = StringArray[ "SOAP4R", "Interoperability", "Test" ]
     var = drv.echoStringArray( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
   dumpTitle( dumpDev, 'echoInteger(Int: 2147483647)' )
   begin
     arg = 2147483647
-    var = drv.echoInteger( SOAP::SOAPInt.new( arg ))
+    var = drv.echoInteger( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -150,7 +199,7 @@ def doTestBase( drv )
     arg = -2147483648
     var = drv.echoInteger( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -159,7 +208,7 @@ def doTestBase( drv )
     arg = IntArray[ 1, 2, 3 ]
     var = drv.echoIntegerArray( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -169,7 +218,7 @@ def doTestBase( drv )
     arg.typeNamespace = XSD::Namespace
     var = drv.echoIntegerArray( arg )
     dumpResult( dumpDev, [], var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -178,16 +227,16 @@ def doTestBase( drv )
     arg = 3.14159265358979
     var = drv.echoFloat( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoFloatOutOfValueSpace' )
+  dumpTitle( dumpDev, 'echoFloatScientificNotation' )
   begin
-    arg = 1.0e150
+    arg = 12.34e56
     var = drv.echoFloat( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -199,7 +248,7 @@ def doTestBase( drv )
     arg = FloatArray[ nan, inf, inf_ ]
     var = drv.echoFloatArray( arg )
     dumpResult( dumpDev, arg, var ) << "\n"
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -208,7 +257,7 @@ def doTestBase( drv )
     arg = SOAPStruct.new( 1, 1.1, "a" )
     var = drv.echoStruct( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -220,7 +269,7 @@ def doTestBase( drv )
     arg = [ s1, s2, s3 ]
     var = drv.echoStructArray( arg )
     dumpResult( dumpDev, arg, var ) 
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -232,39 +281,58 @@ def doTestBase( drv )
     arg = SOAPStructArray[ s1, s2, s3 ]
     var = drv.echoStructArray( arg )
     dumpResult( dumpDev, arg, var ) 
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoDate(No TZ)' )
+  dumpTitle( dumpDev, 'echoDate' )
   begin
     t = Time.now.gmtime
     arg = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
     var = drv.echoDate( arg )
     dumpResult( dumpDev, arg.to_s, var.to_s )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoDate(With TZ)' )
+  dumpTitle( dumpDev, 'echoDate(time precision)' )
   begin
-    arg = SOAP::SOAPDateTime.new( '2001-06-16T18:13:40Z-07:00' )
+    arg = SOAP::SOAPDateTime.new( '2001-06-16T18:13:40.0000000000123456789012345678900000000000' )
+    argDate = arg.data
+    var = drv.echoDate( arg )
+    dumpResult( dumpDev, argDate, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoDate(TZ converted)' )
+  begin
+    arg = SOAP::SOAPDateTime.new( '2001-06-16T18:13:40-07:00' )
     argNormalized = Date.new3( 2001, 6, 17, 1, 13, 40 )
     var = drv.echoDate( arg )
     dumpResult( dumpDev, argNormalized.to_s, var.to_s )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoBase64' )
+  dumpTitle( dumpDev, 'echoBase64(SOAP-ENC:base64)' )
+  begin
+    str = "Hello (日本語Japanese) こんにちは"
+    arg = SOAP::SOAPBase64.new( str )
+    var = drv.echoBase64( arg )
+    dumpResult( dumpDev, str, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoBase64(xsd:base64Binary)' )
   begin
     str = "Hello (日本語Japanese) こんにちは"
     arg = SOAP::SOAPBase64.new( str )
     arg.asXSD	# Force xsd:base64Binary instead of soap-enc:base64
-
     var = drv.echoBase64( arg )
     dumpResult( dumpDev, str, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -281,12 +349,22 @@ def doTestGroupB( drv )
 #  drv.setWireDumpFileBase( getWireDumpLogFileBase( '_GroupB' ))
   drv.mappingRegistry = SOAPBuildersInterop::MappingRegistry
 
+  dumpTitle( dumpDev, 'echoStructAsSimpleTypes' )
+  begin
+    arg = SOAPStruct.new( 1, 1.1, "a" )
+    ret, out1, out2 = drv.echoStructAsSimpleTypes( arg )
+    var = SOAPStruct.new( out1, out2, ret )
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
   dumpTitle( dumpDev, 'echoSimpleTypesAsStruct' )
   begin
     arg = SOAPStruct.new( 1, 1.1, "a" )
     var = drv.echoSimpleTypesAsStruct( arg.varString, arg.varInt, arg.varFloat )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -326,7 +404,7 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( arg )
     dumpResult( dumpDev, argNormalized, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -341,35 +419,45 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( SOAP::RPCUtils.ary2md( arg, 2 ))
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echo2DStringArray(sparse)' )
+  begin
+    # ary2md converts Arry ((of Array)...) into M-D anyType Array
+    arg = [
+      [ 'r0c0', nil,    'r0c2' ],
+      [ nil,    'r1c1', 'r1c2' ],
+    ]
+    md = SOAP::RPCUtils.ary2md( arg, 2 )
+    md.sparse = true
+
+    var = drv.echo2DStringArray( md )
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
     dumpException( dumpDev )
   end
 
   dumpTitle( dumpDev, 'echoNestedStruct' )
   begin
     arg = SOAPStructStruct.new( 1, 1.1, "a",
-      SOAPStructStruct.new( 2, 2.2, "b" )
+      SOAPStruct.new( 2, 2.2, "b" )
     )
     var = drv.echoNestedStruct( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
-  dumpTitle( dumpDev, 'echoNestedStruct(deep)' )
+  dumpTitle( dumpDev, 'echoNestedStruct(nil)' )
   begin
-    st1 = SOAPStructStruct.new( 1, 1.1, "a" )
-    st2 = SOAPStructStruct.new( 2, 2.2, "b", st1 )
-    st3 = SOAPStructStruct.new( 3, 3.3, "c", st2 )
-    st4 = SOAPStructStruct.new( 4, 4.4, "d", st3 )
-    st5 = SOAPStructStruct.new( 5, 5.5, "e", st4 )
-    st6 = SOAPStructStruct.new( 6, 6.6, "f", st5 )
-    st7 = SOAPStructStruct.new( 7, 7.7, "g", st6 )
-    st8 = SOAPStructStruct.new( 8, 8.8, "h", st7 )
-    arg = SOAPStructStruct.new( 9, 9.9, "i", st8 )
+    arg = SOAPStructStruct.new( nil, nil, nil,
+      SOAPStruct.new( nil, nil, nil )
+    )
     var = drv.echoNestedStruct( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -378,7 +466,7 @@ def doTestGroupB( drv )
     arg = SOAPArrayStruct.new( 1, 1.1, "a", StringArray[ "2", "2.2", "b" ] )
     var = drv.echoNestedArray( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
 
@@ -387,9 +475,84 @@ def doTestGroupB( drv )
     arg = SOAPArrayStruct.new( 1, 1.1, "a", [ "2", "2.2", "b" ] )
     var = drv.echoNestedArray( arg )
     dumpResult( dumpDev, arg, var )
-  rescue
+  rescue Exception
     dumpException( dumpDev )
   end
+
+  dumpTitle( dumpDev, 'echoBoolean(true)' )
+  begin
+    arg = true
+    var = drv.echoBoolean( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoBoolean(false)' )
+  begin
+    arg = false
+    var = drv.echoBoolean( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+#  dumpTitle( dumpDev, 'echoDouble' )
+#  begin
+#    arg = 3.14159265358979
+#    var = drv.echoDouble( arg )
+#    dumpResult( dumpDev, arg, var )
+#  rescue Exception
+#    dumpException( dumpDev )
+#  end
+
+  dumpTitle( dumpDev, 'echoDecimal(+.123)' )
+  begin
+    arg = "+.12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+    var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
+    normalized = '0' << arg.sub( /^\+/, '' )
+    dumpResult( dumpDev, normalized, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoDecimal(-123.456)' )
+  begin
+    arg = "-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123.456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+    var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+=begin
+  dumpTitle( dumpDev, 'echoXSDDateTime' )
+  begin
+    arg = Date.new3( 1000, 1, 1, 1, 1, 1 )
+    var = drv.echoXSDDateTime( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoXSDDate' )
+  begin
+    arg = Date.new3( 1000, 1, 1 )
+    var = drv.echoXSDDate( SOAP::SOAPDate.new( arg ))
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+
+  dumpTitle( dumpDev, 'echoXSDTime' )
+  begin
+    arg = Time.now.gmtime
+    var = drv.echoXSDTime( SOAP::SOAPTime.new( arg ))
+    dumpResult( dumpDev, SOAP::SOAPTime.new( arg ).to_s, SOAP::SOAPTime.new( var ).to_s )
+  rescue Exception
+    dumpException( dumpDev )
+  end
+=end
 
   dumpDev.close
 end
