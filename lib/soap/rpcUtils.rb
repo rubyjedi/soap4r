@@ -593,7 +593,9 @@ module RPCUtils
 	  elem = SOAPStruct.new( "mapItem" )
 	  elem.add( "key", RPCUtils.obj2soap( key, map ))
 	  elem.add( "value", RPCUtils.obj2soap( value, map ))
-	  param.add( "item#{ i }", elem )
+	  # param.add( "item#{ i }", elem )
+	  # ApacheAxis allows only 'item' here.
+	  param.add( "item", elem )
 	  i += 1
 	end
 	param
