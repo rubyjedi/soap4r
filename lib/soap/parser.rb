@@ -20,6 +20,7 @@ require 'soap/soap'
 require 'soap/charset'
 require 'soap/baseData'
 require 'soap/encoding'
+require 'soap/namespace'
 
 
 module SOAP
@@ -114,6 +115,7 @@ public
       parent = lastFrame.node
       parentEncodingStyle = lastFrame.encodingStyle
     else
+      NS.reset
       ns = NS.new
       parent = ParseFrame::NodeContainer.new( nil )
       parentEncodingStyle = nil
@@ -123,7 +125,7 @@ public
     encodingStyle = getEncodingStyle( ns, attrs )
 
     # Children's encodingStyle is derived from its parent.
-    encodingStyle ||= parentEncodingStyle || EncodingStyleHandler.defaultHandler
+    encodingStyle ||= parentEncodingStyle || EncodingStyleHandler.defaultHandler.uri
 
     node = decodeTag( ns, name, attrs, parent, encodingStyle )
 
@@ -145,9 +147,6 @@ public
 
   def endElement( name )
     lastFrame = @parseStack.pop
-#    if lastFrame.node.node.name != name
-#      raise FormatDecodeError.new( "Open element/close element mismatch: #{ lastFrame.node.node.name } and #{ name }." )
-#    end
     decodeTagEnd( lastFrame.ns, lastFrame.node, lastFrame.encodingStyle )
     @lastNode = lastFrame.node.node
   end
