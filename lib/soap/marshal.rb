@@ -28,8 +28,14 @@ module SOAP
 
 
 module Marshal
+  MarshalMappingRegistry = RPCUtils::MappingRegistry.new
+  MarshalMappingRegistry.set(
+    Time,
+    ::SOAP::SOAPDateTime,
+    ::SOAP::RPCUtils::MappingRegistry::DateTimeFactory
+  )
 
-  def Marshal.marshal( obj, mappingRegistry = RPCUtils::MappingRegistry.new )
+  def Marshal.marshal( obj, mappingRegistry = MarshalMappingRegistry )
     elementName = RPCUtils.getElementNameFromName( obj.type.to_s )
     soapObj = RPCUtils.obj2soap( obj, mappingRegistry )
     body = SOAPBody.new
@@ -37,7 +43,7 @@ module Marshal
     SOAP::Processor.marshal( nil, body )
   end
 
-  def Marshal.unmarshal( str, mappingRegistry = RPCUtils::MappingRegistry.new,
+  def Marshal.unmarshal( str, mappingRegistry = MarshalMappingRegistry,
       parser = Processor.loadParser )
     header, body = SOAP::Processor.unmarshal( str )
     RPCUtils.soap2obj( body.rootNode, mappingRegistry )
