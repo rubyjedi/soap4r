@@ -35,12 +35,17 @@ module Processor
   #
   Encoding = [ nil ]
   def setEncoding( encoding = $KCODE )
-    if encoding == 'EUC' || encoding == 'SJIS'
+    case encoding
+    when 'EUC', 'SJIS'
       begin
 	require 'uconv'
       rescue LoadError
 	encoding = 'NONE'
       end
+    when 'UTF8'
+      # nothing to do
+    else
+      encoding = 'NONE'
     end
     Encoding[ 0 ] = encoding
   end
