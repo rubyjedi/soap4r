@@ -37,7 +37,7 @@ class Driver
 private
 
   def createLog
-    @log = Devel::Logger.new( @logDev )
+    @log = Devel::Logger.new( @logDev ) if @logDev
   end
 
   def createDriver

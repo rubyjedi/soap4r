@@ -3,14 +3,15 @@
 $KCODE = 'SJIS'
 
 require 'soap/driver'
+require 'IICD'; include IICD
 
-require 'IICD'
-include IICD
-
-proxy = ARGV.shift || nil
 server = 'http://www.iwebmethod.net/icd1.0/icd.asmx'
+logger = nil            # Devel::Logger.new( STDERR )
+wireDumpDev = nil       # STDERR
+proxy = ENV[ 'HTTP_PROXY' ] || ENV[ 'http_proxy' ]
 
-icd = SOAP::Driver.new( nil, $0, IICD::InterfaceNS, server, proxy )
+icd = SOAP::Driver.new( logger, $0, IICD::InterfaceNS, server, proxy )
+icd.setWireDumpDev( wireDumpDev )
 icd.setDefaultEncodingStyle( SOAP::EncodingStyleHandlerASPDotNet::Namespace )
 IICD::addMethod( icd )
 
