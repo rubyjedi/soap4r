@@ -24,10 +24,8 @@ module SOAP
 
 class EncodingStyleHandlerLiteral < EncodingStyleHandler
 
-  Namespace = 'http://xml.apache.org/xml-soap/literalxml'
-
   def initialize
-    super( Namespace )
+    super( SOAP::LiteralNamespace )
     @textBuf = ''
   end
 
