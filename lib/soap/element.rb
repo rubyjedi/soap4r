@@ -99,7 +99,15 @@ class SOAPBody < SOAPStruct
     super(nil)
     @elename = EleBodyName
     @encodingstyle = nil
-    add(data.elename.name, data) if data
+    if data
+      if data.respond_to?(:elename)
+        add(data.elename.name, data)
+      else
+        data.to_a.each do |datum|
+          add(datum.elename.name, datum)
+        end
+      end
+    end
     @is_fault = is_fault
   end
 
@@ -129,7 +137,7 @@ class SOAPBody < SOAPStruct
       end
     end
 
-    raise SOAPParser::FormatDecodeError.new('No root element.')
+    raise Parser::FormatDecodeError.new('no root element')
   end
 end
 
