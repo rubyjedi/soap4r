@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/baseData'
 require 'soap/charset'
+require 'soap/rpcUtils'
 
 
 module SOAP
@@ -868,9 +869,6 @@ module RPCUtils
       [ ::SOAP::RPCUtils::SOAPException,
 			::SOAP::SOAPStruct,	TypedStructFactory,
 			[ RubyCustomTypeNamespace, "SOAPException" ]],
-    ]
-
-    UserMapping = [
       [ ::Hash,		::SOAP::SOAPStruct,	HashFactory ],
     ]
 
@@ -880,9 +878,6 @@ module RPCUtils
 	@config[ :allowUntypedStruct ] : true
       @map = Mapping.new( self )
       @map.init( SOAPBaseMapping )
-      UserMapping.each do | mapData |
-	add( *mapData )
-      end
       @defaultFactory =
 	RubytypeFactory_.new( :allowUntypedStruct => @allowUntypedStruct )
       @obj2soapExceptionHandler = nil
