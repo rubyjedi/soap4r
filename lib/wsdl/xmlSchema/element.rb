@@ -88,7 +88,7 @@ class Element < Info
 	    "Cannot parse #{ value } for #{ attr }.")
 	end
       elsif parent.type == 'sequence'
-	@maxoccurs = value
+	@minoccurs = value
       else
 	raise NotImplementedError.new
       end
