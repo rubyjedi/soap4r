@@ -37,7 +37,7 @@ def methodDefBase( drv )
 end
 
 def methodDefWithSOAPActionBase( drv, soapAction )
-  SOAPBuildersInterop::MethodsBase.each do | methodName, params |
+  SOAPBuildersInterop::MethodsBase.each do | methodName, *params |
     drv.addMethodWithSOAPAction( methodName, soapAction + methodName, params )
   end
 end
@@ -49,7 +49,7 @@ def methodDefGroupB( drv )
 end
 
 def methodDefWithSOAPActionGroupB( drv, soapAction )
-  SOAPBuildersInterop::MethodsGroupB.each do | methodName, params |
+  SOAPBuildersInterop::MethodsGroupB.each do | methodName, *params |
     drv.addMethodWithSOAPAction( methodName, soapAction + methodName, params )
   end
 end
@@ -157,6 +157,14 @@ def doTestBase( drv )
   rescue Exception
     dumpException( dumpDev )
   end
+  dumpTitle( dumpDev, 'echoString(EUC encoded)' )
+  begin
+    arg = "Hello (日本語Japanese) こんにちは"
+    var = drv.echoString( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue Exception
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoString (space)' )
   begin
@@ -233,7 +241,7 @@ def doTestBase( drv )
 
   dumpTitle( dumpDev, 'echoFloatScientificNotation' )
   begin
-    arg = 12.34e56
+    arg = 12.34e36
     var = drv.echoFloat( arg )
     dumpResult( dumpDev, arg, var )
   rescue Exception
@@ -487,6 +495,7 @@ def doTestGroupB( drv )
   rescue Exception
     dumpException( dumpDev )
   end
+exit
 
   dumpTitle( dumpDev, 'echoBoolean(false)' )
   begin

@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
 
 require 'soap/cgistub'
 require 'soap/rpcUtils'
@@ -22,8 +23,10 @@ class InteropApp < SOAP::CGIStub
     end
   end
   
+  # In echoVoid, 'retval' is not defined.  So nothing will be returned.
   def echoVoid
-    SOAP::RPCUtils::SOAPVoid.new
+    # SOAP::RPCUtils::SOAPVoid.new
+    return "Hello"
   end
 
   def echoString( inputString )
