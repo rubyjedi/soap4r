@@ -16,7 +16,7 @@ module Header
 
 class SimpleHandler < SOAP::Header::Handler
   def initialize(name)
-    @name = name
+    super(name)
   end
 
   # Should return a Hash or nil.
