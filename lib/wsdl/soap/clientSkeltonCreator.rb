@@ -66,7 +66,7 @@ __EOD__
   end
 
   def dump_operation(operation)
-    name = operation.name.name
+    name = operation.name
     input = operation.input
     "puts obj.#{ create_method_name(name) }#{ dump_inputparam(input) }"
   end
