@@ -136,7 +136,7 @@ public
   end
 
   def self.assign_ns(attrs, ns, namespace, tag = nil)
-    unless ns.assigned?(namespace)
+    if namespace and !ns.assigned?(namespace)
       tag = ns.assign(namespace, tag)
       attrs['xmlns:' << tag] = namespace
     end
