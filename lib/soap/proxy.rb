@@ -31,7 +31,8 @@ class SOAPProxy
   public
 
   attr_reader :namespace
-  attr_accessor :soapAction, :allowUnqualifiedElement, :defaultEncodingStyle
+  attr_accessor :soapAction
+  attr_accessor :allowUnqualifiedElement, :defaultEncodingStyle
 
   def initialize( namespace, streamHandler, soapAction = nil )
     @namespace = namespace
@@ -40,7 +41,6 @@ class SOAPProxy
     @method = {}
     @allowUnqualifiedElement = false
     @defaultEncodingStyle = nil
-    initParser
   end
 
   class Request
@@ -109,8 +109,6 @@ class SOAPProxy
     data = invoke( headers, req.method, req.method.soapAction || @soapAction )
 
     receiveString = data.receiveString
-#    receiveString.gsub!( "\r\n", "\n" )
-#    receiveString.gsub!( "\r", "\n" )
 
     if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ data.receiveContentType
       raise StreamError.new( "Illegal content-type: #{ data.receiveContentType }" )
@@ -119,7 +117,6 @@ class SOAPProxy
     receiveCharset.sub!( /^(['"])(.*)\1$/ ) { $2 } if receiveCharset
 
     # StreamHandler returns receiveCharset to use.
-    parser = Processor.getDefaultParser
     kcodeAdjusted = false
     charsetStrBackup = nil
     if receiveCharset
@@ -127,7 +124,7 @@ class SOAPProxy
       charsetStr = Charset.getCharsetStr( receiveCharset )
       Charset.setXMLInstanceEncoding( charsetStr )
 
-      if parser.adjustKCode
+      if Processor.defaultParserFactory.adjustKCode
 	charsetStrBackup = $KCODE.to_s.dup
 	$KCODE = charsetStr
 	kcodeAdjusted = true
@@ -137,11 +134,7 @@ class SOAPProxy
     header = body = nil
     begin
       # SOAP tree parsing.
-      opt = {}
-      if @defaultEncodingStyle
-	opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
-      end
-      header, body = Processor.unmarshal( receiveString, opt )
+      header, body = Processor.unmarshal( receiveString, getOpt )
     ensure
       if kcodeAdjusted
        	$KCODE = charsetStrBackup
@@ -165,11 +158,7 @@ class SOAPProxy
     body = SOAPBody.new( body )
 
     # Marshal.
-    opt = {}
-    if @defaultEncodingStyle
-      opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
-    end
-    marshalledString = Processor.marshal( header, body, opt )
+    marshalledString = Processor.marshal( header, body, getOpt )
 
     return marshalledString
   end
@@ -180,12 +169,15 @@ class SOAPProxy
     end
   end
 
-private
-
-  def initParser
+  def getOpt
     opt = {}
-    opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
-    Processor.setDefaultParser( opt )
+    if @defaultEncodingStyle
+      opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
+    end
+    if @allowUnqualifiedElement
+      opt[ 'allowUnqualifiedElement' ] = true
+    end
+    opt
   end
 end
 
