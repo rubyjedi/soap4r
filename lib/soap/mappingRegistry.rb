@@ -48,8 +48,7 @@ module RPCServerException; end
 
 module RPCUtils
   # Inner class to pass an exception.
-  class SOAPException
-    include Marshallable
+  class SOAPException; include Marshallable
     attr_reader :exceptionTypeName, :message, :backtrace
     def initialize( e )
       @exceptionTypeName = RPCUtils.getElementNameFromName( e.type.to_s )
@@ -371,7 +370,86 @@ module RPCUtils
     end
   end
 
-  class UnknownKlassFactory_ < Factory
+  class RubytypeFactory_ < Factory
+    TYPE_REGEXP = 'Regexp'
+    TYPE_CLASS = 'Class'
+    TYPE_MODULE = 'Module'
+    TYPE_SYMBOL = 'Symbol'
+
+    def obj2soap( soapKlass, obj, info, map )
+      case obj
+      when Regexp
+	typeName = TYPE_REGEXP
+	param = SOAPStruct.new( typeName  )
+	markMarshalledObj( obj, param )
+	param.typeNamespace = RubyTypeNamespace
+	param.add( 'source', SOAPBase64.new( obj.source ))
+	if obj.respond_to?( 'options' )
+	  # Regexp#options is from Ruby/1.7
+	  param.add( 'options', SOAPString.new( obj.options ))
+	end
+	if obj.kcode
+	  # Why Regexp#kcode returns lower case?  Deprecated?
+	  param.add( 'kcode', SOAPString.new( obj.kcode.upcase ))
+	end
+	param
+      when Class
+	if obj.name.empty?
+	  raise FactoryError.new( "Can't dump anonymous class #{ obj }." )
+	end
+	typeName = TYPE_CLASS
+	param = SOAPStruct.new( typeName  )
+	markMarshalledObj( obj, param )
+	param.typeNamespace = RubyTypeNamespace
+	param.add( 'name', SOAPString.new( obj.name ))
+	param
+      when Module
+	if obj.name.empty?
+	  raise FactoryError.new( "Can't dump anonymous module #{ obj }." )
+	end
+	typeName = TYPE_MODULE
+	param = SOAPStruct.new( typeName  )
+	markMarshalledObj( obj, param )
+	param.typeNamespace = RubyTypeNamespace
+	param.add( 'name', SOAPString.new( obj.name ))
+	param
+      when Symbol
+	typeName = TYPE_SYMBOL
+	param = SOAPStruct.new( typeName  )
+	markMarshalledObj( obj, param )
+	param.typeNamespace = RubyTypeNamespace
+	param.add( 'id', SOAPString.new( obj.id2name ))
+	param
+      else
+	nil
+      end
+    end
+
+    def soap2obj( objKlass, node, info, map )
+      if node.typeNamespace != RubyTypeNamespace
+	raise FactoryError.new( "#{ node } is not a Rubytype." )
+      end
+
+      case node.typeName
+      when TYPE_REGEXP
+	source = node[ 'source' ].toString
+	options = node.include?( 'options' ) ? node[ 'options' ].data : nil
+	kcode = node.include?( 'kcode' ) ? node[ 'kcode' ].data : nil
+	kcode ? Regexp.new( source, options, kcode ) :
+	  Regexp.new( source, options )
+      when TYPE_CLASS
+	RPCUtils.getClassFromName( node[ 'name' ].data )
+      when TYPE_MODULE
+	RPCUtils.getClassFromName( node[ 'name' ].data )
+      when TYPE_SYMBOL
+	node[ 'id' ].data.intern
+      else
+	raise FactoryError.new( "Unknown Rubytype #{ node }." )
+      end
+    end
+  end
+
+  class ObjectFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
       typeName = getTypeName( obj.type ) || RPCUtils.getElementNameFromName( obj.type.to_s )
       param = SOAPStruct.new( typeName  )
@@ -524,7 +602,8 @@ module RPCUtils
     CompoundtypeFactory = CompoundtypeFactory_.new
     Base64Factory = Base64Factory_.new
     HashFactory = HashFactory_.new
-    UnknownKlassFactory = UnknownKlassFactory_.new
+    RubytypeFactory = RubytypeFactory_.new
+    ObjectFactory = ObjectFactory_.new
     TypedArrayFactory = TypedArrayFactory_.new
     TypedStructFactory = TypedStructFactory_.new
 
@@ -545,11 +624,23 @@ module RPCUtils
       [ ::String,	::SOAP::SOAPBase64,	Base64Factory ],
       [ ::String,	::SOAP::SOAPHexBinary,	Base64Factory ],
       [ ::String,	::SOAP::SOAPDecimal,	BasetypeFactory ],
+      [ ::Regexp,	::SOAP::SOAPStruct,	RubytypeFactory ],
+      [ ::Class,	::SOAP::SOAPStruct,	RubytypeFactory ],
+      [ ::Module,	::SOAP::SOAPStruct,	RubytypeFactory ],
+      [ ::Symbol,	::SOAP::SOAPStruct,	RubytypeFactory ],
       [ ::Array,	::SOAP::SOAPArray,	CompoundtypeFactory ],
       [ ::SOAP::RPCUtils::SOAPException,
 			::SOAP::SOAPStruct,	TypedStructFactory,
 			[ RubyCustomTypeNamespace, "SOAPException" ]],
       [ ::Struct,	::SOAP::SOAPStruct,	CompoundtypeFactory ],
+      [ ::Object,	::SOAP::SOAPStruct,	ObjectFactory ],
+
+      ## Classes which can be dumped by Ruby's marshal.
+      # NilClass, TrueClass, FalseClass, Fixnum, Float, Bignum, String, Regexp,
+      # Array, Hash, Struct, Object, Class, Module, Symbol
+
+      ## Rest
+      # Regexp, Class, Module, Symbol
     ]
 
     UserMapping = [
@@ -562,7 +653,7 @@ module RPCUtils
       UserMapping.each do | mapData |
 	add( *mapData )
       end
-      @defaultFactory = UnknownKlassFactory
+      @defaultFactory = ObjectFactory
     end
 
     def add( objKlass, soapKlass, factory, info = nil )
