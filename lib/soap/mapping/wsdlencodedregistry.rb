@@ -1,5 +1,5 @@
 # SOAP4R - WSDL encoded mapping registry.
-# Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000-2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -34,14 +34,14 @@ class WSDLEncodedRegistry
 
   def obj2soap(obj, type_qname = nil)
     soap_obj = nil
-    if obj.nil?
+    if type = @definedtypes[type_qname]
+      soap_obj = obj2type(obj, type)
+    elsif obj.nil?
       soap_obj = SOAPNil.new
     elsif type_qname.nil? or type_qname == XSD::AnyTypeName
       soap_obj = @rubytype_factory.obj2soap(nil, obj, nil, self)
     elsif obj.is_a?(XSD::NSDBase)
       soap_obj = soap2soap(obj, type_qname)
-    elsif type = @definedtypes[type_qname]
-      soap_obj = obj2type(obj, type)
     elsif (type = TypeMap[type_qname])
       soap_obj = base2soap(obj, type)
     end
@@ -52,11 +52,11 @@ class WSDLEncodedRegistry
       }
       return soap_obj if soap_obj
     end
-    raise MappingError.new("Cannot map #{ obj.class.name } to SOAP/OM.")
+    raise MappingError.new("cannot map #{obj.class.name} to SOAP/OM")
   end
 
   def soap2obj(node)
-    raise RuntimeError.new("#{ self } is for obj2soap only.")
+    raise RuntimeError.new("#{self} is for obj2soap only")
   end
 
 private
@@ -93,7 +93,7 @@ private
   def simple2soap(obj, type)
     o = base2soap(obj, TypeMap[type.base])
     if type.restriction.enumeration.empty?
-      STDERR.puts("#{type.name}: simpleType which is not enum type not supported.")
+      STDERR.puts("#{type.name}: simpleType which is not enum type not supported")
       return o
     end
     type.check_lexical_format(obj)
@@ -109,7 +109,7 @@ private
     when :TYPE_MAP
       map2soap(obj, type.name, type)
     else
-      raise MappingError.new("Unknown compound type: #{ type.compoundtype }")
+      raise MappingError.new("unknown compound type: #{type.compoundtype}")
     end
   end
 
