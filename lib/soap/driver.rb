@@ -43,7 +43,8 @@ public
     @logIdPrefix = "<#{ @logId }> "
     log( SEV_INFO ) { 'initialize: initializing SOAP driver...' }
     @namespace = namespace
-    @handler = HTTPPostStreamHandler.new( endPoint, httpProxy )
+    @handler = HTTPPostStreamHandler.new( endPoint, httpProxy,
+      Charset.getEncodingLabel )
     @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
     @proxy.allowUnqualifiedElement = true
     @mappingRegistry = nil
@@ -181,7 +182,7 @@ private
   end
 
   def log( sev )
-    @log.add( sev, nil, self.type ) { @logIdPrefix + yield } if @log
+    @log.add( sev, nil, self.class ) { @logIdPrefix + yield } if @log
   end
 end
 
