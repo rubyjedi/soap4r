@@ -341,7 +341,8 @@ private
 
   def decode_tag_by_wsdl(ns, elename, typestr, parent, arytypestr, extraattr)
     if parent.class == SOAPBody
-      type = @decode_typemap[elename]
+      # Unqualified name is allowed here.
+      type = @decode_typemap[elename] || @decode_typemap.find_name(elename.name)
       unless type
 	raise EncodingStyleError.new("Unknown operation '#{ elename }'.")
       end
