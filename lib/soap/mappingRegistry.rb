@@ -207,9 +207,6 @@ module RPCUtils
       soapObj = nil
       begin
 	if soapKlass <= XSD::XSDString
-          unless obj.class == String
-            return nil
-          end
 	  if Charset.isCES( obj, $KCODE )
 	    encoded = Charset.codeConv( obj, $KCODE, Charset.getEncoding )
 	    soapObj = soapKlass.new( encoded )
@@ -235,10 +232,7 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
-      if node.extraAttrs.has_key?( RubyTypeName )
-        return false
-      end
-      obj = if objKlass <= ::String
+      obj = if objKlass == ::String
 	  Charset.codeConv( node.data, Charset.getEncoding, $KCODE )
 	else
 	  node.data
@@ -263,10 +257,6 @@ module RPCUtils
     def soap2obj( objKlass, node, info, map )
       obj = nil
       if objKlass == Time
-	if node.data.sec_fraction.nonzero?
-	  # Time can have usec but it may not have sufficient precision.
-	  return false
-	end
 	obj = node.to_time
 	if obj.nil?
 	  # Is out of range as a Time
@@ -316,9 +306,6 @@ module RPCUtils
 
     def soap2obj( objKlass, node, info, map )
       klass = Array
-      if ( rubyType = node.extraAttrs[ RubyTypeName ] )
-        klass = RPCUtils.getClassFromName( rubyType )
-      end
       obj = createEmptyObject( klass )
       markUnmarshalledObj( node, obj )
       node.soap2array( obj ) do | elem |
@@ -1052,11 +1039,15 @@ module RPCUtils
     end
 
     def soap2obj( klass, node )
-      conv, obj = @map.soap2obj( klass, node )
-      return obj if conv
-
-      conv, obj = @defaultFactory.soap2obj( klass, node, nil, self )
-      return obj if conv
+      if node.extraAttrs.has_key?( RubyTypeName )
+        conv, obj = @defaultFactory.soap2obj( klass, node, nil, self )
+        return obj if conv
+      else
+        conv, obj = @map.soap2obj( klass, node )
+        return obj if conv
+        conv, obj = @defaultFactory.soap2obj( klass, node, nil, self )
+        return obj if conv
+      end
 
       if @soap2objExceptionHandler
 	begin
