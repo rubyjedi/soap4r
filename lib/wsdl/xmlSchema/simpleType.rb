@@ -17,13 +17,23 @@ module XMLSchema
 class SimpleType < Info
   attr_accessor :name
   attr_reader :derivetype
-  attr_reader :base
+  attr_reader :restriction
+
+  def base
+    if @restriction
+      @restriction.base
+    elsif @extension
+      @extension.base
+    else
+      nil
+    end
+  end
 
   def initialize(name = nil)
     super()
     @name = name
     @derivetype = nil
-    @base = nil
+    @restriction = nil
   end
 
   def targetnamespace
@@ -33,30 +43,16 @@ class SimpleType < Info
   def parse_element(element)
     case element
     when RestrictionName
-      unless @derivetype.nil?
-	raise Parser::ElementConstraintError.new("illegal element: #{element}")
-      end
+      @restriction = SimpleRestriction.new
       @derivetype = element.name
-      self
-    when EnumerationName
-      if @derivetype.nil?
-	raise Parser::ElementConstraintError.new("base attr not found.")
-      end
-      STDERR.puts("Restriction of basetype with simpleType definition is ignored for now.")
-      nil
+      @restriction
     end
   end
 
   def parse_attr(attr, value)
     case attr
     when NameAttrName
-      return nil unless @derivetype.nil?
       @name = XSD::QName.new(targetnamespace, value)
-    when BaseAttrName
-      return nil if @derivetype.nil?
-      @base = value
-    else
-      nil
     end
   end
 end
