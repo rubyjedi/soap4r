@@ -33,9 +33,9 @@ module SOAPModuleUtils
 
 public
 
-  def decode( ns, entity )
+  def decode( ns, name )
     d = self.new
-    d.namespace, d.name = ns.parse( entity.name )
+    d.namespace, d.name = ns.parse( name )
     d
   end
 end
@@ -218,8 +218,8 @@ public
     end
   end
 
-  def self.decode( ns, entity, refId )
-    d = super( ns, entity )
+  def self.decode( ns, name, refId )
+    d = super( ns, name )
     d.refId = refId
     d
   end
@@ -410,10 +410,10 @@ public
     Node.initializeWithChildren( name, attrs, children )
   end
 
-  def self.decode( ns, entity, typeNamespace, typeName )
+  def self.decode( ns, name, typeNamespace, typeName )
     s = SOAPStruct.new( typeName )
     s.typeNamespace = typeNamespace
-    s.namespace, s.name = ns.parse( entity.name )
+    s.namespace, s.name = ns.parse( name )
     s
   end
 
@@ -698,7 +698,7 @@ private
 public
 
   # DEBT: Check if getArrayType returns non-nil before invoking this method.
-  def self.decode( ns, entity, typeNamespace, typeNameString )
+  def self.decode( ns, name, typeNamespace, typeNameString )
     typeName, nofArray = parseType( typeNameString )
     o = SOAPArray.new( typeName, nofArray.count( ',' ) + 1 )
 
@@ -718,7 +718,7 @@ public
     end
 
     o.typeNamespace = typeNamespace
-    o.namespace, o.name = ns.parse( entity.name )
+    o.namespace, o.name = ns.parse( name )
     o
   end
 
