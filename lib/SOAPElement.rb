@@ -233,7 +233,7 @@ class SOAPBody < SOAPCompoundBase
 
   public
 
-  def self.decode( ns, elem, method )
+  def self.decode( ns, elem )
     data = nil
     isFault = false
     result = []
@@ -334,6 +334,10 @@ class SOAPHeader < SOAPArray
     Element.new( ns.name( EnvelopeNamespace, 'Header' ), nil, children )
   end
 
+  def length
+    @data[ 0 ].length
+  end
+
   # Module function
 
   public
@@ -373,8 +377,6 @@ class SOAPEnvelope < SOAPCompoundBase
       end
     }
 
-#    attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), EncodingNamespace ))
-
     contents = []
     contents.push( @header.encode( ns )) if @header and @header.length > 0
     contents.push( @body.encode( ns ))
@@ -386,7 +388,7 @@ class SOAPEnvelope < SOAPCompoundBase
 
   public
 
-  def self.decode( ns, doc, method )
+  def self.decode( ns, doc )
     if ( doc.childNodes.size != 1 )
       raise FormatDecodeError.new( 'Envelope must be a child.' )
     end
@@ -411,7 +413,7 @@ class SOAPEnvelope < SOAPCompoundBase
 	header = SOAPHeader.decode( childNS, child )
       elsif ( childNS.compare( EnvelopeNamespace, 'Body', name ))
 	raise FormatDecodeError.new( 'Duplicated Body in Envelope' ) if body
-	body = SOAPBody.decode( childNS, child, method )
+	body = SOAPBody.decode( childNS, child )
       else
 	raise FormatDecodeError.new( 'Unknown scoping element: ' << name )
       end
