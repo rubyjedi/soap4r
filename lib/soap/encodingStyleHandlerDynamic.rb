@@ -46,13 +46,12 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 	'[' << parent.position.join( ',' ) << ']'
     end
 
-    name = nil
-    if qualified and data.elementName.namespace
-      assignNamespace( attrs, ns, data.elementName.namespace )
-      name = ns.name( data.elementName )
-    else
-      name = data.elementName.name
-    end
+    name = if qualified and data.elementName.namespace
+        SOAPGenerator.assignNamespace( attrs, ns, data.elementName.namespace )
+        ns.name( data.elementName )
+      else
+        data.elementName.name
+      end
 
     case data
     when SOAPReference
@@ -297,23 +296,27 @@ private
     attrs = {}
 
     if !parent || parent.encodingStyle != EncodingNamespace
-      assignNamespace( attrs, ns, EnvelopeNamespace )
-      assignNamespace( attrs, ns, EncodingNamespace )
-      attrs[ ns.name( AttrEncodingStyleName ) ] = EncodingNamespace
+      if @generateEncodeType
+        SOAPGenerator.assignNamespace( attrs, ns, EnvelopeNamespace )
+        SOAPGenerator.assignNamespace( attrs, ns, EncodingNamespace )
+        attrs[ ns.name( AttrEncodingStyleName ) ] = EncodingNamespace
+      end
       data.encodingStyle = EncodingNamespace
     end
 
     if data.is_a?( SOAPNil )
-      assignNamespace( attrs, ns, XSD::InstanceNamespace )
+      if @generateEncodeType
+        SOAPGenerator.assignNamespace( attrs, ns, XSD::InstanceNamespace )
+      end
       attrs[ ns.name( XSD::AttrNilName ) ] = XSD::NilValue
     elsif @generateEncodeType
-      assignNamespace( attrs, ns, XSD::InstanceNamespace )
+      SOAPGenerator.assignNamespace( attrs, ns, XSD::InstanceNamespace )
       if data.type.namespace
-        assignNamespace( attrs, ns, data.type.namespace )
+        SOAPGenerator.assignNamespace( attrs, ns, data.type.namespace )
       end
       if data.is_a?( SOAPArray )
 	if data.arrayType.namespace
-          assignNamespace( attrs, ns, data.arrayType.namespace )
+          SOAPGenerator.assignNamespace( attrs, ns, data.arrayType.namespace )
    	end
 	attrs[ ns.name( AttrArrayTypeName ) ] =
 	  ns.name( arrayTypeValue( ns, data ))
@@ -329,7 +332,7 @@ private
 	attrs[ ns.name( XSD::AttrTypeName ) ] = ns.name( data.type )
       end
       data.extraAttrs.each do | key, value |
-        assignNamespace( attrs, ns, key.namespace )
+        SOAPGenerator.assignNamespace( attrs, ns, key.namespace )
         attrs[ ns.name( key ) ] = value       # ns.name( value ) ?
       end
     end
@@ -338,13 +341,6 @@ private
       attrs[ 'id' ] = data.id
     end
     attrs
-  end
-
-  def assignNamespace( attrs, ns, namespace )
-    unless ns.assigned?( namespace )
-      tag = ns.assign( namespace )
-      attrs[ 'xmlns:' << tag ] = namespace
-    end
   end
 
   def decodeTagByWSDL( ns, elementName, typeStr, parent, arrayTypeStr, extraAttrs )

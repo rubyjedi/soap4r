@@ -38,16 +38,12 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
   #
   def encodeData( buf, ns, qualified, data, parent )
     attrs = {}
-    name = nil
-    if qualified and data.elementName.namespace
-      if !ns.assigned?( data.elementName.namespace )
-        tag = ns.assign( data.elementName.namespace )
-        attrs[ 'xmlns:' << tag ] = data.elementName.namespace
+    name = if qualified and data.elementName.namespace
+        SOAPGenerator.assignNamespace( attrs, ns, data.elementName.namespace )
+        ns.name( data.elementName )
+      else
+        data.elementName.name
       end
-      name = ns.name( data.elementName )
-    else
-      name = data.elementName.name
-    end
 
     case data
     when SOAPRawString
