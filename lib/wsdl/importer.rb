@@ -41,7 +41,12 @@ class Importer
       content = web_client.new(@proxy, "WSDL4R").get_content(location)
     end
     opt = {}	# charset?
-    WSDL::Parser.new(opt).parse(content)
+    begin
+      WSDL::Parser.new(opt).parse(content)
+    rescue WSDL::Parser::ParseError
+      require 'wsdl/xmlSchema/parser'
+      WSDL::XMLSchema::Parser.new(opt).parse(content)
+    end
   end
 
 private
