@@ -35,25 +35,19 @@ class WSDLRegistry
     @complextypes = complextypes
     @config = config
     @excn_handler_obj2soap = nil
+    # For mapping AnyType element.
+    @rubytype_factory = RubytypeFactory.new(
+      :allow_untyped_struct => true,
+      :allow_original_mapping => true
+    )
   end
 
   def obj2soap(klass, obj, type_qname)
     soap_obj = nil
     if obj.nil?
       soap_obj = SOAPNil.new
-    elsif obj.is_a?(SOAPBasetype)
-      soap_obj = obj
-    elsif obj.is_a?(SOAPStruct) && (type = @complextypes[obj.type])
-      soap_obj = obj
-      mark_marshalled_obj(obj, soap_obj)
-      elements2soap(obj, soap_obj, type.content.elements)
-    elsif obj.is_a?(SOAPArray) && (type = @complextypes[obj.type])
-      contenttype = type.child_type
-      soap_obj = obj
-      mark_marshalled_obj(obj, soap_obj)
-      obj.replace do |ele|
-        Mapping._obj2soap(ele, self, contenttype)
-      end
+    elsif obj.is_a?(NSDBase)
+      soap_obj = soap2soap(obj, type_qname)
     elsif (type = @complextypes[type_qname])
       case type.compoundtype
       when :TYPE_STRUCT
@@ -63,6 +57,8 @@ class WSDLRegistry
       end
     elsif (type = TypeMap[type_qname])
       soap_obj = base2soap(obj, type)
+    elsif type_qname == XSD::AnyTypeName
+      soap_obj = @rubytype_factory.obj2soap(nil, obj, nil, nil)
     end
     return soap_obj if soap_obj
 
@@ -86,6 +82,27 @@ class WSDLRegistry
 
 private
 
+  def soap2soap(obj, type_qname)
+    if obj.is_a?(SOAPBasetype)
+      obj
+    elsif obj.is_a?(SOAPStruct) && (type = @complextypes[type_qname])
+      soap_obj = obj
+      mark_marshalled_obj(obj, soap_obj)
+      elements2soap(obj, soap_obj, type.content.elements)
+      soap_obj
+    elsif obj.is_a?(SOAPArray) && (type = @complextypes[type_qname])
+      soap_obj = obj
+      contenttype = type.child_type
+      mark_marshalled_obj(obj, soap_obj)
+      obj.replace do |ele|
+	Mapping._obj2soap(ele, self, contenttype)
+      end
+      soap_obj
+    else
+      nil
+    end
+  end
+
   def base2soap(obj, type)
     soap_obj = nil
     if type <= XSD::XSDString
@@ -105,7 +122,7 @@ private
     soap_obj
   end
 
-  def array2soap(obj, soap_obj, type)
+  def array2soap(obj, type_qname, type)
     contenttype = type.child_type
     soap_obj = SOAPArray.new(ValueArrayName, 1, contenttype)
     mark_marshalled_obj(obj, soap_obj)

@@ -316,7 +316,7 @@ class Registry
     @rubytype_factory = RubytypeFactory.new(
       :allow_untyped_struct => allow_untyped_struct,
       :allow_original_mapping => allow_original_mapping
-   )
+    )
     @default_factory = @rubytype_factory
     @excn_handler_obj2soap = nil
     @excn_handler_soap2obj = nil
