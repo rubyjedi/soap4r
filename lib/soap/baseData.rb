@@ -588,6 +588,10 @@ public
 	  SOAPArray.getAtype( value.type.name, @rank ))
       end
 
+      unless value.type
+	value.type = @type
+      end
+
 #      unless @type == XSD::AnyType
 #	value.type = @type
 #      end
@@ -756,35 +760,6 @@ private
     return $1, $2
   end
 end
-
-
-TypeMap = {
-  XSD::XSDAnyType::Type => SOAPAnyType,
-  XSD::XSDString::Type => SOAPString,
-  XSD::XSDBoolean::Type => SOAPBoolean,
-  XSD::XSDDecimal::Type => SOAPDecimal,
-  XSD::XSDFloat::Type => SOAPFloat,
-  XSD::XSDDouble::Type => SOAPDouble,
-  XSD::XSDDuration::Type => SOAPDuration,
-  XSD::XSDDateTime::Type => SOAPDateTime,
-  XSD::XSDTime::Type => SOAPTime,
-  XSD::XSDDate::Type => SOAPDate,
-  XSD::XSDGYearMonth::Type => SOAPGYearMonth,
-  XSD::XSDGYear::Type => SOAPGYear,
-  XSD::XSDGMonthDay::Type => SOAPGMonthDay,
-  XSD::XSDGDay::Type => SOAPGDay,
-  XSD::XSDGMonth::Type => SOAPGMonth,
-  XSD::XSDHexBinary::Type => SOAPHexBinary,
-  XSD::XSDBase64Binary::Type => SOAPBase64,
-  XSD::XSDAnyURI::Type => SOAPAnyURI,
-  XSD::XSDQName::Type => SOAPQName,
-  XSD::XSDInteger::Type => SOAPInteger,
-  XSD::XSDLong::Type => SOAPLong,
-  XSD::XSDInt::Type => SOAPInt,
-  XSD::XSDShort::Type => SOAPShort,
-
-  SOAP::SOAPBase64::Type => SOAPBase64,
-}
 
 
 require 'soap/typeMap'
