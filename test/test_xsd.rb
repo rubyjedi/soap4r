@@ -1,5 +1,5 @@
 require 'test/unit'
-require 'soap/XMLSchemaDatatypes'
+require 'xsd/datatypes'
 
 class TestXSD < Test::Unit::TestCase
   def setup
@@ -700,8 +700,8 @@ class TestXSD2 < Test::Unit::TestCase
 
     targets = [
       "abcdef",
-      %q(‚È‚Ð),
-      "\0",
+      "\xe3\x81\xaa\xe3\x81\xb2",
+      %Q(\0),
       "",
     ]
     targets.each do |str|
@@ -737,8 +737,8 @@ class TestXSD2 < Test::Unit::TestCase
 
     targets = [
       "abcdef",
-      "‚È‚Ð",
-      "\0",
+      "\xe3\x81\xaa\xe3\x81\xb2",
+      %Q(\0),
       "",
     ]
     targets.each do |str|
