@@ -13,7 +13,7 @@ require 'xsd/charset'
 module SOAP
 
 
-Version = '1.5.2'
+Version = '1.5.4'
 PropertyName = 'soap/property'
 
 EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
