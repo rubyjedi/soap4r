@@ -1,6 +1,6 @@
 require 'test/unit'
 require 'wsdl/parser'
-module WSDL; module SOAP; module WSDL2Ruby
+module WSDL; module SOAP
 
 
 class TestWSDL2Ruby < Test::Unit::TestCase
@@ -46,4 +46,4 @@ private
 end
 
 
-end; end; end
+end; end

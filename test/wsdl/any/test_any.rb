@@ -10,7 +10,17 @@ class TestAny < Test::Unit::TestCase
   end
 
   def test_any
-    system("cd #{DIR} && ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("any.wsdl")} --type client --type server --force --quiet")
+    gen = WSDL::SOAP::WSDL2Ruby.new
+    gen.location = pathname("any.wsdl")
+    gen.basedir = DIR
+    gen.logger.level = Logger::FATAL
+    gen.opt['classdef'] = nil
+    gen.opt['driver'] = nil
+    gen.opt['client_skelton'] = nil
+    gen.opt['servant_skelton'] = nil
+    gen.opt['standalone_server_stub'] = nil
+    gen.opt['force'] = true
+    gen.run
     compare("expectedDriver.rb", "echoDriver.rb")
     compare("expectedEcho.rb", "echo.rb")
     compare("expectedService.rb", "echo_service.rb")

@@ -75,7 +75,13 @@ class TestRef < Test::Unit::TestCase
   end
 
   def test_classdef
-    system("cd #{DIR} && ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("product.wsdl")} --force --quiet")
+    gen = WSDL::SOAP::WSDL2Ruby.new
+    gen.location = pathname("product.wsdl")
+    gen.basedir = DIR
+    gen.logger.level = Logger::FATAL
+    gen.opt['classdef'] = nil
+    gen.opt['force'] = true
+    gen.run
     compare("expectedProduct.rb", "product.rb")
     File.unlink(pathname('product.rb'))
   end

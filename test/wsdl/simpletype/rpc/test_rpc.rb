@@ -1,5 +1,8 @@
 require 'test/unit'
 require 'wsdl/parser'
+require 'wsdl/soap/wsdl2ruby'
+
+
 module WSDL; module SimpleType
 
 
@@ -10,7 +13,17 @@ class TestRPC < Test::Unit::TestCase
   end
 
   def test_rpc
-    system("cd #{DIR} && ruby #{pathname("../../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("rpc.wsdl")} --type client --type server --force --quiet")
+    gen = WSDL::SOAP::WSDL2Ruby.new
+    gen.location = pathname("rpc.wsdl")
+    gen.basedir = DIR
+    gen.logger.level = Logger::FATAL
+    gen.opt['classdef'] = nil
+    gen.opt['driver'] = nil
+    gen.opt['client_skelton'] = nil
+    gen.opt['servant_skelton'] = nil
+    gen.opt['standalone_server_stub'] = nil
+    gen.opt['force'] = true
+    gen.run
     compare("expectedEchoVersion.rb", "echo_version.rb")
     compare("expectedDriver.rb", "echo_versionDriver.rb")
     compare("expectedService.rb", "echo_version_service.rb")
