@@ -11,31 +11,31 @@ class GoogleSearchPort
     GoogleSearchResult,
     ::SOAP::SOAPStruct,
     ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "urn:GoogleSearch", "GoogleSearchResult" ]
+    [ XSD::QName.new( "urn:GoogleSearch", "GoogleSearchResult" ) ]
   )
   MappingRegistry.set(
     ResultElementArray,
     ::SOAP::SOAPArray,
     ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "urn:GoogleSearch", "ResultElement" ]
+    [ XSD::QName.new( "urn:GoogleSearch", "ResultElement" ) ]
   )
   MappingRegistry.set(
     DirectoryCategoryArray,
     ::SOAP::SOAPArray,
     ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "urn:GoogleSearch", "DirectoryCategory" ]
+    [ XSD::QName.new( "urn:GoogleSearch", "DirectoryCategory" ) ]
   )
   MappingRegistry.set(
     ResultElement,
     ::SOAP::SOAPStruct,
     ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "urn:GoogleSearch", "ResultElement" ]
+    [ XSD::QName.new( "urn:GoogleSearch", "ResultElement" ) ]
   )
   MappingRegistry.set(
     DirectoryCategory,
     ::SOAP::SOAPStruct,
     ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "urn:GoogleSearch", "DirectoryCategory" ]
+    [ XSD::QName.new( "urn:GoogleSearch", "DirectoryCategory" ) ]
   )
   
   Methods = [
@@ -45,7 +45,7 @@ class GoogleSearchPort
       [ "in", "url",
         [ SOAP::SOAPString ] ],
       [ "retval", "return",
-        [ XSDBase64Binary ] ] ],
+        [ SOAP::SOAPBase64 ] ] ],
       "urn:GoogleSearchAction", "urn:GoogleSearch" ],
     [ "doSpellingSuggestion", "doSpellingSuggestion", [
       [ "in", "key",
