@@ -35,8 +35,24 @@ class SOAPParser
     false
   end
 
-private
+  @@parserFactory = nil
+  class << self
+  public
+    def factory
+      @@parserFactory
+    end
 
+    def createParser( opt = {} )
+      @@parserFactory.new( opt )
+    end
+
+  private
+    def setFactory( factory )
+      @@parserFactory = factory
+    end
+  end
+
+private
   class ParseFrame
     attr_reader :node
     attr_reader :ns, :encodingStyle

@@ -56,6 +56,8 @@ class SOAPXMLParser < SOAPParser
       end
     end
   end
+
+  setFactory( self )
 end
 
 

@@ -124,7 +124,7 @@ class SOAPProxy
       charsetStr = Charset.getCharsetStr( receiveCharset )
       Charset.setXMLInstanceEncoding( charsetStr )
 
-      if Processor.defaultParserFactory.adjustKCode
+      if SOAPParser.factory.adjustKCode
 	charsetStrBackup = $KCODE.to_s.dup
 	$KCODE = charsetStr
 	kcodeAdjusted = true
