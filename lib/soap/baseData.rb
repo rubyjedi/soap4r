@@ -66,9 +66,12 @@ public
     @position = nil
   end
 
-  def encode( ns, name, parentArray = nil )
+  def encode( ns, name, parentEncodingStyle = nil, parentArray = nil )
     attrs = []
-    createNS( attrs, ns )
+    addNSDeclAttr( attrs, ns )
+    if parentEncodingStyle != EncodingNamespace
+      addEncodingAttr( attrs, ns )
+    end
     if parentArray && parentArray.typeNamespace == @typeNamespace &&
 	parentArray.baseTypeName == @typeName
       # No need to add.
@@ -99,11 +102,19 @@ private
     Attr.new( ns.name( EncodingNamespace, AttrPosition ), '[' << position.join( ',' ) << ']' )
   end
 
-  def createNS( attrs, ns )
-    unless ns.assigned?( XSD::Namespace )
-      tag = ns.assign( XSD::Namespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, XSD::Namespace ))
+  def addNSDeclAttr( attrs, ns )
+    unless ns.assigned?( XSD::InstanceNamespace )
+      tag = ns.assign( XSD::InstanceNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, XSD::InstanceNamespace ))
     end
+    if @typeNamespace and !ns.assigned?( @typeNamespace )
+      tag = ns.assign( @typeNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
+    end
+  end
+
+  def addEncodingAttr( attrs, ns )
+    attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), EncodingNamespace ))
   end
 end
 
@@ -140,6 +151,10 @@ private
 
   def positionAttr( position, ns )
     Attr.new( ns.name( EncodingNamespace, AttrPosition ), '[' << position.join( ',' ) << ']' )
+  end
+
+  def addEncodingAttr( attrs, ns )
+    attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), EncodingNamespace ))
   end
 end
 
@@ -310,10 +325,10 @@ public
     @typeName = XSD::Base64BinaryLiteral
   end
 
-  def createNS( attrs, ns )
-    unless ns.assigned?( XSD::Namespace )
-      tag = ns.assign( XSD::Namespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, XSD::Namespace ))
+  def addNSDeclAttr( attrs, ns )
+    unless ns.assigned?( XSD::InstanceNamespace )
+      tag = ns.assign( XSD::InstanceNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, XSD::InstanceNamespace ))
     end
     if @typeNamespace and !ns.assigned?( @typeNamespace )
       tag = ns.assign( @typeNamespace )
@@ -389,9 +404,12 @@ public
     end
   end
 
-  def encode( ns, name, parentArray = nil )
+  def encode( ns, name, parentEncodingStyle = nil, parentArray = nil )
     attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
-    createNS( attrs, ns )
+    addNSDeclAttr( attrs, ns )
+    if parentEncodingStyle != EncodingNamespace
+      addEncodingAttr( attrs, ns )
+    end
     if parentArray && parentArray.typeNamespace == @typeNamespace &&
 	parentArray.baseTypeName == @typeName
       # No need to add.
@@ -405,7 +423,7 @@ public
 
     children = []
     0.upto( @array.length - 1 ) do | i |
-      children.push( @data[ i ].encode( ns.clone, @array[ i ] ))
+      children.push( @data[ i ].encode( ns.clone, @array[ i ], EncodingNamespace ))
     end
 
     # Element.new( name, attrs, children )
@@ -425,10 +443,18 @@ private
     Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @typeNamespace, @typeName ))
   end
 
-  def createNS( attrs, ns )
+  def addNSDeclAttr( attrs, ns )
+    unless ns.assigned?( EncodingNamespace )
+      tag = ns.assign( EncodingNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, EncodingNamespace ))
+    end
     unless ns.assigned?( @namespace )
       tag = ns.assign( @namespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
+    end
+    unless ns.assigned?( XSD::InstanceNamespace )
+      tag = ns.assign( XSD::InstanceNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, XSD::InstanceNamespace ))
     end
     if @typeNamespace and !ns.assigned?( @typeNamespace )
       tag = ns.assign( @typeNamespace )
@@ -580,9 +606,13 @@ public
     ary
   end
 
-  def encode( ns, name, parentArray = nil )
+  def encode( ns, name, parentEncodingStyle = nil, parentArray = nil )
     attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
-    createNS( attrs, ns )
+    addNSDeclAttr( attrs, ns )
+    if parentEncodingStyle != EncodingNamespace
+      addEncodingAttr( attrs, ns )
+    end
+
     attrs.push( arrayTypeAttr( ns ))
     attrs.push( datatypeAttr( ns ))
 
@@ -599,7 +629,7 @@ public
       else
 	@position = rank
       end
-      children << child.encode( ns.clone, childTypeName, self )
+      children << child.encode( ns.clone, childTypeName, EncodingNamespace, self )
     end
 
     # Element.new( name, attrs, children )
@@ -676,18 +706,22 @@ private
     Attr.new( ns.name( EncodingNamespace, 'arrayType' ), ns.name( @typeNamespace, arrayTypeValue() ))
   end
 
-  def createNS( attrs, ns )
+  def addNSDeclAttr( attrs, ns )
+    unless ns.assigned?( EncodingNamespace )
+      tag = ns.assign( EncodingNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, EncodingNamespace ))
+    end
     unless ns.assigned?( @namespace )
       tag = ns.assign( @namespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
     end
+    unless ns.assigned?( XSD::InstanceNamespace )
+      tag = ns.assign( XSD::InstanceNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, XSD::InstanceNamespace ))
+    end
     if @typeNamespace and !ns.assigned?( @typeNamespace )
       tag = ns.assign( @typeNamespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
-    end
-    unless ns.assigned?( EncodingNamespace )
-      tag = ns.assign( EncodingNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, EncodingNamespace ))
     end
   end
 
