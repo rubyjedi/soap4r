@@ -65,8 +65,8 @@ class Element < Info
   def parse_attr(attr, value)
     case attr
     when NameAttrName
-      #@name = XSD::QName.new(targetnamespace, value)
-      @name = XSD::QName.new(nil, value)
+      #@name = XSD::QName.new(nil, value)
+      @name = XSD::QName.new(targetnamespace, value)
     when TypeAttrName
       @type = if value.is_a?(XSD::QName)
 	  value

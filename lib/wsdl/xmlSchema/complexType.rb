@@ -64,6 +64,15 @@ class ComplexType < Info
     nil
   end
 
+  def find_element_by_name(name)
+    if @content
+      @content.elements.each do |element|
+	return element if name == element.name.name
+      end
+    end
+    nil
+  end
+
   def sequence_elements=(elements)
     @content = Sequence.new
     elements.each do |element|

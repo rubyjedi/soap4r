@@ -42,8 +42,10 @@ class ComplexType < Info
   def child_type(name = nil)
     case compoundtype
     when :TYPE_STRUCT
-      if (ele = find_element(name))
+      if ele = find_element(name)
         ele.type
+      elsif ele = find_element_by_name(name.name)
+	ele.type
       else
         nil
       end
@@ -56,7 +58,12 @@ class ComplexType < Info
     unless compoundtype == :TYPE_STRUCT
       raise RuntimeError.new("Assert: not for struct")
     end
-    find_element(name).local_complextype
+    unless ele = find_element(name)
+      if name.namespace.nil?
+	ele = find_element_by_name(name.name)
+      end
+    end
+    ele.local_complextype
   end
 
   def find_arytype
