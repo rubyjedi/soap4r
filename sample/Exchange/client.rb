@@ -4,7 +4,7 @@ require "soap/rpc/driver"
 
 ExchangeServiceNamespace = 'http://tempuri.org/exchangeService'
 
-server = "http://localhost:7000/"
+server = ARGV.shift || "http://localhost:7000/"
 # server = "http://localhost:8808/server.cgi"
 
 logger = nil
