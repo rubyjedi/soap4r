@@ -16,7 +16,7 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-require 'wsdl/parser'
+require 'soap/parser'
 require 'xmlscan/scanner'
 
 
@@ -26,19 +26,31 @@ module WSDL
 class WSDLXMLScanner < WSDLParser
   def initialize( *vars )
     super( *vars )
+    @charsetBackup = nil
   end
 
-  def prologue
+  def epilogue
+    $KCODE = @charsetBackup if @charsetBackup
   end
 
   def doParse( stringOrReadable )
     @scanner = XMLScan::XMLScanner.new( Visitor.new( self ))
-    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset )
+    if @scanner.respond_to?( :kcode )
+      @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset )
+    else
+      @charsetBackup = $KCODE
+      $KCODE = ::SOAP::Charset.getCharsetStr( charset )
+    end
     @scanner.parse( stringOrReadable )
   end
 
   def setScannerKCode( charset )
-    @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset )
+    if @scanner.respond_to?( :kcode )
+      @scanner.kcode = ::SOAP::Charset.getCharsetStr( charset )
+    elsif self.charset.nil?
+      @charsetBackup = $KCODE
+      $KCODE = ::SOAP::Charset.getCharsetStr( charset )
+    end
     setXMLDeclEncoding( charset )
   end
 
@@ -61,7 +73,6 @@ class WSDLXMLScanner < WSDLParser
     end
 
     def parse_error( msg )
-      raise WSDLParser::ParseError.new( msg )
     end
 
     def wellformed_error( msg )
