@@ -75,7 +75,7 @@ public
     end
 
     res.body = responseString
-    res[ 'content-type' ] = "text/xml; charset=\"#{ charset }\""
+    res[ 'content-type' ] = "#{ ::SOAP::MediaType }; charset=\"#{ charset }\""
 
     if isFault
       res.status = HTTPStatus::RC_INTERNAL_SERVER_ERROR
