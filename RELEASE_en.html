@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: December 28, 2001<br />
+Last modified: April 10, 2002<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -42,13 +42,22 @@ Target SOAP4R version: SOAP4R/1.4.2
 <li><a href="#uninstall">Uninstall</a></li>
 <li><a href="#whats">What is SOAP4R?</a></li>
 <li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#samples">Samples</a></li>
 <li><a href="#restrictions">Restrictions</a></li>
+<li><a href="#resources">Resources</a></li>
 <li><a href="#history">History</a></li>
 <li><a href="#author">Author</a></li>
 <li><a href="#copyright">Copyright</a></li>
 </ol>
 
 <h2 id="changes" name="changes">1. Changes</h2>
+
+<p>
+Stopped redistributing packages in RAA.
+Please get <a href="#dependencies">required</a> packages from
+<a href="http://www.ruby-lang.org/en/raa.html">RAA</a>
+and install it.
+</p>
 
 <p>
 Many changes around Ruby language mapping for SOAP.
@@ -69,11 +78,12 @@ The option is set 'false' by default so that same behaviour as before.</li>
 <h2 id="install" name="install">2. Install</h2>
 
 <p>
-Simply, get the archived file and extract it.  Then, try;
+At first, see <a href="#dependencies">Dependencies</a> section.
+You may need to install some extra packages.
+Next, get the archived file of SOAP4R and extract it, then simply try;
 </p>
-
-<pre>
-&quot;ruby install.rb&quot;
+<pre class="path">
+$ ruby install.rb
 </pre>
 
 <p>
@@ -86,24 +96,11 @@ Followings are redistributed files in redist/.
 </p>
 
 <dl>
-<dt class="path">date3.rb</dt>
-<dd>by Funaba-san (<a href="http://www.kt.rim.or.jp/~tadf/ruby-en.html">http://www.kt.rim.or.jp/~tadf/ruby-en.html</a>)</dd>
-
-<dt class="path">parsedate3.rb</dt>
-<dd>by Funaba-san (<a href="http://www.kt.rim.or.jp/~tadf/ruby-en.html">http://www.kt.rim.or.jp/~tadf/ruby-en.html</a>)</dd>
-
 <dt class="path">GServer</dt>
 <dd>by John W. Small: <a href="http://fairfax2.laser.net/~jsmall/rubycorner.html">http://fairfax2.laser.net/~jsmall/rubycorner.html</a></dd>
 
 <dt class="path">httpserver.rb</dt>
 <dd>by Michael Neumann: httpserver.rb in <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XML-RPC">[RAA:XML-RPC]</a></dd>
-
-<dt class="path">application.rb</dt>
-<dd>by NaHi: <a href="http://www.jin.gr.jp/~nahi/Ruby/Application/application.rb">http://www.jin.gr.jp/~nahi/Ruby/Application/application.rb</a></dd>
-
-<dt class="path">http-access2</dt>
-<dd>by NaHi: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a></dd>
-
 </dl>
 
 <p>
@@ -114,48 +111,27 @@ Files in archive:
 <dt class="path">lib/soap/</dt>
 <dd>SOAP4R library program.</dd>
 
+<dt class="path">sample/</dt>
+<dd>SOAP4R samples.
+See <a href="#samples">Samples</a> section.</dd>
+
 <dt class="path">test/</dt>
 <dd>Clients/Server for
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
-Because of no documents or &quot;How-to&quot; things there,
-test/interopR2/server.cgi is a must RPC Server side sample to check.
-test/interopR2/client*.rb is a must RPC Client side sample to check.
-test/interopR2/base.rb includes common definitions for client/server side.
-</dd>
-
-<dt class="path">sample/</dt>
-<dd>Sample program using SOAP4R.</dd>
-
-<dt class="path">sample/apacheClient.rb</dt>
-<dd>SOAP-RPC client sample.
-It connects with demonstration server programs stockquote and addressbook in Apache-SOAP.
-You have to install Apache-SOAP and deploy demostration programs.<br />
-To execute;
-<pre class="path">
-./apacheClient.rb http://localhsot:2020/xml-soap/rpcrouter/rpcrouter.jsp
-</pre>
-</dd>
-
-<dt class="path">sample/RAA/*</dt>
-<dd>SOAP-RPC client samples.
+Followings are advanced examples to use complex type transmit,
+sending base64 encoded string, multi-dimensional array, and so on.
 <ul>
-<li>soap4r.rb, soap4rApp.rb: Ruby program using SOAP4R</li>
-<li>xmlrpc4r.rb: Ruby program using xmlrpc4r</li>
-<li>pocketSOAP.js: JScript program using pocketSOAP</li>
-<li>SOAP::Lite.pl: Perl program using SOAP::Lite for Perl</li>
+<li>test/interopR2/server.cgi is a RPC Server side implementation.</li>
+<li>test/interopR2/client*.rb is a RPC Client side implementation.</li>
+<li>test/interopR2/base.rb includes common definitions for client/server.</li>
 </ul>
-There programs connect with testing RAA server on www.ruby-lang.org.
-Since the server is under testing phase so stable operation is not expected.</dd>
+</dd>
 
 <dt class="path">redist/</dt>
-<dd>Redistributed programs which SOAP4R is using.
+<dd>Redistributed modules which SOAP4R uses.
 I would appriciate to authors of these programs.
 </dd>
 
-<dt class="path">redist/archive/</dt>
-<dd>Archives.
-Follow the term of each archive to use these programs.
-</dd>
 </dl>
 
 <h2 id="uninstall" name="uninstall">3. Uninstall</h2>
@@ -164,19 +140,19 @@ Follow the term of each archive to use these programs.
 Delete created files at installation.
 </p>
 
-<pre>
+<pre class="path">
 ruby -rrbconfig -e 'include Config; puts CONFIG[&quot;sitedir&quot;] + &quot;/&quot; + CONFIG[&quot;MAJOR&quot;] + &quot;.&quot; + CONFIG[&quot;MINOR&quot;]'
 </pre>
 
 <p>
 should dump the installation root directory.
-Here, check &quot;soap&quot; directory and filename of files in &quot;redist&quot; directory.
+Then, check &quot;soap&quot; directory and filename of files in &quot;redist&quot; directory.
 </p>
 
 <h2 id="whats" name="whats">4. What is SOAP4R?</h2>
 
 <p>
-'SOAP4R' is a Ruby library program to handle
+'SOAP4R' is an implementation of
 <a href="http://www.w3.org/TR/SOAP/">Simple Object Access Protocol (SOAP) 1.1 (W3C Note)</a>.
 </p>
 
@@ -189,27 +165,303 @@ Feel free sending mail to
 <h2 id="dependencies" name="dependencies">5. Dependencies</h2>
 
 <p>
-SOAP4R depends on below programs:
-</p>
-
-<ul>
-<li>SOAP4R is a
-<a href="http://www.ruby-lang.org">Ruby</a>
-library program.
+SOAP4R is written in <a href="http://www.ruby-lang.org">Ruby</a> and
+aims to use with Ruby application.
 You have to install Ruby itself.
 Ruby/1.6 series are required.
-It does not works on 1.4 series because of class variable.</li>
+It does not works on 1.4 series because it does not have class variable.
+</p>
 
-<li>SOAP4R requires a XML processor package installed.
+<p>
+SOAP4R depends on following Ruby modules in
+<a href="http://www.ruby-lang.org/en/raa.html">RAA</a>.
+You also have to install these modules to use SOAP4R.
+</p>
+
+<dl>
+<dt class="path">XML processor</dt>
+<dd>SOAP4R requires a XML processor package installed.
 For now, one of following XML processor must be installed
- (SOAP4R automatically detects it in runtime).
+(SOAP4R automatically detects it in runtime).
 <ul>
-<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a></li>
-<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">XMLParser module</a></li>
-</ul></li>
-</ul>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">[RAA:NQXML]</a></li>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">[RAA:XMLParser]</a></li>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=REXML">[RAA:REXML]</a></li>
+</ul></dd>
 
-<h2 id="restrictions" name="restrictions">6. Restrictions</h2>
+<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a></dt>
+<dd>Date and DateTime implementation by Todayoshi Funaba.
+Note: This module is scheduled to be included in standard distribution instead of lib/date.rb.  Ruby/1.7 or later.</dd>
+
+<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Devel%3A%3ALogger">[RAA:Devel::Logger]</a></dt>
+<dd>Logging utility by NaHi.</dd>
+
+<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a></dt>
+<dd>Yet another HTTP client implementation by NaHi.</dd>
+
+<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Uconv">[RAA:Uconv]</a> (optional)</dt>
+<dd>by Yoshida Masato.
+It is requred when you want automatic CES conversion between
+SJIS &lt;-&gt; UTF8 and EUC &lt;-&gt; UTF8.
+Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
+I will support Iconv for more conversion set.
+</dd>
+
+</dl>
+
+<h2 id="samples" name="samples">6. Samples</h2>
+
+<p>
+Samples are in sample/ directory of distribution.
+Some samples try to connect to public servers.
+Set environment variable HTTP_PROXY if you are in a firewall and you have
+http proxy to the internet like;
+</p>
+<pre class="path">
+$ export HTTP_PROXY=http://myproxyserver:8080
+  or
+$ setenv HTTP_PROXY http://myproxyserver:8080
+</pre>
+
+<dl>
+<dt class="path">babelfish.rb</dt>
+<dd>A client for
+<a href="http://www.xmethods.com/ve2/ViewListing.po?serviceid=14">BabelFish</a>
+which namespace URI is 'urn:xmethodsBabelFish'.
+<pre class="path">
+$ ./babelfish.rb "Text to translate" [ translation pattern like 'en_fr' ]
+</pre>
+</dd>
+
+<dt class="path">whois.rb</dt>
+<dd>A client for
+<a href="http://www.xmethods.com/ve2/ViewListing.po?serviceid=34">SQLData's WHOIS</a>
+which namespace URI is 'http://www.SoapClient.com/xml/SQLDataSoap.xsd'.
+<pre class="path">
+$ ./whois.rb ruby-lang.org
+</pre>
+CAUTION: This WhoIs server does not handle non-ascii characters correctly.
+Querying domain which entry contains Japanese or so will hang.  Gee.
+</dd>
+
+<dt class="path">digraph.rb</dt>
+<dd>A sample of SOAP marshalling/unmarshalling.
+It creates a digraph that contains multi-ref-ed nodes at first
+and marshals this object to get serialized XML instance.
+Then reads and unmarshals this XML instance to recover a object
+which has the same links among nodes in the digraph.
+</dd>
+
+<dt class="path">apacheClient.rb</dt>
+<dd>SOAP-RPC client sample which connects with demonstration server;
+stockquote and addressbook in Apache-SOAP.
+You have to install Apache-SOAP and deploy demostration programs.<br />
+To execute;
+<pre class="path">
+$ ./apacheClient.rb http://localhsot:2020/xml-soap/rpcrouter/rpcrouter.jsp
+</pre>
+</dd>
+
+<dt class="path">Calc/</dt>
+<dd>Calc service contains 2 servers and 2 clients.
+calc.rb is hosted by server.rb, calc2.rb is hosted by server2.rb.
+client.rb is for server.rb, client2.rb is for server2.rb.
+<dl>
+<dt>calc.rb</dt>
+<dd>Calc server definition using module and module methods.
+This module responds 'add', 'sub', 'multi' and 'div'.</dd>
+<dt>server.rb</dt>
+<dd>It requires calc.rb and serve module methods of this module.
+To run this server;
+<pre class="path">
+$ ./server.rb
+</pre>
+</dd>
+<dt>client.rb</dt>
+<dd>It connects to server.rb and hit methods served by calc.rb.
+To run the client;
+<pre class="path">
+$ ./client.rb
+</pre>
+Is it stacked?  Did you run the server.rb?<br/>
+Turn logger and wireDumpDev in its source on to see logs and wire dumps of
+SOAP transport.</dd>
+
+<dt>calc2.rb</dt>
+<dd>Calc server definition using class and instance methods.
+An instance of this class holds its value.  Methods 'set' and 'get' is to
+set/get the value.
+It also responds to '+', '-', '*', and '/'.
+</dd>
+<dt>server2.rb</dt>
+<dd>It requires calc2.rb and creates an instance of CalcService2
+that responds all SOAP requests.
+Since '+', '-' and so on of calc2.rb are not valid name as an element
+in XML instance,
+this sample register the method '+' as 'add', '-' as 'sub', and so on.
+</dd>
+<dt>client2.rb</dt>
+<dd>It connects to server2.rb.
+Set a value at first and call methods like 'puts objAtServer + 2'.</dd>
+</dl>
+</dd>
+
+<dt class="path">Exchange/</dt>
+<dd>A sample to retrieve the currency rate from public SOAP service.</dd>
+<dl>
+<dt>iExchange.rb</dt>
+<dd>It includes common definitions for client and server of
+Exchange service.
+Including only a definition of namespace URI of this service.</dd>
+<dt>exchange.rb</dt>
+<dd>Definition of servant class ExchangeService which returns the currency rate
+after connecting to another site by SOAP to get the real rate.
+So that this class is the SOAP server for local client and 
+is also a SOAP client for public server.
+An instance of this class is hosted by server.rb.
+The instance responds to only 'getRate' which receives two country code
+such as 'USA' and 'Japan'.</dd>
+<dt>server.rb</dt>
+<dd>It requires exchange.rb and creates an instance of ExchangeService
+that responds all SOAP requests.
+To run this server;
+<pre class="path">
+$ ./server.rb
+</pre>
+</dd>
+<dt>client.rb</dt>
+<dd>It connects to server.rb.
+Turn logger and wireDumpDev in its source on to see logs and wire dumps of
+SOAP transport.
+To run the client;
+<pre class="path">
+$ ./client.rb
+</pre>
+</dd>
+</dl>
+</dd>
+
+<dt class="path">SampleStruct/</dt>
+<dd>A sample to transmit complex structured object which has recursive
+object reference.
+<dl>
+<dt>iSampleStruct.rb</dt>
+<dd>It includes common definitions for client and server of
+SampleStruct service.
+Definition of SampleStruct class and namespace URI of this service.</dd>
+<dt>sampleStruct.rb</dt>
+<dd>Definition of servant class SampleStructService.
+An instance of this class is hosted by server.rb.
+The instance responds to only 'hi' which receives a SampleStruct and wraps
+it in the new instance of SampleStruct to return .</dd>
+<dt>server.rb</dt>
+<dd>It requires sampleStruct.rb and creates an instance of SampleStructService
+that responds all SOAP requests.
+To run this server;
+<pre class="path">
+$ ./server.rb
+</pre>
+</dd>
+<dt>client.rb</dt>
+<dd>It connects to server.rb.
+Turn logger and wireDumpDev in its source on to see logs and wire dumps of
+SOAP transport.
+To run the client;
+<pre class="path">
+$ ./client.rb
+</pre>
+</dd>
+</dl>
+</dd>
+
+<dt class="path">RAA/</dt>
+<dd>SOAP-RPC client samples.
+These programs connect to RAA SOAP Interface on www.ruby-lang.org.
+<ul>
+<li>soap4r.rb: Ruby program using SOAP4R</li>
+<li>xmlrpc4r.rb: Ruby program using xmlrpc4r</li>
+<li>pocketSOAP.js: JScript program using pocketSOAP</li>
+<li>SOAP::Lite.pl: Perl program using SOAP::Lite for Perl</li>
+</ul>
+Since the server is (still) under testing phase so stable operation is not expected.</dd>
+
+<dt class="path">webrick/</dt>
+<dd>SOAP-RPC server samples which runs with WEBrick.
+<ul>
+<li>httpd.rb: HTTP server which soaplet.rb mounts to.
+It is powered by WEBrick so you must install
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=WEBrick">[RAA:WEBrick]</a>
+to run it.</li>
+<li>soaplet.rb: A bricklet to add a SOAP function to WEBrick.
+It hosts exchange.rb, sampleStruct.rb below, and it is mounted to httpd.rb
+to serve ExchangeService and SampleStructService.</li>
+<li>ExchangeService
+<dl>
+<dt>exchange.rb</dt>
+<dd>A server class definition which returns the currency rate
+after connecting to another site by SOAP to get the real rate.
+An instance of this class is instanciated in httpd.rb and this instance
+respond to each HTTP request.</dd>
+<dt>exchangeClient.rb</dt>
+<dd>A client to connect soaplet.rb via SOAP/HTTP to call exchange.rb.</dd>
+<dt>iExchange.rb</dt>
+<dd>Common class(type) definitions for server and client.</dd>
+</dl>
+</li>
+
+<li>SampleStructService
+<dl>
+<dt>sampleStruct.rb</dt>
+<dd>A server class definition which wraps a given struct
+and returns it.
+An instance of this class is instanciated in httpd.rb and this instance
+respond to each HTTP request.</dd>
+<dt>sampleStructClient.rb</dt>
+<dd>A client to connect soaplet.rb via SOAP/HTTP to call sampleStruct.rb</dd>
+<dt>iSampleStruct.rb</dt>
+<dd>Common class(type) definitions for server and client.</dd>
+</dl></li>
+</ul>
+Run the server;
+<pre class="path">
+$ ruby httpd.rb
+</pre>
+Then, run clients;
+<pre class="path">
+$ ruby sampleStruct.rb
+$ ruby exchangeClient.rb
+</pre>
+Set 'logger' and 'wireDumpDev' in clients to see log and wiredumps of SOAP.
+</dd>
+
+<dt class="path">ICD</dt>
+<dd>A client for
+<a href="http://www.iwebmethod.net/">Insider's Computer Dictionary Web Service</a>.
+This service is implemented with ASP.NET so that it's also a sample of
+a client which connects to ASP.NET.
+CAUTION: this sample contains non-ascii chars in its source and dumped results.
+<dl>
+<dt>IICD.rb</dt>
+<dd>Class(type) definitions for this server.</dd>
+<dt>icd.rb</dt>
+<dd>Client implementation.  To run the client;
+<pre class="path">
+$ ./icd.rb
+</pre>
+</dd>
+</dl>
+</dd>
+
+<dt class="path">WSDemo</dt>
+<dd>A sample of messaging client.  Server side sample does not exist now...</dd>
+
+<dt class="path">RWiki</dt>
+<dd>A sample CGI server which receives a request via SOAP and dispatches it
+to RWiki server via dRuby.  Naive SOAP/dRuby bridge implementation.</dd>
+
+</dl>
+
+<h2 id="restrictions" name="restrictions">7. Restrictions</h2>
 
 <p>
 The following features of the
@@ -232,11 +484,33 @@ Only xsi:type in SOAP Encoding is checked</li>
 <li style="margin-top: 2ex;">Othres
 <ul>
 <li>Transport binding except HTTP server and client</li>
-<li>HTTP Extension Framework (M-POST)</li>
 </ul></li>
 </ul>
 
-<h2 id="history" name="history">7. History</h2>
+<h2 id="resources" name="resources">8. Resources</h2>
+
+<dl>
+<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=SOAP4R">[RAA:SOAP4R]</a></dt>
+<dd>I will post a new release to RAA.
+Check RAA to get a new stable (I hope) version.</dd>
+
+<dt class="path"><a href="http://www.ruby-lang.org/~knu/cgi-bin/cvsweb.cgi/lib/soap4r/">CVS</a></dt>
+<dd>There is the SOAP4R CVS repository in cvs.ruby-lang.org.
+(Thanks to knu, the maintainer of cvs.ruby-lang.org.)
+Check here to get most recent (but could be unstable) version.</dd>
+
+<dt class="path"><a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/wiki.cgi">SOAP4R Wiki</a></dt>
+<dd>There is a wiki for SOAP4R, running under
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=RWiki">[RAA:RWiki]</a>.
+Feel free to add your comment there.
+Any comments are welcomed. (as always)</dd>
+
+<dt class="path"><a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/wiki.cgi?cmd=view;name=InteropResults">InteropResults</a></dt>
+<dd>Test results of <a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>.</dd>
+
+</dl>
+
+<h2 id="history" name="history">9. History</h2>
 
 <dl>
 <dt>1.4.2 - December 28, 2001</dt>
@@ -611,7 +885,7 @@ around SOAP arrays.</dd>
 <dd>It is the initial released version of SOAP4R. :-)</dd>
 </dl>
 
-<h2 id="author" name="author">8. Author</h2>
+<h2 id="author" name="author">10. Author</h2>
 
 <dl>
 <dt>Name</dt>
@@ -624,11 +898,11 @@ around SOAP arrays.</dd>
 <dd><a href="http://www.jin.gr.jp/~nahi/" class="path">http://www.jin.gr.jp/~nahi/</a> (Japanese)</dd>
 </dl>
 
-<h2 id="copyright" name="copyright">9. Copyright</h2>
+<h2 id="copyright" name="copyright">11. Copyright</h2>
 
 <p style="text-align: center;">
 SOAP4R<br />
-Copyright &copy; 2000, 2001 NAKAMURA, Hiroshi.
+Copyright &copy; 2000, 2001, 2002 NAKAMURA, Hiroshi.
 </p>
 
 <p>
@@ -651,7 +925,7 @@ You should have received a copy of the GNU General Public License along with thi
 <div class="footer">
 <address>
 <a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/">SOAP4R</a>.<br />
-Copyright &copy; 2000, 2001
+Copyright &copy; 2000, 2001, 2002
 <a href="http://www.jin.gr.jp/~nahi/">NAKAMURA, Hiroshi</a>.
 </address>
 </div>
