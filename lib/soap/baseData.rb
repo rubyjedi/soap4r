@@ -257,7 +257,7 @@ module SOAPBasetypeUtils
     attrs = []
     createNS( attrs, ns )
     if parentArray and parentArray.typeNamespace == @typeNamespace and
-	parentArray.contentTypeName == @typeName
+	parentArray.baseTypeName == @typeName
       # No need to add.
     else
       attrs.push( datatypeAttr( ns ))
@@ -424,7 +424,7 @@ class SOAPStruct < SOAPCompoundBase
     attrs = []
     createNS( attrs, ns )
     if parentArray and parentArray.typeNamespace == @typeNamespace and
-	parentArray.contentTypeName == @typeName
+	parentArray.baseTypeName == @typeName
       # No need to add.
     else
       attrs.push( datatypeAttr( ns ))
@@ -494,7 +494,7 @@ class SOAPStruct < SOAPCompoundBase
         end
       EOS
     rescue SyntaxError
-      methodName = "var_" << methodName
+      methodName = "var_" << methodName.gsub( /[^a-zA-Z0-9_]/, '' )
       retry
     end
 
@@ -558,13 +558,13 @@ class SOAPArray < SOAPCompoundBase
     attrs = []
     createNS( attrs, ns )
     if parentArray and parentArray.typeNamespace == @typeNamespace and
-	parentArray.contentTypeName == @typeName
+	parentArray.baseTypeName == @typeName
       # No need to add.
     else
       attrs.push( datatypeAttr( ns ))
     end
 
-    childTypeName = contentTypeName() << 'Array'
+    childTypeName = contentTypeName().gsub( /\[,*\]/, 'Array' ) << 'Array'
 
     children = @data[ 0 ].collect { | child |
       child.encode( ns.clone, childTypeName, self )
@@ -577,7 +577,11 @@ class SOAPArray < SOAPCompoundBase
   end
 
   def contentTypeName()
-    @typeName?  @typeName.dup.sub( /\[,*\]$/, '' ) : ''
+    @typeName?  @typeName.sub( /\[,*\]$/, '' ) : ''
+  end
+
+  def baseTypeName()
+    @typeName?  @typeName.sub( /(?:\[,*\])+$/, '' ) : ''
   end
 
   private
