@@ -109,7 +109,7 @@ class Driver
 	    s.sub( /^/, @handler.endPoint + ':' )
 	  }
 	else
-	  [ detail ]
+	  [ detail.to_s ]
 	end
       )
       raise
