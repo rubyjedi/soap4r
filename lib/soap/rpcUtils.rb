@@ -289,17 +289,14 @@ module RPCUtils
     include Marshallable
     attr_reader :exceptionTypeName, :message, :backtrace
     def initialize( e )
-      @exceptionTypeName = e.type.to_s
+      @exceptionTypeName = RPCUtils.getElementNameFromType( e.type )
       @message = e.message
       @backtrace = e.backtrace
     end
 
     def to_e
       begin
-	klass = Object
-	@exceptionTypeName.to_s.split( '::' ).each do | klassStr |
-	  klass = klass.const_get( klassStr )
-	end
+	klass = RPCUtils.getClassFromName( @exceptionTypeName.to_s )
 	raise NameError unless klass.ancestors.include?( Exception )
  	obj = klass.new( @message )
 	obj.extend( ::SOAP::RPCServerException )
@@ -413,11 +410,6 @@ module RPCUtils
       capitalize( name )
     end
 
-    # Create NCName
-    def toTypeName( name )
-      name.gsub( ':', '_' )
-    end
-
     def capitalize( target )
       target.gsub('^([a-z])') { $1.tr!('[a-z]', '[A-Z]') }
     end
@@ -471,7 +463,7 @@ module RPCUtils
 	end
 	param
       elsif soapKlass == SOAP::SOAPStruct
-	param = SOAPStruct.new( toTypeName( obj.type.to_s ))
+	param = SOAPStruct.new( RPCUtils.getElementNameFromType( obj.type ))
 	param.typeNamespace = getNamespace( obj.type ) || RubyTypeNamespace
 	obj.members.each do |member|
 	  param.add( member, RPCUtils.obj2soap( obj[ member ], map ))
@@ -521,7 +513,11 @@ module RPCUtils
       obj = nil
       typeName = node.typeName || node.instance_eval( "@name" )
       begin
-	klass = self.instance_eval( toType( typeName ))
+	klass = begin
+	  RPCUtils.getClassFromName( typeName )
+	rescue NameError
+	  self.instance_eval( toType( typeName ))
+	end
 	if getNamespace( klass ) != node.typeNamespace
 	  raise NameError.new()
 	elsif getTypeName( klass ) and ( getTypeName( klass ) != typeName )
@@ -603,7 +599,7 @@ module RPCUtils
 
   class UnknownKlassFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
-      typeName = getTypeName( obj.type ) || obj.type.to_s
+      typeName = getTypeName( obj.type ) || RPCUtils.getElementNameFromType( obj.type )
       param = SOAPStruct.new( typeName  )
       param.typeNamespace = getNamespace( obj.type ) || RubyCustomTypeNamespace
       if obj.type.ancestors.member?( Marshallable )
@@ -846,34 +842,47 @@ module RPCUtils
   end
 
 
-  def RPCUtils.ary2soap( ary, typeNamespace = XSD::Namespace, type = XSD::AnyTypeLiteral )
+  def RPCUtils.ary2soap( ary, typeNamespace = XSD::Namespace, type = XSD::AnyTypeLiteral, mappingRegistry = MappingRegistry.new )
     soapAry = SOAPArray.new( type )
     soapAry.typeNamespace = typeNamespace
 
     ary.each do | ele |
-      soapAry.add( RPCUtils.obj2soap( ele ))
+      soapAry.add( RPCUtils.obj2soap( ele, mappingRegistry ))
     end
 
     soapAry
   end
 
-  def RPCUtils.ary2md( ary, rank, typeNamespace = XSD::Namespace, type = XSD::AnyTypeLiteral )
+  def RPCUtils.ary2md( ary, rank, typeNamespace = XSD::Namespace, type = XSD::AnyTypeLiteral, mappingRegistry = MappingRegistry.new )
     mdAry = SOAPArray.new( type, rank )
     mdAry.typeNamespace = typeNamespace
 
-    addMDAry( mdAry, ary, [] )
+    addMDAry( mdAry, ary, [], mappingRegistry )
 
     mdAry
   end
 
+
+  def RPCUtils.getElementNameFromType( type )
+    type.to_s.gsub( '::', '.' )
+  end
+
+  def RPCUtils.getClassFromName( name )
+    klass = Object
+    name.split( '.' ).each do | klassStr |
+      klass = klass.const_get( klassStr )
+    end
+    klass
+  end
+
   class << RPCUtils
   private
-    def addMDAry( mdAry, ary, indices )
+    def addMDAry( mdAry, ary, indices, mappingRegistry )
       0.upto( ary.size - 1 ) do | idx |
        	if ary[ idx ].is_a?( Array )
-  	  addMDAry( mdAry, ary[ idx ], indices + [ idx ] )
+  	  addMDAry( mdAry, ary[ idx ], indices + [ idx ], mappingRegistry )
    	else
-  	  mdAry[ *( indices + [ idx ] ) ] = RPCUtils.obj2soap( ary[ idx ] )
+  	  mdAry[ *( indices + [ idx ] ) ] = RPCUtils.obj2soap( ary[ idx ], mappingRegistry )
    	end
       end
     end
