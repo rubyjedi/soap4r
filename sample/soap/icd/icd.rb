@@ -10,7 +10,7 @@ wiredump_dev = nil # STDERR
 
 icd = SOAP::RPC::Driver.new(server, IICD::InterfaceNS)
 icd.wiredump_dev = wiredump_dev
-icd.default_encodingstyle = SOAP::EncodingStyleHandlerASPDotNet::Namespace
+icd.default_encodingstyle = SOAP::EncodingStyle::ASPDotNetHandler::Namespace
 IICD::add_method(icd)
 
 puts "キーワード: 'microsoft'で見出し検索"
