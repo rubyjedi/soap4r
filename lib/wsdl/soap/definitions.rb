@@ -33,11 +33,25 @@ class Definitions < Info
       end
       types << type
     end
+    types << arrayComplexType
     types << faultComplexType
     types
   end
 
 private
+
+  def arrayComplexType
+    type = createComplexType( ::SOAP::ValueArrayName )
+    type.complexContent = XMLSchema::ComplexContent.new
+    type.complexContent.base = ::SOAP::ValueArrayName
+    attr = XMLSchema::Attribute.new
+    attr.ref = ::SOAP::AttrArrayTypeName
+    anyTypeArray = XSD::XSDAnyType::Type.dup
+    anyTypeArray.name += '[]'
+    attr.arrayType = anyTypeArray
+    type.complexContent.content.attributes << attr
+    type
+  end
 
   def faultComplexType
     type = createComplexType( ::SOAP::EleFaultName )

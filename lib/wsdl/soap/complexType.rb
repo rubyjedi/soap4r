@@ -44,7 +44,7 @@ class ComplexType < Info
   def getChildrenType( name = nil )
     case compoundType
     when :TYPE_STRUCT
-      if ( ele = content.elements[ name ] )
+      if ( ele = getElement( name ))
         ele.type
       else
         nil
