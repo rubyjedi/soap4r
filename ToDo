@@ -1,34 +1,23 @@
 = ToDo
 
-wsdl4r generates old stub
-
-add new webrickServer with soaplet.
-
-mappingRegistryCreator: do not dump a type which is in default mappingRegistry.
-
-
-wsdlRouter
-  return value must be converted to the specified element name, not "fooResponse" style.
-
-Strict check
-  order of sequence
-  unbound
-
-Support literal/document
-
-子供要素を指定する場合は、新たに宣言する場合と、既存の要素を参照する場合があります。既存の要素を参 照する際は、ref属性を使用します
-
-
+* mappingRegistryCreator: do not dump a type which is in default
+  mappingRegistry.
+* RAA exception
+* wsdlRouter: return value must be converted to the specified element name,
+  not "fooResponse" style.
+* Implement message router: lib/soap/msgRouter.rb.
+  * Messaging sample.
 * Follow SOAP/1.2.
 * Support SwA.
+
+* WSDL Strict check; order of sequence, unbound, etc.
+* WSDL ref support
+  子供要素を指定する場合は、新たに宣言する場合と、
+  既存の要素を参照する場合があります。既存の要素を参 照する際は、
+  ref属性を使用します
 * Parse XML Namespace with xmlscan, not by itself.
-* RAA exception
 * Support all derived built-in types in XML Schema Part2 Sec. 3.2.
-* Design and implement SOAPHeader handler API.
-  * Support actor and mustUnderstand.
-  * Implement message router: lib/soap/msgRouter.rb.
-    * Messaging sample.
-* Rewrite the interop test client with runit?
+* Support actor and mustUnderstand.
 
 
 = Done
@@ -45,3 +34,6 @@ Support literal/document
 * Support untyped response using WSDL.
 * RAA uri-fy
 * decoding based on type information in WSDL.
+* Support literal/document
+* Design and implement SOAPHeader handler API.
+* Rewrite the interop test client with test/unit.
