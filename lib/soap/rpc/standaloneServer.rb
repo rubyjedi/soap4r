@@ -64,14 +64,23 @@ class StandaloneServer < Logger::Application
     @server.shutdown
   end
   
-  def add_rpc_request_servant(klass, namespace = @namespace, mapping_registry = nil)
-    @soaplet.add_rpc_request_servant(klass, namespace, mapping_registry)
+  def add_rpc_request_servant(factory, namespace = @namespace, mapping_registry = nil)
+    @soaplet.add_rpc_request_servant(factory, namespace, mapping_registry)
   end
 
   def add_rpc_servant(obj, namespace = @namespace)
     @soaplet.add_rpc_servant(obj, namespace)
   end
   alias add_servant add_rpc_servant
+  
+  def add_rpc_request_headerhandler(factory)
+    @soaplet.add_rpc_request_headerhandler(factory)
+  end
+
+  def add_rpc_headerhandler(obj)
+    @soaplet.add_rpc_headerhandler(obj)
+  end
+  alias add_headerhandler add_rpc_headerhandler
 
   def mapping_registry
     @soaplet.app_scope_router.mapping_registry

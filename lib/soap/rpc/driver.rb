@@ -198,17 +198,17 @@ private
       params = Mapping.obj2soap(params, @mapping_registry).to_a
       env = @proxy.call(call_headers, name, *params)
       raise EmptyResponseError.new("Empty response.") unless env
-      header, body = env.header, env.body
+      receive_headers(env.header)
       begin
-	@proxy.check_fault(body)
+	@proxy.check_fault(env.body)
       rescue SOAP::FaultError => e
 	Mapping.fault2exception(e)
       end
 
-      ret = body.response ?
-	Mapping.soap2obj(body.response, @mapping_registry) : nil
-      if body.outparams
-	outparams = body.outparams.collect { |outparam|
+      ret = env.body.response ?
+	Mapping.soap2obj(env.body.response, @mapping_registry) : nil
+      if env.body.outparams
+	outparams = env.body.outparams.collect { |outparam|
 	  Mapping.soap2obj(outparam)
 	}
 	return [ret].concat(outparams)
@@ -248,10 +248,14 @@ private
       else
 	h = ::SOAP::SOAPHeader.new
 	headers.each do |header|
-	  h.add(header)
+	  h.add(header.elename.name, header)
 	end
 	h
       end
+    end
+
+    def receive_headers(headers)
+      @headerhandler.on_inbound(headers) if headers
     end
 
     def set_wiredump_file_base(name)
