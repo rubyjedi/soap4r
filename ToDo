@@ -1,10 +1,24 @@
 = ToDo
 
-* wsdl2ruby literal support.
-  * WSDL attribute support.
+Table: signatures of server definition and client call for each operation type
+===============================================================================
+style/use           server definition               client call
+-------------------------------------------------------------------------------
+rpc/encoded          OK def elename(obj1, obj2)      OK drv.elename(obj1, obj2)
+rpc/literal         yet def elename(ele1, ele2)     yet drv.elename(ele1, ele2)
+document/encoded    yet def elename(obj)            yet drv.elename(obj)
+document/literal    yet def elename(ele)            yet drv.elename(ele)
+-------------------------------------------------------------------------------
+
+
+* style="document" rpc server
+  * style="document" rpc wsdlDriver accepts 2 parameters.  use header handler? 
+  * style="document" rpc driver 
+  * wsdl2ruby literal support.
+    * WSDL attribute support.
+* session scope (with HTTP-Cookies) SOAP servant.
 * mappingRegistryCreator: do not dump a type which is in default
   mappingRegistry.
-* RAA exception
 * wsdlRouter: return value must be converted to the specified element name,
   not "fooResponse" style.
 * Implement message router: lib/soap/msgRouter.rb.
@@ -41,3 +55,4 @@
 * merge SwA patch.
 * header handler.
 * Support mustUnderstand.
+* RAA exception
