@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.20 2002/09/07 03:16:58 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.21 2002/09/07 07:19:23 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -59,6 +59,19 @@ public
   def initialize( endPoint )
     @endPoint = endPoint
   end
+
+  def self.parseMediaType( str )
+    if /^#{ MediaType }(?:;\s*charset=([^"]+|"[^"]+"))?$/i !~ str
+      raise StreamError.new( "Illegal media type." );
+    end
+    charset = $1
+    charset.gsub!( /"/, '' ) if charset
+    charset
+  end
+
+  def self.createMediaType( charsetLabel )
+    "#{ MediaType }; charset=#{ charsetLabel }"
+  end
 end
 
 
@@ -70,8 +83,6 @@ public
   attr_accessor :dumpDev
   attr_accessor :dumpFileBase
   
-  SendMediaType = 'text/xml'
-
   NofRetry = 10       	# [times]
   ConnectTimeout = 60   # [sec]
   SendTimeout = 60	# [sec]
@@ -108,7 +119,9 @@ private
   def sendPOST( soapString, soapAction, charset )
     data = ConnectionData.new
     data.sendString = soapString
-    data.sendContentType = SendMediaType
+    charsetLabel = Charset.getCharsetLabel( charset ||
+      Charset.getXMLInstanceEncoding )
+    data.sendContentType = StreamHandler.createMediaType( charsetLabel )
 
     dumpDev = if @dumpDev && @dumpDev.respond_to?( "<<" )
 	@dumpDev
@@ -125,9 +138,7 @@ private
     end
 
     extra = {}
-    charsetLabel = Charset.getCharsetLabel( charset ||
-      Charset.getXMLInstanceEncoding )
-    extra[ 'Content-Type' ] = "#{ SendMediaType }; charset=#{ charsetLabel }"
+    extra[ 'Content-Type' ] = data.sendContentType
     extra[ 'SOAPAction' ] = "\"#{ soapAction }\""
 
     dumpDev << "Wire dump:\n\n" if dumpDev

@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'soap/server'
+require 'soap/streamHandler'
 require 'http-access2/http'
 
 
@@ -38,7 +39,6 @@ class CGIStub < Server
 
   class SOAPRequest
     ALLOWED_LENGTH = 1024 * 1024
-    ReceiveMediaType = 'text/xml'
 
     def initialize( sourceStream = $stdin )
       @method = ENV[ 'REQUEST_METHOD' ]
@@ -52,7 +52,7 @@ class CGIStub < Server
 
     def init
       validate
-      parseContentType
+      charset = StreamHandler.parseMediaType( @content_type )
       @body = @source.read( @size )
       self
     end
@@ -74,13 +74,6 @@ class CGIStub < Server
     end
 
   private
-
-    def parseContentType
-      if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ @content_type
-	raise CGIError.new( "Illegal content-type." )
-      end
-      @charset = $1
-    end
 
     def validate # raise CGIError
       if @method != 'POST'
@@ -150,7 +143,7 @@ private
 
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
-      @response.body.type = 'text/xml'
+      @response.body.type = MediaType
       @response.body.charset = Charset.getCharsetStr( requestCharset ) ||
 	Charset.getXMLInstanceEncoding
       unless isFault
@@ -168,7 +161,7 @@ private
       responseString = createFaultResponseString( $! )
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
-      @response.body.type = 'text/xml'
+      @response.body.type = MediaType
       @response.body.charset = Charset.getXMLInstanceEncoding
       @response.status = 500
       str = @response.dump

@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/server'
+require 'soap/streamHandler'
 require "soap/httpserver"
 
 
@@ -53,8 +54,6 @@ protected
 
 private
 
-  ReceiveMediaType = 'text/xml'
-  
   def request_handler(request, response)
     log( SEV_INFO ) { "Received a request." }
     
@@ -70,11 +69,7 @@ private
     log( SEV_INFO ) { "Request: method: #{ request.method }, size: #{ length }" }
 
     contentType = request.header['Content-Type']
-    if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ contentType
-      raise RuntimeError.new("Illegal content-type: #{ request.header['Content-Type']}.")
-    end
-    requestCharset = $1
-    
+    requestCharset = StreamHandler.parseMediaType( contentType )
     requestString = request.data.read( length )        
     log( SEV_DEBUG ) { "XML Request: #{requestString}" }
 
@@ -108,7 +103,8 @@ private
       response.status = 500
     end
     response.body = responseString
-    response.header['Content-Type']   = "text/xml; charset=#{ requestCharset || Charset.getXMLInstanceEncodingLabel }"
+    response.header['Content-Type']   = StreamHandler.createMediaType(
+      requestCharset || Charset.getXMLInstanceEncodingLabel )
     response.header['Content-Length'] = responseString.length
     response.header['Cache-Control']  = 'private'  
 
@@ -116,7 +112,8 @@ private
     responseString  = createFaultResponseString( $! )
     response.body   = responseString
     response.status = 500
-    response.header['Content-Type']   = "text/xml; charset=#{ Charset.getXMLInstanceEncodingLabel }"
+    response.header['Content-Type']   = StreamHandler.createMediaType(
+      Charset.getXMLInstanceEncodingLabel )
 
   end
   

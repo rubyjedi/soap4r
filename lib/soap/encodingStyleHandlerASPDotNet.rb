@@ -178,11 +178,17 @@ yle." )
       when nil
 	parent.node.add( node.name, node )
       when SOAPArray
+	name, typeNamespace = node.name, node.typeNamespace
 	data.add( node )
+	node.name, node.typeNamespace = name, typeNamespace
       else
 	parent.node[ node.name ] = SOAPArray.new
+	name, typeNamespace = data.name, data.typeNamespace
 	parent.node[ node.name ].add( data )
+	data.name, data.typeNamespace = name, typeNamespace
+	name, typeNamespace = node.name, node.typeNamespace
 	parent.node[ node.name ].add( node )
+	node.name, node.typeNamespace = name, typeNamespace
       end
 
     when SOAPArray
