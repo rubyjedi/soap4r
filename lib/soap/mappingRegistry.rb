@@ -564,11 +564,12 @@ module RPCUtils
   	  setiv2obj( obj, node[ 'ivars' ], map )
    	end
       when TYPE_RANGE
+	obj = createEmptyObject( Range )
+	markUnmarshalledObj( node, obj )
 	first = RPCUtils._soap2obj( node[ 'begin' ], map )
 	last = RPCUtils._soap2obj( node[ 'end' ], map )
 	exclude_end = node[ 'exclude_end' ].data
-	obj = Range.new( first, last, exclude_end )
-	markUnmarshalledObj( node, obj )
+	obj.instance_eval { initialize( first, last, exclude_end ) }
 	if node.members.include?( 'ivars' )
   	  setiv2obj( obj, node[ 'ivars' ], map )
    	end
