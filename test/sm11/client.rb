@@ -24,8 +24,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = false
     _v1.e_short = SOAPShort.new(-100)
-    _v1.e_int = -100000
-    _v1.e_long = -10000000000
+    _v1.e_int = SOAPInt.new(-100000)
+    _v1.e_long = SOAPLong.new(-10000000000)
     _v1.e_float = SOAPFloat.new(0.123)
     _v1.e_double = 0.12e3
     _v1.e_String = "abc"
@@ -46,8 +46,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = false
     _v1.e_short = SOAPShort.new(-100)
-    _v1.e_int = -100000
-    _v1.e_long = -10000000000
+    _v1.e_int = SOAPInt.new(-100000)
+    _v1.e_long = SOAPLong.new(-10000000000)
     _v1.e_float = SOAPFloat.new(0.123)
     _v1.e_double = 0.12e3
     _v1.e_String = "abc"
@@ -57,8 +57,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = false
     _v1.e_short = SOAPShort.new(-100)
-    _v1.e_int = -100000
-    _v1.e_long = -10000000000
+    _v1.e_int = SOAPInt.new(-100000)
+    _v1.e_long = SOAPLong.new(-10000000000)
     _v1.e_float = SOAPFloat.new(0.123)
     _v1.e_double = 0.12e3
     _v1.e_String = "abc"
@@ -103,8 +103,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = false
     _v1.e_short = SOAPShort.new(-100)
-    _v1.e_int = -100000
-    _v1.e_long = -10000000000
+    _v1.e_int = SOAPInt.new(-100000)
+    _v1.e_long = SOAPLong.new(-10000000000)
     _v1.e_float = SOAPFloat.new(0.123)
     _v1.e_double = 0.12e3
     _v1.e_String = "abc"
@@ -125,8 +125,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = false
     _v1.e_short = SOAPShort.new(-100)
-    _v1.e_int = -100000
-    _v1.e_long = -10000000000
+    _v1.e_int = SOAPInt.new(-100000)
+    _v1.e_long = SOAPLong.new(-10000000000)
     _v1.e_float = SOAPFloat.new(0.123)
     _v1.e_double = 0.12e3
     _v1.e_String = "abc"
@@ -265,66 +265,77 @@ private
   def call_op11()
     STDOUT.puts("op11\n")
     _ret = target.op11()
+    raise unless _ret.is_a?( TrueClass ) 
     if (!(_ret == true)); STDOUT.puts("_ret value error in op11\n"); end
   end
   def call_op14()
     STDOUT.puts("op14\n")
     _ret = target.op14()
+    raise unless _ret.is_a?( Integer )
     if (!(_ret == -200)); STDOUT.puts("_ret value error in op14\n"); end
   end
   def call_op15()
     STDOUT.puts("op15\n")
     _ret = target.op15()
+    raise unless _ret.is_a?( Integer )
     if (!(_ret == -200000)); STDOUT.puts("_ret value error in op15\n"); end
   end
   def call_op16()
     STDOUT.puts("op16\n")
     _ret = target.op16()
+    raise unless _ret.is_a?( Integer )
     if (!(_ret == -20000000000)); STDOUT.puts("_ret value error in op16\n"); end
   end
   def call_op17()
     STDOUT.puts("op17\n")
     _ret = target.op17()
+    raise unless _ret.is_a?( Float )
     if (!(_ret == 1.234)); STDOUT.puts("_ret value error in op17\n"); end
   end
   def call_op18()
     STDOUT.puts("op18\n")
     _ret = target.op18()
+    raise unless _ret.is_a?( Float )
     if (!(_ret == 1.23e4)); STDOUT.puts("_ret value error in op18\n"); end
   end
   def call_op19()
     STDOUT.puts("op19\n")
     _ret = target.op19()
+    raise unless _ret.is_a?( String )
     if (!(_ret == "def")); STDOUT.puts("_ret value error in op19\n"); end
   end
   def call_op21()
     STDOUT.puts("op21\n")
     a1 = false
     _ret = target.op21(a1)
+    raise unless _ret.is_a?( TrueClass ) or _ret.is_a?( FalseClass )
     if (!(_ret == true)); STDOUT.puts("_ret value error in op21\n"); end
   end
   def call_op24()
     STDOUT.puts("op24\n")
     a1 = SOAPShort.new(-100)
-    a2 = -100000
-    a3 = -10000000000
+    a2 = SOAPInt.new(-100000)
+    a3 = SOAPLong.new(-10000000000)
     _ret = target.op24(a1,a2,a3)
+    raise unless _ret.is_a?( Integer )
     if (!(_ret == -200)); STDOUT.puts("_ret value error in op24\n"); end
   end
   def call_op25()
     STDOUT.puts("op25\n")
-    a1 = -100000
-    a2 = -10000000000
+    a1 = SOAPInt.new(-100000)
+    a2 = SOAPLong.new(-10000000000)
     a3 = SOAPFloat.new(0.123)
     _ret = target.op25(a1,a2,a3)
+    raise unless _ret.is_a?( Integer )
     if (!(_ret == -200000)); STDOUT.puts("_ret value error in op25\n"); end
   end
   def call_op26()
     STDOUT.puts("op26\n")
-    a1 = -10000000000
+    a1 = SOAPLong.new(-10000000000)
     a2 = SOAPFloat.new(0.123)
     a3 = 0.12e3
     _ret = target.op26(a1,a2,a3)
+    raise unless _ret.is_a?( Integer )
     if (!(_ret == -20000000000)); STDOUT.puts("_ret value error in op26\n"); end
   end
   def call_op27()
@@ -333,6 +344,7 @@ private
     a2 = 0.12e3
     a3 = "abc"
     _ret = target.op27(a1,a2,a3)
+    raise unless _ret.is_a?( Float )
     if (!(_ret == 1.234)); STDOUT.puts("_ret value error in op27\n"); end
   end
   def call_op28()
@@ -341,6 +353,7 @@ private
     a2 = "abc"
     a3 = false
     _ret = target.op28(a1,a2,a3)
+    raise unless _ret.is_a?( Float )
     if (!(_ret == 1.23e4)); STDOUT.puts("_ret value error in op28\n"); end
   end
   def call_op29()
@@ -348,6 +361,7 @@ private
     a1 = "abc"
     a2 = false
     _ret = target.op29(a1,a2)
+    raise unless _ret.is_a?( String )
     if (!(_ret == "def")); STDOUT.puts("_ret value error in op29\n"); end
   end
   def call_op30()
@@ -519,9 +533,10 @@ end
 
 
 #url = "http://localhost:10080/"
-#url = "http://localhost:8080/axis/services/sm11Port"
-url = "http://localhost:2000/soapsrv"
+#url = "http://16.175.170.131:8080/axis/services/sm11Port"
+#url = "http://16.175.170.131/soapsrv"
+url = ARGV.shift
 require 'driver'
 drv = Sm11PortType.new( url )
-drv.setWireDumpDev( STDOUT )
+#drv.setWireDumpDev( STDOUT )
 Sm11Caller.new( drv ).dispatcher( ARGV, 0, ARGV.size )
