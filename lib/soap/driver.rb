@@ -44,6 +44,10 @@ class Driver
     @handler.dumpDev = dumpDev
   end
 
+  def setWireDumpFileBase( base )
+    @dumpFileBase = base
+  end
+
   def addMethod( name, *paramNames )
     addMethodWithSOAPAction( name, nil, *paramNames )
   end
@@ -84,6 +88,11 @@ class Driver
     NS.reset
     ns = NS.new
     ns.assign( @namespace )
+
+    # Set dumpDev if needed.
+    if @dumpFileBase
+      @handler.dumpFileBase = @dumpFileBase + '_' << methodName
+    end
 
     # Then, call @proxy.call like the following.
     header, body = @proxy.call( ns, headers, methodName, *params )
