@@ -107,23 +107,29 @@ private
 
   def decode_tag(ns, name, attrs, parent)
     o = nil
-    element = ns.parse(name)
+    elename = ns.parse(name)
     if !parent
-      if element == DefinitionsName
-	o = Definitions.parse_element(element)
+      if elename == DefinitionsName
+	o = Definitions.parse_element(elename)
       else
-	raise UnknownElementError.new("unknown element: #{element}")
+	raise UnknownElementError.new("unknown element: #{elename}")
       end
     else
-      o = parent.parse_element(element)
+      if elename == XMLSchema::AnnotationName
+        # only the first annotation element is allowed for each xsd element.
+        o = XMLSchema::Annotation.new
+      else
+        o = parent.parse_element(elename)
+      end
       unless o
-        unless @ignored.key?(element)
-          STDERR.puts("ignored element: #{element}")
-          @ignored[element] = element
+        unless @ignored.key?(elename)
+          STDERR.puts("ignored element: #{elename}")
+          @ignored[elename] = elename
         end
 	o = Documentation.new	# which accepts any element.
       end
       # node could be a pseudo element.  pseudo element has its own parent.
+      o.root = parent.root
       o.parent = parent if o.parent.nil?
     end
     attrs.each do |key, value|
