@@ -31,7 +31,11 @@ class ComplexType < Info
 
   def check_type
     if content
-      :TYPE_STRUCT
+      if content.elements.size == 1 and content.elements[0].maxoccurs != 1
+	:TYPE_ARRAY
+      else
+	:TYPE_STRUCT
+      end
     elsif complexcontent and complexcontent.base == ::SOAP::ValueArrayName
       :TYPE_ARRAY
     else
@@ -70,10 +74,19 @@ class ComplexType < Info
   end
 
   def find_arytype
-    complexcontent.attributes.each do |attribute|
-      if attribute.ref == ::SOAP::AttrArrayTypeName
-	return attribute.arytype
+    unless compoundtype == :TYPE_ARRAY
+      raise RuntimeError.new("Assert: not for array")
+    end
+    if complexcontent
+      complexcontent.attributes.each do |attribute|
+	if attribute.ref == ::SOAP::AttrArrayTypeName
+	  return attribute.arytype
+	end
       end
+    elsif content.elements.size == 1 and content.elements[0].maxoccurs != 1
+      return content.elements[0].type
+    else
+      raise RuntimeError.new("Assert: Unknown array definition.")
     end
     nil
   end
@@ -81,9 +94,6 @@ class ComplexType < Info
 private
 
   def content_arytype
-    unless compoundtype == :TYPE_ARRAY
-      raise RuntimeError.new("Assert: not for array")
-    end
     arytype = find_arytype
     ns = arytype.namespace
     name = arytype.name.sub(/\[(?:,)*\]$/, '')
