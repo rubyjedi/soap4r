@@ -50,10 +50,16 @@ class StandaloneServer < Devel::Application
 
   def initialize(app_name, namespace, host = "0.0.0.0", port = 8080)
     super(app_name)
+    @logdev = Devel::Logger.new(STDERR)
+    @logdev.sev_threshold = SEV_WARN
+    def @logdev.<<(msg)
+      log(SEV_INFO, msg)
+    end
     @namespace = namespace
     @server = WEBrick::HTTPServer.new(
       :BindAddress => host,
-      :AccessLog => [],
+      :Logger => logdev,
+      :AccessLog => [[logdev, WEBrick::AccessLog::COMBINED_LOG_FORMAT]],
       :Port => port
     )
     @soaplet = ::SOAP::RPC::SOAPlet.new
