@@ -1,6 +1,6 @@
 =begin
 SOAP4R - SOAP NQXMLParser library.
-Copyright (C) 2001 NAKAMURA Hiroshi.
+Copyright (C) 2001, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -30,14 +30,24 @@ class SOAPNQXMLLightWeightParser < SOAPParser
     unless NQXML.const_defined?( "XMLDecl" )
       NQXML.const_set( "XMLDecl", NilClass )
     end
-  end
-
-  def self.adjustKCode
-    true
+    @charsetBackup = nil
   end
 
   def prologue
-    @charsetStrBackup = $KCODE.to_s.dup
+    @charsetBackup = $KCODE
+    $KCODE = Charset.getCharsetStr( charset )
+  end
+
+  def epilogue
+    $KCODE = @charsetBackup
+  end
+
+  def setXMLDeclEncoding( charset )
+    if self.charset.nil?
+      @charsetBackup = $KCODE
+      $KCODE = Charset.getCharsetStr( charset )
+    end
+    super
   end
 
   def doParse( stringOrReadable )
@@ -54,12 +64,9 @@ class SOAPNQXMLLightWeightParser < SOAPParser
 	characters( entity.text )
       # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
       when NQXML::XMLDecl, NQXML::ProcessingInstruction
-	encoding = entity.attrs[ 'encoding' ]
-	if encoding
-	  charsetStr = Charset.getCharsetStr( encoding )
-	  @charsetStrBackup = $KCODE.to_s.dup
-	  $KCODE = charsetStr
-	  Charset.setXMLInstanceEncoding( charsetStr )
+	charset = entity.attrs[ 'encoding' ]
+	if charset
+	  setXMLDeclEncoding( charset )
 	end
       when NQXML::Comment
 	# Nothing to do.
@@ -69,24 +76,17 @@ class SOAPNQXMLLightWeightParser < SOAPParser
     end
   end
 
-  def epilogue
-    $KCODE = @charsetStrBackup
-    Charset.setXMLInstanceEncoding( $KCODE )
-  end
-
   setFactory( self )
 end
 
+
+=begin
 class SOAPNQXMLStreamingParser < SOAPParser
   def initialize( *vars )
     super( *vars )
     unless NQXML.const_defined?( "XMLDecl" )
       NQXML.const_set( "XMLDecl", NilClass )
     end
-  end
-
-  def prologue
-    @charsetStrBackup = $KCODE.to_s.dup
   end
 
   def doParse( stringOrReadable )
@@ -103,12 +103,9 @@ class SOAPNQXMLStreamingParser < SOAPParser
 	characters( entity.text )
       # NQXML::ProcessingInstruction is for nqxml version < 1.1.0
       when NQXML::XMLDecl, NQXML::ProcessingInstruction
-	encoding = entity.attrs[ 'encoding' ]
-	if encoding
-	  charsetStr = Charset.getCharsetStr( encoding )
-	  @charsetStrBackup = $KCODE.to_s.dup
-	  $KCODE = charsetStr
-	  Charset.setXMLInstanceEncoding( charsetStr )
+	charset = entity.attrs[ 'encoding' ]
+	if charset
+	  setXMLDeclEncoding( charset )
 	end
       when NQXML::Comment
 	# Nothing to do.
@@ -118,13 +115,9 @@ class SOAPNQXMLStreamingParser < SOAPParser
     end
   end
 
-  def epilogue
-    $KCODE = @charsetStrBackup
-    Charset.setXMLInstanceEncoding( $KCODE )
-  end
-
   # setFactory( self )
 end
+=end
 
 
 end
