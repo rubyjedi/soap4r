@@ -9,4 +9,3 @@ class FooBar
     @any = any
   end
 end
-

@@ -17,4 +17,3 @@ class Person
     @var3 = var3
   end
 end
-

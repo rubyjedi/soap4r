@@ -1,6 +1,6 @@
 require 'test/unit'
 require 'wsdl/parser'
-require 'soap/mapping/wsdlRegistry'
+require 'soap/mapping/wsdlencodedregistry'
 require 'soap/marshal'
 
 class WSDLMarshaller
@@ -14,7 +14,7 @@ class WSDLMarshaller
       :generate_explicit_type => false,
       :pretty => true
     }
-    @mapping_registry = Mapping::WSDLRegistry.new(types)
+    @mapping_registry = Mapping::WSDLEncodedRegistry.new(types)
   end
 
   def dump(obj, io = nil)
