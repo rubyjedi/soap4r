@@ -41,7 +41,7 @@ private
     @wsdl_location, @opt = parse_opt(GetoptLong.new(*OptSet))
     usage_exit unless @wsdl_location
     @wsdl = import(@wsdl_location)
-    @name = @wsdl.name.name || 'default'
+    @name = @wsdl.name ? @wsdl.name.name : 'default'
     create_file
     0
   end
