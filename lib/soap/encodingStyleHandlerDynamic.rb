@@ -167,12 +167,13 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   def decodeTag( ns, elementName, attrs, parent )
     # ToDo: check if @textBuf is empty...
     @textBuf = ''
-    isNil, type, arrayType, root, offset, position, extraAttrs = decodeAttrs( ns, attrs )
+    isNil, type, arrayType, root, offset, position, href, id, extraAttrs =
+      decodeAttrs( ns, attrs )
     o = nil
     if isNil
       o = SOAPNil.decode( elementName )
-    elsif attrs[ 'href' ]
-      o = SOAPReference.decode( elementName, attrs[ 'href' ] )
+    elsif href
+      o = SOAPReference.decode( elementName, href )
       @referencePool << o
     elsif @decodeComplexTypes &&
 	( parent.node.class != SOAPBody || @firstTopElement )
@@ -193,7 +194,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     end
 
     o.parent = parent
-    o.id = attrs[ 'id' ] 
+    o.id = id
     o.root = root
     o.position = position
 
@@ -300,10 +301,6 @@ private
       assignNamespace( attrs, ns, EncodingNamespace )
       attrs[ ns.name( AttrEncodingStyleName ) ] = EncodingNamespace
       data.encodingStyle = EncodingNamespace
-    end
-
-    if data.is_a?( SOAPNil )
-      attrs[ ns.name( XSD::AttrNilName ) ] = XSD::NilValue
     end
 
     if data.is_a?( SOAPNil )
@@ -475,6 +472,8 @@ private
     root = nil
     offset = nil
     position = nil
+    href = nil
+    id = nil
     extraAttrs = {}
 
     attrs.each do | key, value |
@@ -507,10 +506,17 @@ private
           next
         end
       end
+      if key == 'href'
+        href = value
+        next
+      elsif key == 'id'
+        id = value
+        next
+      end
       extraAttrs[ qname ] = value
     end
 
-    return isNil, type, arrayType, root, offset, position, extraAttrs
+    return isNil, type, arrayType, root, offset, position, href, id, extraAttrs
   end
 
   def decodeArrayPosition( position )

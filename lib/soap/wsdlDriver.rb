@@ -57,7 +57,7 @@ class WSDLDriverFactory
       raise RuntimeError.new( "Port #{ portName } not found in WSDL." )
     end
     drv = WSDLDriver.new( @wsdl, port, @logDev, opt )
-    drv.wsdlMappingRegistry = RPCUtils::WSDLMappingRegistry.new( @wsdl,
+    drv.wsdlMappingRegistry = RPC::WSDLMappingRegistry.new( @wsdl,
       port.getPortType )
     drv
   end
@@ -187,7 +187,7 @@ private
     operationName, messageName, paramNames, soapAction =
       @operationMap[ methodName ]
     obj = createMethodObject( paramNames, params )
-    method = RPCUtils.obj2soap( obj, @wsdlMappingRegistry, messageName )
+    method = RPC.obj2soap( obj, @wsdlMappingRegistry, messageName )
     method.elementName = operationName
     method.type = XSD::QName.new	# Request should not be typed.
 
@@ -201,15 +201,15 @@ private
 	raise EmptyResponseError.new( "Empty response." )
       end
     rescue SOAP::FaultError => e
-      RPCUtils.fault2exception( e )
+      RPC.fault2exception( e )
     end
 
     ret = body.response ?
-      RPCUtils.soap2obj( body.response, @mappingRegistry ) : nil
+      RPC.soap2obj( body.response, @mappingRegistry ) : nil
 
     if body.outParams
       outParams = body.outParams.collect { | outParam |
-	RPCUtils.soap2obj( outParam )
+	RPC.soap2obj( outParam )
       }
       return [ ret ].concat( outParams )
     else
