@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'getoptlong'
+require 'logger'
 require 'xsd/qname'
 require 'wsdl/parser'
 require 'wsdl/importer'
@@ -10,8 +11,6 @@ require 'wsdl/soap/driverCreator'
 require 'wsdl/soap/clientSkeltonCreator'
 require 'wsdl/soap/standaloneServerStubCreator'
 require 'wsdl/soap/cgiStubCreator'
-
-require 'logger'
 
 class WSDL2RubyApp < Logger::Application
 private
@@ -27,13 +26,13 @@ private
     ['--driver','-d', GetoptLong::OPTIONAL_ARGUMENT],
     ['--force','-f', GetoptLong::NO_ARGUMENT],
     ['--quiet','-q', GetoptLong::NO_ARGUMENT],
- ]
+  ]
 
   def initialize
     super('app')
     STDERR.sync = true
     @wsdl_location = nil
-    @opt = {}
+    @opt = nil
     @wsdl = nil
     @name = nil
     self.level = Logger::FATAL
