@@ -187,6 +187,7 @@ private
   end
 
   def decodeTagEnd( ns, node )
+    node.postParse
   end
 
   def decodeText( ns, text )

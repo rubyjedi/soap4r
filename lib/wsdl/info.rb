@@ -34,6 +34,8 @@ class Info
   def parseElement( element ); end	# abstract
   
   def parseAttr( attr, value ); end	# abstract
+
+  def postParse; end			# abstract
 end
 
 
