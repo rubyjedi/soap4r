@@ -61,7 +61,7 @@ class Driver
     paramDef = if paramArg.size == 1 and paramArg[ 0 ].is_a?( Array )
 	paramArg[ 0 ]
       else
-	createParamDef( paramArg )
+	SOAPMethod.createParamDef( paramArg )
       end
     @proxy.addMethod( name, paramDef, soapAction )
   end
@@ -84,19 +84,6 @@ class Driver
   end
 
 private
-
-  def createParamDef( paramNames )
-    paramDef = []
-    paramNames.each do | paramName |
-      paramDef.push( [ 'in', paramName ] )
-    end
-    paramDef.push( [ 'out, retval', 'return' ] )
-    paramDef
-  end
-
-  def addProxyMethod( name, paramDef, soapAction )
-    @proxy.addMethod( name, paramDef, soapAction )
-  end
 
   def log( sev, comment )
     @log.add( sev, "<#{ @logId }> #{ comment }", self.type ) if @log

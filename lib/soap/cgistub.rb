@@ -282,7 +282,12 @@ private
   end
 
   # namespace cannot be defined here.
-  def addMethod( receiver, methodName, paramDef = nil )
+  def addMethod( receiver, methodName, *paramArg )
+    paramDef = if paramArg.size == 1 and paramArg[ 0 ].is_a?( Array )
+        paramArg[ 0 ]
+      else
+        SOAPMethod.createParamDef( paramArg )
+      end
     @router.addMethod( @namespace, receiver, methodName, paramDef )
   end
 end
