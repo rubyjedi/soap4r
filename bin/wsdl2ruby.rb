@@ -26,6 +26,7 @@ private
     ['--standalone_server_stub','-a', GetoptLong::OPTIONAL_ARGUMENT],
     ['--driver','-d', GetoptLong::OPTIONAL_ARGUMENT],
     ['--force','-f', GetoptLong::NO_ARGUMENT],
+    ['--quiet','-q', GetoptLong::NO_ARGUMENT],
  ]
 
   def initialize
@@ -35,10 +36,16 @@ private
     @opt = {}
     @wsdl = nil
     @name = nil
+    self.level = Logger::FATAL
   end
 
   def run
     @wsdl_location, @opt = parse_opt(GetoptLong.new(*OptSet))
+    if @opt['quiet']
+      self.level = Logger::FATAL
+    else
+      self.level = Logger::INFO
+    end
     usage_exit unless @wsdl_location
     @wsdl = import(@wsdl_location)
     @name = @wsdl.name ? @wsdl.name.name : 'default'
@@ -84,6 +91,7 @@ Options:
   --standalone_server_stub [servicename]
   --driver [porttypename]
   --force
+  --quiet
 
 Terminology:
   Client <-> Driver <-(SOAP)-> Stub <-> Servant
@@ -120,6 +128,8 @@ __EOU__
   	  opt[name.sub(/^--/, '')] = arg.empty? ? nil : arg
 	when "--force"
 	  opt['force'] = true
+        when "--quiet"
+          opt['quiet'] = true
    	else
   	  raise ArgumentError.new("Unknown type #{ arg }")
    	end
@@ -135,8 +145,7 @@ __EOU__
     @classdef_filename = @name + '.rb'
     check_file(@classdef_filename) or return
     File.open(@classdef_filename, "w") do |f|
-      f << WSDL::SOAP::ClassDefCreator.new(
-        @wsdl.collect_complextypes, @wsdl).dump
+      f << WSDL::SOAP::ClassDefCreator.new(@wsdl).dump
     end
   end
 
