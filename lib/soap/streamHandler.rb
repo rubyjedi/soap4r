@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.24 2002/10/07 14:28:49 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.25 2003/01/12 02:19:04 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -82,6 +82,7 @@ public
   
   attr_accessor :dumpDev
   attr_accessor :dumpFileBase
+  attr_accessor :charset
   
   NofRetry = 10       	# [times]
   ConnectTimeout = 60   # [sec]
@@ -90,8 +91,8 @@ public
 
   def initialize( endpointUrl, proxy = nil, charset = nil )
     super( endpointUrl )
-    @proxy = proxy
-    @charset = charset
+    @proxy = proxy || ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
+    @charset = charset || Charset.getCharsetLabel( $KCODE )
     @dumpDev = nil	# Set an IO to get wiredump.
     @dumpFileBase = nil
     @client = HTTPAccess2::Client.new( @proxy, "SOAP4R/#{ Version }" )
@@ -123,9 +124,7 @@ private
   def sendPOST( soapString, soapAction, charset )
     data = ConnectionData.new
     data.sendString = soapString
-    charsetLabel = Charset.getCharsetLabel( charset ||
-      Charset.getXMLInstanceEncoding )
-    data.sendContentType = StreamHandler.createMediaType( charsetLabel )
+    data.sendContentType = StreamHandler.createMediaType( charset )
 
     dumpDev = if @dumpDev && @dumpDev.respond_to?( "<<" )
 	@dumpDev
