@@ -5,59 +5,46 @@ require 'ftools'
 
 include Config
 
+RUBYLIBDIR = CONFIG["rubylibdir"]
 RV = CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
-DSTPATH = CONFIG["sitedir"] + "/" +  RV 
-SRCPATH = File.dirname($0)
-
-def join(*arg)
-  File.join(*arg)
-end
+SITELIBDIR = CONFIG["sitedir"] + "/" +  RV 
+SRCPATH = File.join(File.dirname($0), 'lib')
 
 def install(from, to)
-  toPath = File.catname(from, to)
-  unless FileTest.exist?(toPath) and File.compare(from, toPath)
-    File.install(from, toPath, 0644, true)
+  to_path = File.catname(from, to)
+  unless FileTest.exist?(to_path) and File.compare(from, to_path)
+    File.install(from, to_path, 0644, true)
   end
 end
 
-def installDir(from, to)
-  unless FileTest.directory?(from)
-    raise RuntimeError.new("'#{ from }' not found.")
+def install_dir(*path)
+  from_path = File.join(SRCPATH, *path)
+  unless FileTest.directory?(from_path)
+    raise RuntimeError.new("'#{ from_path }' not found.")
   end
-  File.mkpath(to, true)
-  Dir[join(from, '*.rb')].each do |name|
-    install(name, to)
+  to_path_rubylib = File.join(RUBYLIBDIR, *path)
+  to_path_sitelib = File.join(SITELIBDIR, *path)
+  Dir[File.join(from_path, '*.rb')].each do |name|
+    basename = File.basename(name)
+    if File.exist?(File.join(to_path_rubylib, basename))
+      install(name, to_path_rubylib)
+    else
+      File.mkpath(to_path_sitelib, true)
+      install(name, to_path_sitelib)
+    end
   end
 end
 
 begin
-  installDir(
-    join(SRCPATH, 'lib', 'soap'),
-    join(DSTPATH, 'soap'))
-  installDir(
-    join(SRCPATH, 'lib', 'soap', 'rpc'),
-    join(DSTPATH, 'soap', 'rpc'))
-  installDir(
-    join(SRCPATH, 'lib', 'soap', 'mapping'),
-    join(DSTPATH, 'soap', 'mapping'))
-  installDir(
-    join(SRCPATH, 'lib', 'soap', 'encodingstyle'),
-    join(DSTPATH, 'soap', 'encodingstyle'))
-  installDir(
-    join(SRCPATH, 'lib', 'wsdl'),
-    join(DSTPATH, 'wsdl'))
-  installDir(
-    join(SRCPATH, 'lib', 'wsdl', 'xmlSchema'),
-    join(DSTPATH, 'wsdl', 'xmlSchema'))
-  installDir(
-    join(SRCPATH, 'lib', 'wsdl', 'soap'),
-    join(DSTPATH, 'wsdl', 'soap'))
-  installDir(
-    join(SRCPATH, 'lib', 'xsd'),
-    join(DSTPATH, 'xsd'))
-  installDir(
-    join(SRCPATH, 'lib', 'xsd', 'xmlparser'),
-    join(DSTPATH, 'xsd', 'xmlparser'))
+  install_dir('soap')
+  install_dir('soap', 'rpc')
+  install_dir('soap', 'mapping')
+  install_dir('soap', 'encodingstyle')
+  install_dir('wsdl')
+  install_dir('wsdl', 'xmlSchema')
+  install_dir('wsdl', 'soap')
+  install_dir('xsd')
+  install_dir('xsd', 'xmlparser')
 
   puts "install succeed!"
 
