@@ -53,7 +53,7 @@ class Body < Info
     when NamespaceAttrName
       @namespace = value
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end

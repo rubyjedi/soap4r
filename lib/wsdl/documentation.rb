@@ -34,7 +34,7 @@ class Documentation < Info
 
   def parse_attr(attr, value)
     # Accepts any element.
-    nil
+    true
   end
 end
 

@@ -22,9 +22,11 @@ module WSDL
 
 class Info
   attr_accessor :parent
+  attr_accessor :id
 
   def initialize
     @parent = nil
+    @id = nil
   end
 
   def root

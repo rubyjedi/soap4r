@@ -46,7 +46,7 @@ class Types < Info
   end
 
   def parse_attr(attr, value)
-    raise UnknownAttributeError.new("Unknown attr #{ attr }.")
+    nil
   end
 end
 

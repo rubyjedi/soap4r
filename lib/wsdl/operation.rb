@@ -97,7 +97,7 @@ class Operation < Info
     when ParameterOrderAttrName
       @parameter_order = value.split(/\s+/)
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 

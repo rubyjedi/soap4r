@@ -32,12 +32,12 @@ class XMLScanner < XSD::XMLParser::Parser
     @attrs = {}
     @curattr = nil
     @scanner = XMLScan::XMLScanner.new(self)
-    @scanner.kcode = ::SOAP::Charset.charset_str(charset) if charset
+    @scanner.kcode = ::XSD::Charset.charset_str(charset) if charset
     @scanner.parse(string_or_readable)
   end
 
   def scanner_kcode=(charset)
-    @scanner.kcode = ::SOAP::Charset.charset_str(charset) if charset
+    @scanner.kcode = ::XSD::Charset.charset_str(charset) if charset
     self.xmldecl_encoding = charset
   end
 

@@ -59,7 +59,7 @@ class Attribute < Info
 	  XSD::QName.new(XSD::Namespace, value)
 	end
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end

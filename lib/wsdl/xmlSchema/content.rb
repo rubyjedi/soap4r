@@ -82,7 +82,7 @@ class Content < Info
     when MixedAttrName
       @mixed = (value == 'true')
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 

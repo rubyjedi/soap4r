@@ -54,6 +54,7 @@ class Import < Info
       if @content
 	@content.targetnamespace = @namespace
       end
+      @namespace
     when LocationAttrName
       @location = value
       @content = import(@location)
@@ -61,8 +62,9 @@ class Import < Info
       if @namespace
 	@content.targetnamespace = @namespace
       end
+      @location
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 

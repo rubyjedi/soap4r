@@ -66,7 +66,7 @@ class Binding < Info
     when TypeAttrName
       @type = value
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end

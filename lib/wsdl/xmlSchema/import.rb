@@ -45,7 +45,7 @@ class Import < Info
     when SchemaLocationAttrName
       @schemalocation = value
     else
-      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
+      nil
     end
   end
 end
