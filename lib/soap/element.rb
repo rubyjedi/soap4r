@@ -30,25 +30,25 @@ class SOAPFault < SOAPStruct
 
 public
 
-  attr_accessor :faultCode
-  attr_accessor :faultString
-  attr_accessor :faultActor
+  attr_accessor :faultcode
+  attr_accessor :faultstring
+  attr_accessor :faultactor
   attr_accessor :detail
   attr_reader :options
 
   def initialize( faultCode = nil, faultString = nil, faultActor = nil, detail = nil, options = [] )
     super( self.type.to_s )
-    @faultCode = faultCode
-    @faultString = faultString
-    @faultActor = faultActor
+    @faultcode = faultCode
+    @faultstring = faultString
+    @faultactor = faultActor
     @detail = detail
     @options = options
   end
 
   def encode( ns )
-    faultElems = [ @faultCode.encode( ns, 'faultcode' ),
-      @faultString.encode( ns, 'faultstring' ),
-      @faultActor.encode( ns, 'faultactor' ) ]
+    faultElems = [ @faultcode.encode( ns, 'faultcode' ),
+      @faultstring.encode( ns, 'faultstring' ),
+      @faultactor.encode( ns, 'faultactor' ) ]
     faultElems.push( @detail.encode( ns, 'detail' )) if @detail
     @options.each do | opt |
       paramElem.push( opt.encode( ns ))
