@@ -423,11 +423,13 @@ private
     end
 
     if (klass = TypeMap[type])
-      klass.decode(elename)
-    else
-      # Unknown type... Struct or String
-      SOAPUnknown.new(self, elename, type, extraattr)
+      node = klass.decode(elename)
+      node.extraattr.update(extraattr)
+      return node
     end
+
+    # Unknown type... Struct or String
+    SOAPUnknown.new(self, elename, type, extraattr)
   end
 
   def decode_textbuf(node)
