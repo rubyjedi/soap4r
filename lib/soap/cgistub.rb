@@ -137,9 +137,10 @@ private
       str = @response.dump
       log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
       print str
-      raise
 
     end
+
+    0
   end
 
   def prologue; end
