@@ -734,15 +734,17 @@ module RPCUtils
 	raise MappingError.new( "Unknown klass: #{ klass }" )
       end
 
+      # Give priority to former entry.
       def init( initMapping = [] )
 	clear
-	initMapping.each do | objKlass, soapKlass, factory, info |
+	initMapping.reverse_each do | objKlass, soapKlass, factory, info |
   	  set( objKlass, soapKlass, factory, info )
    	end
       end
 
+      # Give priority to latter entry.
       def set( objKlass, soapKlass, factory, info )
-	@map << [ objKlass, soapKlass, factory, info ]
+	@map.unshift( [ objKlass, soapKlass, factory, info ] )
       end
 
       def clear
@@ -785,30 +787,27 @@ module RPCUtils
     ]
 
     def initialize()
-      @userMap = Mapping.new( self )
-      @baseMap = Mapping.new( self )
-      @baseMap.init( SOAPBaseMapping )
+      @map = Mapping.new( self )
+      @map.init( SOAPBaseMapping )
+      UserMapping.each do | mapData |
+	set( *mapData )
+      end
       @defaultFactory = UnknownKlassFactory
     end
 
     def set( objKlass, soapKlass, factory, info = nil )
-      @userMap.set( objKlass, soapKlass, factory, info )
+      @map.set( objKlass, soapKlass, factory, info )
     end
 
     def obj2soap( klass, obj )
-      @userMap.obj2soap( klass, obj ) ||
-	@baseMap.obj2soap( klass, obj ) ||
+      @map.obj2soap( klass, obj ) ||
 	@defaultFactory.obj2soap( klass, obj, nil, self )
     end
 
     def soap2obj( klass, node )
       begin
-	return @userMap.soap2obj( klass, node )
+	return @map.soap2obj( klass, node )
       rescue MappingError
-	begin
-	  return @baseMap.soap2obj( klass, node )
-	rescue MappingError
-	end
       end
 
       @defaultFactory.soap2obj( klass, node, nil, self )
