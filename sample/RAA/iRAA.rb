@@ -1,11 +1,11 @@
-require 'soap/rpcUtils'
+require 'soap/mapping'
 
 
 module RAA; extend SOAP
 
 
 InterfaceNS = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"
-MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
+MappingRegistry = SOAP::Mapping::Registry.new
 
 Methods = [
   ['getAllListings', ['retval', 'return']],
@@ -47,7 +47,7 @@ end
 MappingRegistry.set(
   ::RAA::Category,
   ::SOAP::SOAPStruct,
-  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+  ::SOAP::Mapping::Registry::TypedStructFactory,
   { :type => XSD::QName.new(InterfaceNS, "Category") }
 )
 
@@ -75,7 +75,7 @@ end
 MappingRegistry.set(
   ::RAA::Product,
   ::SOAP::SOAPStruct,
-  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+  ::SOAP::Mapping::Registry::TypedStructFactory,
   { :type => XSD::QName.new(InterfaceNS, "Product") }
 )
 
@@ -98,7 +98,7 @@ end
 MappingRegistry.set(
   ::RAA::Owner,
   ::SOAP::SOAPStruct,
-  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+  ::SOAP::Mapping::Registry::TypedStructFactory,
   { :type => XSD::QName.new(InterfaceNS, "Owner") }
 )
 
@@ -129,7 +129,7 @@ end
 MappingRegistry.set(
   ::RAA::Info,
   ::SOAP::SOAPStruct,
-  ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+  ::SOAP::Mapping::Registry::TypedStructFactory,
   { :type => XSD::QName.new(InterfaceNS, "Info") }
 )
 
@@ -137,7 +137,7 @@ class StringArray < Array; end
 MappingRegistry.set(
   ::RAA::StringArray,
   ::SOAP::SOAPArray,
-  ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+  ::SOAP::Mapping::Registry::TypedArrayFactory,
   { :type => XSD::XSDString::Type }
 )
 
@@ -145,7 +145,7 @@ class InfoArray < Array; end
 MappingRegistry.set(
   ::RAA::InfoArray,
   ::SOAP::SOAPArray,
-  ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+  ::SOAP::Mapping::Registry::TypedArrayFactory,
   { :type => XSD::QName.new(InterfaceNS, 'Info') }
 )
 

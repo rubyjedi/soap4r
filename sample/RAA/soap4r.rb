@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'iRAA'
-require 'soap/driver'
+require 'soap/rpc/driver'
 
 
 server = ARGV.shift || 'http://raa.ruby-lang.org/soap/1.0/'
