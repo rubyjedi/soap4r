@@ -48,24 +48,44 @@ class MIMEMessage
     end
 
     def parse(str)
+      header_cache = nil
       str.each do |line|
-	if line =~ /^\A([^\: \t]+):\s*(.+)$/
-	  header = parse_rhs($2.strip)
-	  header.key = $1.strip
-	  self[header.key.downcase] = header
+	case line
+	when /^\A[^\: \t]+:\s*.+$/
+	  parse_line(header_cache) if header_cache
+	  header_cache = line.sub(/\r?\n\z/, '')
+	when /^\A\s+(.*)$/
+	  # a continuous line at the beginning line crashes here.
+	  header_cache << line
+	else
+	  raise RuntimeError.new("unexpected header: #{line.inspect}")
 	end
       end
+      parse_line(header_cache) if header_cache
       self
     end
 
-    def parse_rhs( str )
+    def parse_line(line)
+      if /^\A([^\: \t]+):\s*(.+)\z/ =~ line
+    	header = parse_rhs($2.strip)
+	header.key = $1.strip
+	self[header.key.downcase] = header
+      else
+	raise RuntimeError.new("unexpected header line: #{line.inspect}")
+      end
+    end
+
+    def parse_rhs(str)
       a = str.split(/;+\s+/)
       header = Header.new
       header.str = str
       header.root = a.shift
       a.each do |pair|
-	next unless (pair =~ /(\w+)\s*=\s*"(.+)"/)
-	header[$1.downcase] = $2
+	if pair =~ /(\w+)\s*=\s*"?([^"]+)"?/
+	  header[$1.downcase] = $2
+	else
+	  raise RuntimeError.new("unexpected header component: #{pair.inspect}")
+	end
       end
       header
     end
@@ -102,14 +122,16 @@ class MIMEMessage
       headers, body = str.split(/\r\n\r\n/s)
       if headers != nil and body != nil
 	@headers = Headers.parse(headers)
-	@body = body
+	@body = body.sub(/\r\n\z/, '')
+      else
+	raise RuntimeError.new("unexpected part: #{str.inspect}")
       end
       self
     end
 
     def contentid
       if @contentid == nil
-	@contentid = @headers[ 'content-id' ].str
+	@contentid = @headers['content-id'].str
 	@contentid = $1 if @contentid =~ /^<(.+)>$/
       end
       @contentid
@@ -136,7 +158,7 @@ class MIMEMessage
   def close
     @headers.add(
       "Content-Type",
-      "multipart/related; type=\"text/xml\"; boundary=\"#{ boundary }\"; start=\"#{ @parts[0].contentid }\""
+      "multipart/related; type=\"text/xml\"; boundary=\"#{boundary}\"; start=\"#{@parts[0].contentid}\""
     )
   end
 
@@ -144,10 +166,9 @@ class MIMEMessage
     @headers = Headers.parse(head + "\r\n" + "From: jfh\r\n")
     boundary = @headers['content-type']['boundary']
     if boundary != nil
-      a = str.split(/--#{ boundary }-{0,2}[\r\n]{0,1}/s)
-      if a.length > 2
-	@parts = a[1, a.length-2].collect { |s| Part.parse(s) }
-      end
+      parts = str.split(/--#{Regexp.quote(boundary)}\s*(?:\r\n|--\r\n)/)
+      part = parts.shift	# preamble must be ignored.
+      @parts = parts.collect { |part| Part.parse(part) }
     else
       @parts = [Part.parse(str)]
     end
@@ -202,9 +223,9 @@ class MIMEMessage
     str = ''
     @parts.each do |prt|
       str << "--" + boundary + "\r\n"
-      str << prt.to_s
+      str << prt.to_s + "\r\n"
     end
-    str << '--' + boundary + "--\r\n\r\n"
+    str << '--' + boundary + "--\r\n"
     str
   end
 
