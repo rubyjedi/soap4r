@@ -1,0 +1,644 @@
+<?xml version="1.0"?>
+<definitions
+    name="raa"
+    targetNamespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
+    xmlns:tns="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
+    xmlns:txd="http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+    xmlns:apachesoap="http://xml.apache.org/xml-soap">
+
+  <types>
+    <schema
+	xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/">
+
+      <complexType name="Gem">
+  	<all>
+    	  <element name="id" type="xsd:int"/>
+    	  <element name="category" type="txd:Category"/>
+	  <element name="owner" type="txd:Owner"/>
+    	  <element name="project" type="txd:Project"/>
+	  <element name="updated" type="xsd:dateTime"/>
+	  <element name="created" type="xsd:dateTime"/>
+  	</all>
+      </complexType>
+
+      <complexType name="Category">
+  	<all>
+    	  <element name="major" type="xsd:string"/>
+	  <element name="minor" type="xsd:string"/>
+  	</all>
+      </complexType>
+
+      <complexType name="Owner">
+  	<all>
+    	  <element name="id" type="xsd:int"/>
+	  <element name="email" type="xsd:anyURI"/>
+	  <element name="name" type="xsd:string"/>
+  	</all>
+      </complexType>
+
+      <complexType name="Project">
+  	<all>
+    	  <element name="name" type="xsd:string"/>
+    	  <element name="short_description" type="xsd:string"/>
+	  <element name="version" type="xsd:string"/>
+	  <element name="status" type="xsd:string"/>
+	  <element name="url" type="xsd:anyURI"/>
+	  <element name="download" type="xsd:anyURI"/>
+	  <element name="license" type="xsd:string"/>
+	  <element name="description" type="xsd:string"/>
+	  <element name="description_style" type="xsd:string"/>
+	  <element name="updated" type="xsd:dateTime"/>
+	  <element name="history" type="txd:ProjectArray"/>
+	  <element name="dependency" type="txd:ProjectDependencyArray"/>
+  	</all>
+      </complexType>
+
+      <complexType name="ProjectDependency">
+  	<all>
+    	  <element name="project" type="xsd:string"/>
+          <element name="version" type="xsd:string"/>
+    	  <element name="description" type="xsd:string"/>
+  	</all>
+      </complexType>
+
+      <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+      <complexType name="GemArray">
+	<complexContent>
+  	  <restriction base="soapenc:Array">
+  	    <attribute ref="soapenc:arrayType" wsdl:arrayType="txd:Gem[]"/>
+  	  </restriction>
+	</complexContent>
+      </complexType>
+
+      <complexType name="OwnerArray">
+	<complexContent>
+  	  <restriction base="soapenc:Array">
+  	    <attribute ref="soapenc:arrayType" wsdl:arrayType="txd:Owner[]"/>
+  	  </restriction>
+	</complexContent>
+      </complexType>
+
+      <complexType name="ProjectArray">
+	<complexContent>
+  	  <restriction base="soapenc:Array">
+  	    <attribute ref="soapenc:arrayType" wsdl:arrayType="txd:Project[]"/>
+  	  </restriction>
+	</complexContent>
+      </complexType>
+
+      <complexType name="ProjectDependencyArray">
+	<complexContent>
+  	  <restriction base="soapenc:Array">
+  	    <attribute ref="soapenc:arrayType" wsdl:arrayType="txd:ProjectDependency[]"/>
+  	  </restriction>
+	</complexContent>
+      </complexType>
+
+      <complexType name="StringArray">
+	<complexContent>
+  	  <restriction base="soapenc:Array">
+  	    <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:string[]"/>
+  	  </restriction>
+	</complexContent>
+      </complexType>
+    </schema>
+
+    <!-- type definition for ApacheSOAP's Map -->
+    <schema
+	xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://xml.apache.org/xml-soap">
+      <complexType name="Map">
+	<sequence>
+	  <element name="item" minOccurs="0" maxOccurs="unbounded">
+	    <complexType>
+	      <sequence>
+		<element name="key" type="xsd:anyType" />
+		<element name="value" type="xsd:anyType" />
+	      </sequence>
+	    </complexType>
+	  </element>
+	</sequence>
+      </complexType>
+    </schema>
+  </types>
+
+  <message name="msg_empty"/>
+
+  <message name="msg_name">
+    <part name="name" type="xsd:string"/>
+  </message>
+
+  <message name="msg_index">
+    <part name="idx" type="xsd:int"/>
+  </message>
+
+  <message name="msg_category">
+    <part name="major" type="xsd:string"/>
+    <part name="minor" type="xsd:string"/>
+  </message>
+
+  <message name="msg_name_version">
+    <part name="name" type="xsd:string"/>
+    <part name="version" type="xsd:string"/>
+  </message>
+
+  <message name="msg_substring">
+    <part name="substring" type="xsd:string"/>
+  </message>
+
+  <message name="msg_owner_index">
+    <part name="owner_id" type="xsd:int"/>
+  </message>
+
+  <message name="msg_datetime_index">
+    <part name="date" type="xsd:dateTime"/>
+    <part name="idx" type="xsd:int"/>
+  </message>
+
+  <message name="msg_substring_index">
+    <part name="substring" type="xsd:string"/>
+    <part name="idx" type="xsd:int"/>
+  </message>
+
+  <message name="msg_update_request">
+    <part name="name" type="xsd:string"/>
+    <part name="pass" type="xsd:string"/>
+    <part name="gem" type="txd:Gem"/>
+  </message>
+
+  <message name="msg_update_pass_request">
+    <part name="name" type="xsd:string"/>
+    <part name="oldpass" type="xsd:string"/>
+    <part name="newpass" type="xsd:string"/>
+  </message>
+
+  <message name="msg_gem_response">
+    <part name="return" type="txd:Gem"/>
+  </message>
+
+  <message name="msg_dependency_array_response">
+    <part name="return" type="txd:ProjectDependencyArray"/>
+  </message>
+
+  <message name="msg_names_response">
+    <part name="return" type="txd:StringArray"/>
+  </message>
+
+  <message name="msg_size_response">
+    <part name="return" type="xsd:int"/>
+  </message>
+
+  <message name="msg_gem_tree_response">
+    <part name="return" type="apachesoap:Map"/>
+  </message>
+
+  <message name="msg_search_response">
+    <part name="return" type="apachesoap:Map"/>
+  </message>
+
+  <message name="msg_owner_response">
+    <part name="return" type="txd:Owner"/>
+  </message>
+
+  <message name="msg_owner_array_response">
+    <part name="return" type="txd:OwnerArray"/>
+  </message>
+
+  <portType name="raaServicePortType">
+    <operation name="gem">
+      <input message="tns:msg_name"/>
+      <output message="tns:msg_gem_response"/>
+    </operation>
+
+    <operation name="dependents">
+      <input message="tns:msg_name_version"/>
+      <output message="tns:msg_dependency_array_response"/>
+    </operation>
+
+    <operation name="names">
+      <input message="tns:msg_empty"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="size">
+      <input message="tns:msg_empty"/>
+      <output message="tns:msg_size_response"/>
+    </operation>
+
+    <operation name="list_by_category"
+	parameterOrder="ownerId">
+      <input message="tns:msg_category"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="tree_by_category"
+	parameterOrder="ownerId">
+      <input message="tns:msg_empty"/>
+      <output message="tns:msg_gem_tree_response"/>
+    </operation>
+
+    <operation name="list_recent_updated">
+      <input message="tns:msg_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="list_recent_created">
+      <input message="tns:msg_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="list_updated_since">
+      <input message="tns:msg_datetime_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="list_created_since">
+      <input message="tns:msg_datetime_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="list_by_owner">
+      <input message="tns:msg_owner_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="search_name">
+      <input message="tns:msg_substring_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="search_short_description">
+      <input message="tns:msg_substring_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="search_owner">
+      <input message="tns:msg_substring_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="search_version">
+      <input message="tns:msg_substring_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="search_status">
+      <input message="tns:msg_substring_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="search_description">
+      <input message="tns:msg_substring_index"/>
+      <output message="tns:msg_names_response"/>
+    </operation>
+
+    <operation name="search">
+      <input message="tns:msg_substring"/>
+      <output message="tns:msg_search_response"/>
+    </operation>
+
+    <operation name="owner">
+      <input message="tns:msg_owner_index"/>
+      <output message="tns:msg_owner_response"/>
+    </operation>
+
+    <operation name="list_owner">
+      <input message="tns:msg_index"/>
+      <output message="tns:msg_owner_array_response"/>
+    </operation>
+
+    <operation name="update">
+      <input message="tns:msg_update_request"/>
+      <output message="tns:msg_gem_response"/>
+    </operation>
+
+    <operation name="update_pass">
+      <input message="tns:msg_update_pass_request"/>
+      <output message="tns:msg_empty"/>
+    </operation>
+  </portType>
+
+  <binding name="raaServicePortBinding" type="tns:raaServicePortType">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="gem">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="dependents">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="names">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="size">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="list_by_category">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="tree_by_category">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="list_recent_updated">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="list_recent_created">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="list_updated_since">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="list_created_since">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="list_by_owner">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="search_name">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="search_short_description">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="search_owner">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="search_version">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="search_status">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="search_description">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="search">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="owner">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="list_owner">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="update">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+
+    <operation name="update_pass">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+          encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"/>
+      </output>
+    </operation>
+  </binding>
+
+  <service name="raaService">
+    <port name="raaServicePort" binding="tns:raaServicePortBinding">
+      <soap:address location="http://raa.ruby-lang.org/soapsrv"/>
+    </port>
+  </service>
+</definitions>

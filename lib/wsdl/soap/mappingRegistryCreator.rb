@@ -51,6 +51,8 @@ private
         dump_struct_typemap(definedtype)
       when :TYPE_ARRAY
         dump_array_typemap(definedtype)
+      when :TYPE_MAP
+        nil
       else
         raise NotImplementedError.new("must not reach here")
       end

@@ -110,7 +110,7 @@ __EOD__
       ['::SOAP::SOAPStruct', part.element.namespace, part.element.name]
     elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
-      when :TYPE_STRUCT
+      when :TYPE_STRUCT, :TYPE_MAP
 	['::SOAP::SOAPStruct', part.type.namespace, part.type.name]
       when :TYPE_ARRAY
 	arytype = definedtype.find_arytype || XSD::AnyTypeName
