@@ -576,9 +576,10 @@ class SOAPElement
 
   def self.from_obj(hash_or_string, namespace = nil)
     o = SOAPElement.new(nil)
-    if hash_or_string.nil?
+    case hash_or_string
+    when nil
       o.text = nil
-    elsif hash_or_string.is_a?(Hash)
+    when Hash
       hash_or_string.each do |k, v|
 	child = self.from_obj(v, namespace)
 	child.elename =
