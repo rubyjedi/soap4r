@@ -124,7 +124,11 @@ private
       add_elements2soap(obj, ele)
       add_attributes2soap(obj, ele)
       ele
-    else # expected to be a basetype or anyType.
+    elsif obj.is_a?(Hash)
+      ele = SOAPElement.from_obj(obj)
+      ele.elename = name
+      ele
+    else # expected to be a basetype or an anyType.
       o = Mapping.obj2soap(obj)
       o.elename = name
       o
@@ -181,13 +185,15 @@ private
   def soapele2obj(node, obj_class = nil)
     unless obj_class
       typestr = ::XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
-      #typestr = Mapping.elename2name(node.elename.name)
       obj_class = Mapping.class_from_name(typestr)
     end
     if obj_class and obj_class.class_variables.include?('@@schema_element')
       soapele2definedobj(node, obj_class)
+    elsif node.is_a?(SOAPElement)
+      node.to_obj
     else
-      @rubytype_factory.soap2obj(nil, node, nil, self)
+      result, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
+      obj
     end
   end
 
