@@ -28,73 +28,52 @@ public
   attr_accessor :mandatorycharset
   attr_accessor :allow_unqualified_element
   attr_accessor :default_encodingstyle
-  attr_reader :method
+  attr_accessor :generate_explicit_type
+  attr_reader :headerhandler
+
+  attr_accessor :mapping_registry
+  attr_accessor :literal_mapping_registry
+
+  attr_reader :operation
 
   def initialize(streamhandler, soapaction = nil)
     @streamhandler = streamhandler
     @soapaction = soapaction
-    @method = {}
+    @operation = {}
     @mandatorycharset = nil
-    @allow_unqualified_element = false
+    @allow_unqualified_element = true
     @default_encodingstyle = nil
+    @generate_explicit_type = true
+    @headerhandler = Header::HandlerSet.new
+    @mapping_registry = nil
+    @literal_mapping_registry = ::SOAP::Mapping::WSDLLiteralRegistry.new
   end
 
-  class Request
-    include RPC
-
-  public
-
-    attr_reader :method
-    attr_reader :namespace
-    attr_reader :name
-
-    def initialize(model, values)
-      @method = model.dup
-      @namespace = @method.elename.namespace
-      @name = @method.elename.name
-
-      params = {}
-    
-      if ((values.size == 1) and (values[0].is_a?(Hash)))
-        params = values[0]
-      else
-        i = 0
-        @method.each_param_name(SOAPMethod::IN, SOAPMethod::INOUT) do |name|
-          params[name] = values[i] || SOAPNil.new
-          i += 1
-        end
-      end
-      @method.set_param(params)
-    end
+  def add_rpc_method(qname, soapaction, name, param_def, opt = {})
+    opt[:request_style] ||= :rpc
+    opt[:response_style] ||= :rpc
+    opt[:request_use] ||= :encoded
+    opt[:response_use] ||= :encoded
+    @operation[name] = Operation.new(qname, soapaction, name, param_def, opt)
   end
 
-  def add_method(qname, soapaction, name, param_def)
-    @method[name] = SOAPMethodRequest.new(qname, param_def, soapaction)
+  def add_document_method(qname, soapaction, name, param_def, opt = {})
+    opt[:request_style] ||= :document
+    opt[:response_style] ||= :document
+    opt[:request_use] ||= :literal
+    opt[:response_use] ||= :literal
+    @operation[name] = Operation.new(qname, soapaction, name, param_def, opt)
   end
 
-  def create_request(name, *values)
-    if (@method.key?(name))
-      method = @method[name]
-      method.encodingstyle = @default_encodingstyle if @default_encodingstyle
-    else
-      raise SOAP::RPC::MethodDefinitionError.new(
-	"Method: #{ name } not defined.")
-    end
-    Request.new(method, values)
-  end
+  # add_method is for shortcut of typical use="encoded" method definition.
+  alias add_method add_rpc_method
 
-  def invoke(req_header, req_body, soapaction = nil)
-    if req_header and !req_header.is_a?(SOAPHeader)
-      req_header = create_header(req_header)
-    end
-    if !req_body.is_a?(SOAPBody)
-      req_body = SOAPBody.new(req_body)
-    end
-    opt = create_options
-    opt[:external_content] = nil
+  def invoke(req_header, req_body, soapaction = nil, decode_typemap = nil)
     req_env = SOAPEnvelope.new(req_header, req_body)
-    send_string = Processor.marshal(req_env, opt)
-    conn_data = StreamHandler::ConnectionData.new(send_string)
+    opt = create_options
+    opt[:decode_typemap] = decode_typemap
+    opt[:external_content] = nil
+    conn_data = marshal(req_env, opt)
     if ext = opt[:external_content]
       mime = MIMEMessage.new
       ext.each do |k, v|
@@ -107,14 +86,38 @@ public
     end
     conn_data = @streamhandler.send(conn_data, soapaction)
     if conn_data.receive_string.empty?
-      return nil, nil
+      return nil
     end
     unmarshal(conn_data, opt)
   end
 
-  def call(req_header, name, *values)
-    req = create_request(name, *values)
-    invoke(req_header, req.method, req.method.soapaction || @soapaction)
+  def call(name, *params)
+    unless @operation.key?(name)
+      raise MethodDefinitionError, "Method: #{name} not defined."
+    end
+    op = @operation[name]
+    # Convert parameters: params array => SOAPArray => members array
+    req_header = create_request_header
+    req_body = op.create_request_body(params, @mapping_registry, @literal_mapping_registry)
+    req_body.encodingstyle ||= @default_encodingstyle
+    env = invoke(req_header, req_body, op.soapaction || @soapaction)
+    receive_headers(env.header)
+    raise EmptyResponseError.new("Empty response.") unless env
+    begin
+      check_fault(env.body)
+    rescue ::SOAP::FaultError => e
+      Mapping.fault2exception(e)
+    end
+    ret = env.body.response ?
+      Mapping.soap2obj(env.body.response, @mapping_registry) : nil
+    if env.body.outparams
+      outparams = env.body.outparams.collect { |outparam|
+        Mapping.soap2obj(outparam)
+      }
+      return [ret].concat(outparams)
+    else
+      return ret
+    end
   end
 
   def check_fault(body)
@@ -124,6 +127,28 @@ public
   end
 
 private
+
+  def create_request_header
+    headers = @headerhandler.on_outbound
+    if headers.empty?
+      nil
+    else
+      h = ::SOAP::SOAPHeader.new
+      headers.each do |header|
+        h.add(header.elename.name, header)
+      end
+      h
+    end
+  end
+
+  def receive_headers(headers)
+    @headerhandler.on_inbound(headers) if headers
+  end
+
+  def marshal(env, opt)
+    send_string = Processor.marshal(env, opt)
+    StreamHandler::ConnectionData.new(send_string)
+  end
 
   def unmarshal(conn_data, opt)
     contenttype = conn_data.receive_contenttype
@@ -162,7 +187,87 @@ private
     if @allow_unqualified_element
       opt[:allow_unqualified_element] = true
     end
+    opt[:generate_explicit_type] = @generate_explicit_type
     opt
+  end
+
+  class Operation
+    attr_reader :name
+    attr_reader :soapaction
+    attr_reader :request_style
+    attr_reader :response_style
+    attr_reader :request_use
+    attr_reader :response_use
+
+    def initialize(qname, soapaction, name, param_def, opt)
+      @request_style = opt[:request_style]
+      @response_style = opt[:response_style]
+      @request_use = opt[:request_use]
+      @response_use = opt[:response_use]
+      @rpc_method_factory = @document_method_name = nil
+      check_style(@request_style)
+      check_style(@response_style)
+      if @request_style == :rpc
+        @rpc_method_factory = SOAPMethodRequest.new(qname, param_def,
+          @soapaction)
+      else
+        @document_method_name = {}
+        param_def.each do |inout, paramname, typeinfo|
+          klass, namespace, name = typeinfo
+          unless klass.ancestors.include?(::SOAP::SOAPElement)
+            raise MethodDefinitionError, "illegal class: " + klass
+          end
+          case inout.to_s
+          when "input"
+            @document_method_name[:input] = ::XSD::QName.new(namespace, name)
+          when "output"
+            @document_method_name[:output] = ::XSD::QName.new(namespace, name)
+          else
+            raise MethodDefinitionError, "unknown type: " + inout
+          end
+        end
+      end
+    end
+
+    # for rpc
+    def each_param_name(*target)
+      if @request_style == :rpc
+        @rpc_method_factory.each_param_name(*target) do |name|
+          yield(name)
+        end
+      else
+        yield(@document_method_name[:input].name)
+      end
+    end
+
+    def create_request_body(values, mapping_registry, literal_mapping_registry)
+      if @request_style == :rpc
+        values = Mapping.obj2soap(values, mapping_registry).to_a
+        method = @rpc_method_factory.dup
+        params = {}
+        idx = 0
+        method.each_param_name(::SOAP::RPC::SOAPMethod::IN,
+            ::SOAP::RPC::SOAPMethod::INOUT) do |name|
+          params[name] = values[idx] || SOAPNil.new
+          idx += 1
+        end
+        method.set_param(params)
+        SOAPBody.new(method)
+      else
+        name = @document_method_name[:input]
+        document = literal_mapping_registry.obj2ele(values[0], name)
+        SOAPBody.new(document)
+      end
+    end
+
+  private
+
+    ALLOWED_STYLE = [:rpc, :document]
+    def check_style(style)
+      unless ALLOWED_STYLE.include?(style)
+        raise MethodDefinitionError, "unknown style: " + style
+      end
+    end
   end
 end
 

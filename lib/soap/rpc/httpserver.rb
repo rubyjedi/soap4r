@@ -55,6 +55,8 @@ class HTTPServer < Logger::Application
     @soaplet.app_scope_router.mapping_registry = mapping_registry
   end
 
+  # servant entry interface
+
   def add_rpc_request_servant(factory, namespace = @default_namespace,
       mapping_registry = nil)
     @soaplet.add_rpc_request_servant(factory, namespace, mapping_registry)
@@ -81,6 +83,8 @@ class HTTPServer < Logger::Application
     @soaplet.add_rpc_headerhandler(obj)
   end
 
+  # method entry interface
+
   def add_method(obj, name, *param)
     add_method_as(obj, name, name, *param)
   end
@@ -101,15 +105,15 @@ class HTTPServer < Logger::Application
       param_def, opt)
   end
 
-  def create_param_def(obj, name, param)
-    if param.size == 1 and param[0].is_a?(Array)
-      param[0]
-    elsif param.empty?
+  def create_param_def(obj, name, param = nil)
+    if param.nil? or param.empty?
       method = obj.method(name)
       ::SOAP::RPC::SOAPMethod.create_param_def(
-        (1..method.arity.abs).collect { |i| "p#{ i }" })
+        (1..method.arity.abs).collect { |i| "p#{i}" })
+    elsif param.size == 1 and param[0].is_a?(Array)
+      param[0]
     else
-      SOAP::RPC::SOAPMethod.create_param_def(param)
+      ::SOAP::RPC::SOAPMethod.create_param_def(param)
     end
   end
 

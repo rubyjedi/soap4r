@@ -8,6 +8,7 @@
 
 require 'soap/soap'
 require 'soap/mapping'
+require 'soap/mapping/wsdlliteralregistry'
 require 'soap/rpc/rpc'
 require 'soap/rpc/proxy'
 require 'soap/rpc/element'
@@ -48,6 +49,8 @@ class Driver
   __attr_proxy :mapping_registry, true
   __attr_proxy :soapaction, true
   __attr_proxy :default_encodingstyle, true
+  __attr_proxy :generate_explicit_type, true
+  __attr_proxy :allow_unqualified_element, true
 
   def httpproxy
     @servant.options["protocol.http.proxy"]
@@ -136,24 +139,26 @@ private
     @servant.add_rpc_method_interface(name, param_def)
   end
 
+  def add_document_method_interface(name, paramname)
+    @servant.add_document_method_interface(name, paramname)
+  end
+
   class Servant__
     attr_reader :options
     attr_reader :streamhandler
-    attr_reader :headerhandler
     attr_reader :proxy
+
+    attr_accessor :soapaction
 
     def initialize(host, endpoint_url, namespace)
       @host = host
       @namespace = namespace
-      @mapping_registry = nil
       @soapaction = nil
       @wiredump_file_base = nil
       @options = setup_options
       @streamhandler = HTTPPostStreamHandler.new(endpoint_url,
 	@options["protocol.http"] ||= ::SOAP::Property.new)
-      @headerhandler = Header::HandlerSet.new
       @proxy = Proxy.new(@streamhandler, @soapaction)
-      @proxy.allow_unqualified_element = true
     end
 
     def endpoint_url
@@ -166,19 +171,11 @@ private
     end
 
     def mapping_registry
-      @mapping_registry
+      @proxy.mapping_registry
     end
 
     def mapping_registry=(mapping_registry)
-      @mapping_registry = mapping_registry
-    end
-
-    def soapaction
-      @soapaction
-    end
-
-    def soapaction=(soapaction)
-      @soapaction = soapaction
+      @proxy.mapping_registry = mapping_registry
     end
 
     def default_encodingstyle
@@ -189,11 +186,34 @@ private
       @proxy.default_encodingstyle = encodingstyle
     end
 
+    def generate_explicit_type
+      @proxy.generate_explicit_type
+    end
+
+    def generate_explicit_type=(generate_explicit_type)
+      @proxy.generate_explicit_type = generate_explicit_type
+    end
+
+    def allow_unqualified_element
+      @proxy.allow_unqualified_element
+    end
+
+    def allow_unqualified_element=(allow_unqualified_element)
+      @proxy.allow_unqualified_element = allow_unqualified_element
+    end
+
+    def headerhandler
+      @proxy.headerhandler
+    end
+
     def test_loopback_response
       @streamhandler.test_loopback_response
     end
 
     def invoke(headers, body)
+      if headers and !headers.is_a?(SOAPHeader)
+        headers = create_header(headers)
+      end
       set_wiredump_file_base(body.elename.name)
       env = @proxy.invoke(headers, body)
       if env.nil?
@@ -205,27 +225,7 @@ private
 
     def call(name, *params)
       set_wiredump_file_base(name)
-      # Convert parameters: params array => SOAPArray => members array
-      params = Mapping.obj2soap(params, @mapping_registry).to_a
-      env = @proxy.call(call_headers, name, *params)
-      raise EmptyResponseError.new("Empty response.") unless env
-      receive_headers(env.header)
-      begin
-	@proxy.check_fault(env.body)
-      rescue SOAP::FaultError => e
-	Mapping.fault2exception(e)
-      end
-
-      ret = env.body.response ?
-	Mapping.soap2obj(env.body.response, @mapping_registry) : nil
-      if env.body.outparams
-	outparams = env.body.outparams.collect { |outparam|
-	  Mapping.soap2obj(outparam)
-	}
-	return [ret].concat(outparams)
-      else
-	return ret
-      end
+      @proxy.call(name, *params)
     end
 
     def add_method(name_as, soapaction, name, param_def)
@@ -237,7 +237,7 @@ private
     def add_rpc_method_interface(name, param_def)
       param_names = []
       i = 0
-      @proxy.method[name].each_param_name(RPC::SOAPMethod::IN,
+      @proxy.operation[name].each_param_name(RPC::SOAPMethod::IN,
   	  RPC::SOAPMethod::INOUT) do |param_name|
    	i += 1
     	param_names << "arg#{ i }"
@@ -251,29 +251,29 @@ private
       @host.method(name)
     end
 
+    def add_document_method_interface(name, paramname)
+      @host.instance_eval <<-EOS
+     	def #{ name }(param)
+      	  @servant.call(#{ name.dump }, param)
+       	end
+      EOS
+      @host.method(name)
+    end
+
   private
-
-    def call_headers
-      headers = @headerhandler.on_outbound
-      if headers.empty?
-	nil
-      else
-	h = ::SOAP::SOAPHeader.new
-	headers.each do |header|
-	  h.add(header.elename.name, header)
-	end
-	h
-      end
-    end
-
-    def receive_headers(headers)
-      @headerhandler.on_inbound(headers) if headers
-    end
 
     def set_wiredump_file_base(name)
       if @wiredump_file_base
       	@streamhandler.wiredump_file_base = @wiredump_file_base + "_#{ name }"
       end
+    end
+
+    def create_header(headers)
+      header = SOAPHeader.new()
+      headers.each do |content, mustunderstand, encodingstyle|
+        header.add(SOAPHeaderItem.new(content, mustunderstand, encodingstyle))
+      end
+      header
     end
 
     def setup_options

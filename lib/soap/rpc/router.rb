@@ -9,6 +9,7 @@
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/mapping'
+require 'soap/mapping/wsdlliteralregistry'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/streamHandler'
@@ -27,6 +28,7 @@ class Router
   attr_accessor :allow_unqualified_element
   attr_accessor :default_encodingstyle
   attr_accessor :mapping_registry
+  attr_accessor :literal_mapping_registry
   attr_reader :headerhandler
 
   def initialize(actor)
@@ -35,6 +37,7 @@ class Router
     @default_encodingstyle = nil
     @mapping_registry = nil
     @headerhandler = Header::HandlerSet.new
+    @literal_mapping_registry = ::SOAP::Mapping::WSDLLiteralRegistry.new
     @operation = {}
   end
 
@@ -46,12 +49,17 @@ class Router
     add_operation(qname, soapaction, receiver, name, param_def, opt)
   end
 
-  def add_document_method(receiver, qname, soapaction, name, opt = {})
+  def add_document_method(receiver, qname, soapaction, name, param_def, opt = {})
     opt[:request_style] ||= :document
     opt[:response_style] ||= :document
     opt[:request_use] ||= :encoded
     opt[:response_use] ||= :encoded
-    add_operation(qname, soapaction, receiver, name, nil, opt)
+    if opt[:request_style] == :document
+      inputdef = param_def.find { |inout, paramname, typeinfo| inout == "input" }
+      klass, nsdef, namedef = inputdef[2]
+      qname = ::XSD::QName.new(nsdef, namedef)
+    end
+    add_operation(qname, soapaction, receiver, name, param_def, opt)
   end
 
   def add_operation(qname, soapaction, receiver, name, param_def, opt)
@@ -75,7 +83,7 @@ class Router
       unless op
         raise RPCRoutingError.new("Method: #{request.elename} not supported.")
       end
-      soap_response = op.call(request, @mapping_registry)
+      soap_response = op.call(request, @mapping_registry, @literal_mapping_registry)
     rescue Exception
       soap_response = fault($!)
       conn_data.is_fault = true
@@ -219,10 +227,14 @@ private
       if @response_style == :rpc
         @rpc_response_factory =
           RPC::SOAPMethodRequest.new(qname, param_def, @soapaction)
+      else
+        outputdef = param_def.find { |inout, paramname, typeinfo| inout == "output" }
+        klass, nsdef, namedef = outputdef[2]
+        @document_response_qname = ::XSD::QName.new(nsdef, namedef)
       end
     end
 
-    def call(request, mapping_registry)
+    def call(request, mapping_registry, literal_mapping_registry)
       param = Mapping.soap2obj(request, mapping_registry)
       if @request_style == :rpc
         result = rpc_call(request, param)
@@ -232,7 +244,7 @@ private
       if @response_style == :rpc
         rpc_response(result, mapping_registry)
       else
-        document_response(result, mapping_registry)
+        document_response(result, literal_mapping_registry)
       end
     end
 
@@ -270,8 +282,8 @@ private
       soap_response
     end
 
-    def document_response(result, mapping_registry)
-      Mapping.obj2soap(result, mapping_registry)
+    def document_response(result, literal_mapping_registry)
+      literal_mapping_registry.obj2ele(result, @document_response_qname.name)
     end
   end
 end
