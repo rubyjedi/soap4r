@@ -34,28 +34,30 @@ public
   attr_accessor :faultstring
   attr_accessor :faultactor
   attr_accessor :detail
-  attr_reader :options
 
-  def initialize( faultCode = nil, faultString = nil, faultActor = nil, detail = nil, options = [] )
+  def initialize( faultCode = nil, faultString = nil, faultActor = nil, detail = nil )
     super( self.type.to_s )
+    @namespace = EnvelopeNamespace
+    @name = 'Fault'
+    @encodingStyle = nil
     @faultcode = faultCode
     @faultstring = faultString
     @faultactor = faultActor
     @detail = detail
-    @options = options
+    @faultcode.name = 'faultcode' if @faultcode
+    @faultstring.name = 'faultstring' if @faultstring
+    @faultactor.name = 'faultactor' if @faultactor
+    @detail.name = 'detail' if @detail
   end
 
-  def encode( ns )
-    faultElems = [ @faultcode.encode( ns, 'faultcode' ),
-      @faultstring.encode( ns, 'faultstring' ),
-      @faultactor.encode( ns, 'faultactor' ) ]
-    faultElems.push( @detail.encode( ns, 'detail' )) if @detail
-    @options.each do | opt |
-      paramElem.push( opt.encode( ns ))
-    end
-
-    # Element.new( ns.name( EnvelopeNamespace, 'Fault' ), nil, faultElems )
-    Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Fault' ), nil, faultElems )
+  def encode( buf, ns )
+    name = ns.name( @namespace, @name )
+    SOAPGenerator.encodeTag( buf, name, nil, true )
+    yield( @faultcode, false )
+    yield( @faultstring, false)
+    yield( @faultactor, false )
+    yield( @detail, false ) if @detail
+    SOAPGenerator.encodeTagEnd( buf, name, true )
   end
 
   # Module function
@@ -105,22 +107,25 @@ public
 
   def initialize( data = nil, isFault = false )
     super( self.type.to_s )
+    @namespace = EnvelopeNamespace
+    @name = 'Body'
+    @encodingStyle = nil
     @data = []
     @data << data if data
     @isFault = isFault
   end
 
-  def encode( ns )
-    attrs = []
-    contents = nil
+  def encode( buf, ns )
+    name = ns.name( @namespace, @name )
+    SOAPGenerator.encodeTag( buf, name, nil, true )
     if @isFault
-      contents = @data.encode( ns )
+      yield( @data, true )
     else
-      contents = @data.collect { | item | item.encode( ns ) }
+      @data.each do | data |
+	yield( data, true )
+      end
     end
-
-    # Element.new( ns.name( EnvelopeNamespace, 'Body' ), attrs, contents )
-    Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Body' ), attrs, contents )
+    SOAPGenerator.encodeTagEnd( buf, name, true )
   end
 
   def rootNode
@@ -156,19 +161,21 @@ public
     super( self.type.to_s )
     @namespace = namespace
     @name = name
+    @encodingStyle = nil
     @content = content
     @mustUnderstand = mustUnderstand
     @encodingStyle = encodingStyle
   end
 
-  def encode( ns )
-    return nil if @name.empty?
-    attrs = []
-    attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrMustUnderstand ), ( @mustUnderstand ? '1' : '0' )))
-    attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), @encodingStyle )) if @encodingStyle
+  def encode( buf, ns )
+    attrs = {}
+    attrs[ ns.name( EnvelopeNamespace, AttrMustUnderstand ) ] = ( @mustUnderstand ? '1' : '0' )
+    attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] = @encodingStyle if @encodingStyle
 
-    # Element.new( ns.name( @namespace, @name ), attrs, @content )
-    Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, @content )
+    name = ns.name( @namespace, @name )
+    SOAPGenerator.encodeTag( buf, name, attrs, true )
+    yield( @content, false )
+    SOAPGenerator.encodeTagEnd( buf, name, true )
   end
 
   # Module function
@@ -206,15 +213,18 @@ end
 class SOAPHeader < SOAPArray
   def initialize()
     super( self.type.to_s, 1 )	# rank == 1
+    @namespace = EnvelopeNamespace
+    @name = 'Header'
+    @encodingStyle = nil
   end
 
-  def encode( ns )
-    children = @data.collect { | child |
-      child.encode( ns.clone )
-    }
-
-    # Element.new( ns.name( EnvelopeNamespace, 'Header' ), nil, children )
-    Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Header' ), nil, children )
+  def encode( buf, ns )
+    name = ns.name( @namespace, @name )
+    SOAPGenerator.encodeTag( buf, name, nil, true )
+    @data.each do | data |
+      yield( data, true )
+    end
+    SOAPGenerator.encodeTagEnd( buf, name, true )
   end
 
   def length
@@ -233,29 +243,31 @@ class SOAPEnvelope < NSDBase
 
   def initialize( initHeader = nil, initBody = nil )
     super( self.type.to_s )
+    @namespace = EnvelopeNamespace
+    @name = 'Envelope'
+    @encodingStyle = nil
     @header = initHeader
     @body = initBody
     @refPool = []
     @idPool = []
   end
 
-  def encode( ns )
-    # Namespace preloading.
-    attrs = []
-    ns.eachNamespace do | namespace, tag |
-      if ( tag == '' )
-	attrs << Attr.new( 'xmlns' , namespace )
-      else
-	attrs << Attr.new( 'xmlns:' << tag, namespace )
-      end
-    end
+  def encode( buf, ns )
+    attrs = {}
+    tag = ns.assign( EnvelopeNamespace, SOAPNamespaceTag )
+    attrs[ 'xmlns:' << tag ] = EnvelopeNamespace
+    tag = ns.assign( XSD::Namespace, XSDNamespaceTag )
+    attrs[ 'xmlns:' << tag ] = XSD::Namespace
+    tag = ns.assign( XSD::InstanceNamespace, XSINamespaceTag )
+    attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
 
-    contents = []
-    contents.push( @header.encode( ns )) if @header and @header.length > 0
-    contents.push( @body.encode( ns ))
+    name = ns.name( @namespace, @name )
+    SOAPGenerator.encodeTag( buf, name, attrs, true )
 
-    # Element.new( ns.name( EnvelopeNamespace, 'Envelope' ), attrs, contents )
-    Node.initializeWithChildren( ns.name( EnvelopeNamespace, 'Envelope' ), attrs, contents )
+    yield( @header, true ) if @header and @header.length > 0
+    yield( @body, true )
+
+    SOAPGenerator.encodeTagEnd( buf, name, true )
   end
 end
 
