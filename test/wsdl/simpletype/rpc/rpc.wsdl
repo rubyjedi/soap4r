@@ -38,11 +38,28 @@
       <input message="tns:msg_version"/>
       <output message="tns:msg_version_struct"/>
     </operation>
+
+    <operation name="echo_version_r">
+      <input message="tns:msg_version_struct"/>
+      <output message="tns:msg_version"/>
+    </operation>
   </portType>
 
   <binding name="echo_version_binding" type="tns:echo_version_port_type">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
     <operation name="echo_version">
+      <soap:operation soapAction="urn:example.com:simpletype-rpc"/>
+      <input>
+        <soap:body use="encoded" namespace="urn:example.com:simpletype-rpc"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <soap:body use="encoded" namespace="urn:example.com:simpletype-rpc"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="echo_version_r">
       <soap:operation soapAction="urn:example.com:simpletype-rpc"/>
       <input>
         <soap:body use="encoded" namespace="urn:example.com:simpletype-rpc"
