@@ -132,7 +132,7 @@ private
     end
     unless type_or_element.attributes.empty?
       type_or_element.attributes.each do |attribute|
-        name = attribute.name
+        name = attribute.name.name
         if basetype = basetype_class(attribute.type)
           type = basetype_class(attribute.type).name
         else
