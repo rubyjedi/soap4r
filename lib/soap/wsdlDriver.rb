@@ -64,10 +64,7 @@ class WSDLDriverFactory
     if port.soap_address.nil?
       raise FactoryError.new("soap:address element not found in WSDL.")
     end
-    drv = WSDLDriver.new(@wsdl, port, @logdev, opt)
-    complextypes = @wsdl.soap_complextypes(port.porttype)
-    drv.wsdl_mapping_registry = Mapping::WSDLRegistry.new(complextypes)
-    drv
+    WSDLDriver.new(@wsdl, port, @logdev, opt)
   end
 
   # Backward compatibility.
@@ -150,7 +147,8 @@ class WSDLDriver
       @httpproxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
 
       @opt = opt.dup
-      @decode_typemap = @wsdl.soap_complextypes(port.porttype)
+      @decode_typemap = @wsdl.soap_complextypes(port.find_binding)
+      @wsdl_mapping_registry = Mapping::WSDLRegistry.new(@decode_typemap)
       @default_encodingstyle = EncodingNamespace
       @allow_unqualified_element = true
       @generate_explicit_type = false
@@ -240,15 +238,14 @@ class WSDLDriver
       log(SEV_INFO) { "send: sending document '#{ name }'." }
 
       op_info = @operations[name]
-      #      body = Mapping.obj2soap(body, @wsdl_mapping_registry, op_info.msg_name)
-      #body.elename = op_info.msg_name
 
       if header and !header.is_a?(SOAPHeader)
 	header = create_header(header)
       end
-      if !body.is_a?(SOAPBody)
-	body = SOAPBody.new(body)
+      if !body.is_a?(SOAPElement)
+	body = @wsdl_mapping_registry.obj2ele(body, op_info.msg_name)
       end
+      body = SOAPBody.new(body)
 
       res_header, res_body = invoke(header, body, op_info)
       return res_header, res_body
