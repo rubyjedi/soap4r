@@ -44,6 +44,10 @@ class TestSSL < Test::Unit::TestCase
     assert_equal(OpenSSL::SSL::OP_ALL | OpenSSL::SSL::OP_NO_SSLv2, cfg.options)
     assert_equal("ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH", cfg.ciphers)
     assert_instance_of(OpenSSL::X509::Store, cfg.cert_store)
+    # dummy call to ensure sslsvr initialization finished.
+    assert_raise(OpenSSL::SSL::SSLError) do
+      @client.hello_world("ssl client")
+    end
   end
 
   def test_verification
@@ -51,7 +55,7 @@ class TestSSL < Test::Unit::TestCase
     cfg["protocol.http.ssl_config.verify_callback"] = method(:verify_callback).to_proc
     begin
       @verify_callback_called = false
-      @client.do_server_proc
+      @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
       assert_equal("certificate verify failed", ssle.message)
@@ -62,7 +66,7 @@ class TestSSL < Test::Unit::TestCase
     cfg["protocol.http.ssl_config.client_key"] = File.join(DIR, "client.key")
     @verify_callback_called = false
     begin
-      @client.do_server_proc
+      @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
       assert_equal("certificate verify failed", ssle.message)
@@ -72,7 +76,7 @@ class TestSSL < Test::Unit::TestCase
     cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "ca.cert")
     @verify_callback_called = false
     begin
-      @client.do_server_proc
+      @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
       assert_equal("certificate verify failed", ssle.message)
@@ -81,13 +85,13 @@ class TestSSL < Test::Unit::TestCase
     #
     cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "subca.cert")
     @verify_callback_called = false
-    assert_equal("hello", @client.do_server_proc)
+    assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
     assert(@verify_callback_called)
     #
     cfg["protocol.http.ssl_config.verify_depth"] = "1"
     @verify_callback_called = false
     begin
-      @client.do_server_proc
+      @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
       assert_equal("certificate verify failed", ssle.message)
@@ -98,14 +102,14 @@ class TestSSL < Test::Unit::TestCase
     cfg["protocol.http.ssl_config.cert_store"] = OpenSSL::X509::Store.new
     cfg["protocol.http.ssl_config.verify_mode"] = OpenSSL::SSL::VERIFY_PEER.to_s
     begin
-      @client.do_server_proc
+      @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
       assert_equal("certificate verify failed", ssle.message)
     end
     #
     cfg["protocol.http.ssl_config.verify_mode"] = ""
-    assert_equal("hello", @client.do_server_proc)
+    assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
   end
 
   def test_property
@@ -127,7 +131,7 @@ __EOP__
       @client.options["protocol.http.ssl_config.verify_callback"] = method(:verify_callback).to_proc
       @verify_callback_called = false
       begin
-        @client.do_server_proc
+        @client.hello_world("ssl client")
         assert(false)
       rescue OpenSSL::SSL::SSLError => ssle
         assert_equal("certificate verify failed", ssle.message)
@@ -136,7 +140,7 @@ __EOP__
       #
       @client.options["protocol.http.ssl_config.verify_depth"] = ""
       @verify_callback_called = false
-      assert_equal("hello", @client.do_server_proc)
+      assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
       assert(@verify_callback_called)
     ensure
       File.unlink(testpropertyname)
@@ -150,18 +154,18 @@ __EOP__
     cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "ca.cert")
     cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "subca.cert")
     #cfg.timeout = 123
-    assert_equal("hello", @client.do_server_proc)
+    assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
     #
     cfg["protocol.http.ssl_config.ciphers"] = "!ALL"
     begin
-      @client.do_server_proc
+      @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
       assert_equal("no ciphers available", ssle.message)
     end
     #
     cfg["protocol.http.ssl_config.ciphers"] = "ALL"
-    assert_equal("hello", @client.do_server_proc)
+    assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
   end
 
 private
@@ -179,8 +183,8 @@ private
   end
 
   def setup_client
-    @client = SOAP::RPC::Driver.new(@url, '')
-    @client.add_method("do_server_proc")
+    @client = SOAP::RPC::Driver.new(@url, 'urn:ssltst')
+    @client.add_method("hello_world", "from")
   end
 
   def teardown_server
