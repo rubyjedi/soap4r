@@ -4,16 +4,17 @@ require 'RAA'
 require 'soap/marshal'
 
 server = ARGV.shift || 'http://www.ruby-lang.org/~nahi/soap/raa/'
-proxy = ENV[ 'HTTP_PROXY' ] || ENV[ 'http_proxy' ]
 
-raa = RAA::Driver.new( server, proxy )
+raa = RAA::Driver.new( server )
 raa.setLogDev( nil )
+#raa.setWireDumpDev( STDERR )
 
 p raa.getAllListings().sort
 
 p raa.getProductTree()
 
 p raa.getInfoFromCategory( RAA::Category.new( "Library", "XML" ))
+
 t = Time.at( Time.now.to_i - 24 * 3600 )
 p raa.getModifiedInfoSince( t )
 
