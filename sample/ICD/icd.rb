@@ -14,6 +14,7 @@ icd = SOAP::Driver.new( nil, $0, IICD::InterfaceNS, server, proxy )
 icd.setDefaultEncodingStyle( SOAP::EncodingStyleHandlerASPDotNet::Namespace )
 IICD::addMethod( icd )
 
+puts "キーワード: 'microsoft'で見出し検索"
 result = icd.SearchWord( 'microsoft', true )
 
 id = nil
@@ -22,9 +23,25 @@ result.WORD.each do | word |
   puts "Id: " << word.id
   puts "English: " << word.english
   puts "Japanese: " << word.japanese
+  puts "----"
   id = word.id
 end
 
-p icd.GetItemById( id )
+item = icd.GetItemById( id )
+puts
+puts
+puts "Title: " << item.word.title
+puts "意味: " << item.meaning
+
 #p icd.EnumWords
-p icd.FullTextSearch( "IBM" )
+
+puts
+puts
+puts "キーワード: 'IBM'で全文検索"
+icd.FullTextSearch( "IBM" ).WORD.each do | word |
+  puts "Title: " << word.title
+  puts "Id: " << word.id
+  puts "English: " << word.english
+  puts "Japanese: " << word.japanese
+  puts "----"
+end
