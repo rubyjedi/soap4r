@@ -166,7 +166,8 @@ module RPCUtils
   
     def encode( ns )
       attrs = []
-      createNS( attrs, ns )
+      addNSDeclAttr( attrs, ns )
+      addEncodingAttr( attrs, ns )
       if !retVal
 	# Should it be typed?
 	# attrs.push( datatypeAttr( ns ))
@@ -176,7 +177,7 @@ module RPCUtils
 	  unless @inParam[ param ]
 	    raise ParameterError.new( "Parameter: #{ param } was not given." )
 	  end
-      	  elems << @inParam[ param ].encode( ns.clone, param )
+      	  elems << @inParam[ param ].encode( ns.clone, param, EncodingNamespace )
 	end
 
 	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, elems )
@@ -186,14 +187,14 @@ module RPCUtils
 
 	elems = []
 	unless retVal.is_a?( SOAPVoid )
-	  elems << retVal.encode( ns.clone, @retName || 'return' )
+	  elems << retVal.encode( ns.clone, @retName || 'return', EncodingNamespace )
 	end
 
 	@outParamNames.each do | param |
 	  unless @outParam[ param ]
 	    raise ParameterError.new( "Parameter: #{ param } was not given." )
 	  end
-	  elems << @outParam[ param ].encode( ns.clone, param )
+	  elems << @outParam[ param ].encode( ns.clone, param, EncodingNamespace )
 	end
 
         Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, elems )
@@ -210,7 +211,7 @@ module RPCUtils
       Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, responseTypeName() ))
     end
 
-    def createNS( attrs, ns )
+    def addNSDeclAttr( attrs, ns )
       unless ns.assigned?( @namespace )
 	tag = ns.assign( @namespace )
 	attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
