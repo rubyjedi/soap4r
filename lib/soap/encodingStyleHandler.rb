@@ -26,7 +26,6 @@ module SOAP
 
 class EncodingStyleHandler
   @@handlerMap = {}
-  @@defaultHandler = nil
 
   class EncodingStyleError < Error; end
 
@@ -36,12 +35,27 @@ class EncodingStyleHandler
       self::Namespace
     end
 
+    def getHandler( uri )
+      @@handlerMap[ uri ]
+    end
+
+    def each
+      @@handlerMap.each do | key, value |
+	yield( value )
+      end
+    end
+
   private
     def addHandler
       @@handlerMap[ self.uri ] = self
     end
   end
 
+  attr_reader :charset
+
+  def initialize( charset )
+    @charset = charset
+  end
 
   ###
   ## encode interface.
@@ -77,36 +91,6 @@ class EncodingStyleHandler
   end
 
   def decodeEpilogue
-  end
-
-  ###
-  ## Class interface
-  #
-  def EncodingStyleHandler.defaultHandler
-    @@defaultHandler
-  end
-
-  def EncodingStyleHandler.defaultHandler=( handler )
-    if handler.is_a?( Class )
-      @@defaultHandler = handler
-    else
-      # ToDo: Remove this in the futre release.
-      raise EncodingStyleError.new( "Default handler must be a class.  SOAP4R changed this behaviour from 1.4.4." )
-    end
-  end
-
-  def EncodingStyleHandler.getHandler( uri )
-    if @@handlerMap.has_key?( uri )
-      @@handlerMap[ uri ]
-    else
-      @@defaultHandler
-    end
-  end
-
-  def EncodingStyleHandler.each
-    @@handlerMap.each do | key, value |
-      yield( value )
-    end
   end
 end
 
