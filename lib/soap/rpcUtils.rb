@@ -26,7 +26,7 @@ class SOAPBody < SOAPStruct
   public
 
   def request
-    getResponse
+    rootNode
   end
 
   def response
@@ -35,15 +35,15 @@ class SOAPBody < SOAPStruct
 	nil
       else
 	# Initial element is [retVal].
-	getResponse[ 0 ]
+	rootNode[ 0 ]
       end
     else
-      getResponse
+      rootNode
     end
   end
 
   def void?
-    getResponse.nil? # || getResponse.is_a?( SOAPNil )
+    rootNode.nil? # || rootNode.is_a?( SOAPNil )
   end
 
   def fault
@@ -57,12 +57,6 @@ class SOAPBody < SOAPStruct
   def setFault( faultData )
     @isFault = true
     addMember( 'fault', faultData )
-  end
-
-private
-
-  def getResponse
-    @data[ 0 ]
   end
 end
 
