@@ -143,17 +143,28 @@ class MappingError < Error; end
 class Registry
   class Map
     def initialize(registry)
-      @map = []
+      @obj2soap = {}
+      @soap2obj = {}
       @registry = registry
     end
 
     def obj2soap(obj, type_qname = nil)
       klass = obj.class
-      @map.each do |obj_class, soap_class, factory, info|
-        if klass == obj_class or
-            (info[:derived_class] and klass <= obj_class)
+      if map = @obj2soap[klass]
+        map.each do |soap_class, factory, info|
           ret = factory.obj2soap(soap_class, obj, info, @registry)
           return ret if ret
+        end
+      end
+      ancestors = klass.ancestors[1..-3] # except itself, Object and Kernel
+      ancestors.each do |klass|
+        if map = @obj2soap[klass]
+          map.each do |soap_class, factory, info|
+            if info[:derived_class]
+              ret = factory.obj2soap(soap_class, obj, info, @registry)
+              return ret if ret
+            end
+          end
         end
       end
       nil
@@ -161,14 +172,13 @@ class Registry
 
     def soap2obj(node)
       klass = node.class
-      @map.each do |obj_class, soap_class, factory, info|
-        if klass == soap_class or
-            (info[:derived_class] and klass <= soap_class)
+      if map = @soap2obj[klass]
+        map.each do |obj_class, factory, info|
           conv, obj = factory.soap2obj(obj_class, node, info, @registry)
           return true, obj if conv
         end
       end
-      return false
+      return false, nil
     end
 
     # Give priority to former entry.
@@ -182,29 +192,21 @@ class Registry
     # Give priority to latter entry.
     def add(obj_class, soap_class, factory, info)
       info ||= {}
-      @map.unshift([obj_class, soap_class, factory, info])
+      (@obj2soap[obj_class] ||= []).unshift([soap_class, factory, info])
+      (@soap2obj[soap_class] ||= []).unshift([obj_class, factory, info])
     end
 
     def clear
-      @map.clear
+      @obj2soap.clear
+      @soap2obj.clear
     end
 
     def find_mapped_soap_class(target_obj_class)
-      @map.each do |obj_class, soap_class, factory, info|
-        if obj_class == target_obj_class
-          return soap_class
-        end
-      end
-      nil
+      @obj2soap[target_obj_class][0]
     end
 
     def find_mapped_obj_class(target_soap_class)
-      @map.each do |obj_class, soap_class, factory, info|
-        if soap_class == target_soap_class
-          return obj_class
-        end
-      end
-      nil
+      @soap2obj[target_soap_class][0]
     end
   end
 
@@ -240,6 +242,24 @@ class Registry
     [::Integer,      ::SOAP::SOAPInteger,    BasetypeFactory,
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPShort,      BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPByte,       BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPNonPositiveInteger, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPNegativeInteger, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPNonNegativeInteger, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPPositiveInteger, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPUnsignedLong, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPUnsignedInt, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPUnsignedShort, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPUnsignedByte, BasetypeFactory,
       {:derived_class => true}],
     [::URI::Generic, ::SOAP::SOAPAnyURI,     URIFactory,
       {:derived_class => true}],
@@ -286,6 +306,24 @@ class Registry
     [::Integer,      ::SOAP::SOAPInteger,    BasetypeFactory,
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPShort,      BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPByte,       BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPNonPositiveInteger, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPNegativeInteger, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPNonNegativeInteger, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPPositiveInteger, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPUnsignedLong, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPUnsignedInt, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPUnsignedShort, BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPUnsignedByte, BasetypeFactory,
       {:derived_class => true}],
     [::URI::Generic, ::SOAP::SOAPAnyURI,     URIFactory,
       {:derived_class => true}],
