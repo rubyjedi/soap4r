@@ -220,6 +220,12 @@ module RPCUtils
   ###
   ## Convert parameter
   #
+  # For type unknown object.
+  class Object
+    attr_accessor :typeName, :typeNamespace
+  end
+
+
   def obj2soap( obj )
     case obj
     when SOAPBasetype, SOAPCompoundtype
@@ -239,8 +245,14 @@ module RPCUtils
     when Integer
       SOAPInteger.new( obj )
     when Array
-      param = SOAPArray.new
-      param.typeNamespace = getNamespace( obj ) || RubyTypeNamespace
+      typeName = getTypeName( obj )
+      typeNamespace = getNamespace( obj ) || RubyTypeNamespace
+      unless typeName
+	typeName = XSD::AnyTypeLiteral
+	typeNamespace = XSD::Namespace
+      end
+      param = SOAPArray.new( typeName )
+      param.typeNamespace = typeNamespace
       obj.each do | var |
 	param.add( obj2soap( var ))
       end
@@ -257,25 +269,20 @@ module RPCUtils
 	i += 1
       end
       param
-=begin
-      # Initial proprietary implementation...
-      param = SOAPStruct.new( "Hash" )
-      param.typeNamespace = getNamespace( obj ) || RubyTypeNamespace
-      paramKey = SOAPArray.new
-      paramValue = SOAPArray.new
-      obj.each do |key, value|
-        paramKey.add( obj2soap( key ))
-        paramValue.add( obj2soap( value ))
-      end
-      param.add( "key", paramKey )
-      param.add( "value", paramValue )
-      param
-=end
     when Struct
       param = SOAPStruct.new( obj.type.to_s )
       param.typeNamespace = getNamespace( obj ) || RubyTypeNamespace
       obj.members.each do |member|
 	param.add( member, obj2soap( obj[ member ] ))
+      end
+      param
+    when SOAP::RPCUtils::Object
+      typeName = obj.typeName
+      param = SOAPStruct.new( typeName  )
+      param.typeNamespace = obj.typeNamespace
+      obj.instance_variables do |var, data|
+	name = var.dup.sub!( /^@/, '' )
+	param.add( name, obj2soap( data ))
       end
       param
     else
@@ -297,6 +304,7 @@ module RPCUtils
     end
   end
 
+
   def soap2obj( node )
     case node
     when SOAPReference
@@ -308,11 +316,13 @@ module RPCUtils
       # Stringify
       node.toString
     when SOAPArray
-      node.collect { |elem|
+      obj = node.collect { |elem|
 	soap2obj( elem )
       }
+      obj.instance_eval( "@typeName = '#{ node.typeName }'; @typeNamespace = '#{ node.typeNamespace }'" )
+      obj
     when SOAPStruct
-      if node.typeNamespace == RubyTypeNamespace and node.typeName == "Hash"
+      if node.typeEqual( RubyTypeNamespace, 'Hash' )
 	obj = Hash.new
 	keyArray = soap2obj( node.key )
 	valueArray = soap2obj( node.value )
@@ -320,12 +330,14 @@ module RPCUtils
 	  obj[ keyArray.shift ] = valueArray.shift
 	end
 	obj
-      elsif node.typeNamespace == ApacheSOAPTypeNamespace and node.typeName == 'Map'
+      elsif node.typeEqual( ApacheSOAPTypeNamespace, 'Map' )
 	obj = Hash.new
 	node.each do | key, value |
 	  obj[ soap2obj( value.key ) ] = soap2obj( value.value )
 	end
 	obj
+      elsif node.typeEqual( XSD::Namespace, XSD::AnyTypeLiteral )
+	unknownObj( node )
       else
 	struct2obj( node )
       end
@@ -341,7 +353,7 @@ private
   def getTypeName( obj )
     ret = nil
     begin
-      ret = obj.instance_eval( "@@typeName" )
+      ret = obj.instance_eval( "@typeName" ) || obj.instance_eval( "@@typeName" )
     rescue NameError
     end
     ret
@@ -350,10 +362,25 @@ private
   def getNamespace( obj )
     ret = nil
     begin
-      ret = obj.instance_eval( "@@typeNamespace" )
+      ret = obj.instance_eval( "@typeNamespace" ) || obj.instance_eval( "@@typeNamespace" )
     rescue NameError
     end
     ret
+  end
+
+  def unknownObj( node )
+    klass = Object	# SOAP::RPCUtils::Object
+    Thread.critical = true
+    addWriter( klass, node )
+    obj = klass.new
+    node.each do |name, value|
+      obj.send( name + "=", soap2obj( value ))
+    end
+    restoreWriter( klass, node )
+    Thread.critical = false
+    obj.typeNamespace = node.typeNamespace
+    obj.typeName = node.typeName
+    obj
   end
 
   def struct2obj( node )
