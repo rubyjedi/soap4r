@@ -48,6 +48,7 @@ class Property
       key.lock
     end
     @locked = true
+    self
   end
 
   def unlock
@@ -55,6 +56,7 @@ class Property
     each_key do |key|
       key.unlock
     end
+    self
   end
 
 protected

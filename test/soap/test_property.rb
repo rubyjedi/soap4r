@@ -186,6 +186,11 @@ class TestProperty < Test::Unit::TestCase
       @prop["a.b.d"] = 5
     end
   end
+
+  def test_lock_unlock_return
+    assert_equal(@prop, @prop.lock)
+    assert_equal(@prop, @prop.unlock)
+  end
 end
 
 
