@@ -115,7 +115,7 @@ private
   end
 
   # Create new response.
-  def createResponse( namespace, methodName, *values )
+  def createResponse( namespace, methodName, result )
     name = "#{ namespace }:#{ methodName }"
     if ( @method.has_key?( name ))
       method = @method[ name ]
@@ -123,13 +123,22 @@ private
       raise RPCRoutingError.new( "Method: #{ name } not defined." )
     end
 
-    retVal = values[ 0 ]
-    if values.length > 1
-      raise RPCRoutingError.new( "[out] parameter not supported." )
-    end
-
     soapResponse = method.dup
-    soapResponse.retVal = RPCUtils.obj2soap( retVal, @mappingRegistry )
+    if method.outParam?
+      unless result.is_a?( Array )
+	raise RPCRoutingError.new( "Out parameter was not returned." )
+      end
+      outParams = {}
+      i = 1
+      method.eachParamName( 'out' ) do | outParam |
+	outParams[ outParam ] = RPCUtils.obj2soap( result[ i ], @mappingRegistry )
+	i += 1
+      end
+      soapResponse.setOutParams( outParams )
+      soapResponse.setRetVal( RPCUtils.obj2soap( result[ 0 ], @mappingRegistry ))
+    else
+      soapResponse.setRetVal( RPCUtils.obj2soap( result, @mappingRegistry ))
+    end
     soapResponse
   end
 

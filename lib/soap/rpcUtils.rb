@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/baseData'
+require 'delegate'
 
 
 module SOAP
@@ -42,6 +43,16 @@ class SOAPBody < SOAPStruct
     end
   end
 
+  def outParams
+    if !@isFault and !void?
+      op = rootNode[ 1..-1 ]
+      op = nil if op && op.empty?
+      op
+    else
+      nil
+    end
+  end
+
   def void?
     rootNode.nil? # || rootNode.is_a?( SOAPNil )
   end
@@ -62,9 +73,6 @@ end
 
 
 module Marshallable
-  @@typeName = nil
-  @@typeNamespace = nil
-
   alias __instance_variables instance_variables
   def instance_variables
     if block_given?
@@ -88,6 +96,10 @@ module RPCUtils
   ###
   ## RPC specific elements
   #
+  class RPCError < Error; end
+  class MethodDefinitionError < RPCError; end
+  class ParameterError < RPCError; end
+
   class SOAPMethod < NSDBase
     include SOAPCompoundtype
 
@@ -95,13 +107,11 @@ module RPCUtils
     attr_reader :name
 
     attr_reader :paramDef
-    attr_accessor :paramNames
-    attr_reader :paramTypes
-    attr_reader :params
     attr_reader :soapAction
 
-    attr_accessor :retName
     attr_accessor :retVal
+    attr_reader :inParam
+    attr_reader :outParam
   
     def initialize( namespace, name, paramDef = nil, soapAction = nil )
       super( self.type.to_s )
@@ -110,22 +120,47 @@ module RPCUtils
       @name = name
   
       @paramDef = paramDef
-      @paramNames = []
-      @paramTypes = {}
-      @params = {}
-
       @soapAction = soapAction
 
+      @paramSignature = []
+      @inParamNames = []
+      @inoutParamNames = []
+      @outParamNames = []
       @retName = nil
+
+      @inParam = {}
+      @outParam = {}
       @retVal = nil
-  
+
       setParamDef if @paramDef
+    end
+
+    def outParam?
+      !@isFault && @outParamNames.size > 0
+    end
+
+    def eachParamName( *type )
+      @paramSignature.each do | paramType, paramName |
+	if type.include?( paramType )
+	  yield( paramName )
+	end
+      end
     end
   
     def setParams( params )
       params.each do | param, data |
-        @params[ param ] = data
+        @inParam[ param ] = data
       end
+    end
+
+    def setOutParams( params )
+      params.each do | param, data |
+	@outParam[ param ] = data
+      end
+    end
+
+    def setRetVal( retVal )
+      @retVal = retVal
     end
   
     def encode( ns )
@@ -136,13 +171,13 @@ module RPCUtils
 	# attrs.push( datatypeAttr( ns ))
 
 	elems = []
-        @paramNames.each do | param |
-	  unless @params[ param ].is_a?( SOAPVoid )
-	    elems << @params[ param ].encode( ns.clone, param )
+        ( @inParamNames + @inoutParamNames ).each do | param |
+	  unless @inParam[ param ]
+	    raise ParameterError.new( "Parameter: #{ param } was not given." )
 	  end
+      	  elems << @inParam[ param ].encode( ns.clone, param )
 	end
 
-        # Element.new( ns.name( @namespace, @name ), attrs, elems )
 	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, elems )
       else
 	# Should it be typed?
@@ -150,9 +185,16 @@ module RPCUtils
 
 	elems = []
 	unless retVal.is_a?( SOAPVoid )
-	  elems << retVal.encode( ns.clone, 'return' )
+	  elems << retVal.encode( ns.clone, @retName )
 	end
-        # Element.new( ns.name( @namespace, responseTypeName() ), attrs, retElem )
+
+	@outParamNames.each do | param |
+	  unless @outParam[ param ]
+	    raise ParameterError.new( "Parameter: #{ param } was not given." )
+	  end
+	  elems << @outParam[ param ].encode( ns.clone, param )
+	end
+
         Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, elems )
       end
     end
@@ -180,11 +222,14 @@ module RPCUtils
         type.scan( /[^,\s]+/ ).each do | typeToken |
   	case typeToken
   	when 'in'
-  	  @paramNames.push( name )
-  	  @paramTypes[ name ] = 1
+	  @paramSignature.push( [ 'in', name ] )
+	  @inParamNames.push( name )
   	when 'out'
-  	  @paramNames.push( name )
-  	  @paramTypes[ name ] = 2
+	  @paramSignature.push( [ 'out', name ] )
+	  @outParamNames.push( name )
+  	when 'inout'
+	  @paramSignature.push( [ 'inout', name ] )
+	  @inoutParamNames.push( name )
   	when 'retval'
   	  if ( @retName )
 	    raise MethodDefinitionError.new( 'Duplicated retval' )
@@ -203,6 +248,11 @@ module RPCUtils
   end
 
 
+  # To return(?) void explicitly.
+  #  def foo( inputVar )
+  #    ...
+  #    return SOAP::RPCUtils::SOAPVoid.new
+  #  end
   class SOAPVoid < XSDBase
     include SOAPBasetype
     extend SOAPModuleUtils
@@ -217,6 +267,32 @@ module RPCUtils
   end
 
 
+  # For outparam.
+  #
+  #  foo( [in] a, [in/out] b, [out] c, [out,retVal] d )
+  #
+  #  def foo( a, b, c )
+  #    b << a + b
+  #    c << a + c
+  #    d = b + c
+  #    return d
+  #  end
+  class SOAPOutParam < SimpleDelegator
+    def initialize( o )
+      super( o )
+    end
+
+    def set( rhs )
+      self.__setobj__( rhs )
+    end
+
+    def get
+      self.__getobj__
+    end
+  end
+
+
+  # Inner class to pass an exception.
   class SOAPException
     include Marshallable
     attr_reader :exceptionTypeName, :message, :backtrace
