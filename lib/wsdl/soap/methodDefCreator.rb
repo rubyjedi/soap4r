@@ -47,10 +47,10 @@ private
   def dump_method(operation, binding)
     name = safemethodname(operation.name.name)
     name_as = operation.name.name
-    stylestr = binding.soapoperation.operation_style.id2name
+    style = binding.soapoperation_style
     soapaction = binding.soapoperation.soapaction
     namespace = binding.input.soapbody.namespace
-    if binding.soapoperation.operation_style == :rpc
+    if style == :rpc
       paramstr = param2str(collect_rpcparameter(operation))
     else
       paramstr = param2str(collect_documentparameter(operation))
@@ -63,7 +63,7 @@ private
     return <<__EOD__
 [#{dq(name_as)}, #{dq(name)},
   #{paramstr},
-  #{ndq(soapaction)}, #{ndq(namespace)}, #{sym(stylestr)}
+  #{ndq(soapaction)}, #{ndq(namespace)}, #{sym(style.id2name)}
 ]
 __EOD__
   end

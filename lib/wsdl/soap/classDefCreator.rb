@@ -193,8 +193,8 @@ private
   end
 
   def basetype_class(type)
-    if @simpletypes[type]
-      basetype_mapped_class(@simpletypes[type].base)
+    if simpletype = @simpletypes[type]
+      basetype_mapped_class(simpletype.base)
     else
       basetype_mapped_class(type)
     end
