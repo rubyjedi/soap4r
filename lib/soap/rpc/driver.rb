@@ -88,6 +88,7 @@ class Driver
   def initialize(endpoint_url, namespace, soapaction = nil)
     @servant = Servant__.new(self, endpoint_url, namespace)
     @servant.soapaction = soapaction
+    @proxy = @servant.proxy
   end
 
   def loadproperty(propertyname)
@@ -144,6 +145,7 @@ private
   end
 
   class Servant__
+    attr_reader :proxy
     attr_reader :options
     attr_accessor :soapaction
 
