@@ -4,7 +4,8 @@
 
 require "xmlrpc/client"
 
-server = XMLRPC::Client.new("www.ruby-lang.org", "/~nahi/xmlrpc/raa/")
+server = XMLRPC::Client.new( "www.ruby-lang.org", "/~nahi/xmlrpc/raa/" )
+# server = XMLRPC::Client.new( "www.ruby-lang.org", "/~nahi/xmlrpc/raa/", 80, "myProxyHostName", proxyHostPort )
 
 ok, param = server.call2( "raa.getAllListings" )
 p param
