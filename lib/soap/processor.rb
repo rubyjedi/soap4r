@@ -74,9 +74,11 @@ module Processor
 
   def loadParser( opt = {} )
     if SOAP.const_defined?( "SOAPXMLParser" )
-      parser = SOAPXMLParser.new( opt )
+      parser = ::SOAP::SOAPXMLParser.new( opt )
     elsif SOAP.const_defined?( "SOAPSAXDriver" )
-      parser = SOAPSAXDriver.new( opt )
+      parser = ::SOAP::SOAPSAXDriver.new( opt )
+    elsif SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
+      parser = ::SOAP::SOAPNQXMLLightWeightParser.new( opt )
     else
       begin
 	require 'soap/xmlparser'
