@@ -126,11 +126,19 @@ public
 
   def rootNode
     @data.each do | node |
-      if node.root
+      if node.root == 1
 	return node
       end
     end
-    @data[0]
+    # No specified root...
+    @data.each do | node |
+      if node.root != 0
+	return node
+      end
+    end
+
+    raise FormatDecodeError.new( 'No root element.' )
+    # @data[0]
   end
 end
 
