@@ -96,6 +96,7 @@ class WSDLDriver
 
   __attr_proxy :options
   __attr_proxy :headerhandler
+  __attr_proxy :streamhandler
   __attr_proxy :test_loopback_response
   __attr_proxy :endpoint_url, true
   __attr_proxy :mapping_registry, true		# for RPC unmarshal
@@ -145,7 +146,7 @@ class WSDLDriver
   end
 
   def reset_stream
-    @servant.streamhandler.reset
+    @servant.reset_stream
   end
 
   # Backward compatibility.
@@ -155,7 +156,6 @@ class WSDLDriver
     include SOAP
 
     attr_reader :options
-    attr_reader :streamhandler
     attr_reader :port
 
     attr_accessor :soapaction
@@ -170,8 +170,8 @@ class WSDLDriver
       @wsdl = wsdl
       @port = port
       @logdev = logdev
-      @options = setup_options
       @soapaction = nil
+      @options = setup_options
       @default_encodingstyle = nil
       @allow_unqualified_element = nil
       @generate_explicit_type = false
@@ -186,32 +186,41 @@ class WSDLDriver
       @wsdl_mapping_registry = Mapping::WSDLEncodedRegistry.new(@rpc_decode_typemap)
       @doc_mapper = Mapping::WSDLLiteralRegistry.new(@wsdl_elements, @wsdl_types)
       endpoint_url = @port.soap_address.location
-      @streamhandler = HTTPPostStreamHandler.new(endpoint_url,
-	@options["protocol.http"] ||= Property.new)
       # Convert a map which key is QName, to a Hash which key is String.
       @operation = {}
       @port.inputoperation_map.each do |op_name, op_info|
 	@operation[op_name.name] = op_info
 	add_method_interface(op_info)
       end
-      @proxy = ::SOAP::RPC::Proxy.new(@streamhandler)
+      @proxy = ::SOAP::RPC::Proxy.new(endpoint_url, @soapaction, @options)
+    end
+
+    def inspect
+      "#<#{self.class}:#{@proxy.inspect}>"
     end
 
     def endpoint_url
-      @streamhandler.endpoint_url
+      @proxy.endpoint_url
     end
 
     def endpoint_url=(endpoint_url)
-      @streamhandler.endpoint_url = endpoint_url
-      @streamhandler.reset
+      @proxy.endpoint_url = endpoint_url
     end
 
     def headerhandler
       @proxy.headerhandler
     end
 
+    def streamhandler
+      @proxy.streamhandler
+    end
+
     def test_loopback_response
-      @streamhandler.test_loopback_response
+      @proxy.test_loopback_response
+    end
+
+    def reset_stream
+      @proxy.reset_stream
     end
 
     def rpc_call(name, *values)
@@ -292,7 +301,7 @@ class WSDLDriver
 
     def set_wiredump_file_base(name)
       if @wiredump_file_base
-      	@streamhandler.wiredump_file_base = @wiredump_file_base + "_#{ name }"
+      	@proxy.set_wiredump_file_base(@wiredump_file_base + "_#{ name }")
       end
     end
 

@@ -44,6 +44,7 @@ class Driver
 
   __attr_proxy :options
   __attr_proxy :headerhandler
+  __attr_proxy :streamhandler
   __attr_proxy :test_loopback_response
   __attr_proxy :endpoint_url, true
   __attr_proxy :mapping_registry, true
@@ -53,41 +54,40 @@ class Driver
   __attr_proxy :allow_unqualified_element, true
 
   def httpproxy
-    @servant.options["protocol.http.proxy"]
+    options["protocol.http.proxy"]
   end
 
   def httpproxy=(httpproxy)
-    @servant.options["protocol.http.proxy"] = httpproxy
+    options["protocol.http.proxy"] = httpproxy
   end
 
   def wiredump_dev
-    @servant.options["protocol.http.wiredump_dev"]
+    options["protocol.http.wiredump_dev"]
   end
 
   def wiredump_dev=(wiredump_dev)
-    @servant.options["protocol.http.wiredump_dev"] = wiredump_dev
+    options["protocol.http.wiredump_dev"] = wiredump_dev
   end
 
   def mandatorycharset
-    @servant.options["protocol.mandatorycharset"]
+    options["protocol.mandatorycharset"]
   end
 
   def mandatorycharset=(mandatorycharset)
-    @servant.options["protocol.mandatorycharset"] = mandatorycharset
+    options["protocol.mandatorycharset"] = mandatorycharset
   end
 
   def wiredump_file_base
-    @servant.options["protocol.wiredump_file_base"]
+    options["protocol.wiredump_file_base"]
   end
 
   def wiredump_file_base=(wiredump_file_base)
-    @servant.options["protocol.wiredump_file_base"] = wiredump_file_base
+    options["protocol.wiredump_file_base"] = wiredump_file_base
   end
 
   def initialize(endpoint_url, namespace, soapaction = nil)
     @servant = Servant__.new(self, endpoint_url, namespace)
     @servant.soapaction = soapaction
-    @proxy = @servant.proxy
   end
 
   def loadproperty(propertyname)
@@ -97,7 +97,7 @@ class Driver
   end
 
   def inspect
-    "#<#{self.class}:#{@servant.streamhandler.inspect}>"
+    "#<#{self.class}:#{@servant.inspect}>"
   end
 
   def add_method(name, *params)
@@ -122,7 +122,7 @@ class Driver
   end
 
   def reset_stream
-    @servant.streamhandler.reset
+    @servant.reset_stream
   end
 
   def invoke(headers, body)
@@ -145,29 +145,28 @@ private
 
   class Servant__
     attr_reader :options
-    attr_reader :streamhandler
-    attr_reader :proxy
-
     attr_accessor :soapaction
 
     def initialize(host, endpoint_url, namespace)
       @host = host
       @namespace = namespace
       @soapaction = nil
-      @wiredump_file_base = nil
       @options = setup_options
-      @streamhandler = HTTPPostStreamHandler.new(endpoint_url,
-	@options["protocol.http"] ||= ::SOAP::Property.new)
-      @proxy = Proxy.new(@streamhandler, @soapaction)
+      @wiredump_file_base = nil
+      @endpoint_url = endpoint_url
+      @proxy = Proxy.new(endpoint_url, @soapaction, @options)
+    end
+
+    def inspect
+      "#<#{self.class}:#{@proxy.inspect}>"
     end
 
     def endpoint_url
-      @streamhandler.endpoint_url
+      @proxy.endpoint_url
     end
 
     def endpoint_url=(endpoint_url)
-      @streamhandler.endpoint_url = endpoint_url
-      @streamhandler.reset
+      @proxy.endpoint_url = endpoint_url
     end
 
     def mapping_registry
@@ -206,8 +205,16 @@ private
       @proxy.headerhandler
     end
 
+    def streamhandler
+      @proxy.streamhandler
+    end
+
     def test_loopback_response
-      @streamhandler.test_loopback_response
+      @proxy.test_loopback_response
+    end
+
+    def reset_stream
+      @proxy.reset_stream
     end
 
     def invoke(headers, body)
@@ -264,7 +271,7 @@ private
 
     def set_wiredump_file_base(name)
       if @wiredump_file_base
-      	@streamhandler.wiredump_file_base = @wiredump_file_base + "_#{ name }"
+      	@proxy.set_wiredump_file_base(@wiredump_file_base + "_#{ name }")
       end
     end
 
@@ -278,14 +285,14 @@ private
 
     def setup_options
       if opt = Property.loadproperty(::SOAP::PropertyName)
-	opt = opt["client"]
+        opt = opt["client"]
       end
       opt ||= Property.new
       opt.add_hook("protocol.mandatorycharset") do |key, value|
-	@proxy.mandatorycharset = value
+        @proxy.mandatorycharset = value
       end
       opt.add_hook("protocol.wiredump_file_base") do |key, value|
-	@wiredump_file_base = value
+        @wiredump_file_base = value
       end
       opt["protocol.http.charset"] ||= XSD::Charset.encoding_label
       opt["protocol.http.proxy"] ||= Env::HTTP_PROXY
