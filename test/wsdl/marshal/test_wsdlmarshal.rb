@@ -2,6 +2,7 @@ require 'test/unit'
 require 'wsdl/parser'
 require 'soap/mapping/wsdlencodedregistry'
 require 'soap/marshal'
+require 'wsdl/soap/wsdl2ruby'
 
 class WSDLMarshaller
   include SOAP
@@ -54,7 +55,13 @@ class TestWSDLMarshal < Test::Unit::TestCase
   end
 
   def test_classdef
-    system("cd #{DIR} && ruby #{pathname("../../../bin/wsdl2ruby.rb")} --classdef --wsdl #{pathname("person.wsdl")} --force --quiet")
+    gen = WSDL::SOAP::WSDL2Ruby.new
+    gen.location = pathname("person.wsdl")
+    gen.basedir = DIR
+    gen.logger.level = Logger::FATAL
+    gen.opt['classdef'] = nil
+    gen.opt['force'] = true
+    gen.run
     compare("person_org.rb", "Person.rb")
     File.unlink(pathname('Person.rb'))
   end

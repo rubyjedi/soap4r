@@ -1,6 +1,6 @@
 require 'test/unit'
 require 'soap/marshal'
-module WSDL; module SOAP; module WSDL2Ruby
+module WSDL; module SOAP
 
 
 class TestSection < Test::Unit::TestCase
@@ -45,4 +45,4 @@ private
 end
 
 
-end; end; end
+end; end

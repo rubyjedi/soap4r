@@ -2,15 +2,8 @@
 
 require 'getoptlong'
 require 'logger'
-require 'xsd/qname'
-require 'wsdl/parser'
-require 'wsdl/importer'
-require 'wsdl/soap/classDefCreator'
-require 'wsdl/soap/servantSkeltonCreator'
-require 'wsdl/soap/driverCreator'
-require 'wsdl/soap/clientSkeltonCreator'
-require 'wsdl/soap/standaloneServerStubCreator'
-require 'wsdl/soap/cgiStubCreator'
+require 'wsdl/soap/wsdl2ruby'
+
 
 class WSDL2RubyApp < Logger::Application
 private
@@ -31,34 +24,23 @@ private
   def initialize
     super('app')
     STDERR.sync = true
-    @wsdl_location = nil
-    @opt = nil
-    @wsdl = nil
-    @name = nil
     self.level = Logger::FATAL
   end
 
   def run
-    @wsdl_location, @opt = parse_opt(GetoptLong.new(*OptSet))
-    if @opt['quiet']
+    @worker = WSDL::SOAP::WSDL2Ruby.new
+    @worker.logger = @log
+    location, opt = parse_opt(GetoptLong.new(*OptSet))
+    usage_exit unless location
+    @worker.location = location
+    if opt['quiet']
       self.level = Logger::FATAL
     else
       self.level = Logger::INFO
     end
-    usage_exit unless @wsdl_location
-    @wsdl = import(@wsdl_location)
-    @name = @wsdl.name ? @wsdl.name.name : 'default'
-    create_file
+    @worker.opt.update(opt)
+    @worker.run
     0
-  end
-
-  def create_file
-    create_classdef if @opt.key?('classdef')
-    create_servant_skelton(@opt['servant_skelton']) if @opt.key?('servant_skelton')
-    create_cgi_stub(@opt['cgi_stub']) if @opt.key?('cgi_stub')
-    create_standalone_server_stub(@opt['standalone_server_stub']) if @opt.key?('standalone_server_stub')
-    create_driver(@opt['driver']) if @opt.key?('driver')
-    create_client_skelton(@opt['client_skelton']) if @opt.key?('client_skelton')
   end
 
   def usage_exit
@@ -137,108 +119,6 @@ __EOU__
       usage_exit
     end
     return wsdl, opt
-  end
-
-  def create_classdef
-    log(INFO) { "Creating class definition." }
-    @classdef_filename = @name + '.rb'
-    check_file(@classdef_filename) or return
-    File.open(@classdef_filename, "w") do |f|
-      f << WSDL::SOAP::ClassDefCreator.new(@wsdl).dump
-    end
-  end
-
-  def create_client_skelton(servicename)
-    log(INFO) { "Creating client skelton." }
-    servicename ||= @wsdl.services[0].name.name
-    @client_skelton_filename = servicename + 'Client.rb'
-    check_file(@client_skelton_filename) or return
-    File.open(@client_skelton_filename, "w") do |f|
-      f << shbang << "\n"
-      f << "require '#{ @driver_filename }'\n\n" if @driver_filename
-      f << WSDL::SOAP::ClientSkeltonCreator.new(@wsdl).dump(
-	create_name(servicename))
-    end
-  end
-
-  def create_servant_skelton(porttypename)
-    log(INFO) { "Creating servant skelton." }
-    @servant_skelton_filename = (porttypename || @name + 'Servant') + '.rb'
-    check_file(@servant_skelton_filename) or return
-    File.open(@servant_skelton_filename, "w") do |f|
-      f << "require '#{ @classdef_filename }'\n\n" if @classdef_filename
-      f << WSDL::SOAP::ServantSkeltonCreator.new(@wsdl).dump(
-	create_name(porttypename))
-    end
-  end
-
-  def create_cgi_stub(servicename)
-    log(INFO) { "Creating CGI stub." }
-    servicename ||= @wsdl.services[0].name.name
-    @cgi_stubFilename = servicename + '.cgi'
-    check_file(@cgi_stubFilename) or return
-    File.open(@cgi_stubFilename, "w") do |f|
-      f << shbang << "\n"
-      if @servant_skelton_filename
-	f << "require '#{ @servant_skelton_filename }'\n\n"
-      end
-      f << WSDL::SOAP::CGIStubCreator.new(@wsdl).dump(create_name(servicename))
-    end
-  end
-
-  def create_standalone_server_stub(servicename)
-    log(INFO) { "Creating standalone stub." }
-    servicename ||= @wsdl.services[0].name.name
-    @standalone_server_stub_filename = servicename + '.rb'
-    check_file(@standalone_server_stub_filename) or return
-    File.open(@standalone_server_stub_filename, "w") do |f|
-      f << shbang << "\n"
-      f << "require '#{ @servant_skelton_filename }'\n\n" if @servant_skelton_filename
-      f << WSDL::SOAP::StandaloneServerStubCreator.new(@wsdl).dump(
-	create_name(servicename))
-    end
-  end
-
-  def create_driver(porttypename)
-    log(INFO) { "Creating driver." }
-    @driver_filename = (porttypename || @name) + 'Driver.rb'
-    check_file(@driver_filename) or return
-    File.open(@driver_filename, "w") do |f|
-      f << "require '#{ @classdef_filename }'\n\n" if @classdef_filename
-      f << WSDL::SOAP::DriverCreator.new(@wsdl).dump(
-	create_name(porttypename))
-    end
-  end
-
-  def check_file(filename)
-    if FileTest.exist?(filename)
-      if @opt.key?('force')
-	log(WARN) {
-	  "File '#{ filename }' exists but overrides it."
-	}
-	true
-      else
-	log(WARN) {
-	  "File '#{ filename }' exists.  #{ $0 } did not override it."
-	}
-	false
-      end
-    else
-      log(INFO) { "Creates file '#{ filename }'." }
-      true
-    end
-  end
-
-  def shbang
-    "#!/usr/bin/env ruby"
-  end
-
-  def create_name(name)
-    name ? XSD::QName.new(@wsdl.targetnamespace, name) : nil
-  end
-
-  def import(location)
-    WSDL::Importer.import(location)
   end
 end
 
