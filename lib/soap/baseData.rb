@@ -191,31 +191,32 @@ public
 end
 
 
-class SOAPAttachment < XSD::NSDBase
+class SOAPExternalReference < XSD::NSDBase
   include SOAPBasetype
   extend SOAPModuleUtils
 
-  attr_reader :data
-
-  def initialize(value)
+  def initialize
     super()
-    @data = value
     @type = XSD::QName.new
     @encodingstyle = nil
     @elename = XSD::QName.new
     @precedents = []
     @root = false
     @parent = nil
-    @refid = nil
   end
 
-  def attached
-    # assign obj as a referenced external content.
-    rootnode.external_content[@data.contentid] = self
+  def referred
+    rootnode.external_content[external_contentid] = self
   end
 
   def refidstr
-    'cid:' + @data.contentid
+    'cid:' + external_contentid
+  end
+
+private
+
+  def external_contentid
+    raise NotImplementedError.new
   end
 end
 

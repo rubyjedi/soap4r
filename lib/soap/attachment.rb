@@ -13,12 +13,28 @@ require 'soap/mapping'
 module SOAP
 
 
+class SOAPAttachment < SOAPExternalReference
+  attr_reader :data
+
+  def initialize(value)
+    super()
+    @data = value
+  end
+
+private
+
+  def external_contentid
+    @data.contentid
+  end
+end
+
+
 class Attachment
   attr_reader :io
   attr_accessor :contenttype
 
-  def initialize(io = nil)
-    @io = io
+  def initialize(string_or_readable = nil)
+    @string_or_readable = string_or_readable
     @contenttype = "application/octet-stream"
     @contentid = nil
   end
@@ -36,8 +52,9 @@ class Attachment
   end
 
   def content
-    if @content == nil and @io != nil
-      @content = @io.read
+    if @content == nil and @string_or_readable != nil
+      @content = @string_or_readable.respond_to?(:read) ?
+	@string_or_readable.read : @string_or_readable
     end
     @content
   end
