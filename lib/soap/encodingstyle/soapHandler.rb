@@ -75,7 +75,7 @@ class SOAPHandler < Handler
       end
     else
       raise EncodingStyleError.new(
-	"Unknown object:#{ data } in this encodingStyle.")
+	"unknown object:#{data} in this encodingStyle")
     end
   end
 
@@ -227,6 +227,9 @@ class SOAPHandler < Handler
   end
 
   def decode_parent(parent, node)
+    if parent.node.nil?
+      raise EncodingStyleError.new("unknown node: #{node.elename}")
+    end
     case parent.node
     when SOAPUnknown
       newparent = parent.node.as_struct
@@ -248,9 +251,9 @@ class SOAPHandler < Handler
       end
       node.parent = parent.node
     when SOAPBasetype
-      raise EncodingStyleError.new("SOAP base type must not have a child.")
+      raise EncodingStyleError.new("SOAP base type must not have a child")
     else
-      raise EncodingStyleError.new("Illegal parent: #{ parent.node }.")
+      raise EncodingStyleError.new("illegal parent: #{parent.node}")
     end
   end
 
@@ -383,7 +386,7 @@ private
 
   def decode_definedtype(elename, typename, typedef, arytypestr)
     unless typedef
-      raise EncodingStyleError.new("Unknown type '#{ typename }'.")
+      raise EncodingStyleError.new("unknown type '#{ typename }'")
     end
     if typedef.is_a?(::WSDL::XMLSchema::SimpleType)
       decode_defined_simpletype(elename, typename, typedef, arytypestr)
@@ -509,7 +512,7 @@ private
         case qname.name
         when XSD::NilLiteral
           is_nil = NilLiteralMap[value] or
-            raise EncodingStyleError.new("Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true', 'false', '1', or '0').")
+            raise EncodingStyleError.new("cannot accept attribute value: #{value} as the value of xsi:#{XSD::NilLiteral} (expected 'true', 'false', '1', or '0')")
           next
         when XSD::AttrType
           type = value
@@ -523,7 +526,7 @@ private
         when AttrRoot
           root = RootLiteralMap[value] or
             raise EncodingStyleError.new(
-	      "Illegal root attribute value: #{ value }.")
+	      "illegal root attribute value: #{value}")
           next
         when AttrOffset
           offset = value
@@ -578,7 +581,7 @@ private
 	  ref.__setobj__(o)
       	  false
 	else
-	  raise EncodingStyleError.new("Unresolved reference: #{ ref.refid }.")
+	  raise EncodingStyleError.new("unresolved reference: #{ref.refid}")
 	end
       }
       count -= 1
