@@ -45,6 +45,27 @@ class Operation < Info
     parent.targetNamespace
   end
 
+  def getInputParts
+    sortParts( input.getMessage.parts )
+  end
+
+  def getOutputParts
+    sortParts( output.getMessage.parts )
+  end
+
+  def getFaultParts
+    sortParts( fault.getMessage.parts )
+  end
+
+  def inputName
+    XSD::QName.new( targetNamespace, input.name ? input.name.name : @name.name )
+  end
+
+  def outputName
+    XSD::QName.new( targetNamespace,
+      output.name ? output.name.name : @name.name + 'Response' )
+  end
+
   InputName = XSD::QName.new( Namespace, 'input' )
   OutputName = XSD::QName.new( Namespace, 'output' )
   FaultName = XSD::QName.new( Namespace, 'fault' )
@@ -81,6 +102,25 @@ class Operation < Info
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
+  end
+
+private
+
+  def sortParts( parts )
+    return parts.dup unless @parameterOrder
+    result = []
+    parameterOrder.each do | orderItem |
+      if ( ele = parts.find { | part | part.name == orderItem } )
+	result << ele
+      end
+    end
+    if result.length == 0
+      return parts.dup
+    end
+    if parts.length != result.length
+      raise RuntimeError.new( "Incomplete prarmeterOrder list." )
+    end
+    result
   end
 end
 
