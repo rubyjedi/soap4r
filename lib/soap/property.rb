@@ -1,5 +1,5 @@
-# soap/property.rb: SOAP4R - Property definition.
-# Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# soap/property.rb: SOAP4R - Property implementation.
+# Copyright (C) 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -13,6 +13,7 @@ class Property
   def initialize
     @store = Hash.new
     @hook = Hash.new
+    @locked = false
   end
 
   # name: a Symbol, String or an Array
@@ -37,9 +38,23 @@ class Property
     assign_hook(name_to_a(name), &hook)
   end
 
-  # keys: downcased symbol
+  # keys: downcase symbol
   def keys
     @store.keys
+  end
+
+  def lock
+    each_key do |key|
+      key.lock
+    end
+    @locked = true
+  end
+
+  def unlock
+    @locked = false
+    each_key do |key|
+      key.unlock
+    end
   end
 
 protected
@@ -48,6 +63,7 @@ protected
     name, *rest = *ary
     key = to_key(name)
     if rest.empty?
+      check_lock(key)
       @store[key]
     else
       deref_key(key).referent(rest)
@@ -58,6 +74,7 @@ protected
     name, *rest = *ary
     key = to_key(name)
     if rest.empty?
+      check_lock(key)
       @store[key] = value
       local_hook(key)
     else
@@ -69,6 +86,7 @@ protected
     name, *rest = *ary
     key = to_key(name)
     if rest.empty?
+      check_lock(key)
       (@hook[key] ||= []) << hook
     else
       deref_key(key).assign_hook(rest, &hook)
@@ -77,12 +95,27 @@ protected
 
 private
 
+  def each_key
+    @store.each do |key, value|
+      if value.is_a?(::SOAP::Property)
+	yield(value)
+      end
+    end
+  end
+
   def deref_key(key)
+    check_lock(key)
     ref = @store[key] ||= self.class.new
-    unless ref.is_a?(SOAP::Property)
-      raise ArgumentError.new("key `#{key}' already defined as a value.")
+    unless ref.is_a?(::SOAP::Property)
+      raise ArgumentError.new("key `#{key}' already defined as a value")
     end
     ref
+  end
+
+  def check_lock(key)
+    if @locked and !@store.key?(key)
+      raise TypeError.new("cannot add any key to locked property")
+    end
   end
 
   NO_HOOK = [].freeze

@@ -123,6 +123,47 @@ class TestProperty < Test::Unit::TestCase
     assert(@prop["a"].keys.member?(:b))
     assert(@prop["a"].keys.member?(:c))
   end
+
+  def test_lock
+    @prop["a.a"] = nil
+    @prop["a.b.c"] = 1
+    @prop["b"] = false
+    @prop.lock
+    assert_equal(nil, @prop["a.a"])
+    assert_equal(1, @prop["a.b.c"])
+    assert_equal(false, @prop["b"])
+    assert_raises(TypeError) do
+      assert_nil(@prop["c"])
+    end
+    assert_raises(TypeError) do
+      @prop["c"] = 2
+    end
+    assert_raises(TypeError) do
+      @prop["a.b.R"]
+    end
+    assert_raises(TypeError) do
+      @prop.add_hook("a.c") do
+	assert(false)
+      end
+    end
+    assert_nil(@prop["a.a"])
+    @prop["a.b"] = nil
+    assert_nil(@prop["a.b"])
+    #
+    @prop.unlock
+    assert_nil(@prop["c"])
+    @prop["c"] = 2
+    assert_equal(2, @prop["c"])
+    @prop["a.d.a.a"] = :foo
+    assert_equal(:foo, @prop["a.d.a.a"])
+    tested = false
+    @prop.add_hook("a.c") do |name, value|
+      assert(true)
+      tested = true
+    end
+    @prop["a.c"] = 3
+    assert(tested)
+  end
 end
 
 
