@@ -176,7 +176,11 @@ private
   public
     def add_servant_to_router(router, obj, namespace)
       ::SOAP::RPC.defined_methods(obj).each do |name|
-	add_servant_method_to_router(router, obj, namespace, name)
+        begin
+          add_servant_method_to_router(router, obj, namespace, name)
+        rescue SOAP::RPC::MethodDefinitionError => e
+          p e if $DEBUG
+        end
       end
     end
 
