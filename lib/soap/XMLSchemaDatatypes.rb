@@ -22,10 +22,23 @@ Ave, Cambridge, MA 02139, USA.
 module XSD
   Namespace = 'http://www.w3.org/2001/XMLSchema'
   InstanceNamespace = 'http://www.w3.org/2001/XMLSchema-instance'
+
+  AnyTypeLiteral = 'anyType'
   NilLiteral = 'nil'
-  #Namespace = 'http://www.w3.org/1999/XMLSchema'
-  #InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  #NilLiteral = 'null'
+  BooleanLiteral = 'boolean'
+  StringLiteral = 'string'
+  FloatLiteral = 'float'
+  DateTimeLiteral = 'dateTime'
+  Base64BinaryLiteral = 'base64Binary'
+  IntegerLiteral = 'integer'
+  IntLiteral = 'int'
+
+  # for xsd:1999
+  # Namespace = 'http://www.w3.org/1999/XMLSchema'
+  # InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
+  # AnyTypeLiteral = 'ur-type'
+  # NilLiteral = 'null'
+  # DateTimeLiteral = 'timeInstant'
 end
 
 
@@ -79,7 +92,7 @@ class XSDBoolean < XSDBase
   public
 
   def initialize( initBoolean = false )
-    super( 'boolean' )
+    super( BooleanLiteral )
     set( initBoolean )
   end
 
@@ -100,7 +113,7 @@ class XSDString < XSDBase
   public
 
   def initialize( initString = nil )
-    super( 'string' )
+    super( StringLiteral )
     set( initString ) if initString
   end
 
@@ -126,12 +139,30 @@ class XSDFloat < XSDBase
   public
 
   def initialize( initFloat = nil )
-    super( 'float' )
+    super( FloatLiteral )
     set( initFloat ) if initFloat
   end
 
   def set( newFloat )
-    @data = newFloat.to_f
+    unless newFloat.is_a?( Float )
+      # to_f understands 'NaN', 'INF', and '-INF'
+      @data = newFloat.to_f
+    else
+      @data = newFloat
+    end
+  end
+
+  # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
+  def to_s
+    if @data.nan?
+      'NaN'
+    elsif @data.infinite? == 1
+      'INF'
+    elsif @data.infinite? == -1
+      '-INF'
+    else
+      @data.to_s
+    end
   end
 end
 
@@ -142,7 +173,7 @@ class XSDDateTime < XSDBase
   public
 
   def initialize( initDateTime = nil )
-    super( 'dateTime' )
+    super( DateTimeLiteral )
     set( initDateTime ) if initDateTime
   end
 
@@ -157,7 +188,7 @@ class XSDDateTime < XSDBase
       if $DEBUG && zone
 	$stderr.puts "Timezone in String is not supported.  Set a Date or a Time directly!"
       end
-      @data = Date.new3( year, mon, mday, hour, min )
+      @data = Date.new3( year, mon, mday, hour, min, sec )
     end
   end
 
@@ -171,7 +202,7 @@ class XSDBase64Binary < XSDBase
 
   # String in Ruby could be a binary.
   def initialize( initString = nil )
-    super( 'base64Binary' )
+    super( Base64BinaryLiteral )
     set( initString ) if initString
   end
 
@@ -183,7 +214,7 @@ class XSDBase64Binary < XSDBase
     @data = String.new( newBase64String )
   end
 
-  def to_s
+  def toString
     @data.unpack( "m" )[ 0 ]
   end
 end
@@ -197,7 +228,7 @@ class XSDInteger < XSDDecimal
 
   def initialize( initInteger = nil )
     super()
-    @typeName = 'integer'
+    @typeName = IntegerLiteral
     set( initInteger ) if initInteger
   end
 
@@ -211,7 +242,7 @@ class XSDInt < XSDInteger
 
   def initialize( initInt = nil )
     super()
-    @typeName = 'int'
+    @typeName = IntLiteral
     set( initInt ) if initInt
   end
 
