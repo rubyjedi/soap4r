@@ -111,7 +111,7 @@ private
       if op_bind_rpc?(op_bind)
 	operation = op_bind.find_operation
 	if op_bind.input
-	  type = XMLSchema::ComplexType.new(operation.inputname)
+	  type = XMLSchema::ComplexType.new(op_bind.soapoperation_name)
 	  message = messages[operation.input.message]
 	  type.sequence_elements = elements_from_message(message)
 	  types << type

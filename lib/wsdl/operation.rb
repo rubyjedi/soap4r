@@ -46,11 +46,13 @@ class Operation < Info
   end
 
   def input_info
-    NameInfo.new(@name, inputname, inputparts)
+    typename = input.find_message.name
+    NameInfo.new(@name, typename, inputparts)
   end
 
   def output_info
-    NameInfo.new(@name, outputname, outputparts)
+    typename = output.find_message.name
+    NameInfo.new(@name, typename, outputparts)
   end
 
   def inputparts
