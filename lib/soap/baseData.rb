@@ -102,20 +102,6 @@ public
     @position = nil
     @extraAttributes = []
   end
-
-private
-
-  def positionAttr( position, ns )
-    Attr.new( ns.name( EncodingNamespace, AttrPosition ), '[' << position.join( ',' ) << ']' )
-  end
-
-  def addEncodingAttr( attrs, ns )
-    unless ns.assigned?( EnvelopeNamespace )
-      tag = ns.assign( EnvelopeNamespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, EnvelopeNamespace ))
-    end
-    attrs.push( Attr.new( ns.name( EnvelopeNamespace, AttrEncodingStyle ), EncodingNamespace ))
-  end
 end
 
 
