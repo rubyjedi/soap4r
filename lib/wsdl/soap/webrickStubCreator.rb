@@ -83,7 +83,7 @@ __EOD__
 private
 
   def dumpPortType( portTypeName )
-    className = createClassName( portTypeName.name )
+    className = createClassName( portTypeName )
     methodDefCreator = MethodDefCreator.new( @definitions )
     methodDef, types = methodDefCreator.dump( portTypeName )
     mrCreator = MappingRegistryCreator.new( @definitions )

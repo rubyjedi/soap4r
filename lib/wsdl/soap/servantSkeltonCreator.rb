@@ -56,7 +56,7 @@ private
       dumpOperations << dumpOperation( operation )
     end
     return <<__EOD__
-class #{ createClassName( portType.name ) }
+class #{ createClassName( portType ) }
 #{ dumpOperations.gsub( /^/, "  " ).chomp }
 end
 __EOD__

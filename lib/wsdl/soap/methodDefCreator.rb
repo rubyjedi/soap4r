@@ -56,7 +56,8 @@ class MethodDefCreator
     params = collectParams( operation )
     soapAction = binding.soapOperation.soapAction
     namespace = binding.input.soapBody.namespace
-    ary2str( [ methodNameAs, methodName, params, soapAction, namespace ] )
+    ary2str( [ dq( methodNameAs ), dq( methodName ), params, dq( soapAction ),
+      dq( namespace ) ] )
   end
 
   def collectParams( operation )
@@ -64,18 +65,22 @@ class MethodDefCreator
     outParam = @definitions.getMessage( operation.output.message )
     result = inParam.parts.collect { | part |
       collectTypes( part.type )
-      [ 'in', part.name ]
+      paramSet( 'in', createClassName( part.type ), part.name )
     }
     if outParam.parts.size > 0
       retval = outParam.parts[ 0 ]
       collectTypes( retval.type )
-      result << [ 'retval', retval.name ]
+      result << paramSet( 'retval', createClassName( retval.type ), retval.name )
       cdr( outParam.parts ).each { | part |
 	collectTypes( part.type )
-	result << [ 'out', part.name ]
+	result << paramSet( 'out', createClassName( part.type ), part.name )
       }
     end
     sortParameterOrder( operation, result )
+  end
+
+  def paramSet( ioType, klassName, name )
+    [ dq( ioType ), klassName, dq( name ) ]
   end
 
   def sortParameterOrder( operation, params )
@@ -83,7 +88,7 @@ class MethodDefCreator
     return params unless parameterOrder
     result = []
     parameterOrder.each do | orderItem |
-      paramDef = params.find { | param | param[ 1 ] == orderItem }
+      paramDef = params.find { | param | param[ 2 ] == orderItem }
       raise unless paramDef
       result << paramDef
     end
@@ -102,7 +107,7 @@ class MethodDefCreator
 
   def ary2str( ary )
     "[ " << ary.collect { | item |
-      item.is_a?( Array ) ? ary2str( item ) : dq( item )
+      item.is_a?( Array ) ? ary2str( item ) : item
     }.join( ", " ) << " ]"
   end
 

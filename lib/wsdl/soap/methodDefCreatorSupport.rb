@@ -18,6 +18,8 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'wsdl/data'
+require 'soap/mappingRegistry'
 
 
 module WSDL
@@ -25,8 +27,20 @@ module WSDL
 
 
 module MethodDefCreatorSupport
+  SOAPBaseMap = {}
+  XSD::NSDBase.types.each do | klass |
+    begin
+      obj = klass.new
+      SOAPBaseMap[ Name.new( obj.typeNamespace, obj.typeName ) ] = klass
+    rescue ArgumentError
+    end
+  end
+
   def createClassName( name )
-    result = capitalize( name )
+    if SOAPBaseMap[ name ]
+      return SOAPBaseMap[ name ].to_s
+    end
+    result = capitalize( name.name )
     unless /^[A-Z]/ =~ result
       result = "C_#{ name }"
     end
