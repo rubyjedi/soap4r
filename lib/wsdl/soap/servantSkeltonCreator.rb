@@ -41,9 +41,9 @@ private
   def dump_porttype(porttype)
     operations = @definitions.porttype(porttype).operations
     dump_op = ""
-    operations.each do |operation|
-      dump_op << dump_operation(operation)
-    end
+    dump_op = operations.collect { |operation|
+      dump_operation(operation)
+    }.join("\n")
     return <<__EOD__
 class #{ create_class_name(porttype) }
 #{ dump_op.gsub(/^/, "  ").chomp }
@@ -63,7 +63,6 @@ __EOD__
 def #{ name }#{ dump_inputparam(input) }
   raise NotImplementedError.new
 end
-
 __EOD__
   end
 end

@@ -40,6 +40,11 @@ private
     name = create_class_name(porttype)
     methoddef, types = MethodDefCreator.new(@definitions).dump(porttype)
     mr_creator = MappingRegistryCreator.new(@definitions)
+    mr = mr_creator.dump(types)
+    if mr.empty?
+      mr = "# No mapping definition"
+    end
+    mr.gsub!(/^/, "  ")
 
     return <<__EOD__
 require 'soap/rpc/standaloneServer'
@@ -47,13 +52,14 @@ require 'soap/rpc/standaloneServer'
 class #{ name }
   MappingRegistry = SOAP::Mapping::Registry.new
 
-#{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
+#{ mr }
+
   Methods = [
 #{ methoddef.gsub(/^/, "    ").chomp }
   ]
 end
 
-class App < SOAP::RPC::StandaloneServer
+class #{name}App < SOAP::RPC::StandaloneServer
   def initialize(*arg)
     super
 
@@ -69,7 +75,9 @@ class App < SOAP::RPC::StandaloneServer
 end
 
 # Change listen port.
-App.new('app', nil, '0.0.0.0', 10080).start
+if $0 == __FILE__
+  #{name}App.new('app', nil, '0.0.0.0', 10080).start
+end
 __EOD__
   end
 end

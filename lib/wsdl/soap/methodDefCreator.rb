@@ -87,7 +87,7 @@ __EOD__
       when :TYPE_STRUCT
 	['::SOAP::SOAPStruct', type.namespace, type.name]
       when :TYPE_ARRAY
-	arytype = definedtype.find_arytype
+	arytype = definedtype.find_arytype || XSD::AnyTypeName
 	ns = arytype.namespace
 	name = arytype.name.sub(/\[(?:,)*\]$/, '')
 	['::SOAP::SOAPArray', ns, name]
