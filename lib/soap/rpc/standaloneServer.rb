@@ -37,11 +37,11 @@ class StandaloneServer < Server
   
   ALLOWED_LENGTH = 1024 * 1024
     
-  def initialize(namespace, host = "127.0.0.1", port = 8080)
-    super(self.class.name, namespace)
+  def initialize(appName, namespace, host = "127.0.0.1", port = 8080)
+    super(appName, namespace)
     @host, @port = host, port
 
-    handler = self.method(:request_handler).to_proc
+    handler = method(:request_handler)
     @server = ::HttpServer.new(handler, @port, @host)
   end
   
