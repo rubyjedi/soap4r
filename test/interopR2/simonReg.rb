@@ -72,7 +72,7 @@ private
     groupB = services.find { | service | service.name == 'SoapBuilders Interop Group B' }
 
     # SOAP4R information
-    version = '1.3.2'
+    version = '1.3.4'
     soap4rClientInfo = Clients::ClientInfo.new( 'SOAP4R', version )
     soap4rServerInfo = Servers::ServerInfo.new( 'SOAP4R', version,
       'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/',
