@@ -141,32 +141,65 @@ __EOP__
     assert_equal(1, @prop["foo.bar"])
   end
 
-  def test_key_hook
+  def test_key_hook_no_cascade
     tag = Object.new
     tested = 0
-    @prop.add_hook("foo") do |key, value|
-      assert_equal(["foo", "bar", "baz", "qux"], key)
-      assert_equal(tag, value)
-      tested += 1
+    @prop.add_hook do |key, value|
+      assert(false)
     end
-    @prop.add_hook("foo.bar") do |key, value|
-      assert_equal(["foo", "bar", "baz", "qux"], key)
-      assert_equal(tag, value)
-      tested += 1
+    @prop.add_hook(false) do |key, value|
+      assert(false)
+    end
+    @prop.add_hook("foo") do |key, value|
+      assert(false)
+    end
+    @prop.add_hook("foo.bar", false) do |key, value|
+      assert(false)
     end
     @prop.add_hook("foo.bar.baz") do |key, value|
-      assert_equal(["foo", "bar", "baz", "qux"], key)
-      assert_equal(tag, value)
-      tested += 1
+      assert(false)
     end
-    @prop.add_hook("foo.bar.baz.qux") do |key, value|
+    @prop.add_hook("foo.bar.baz.qux", false) do |key, value|
       assert_equal(["foo", "bar", "baz", "qux"], key)
       assert_equal(tag, value)
       tested += 1
     end
     @prop["foo.bar.baz.qux"] = tag
     assert_equal(tag, @prop["foo.bar.baz.qux"])
-    assert_equal(4, tested)
+    assert_equal(1, tested)
+  end
+
+  def test_key_hook_cascade
+    tag = Object.new
+    tested = 0
+    @prop.add_hook(true) do |key, value|
+      assert_equal(["foo", "bar", "baz", "qux"], key)
+      assert_equal(tag, value)
+      tested += 1
+    end
+    @prop.add_hook("foo", true) do |key, value|
+      assert_equal(["foo", "bar", "baz", "qux"], key)
+      assert_equal(tag, value)
+      tested += 1
+    end
+    @prop.add_hook("foo.bar", true) do |key, value|
+      assert_equal(["foo", "bar", "baz", "qux"], key)
+      assert_equal(tag, value)
+      tested += 1
+    end
+    @prop.add_hook("foo.bar.baz", true) do |key, value|
+      assert_equal(["foo", "bar", "baz", "qux"], key)
+      assert_equal(tag, value)
+      tested += 1
+    end
+    @prop.add_hook("foo.bar.baz.qux", true) do |key, value|
+      assert_equal(["foo", "bar", "baz", "qux"], key)
+      assert_equal(tag, value)
+      tested += 1
+    end
+    @prop["foo.bar.baz.qux"] = tag
+    assert_equal(tag, @prop["foo.bar.baz.qux"])
+    assert_equal(5, tested)
   end
 
   def test_keys
