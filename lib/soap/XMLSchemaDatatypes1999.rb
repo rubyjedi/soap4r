@@ -24,5 +24,6 @@ module XSD
   InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
   AnyTypeLiteral = 'ur-type'
   NilLiteral = 'null'
+  NilValue = '1'
   DateTimeLiteral = 'timeInstant'
 end

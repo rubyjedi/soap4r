@@ -225,7 +225,7 @@ private
 
   # Override the definition in SOAPBasetype.
   def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::Namespace, XSD::NilLiteral ), '1' )
+    Attr.new( ns.name( XSD::Namespace, XSD::NilLiteral ), NilValue )
   end
 end
 

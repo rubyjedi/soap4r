@@ -27,6 +27,7 @@ module XSD
 
   AnyTypeLiteral = 'anyType'
   NilLiteral = 'nil'
+  NilValue = 'true'
   BooleanLiteral = 'boolean'
   StringLiteral = 'string'
   FloatLiteral = 'float'
