@@ -9,6 +9,7 @@ dir = File::dirname(File::expand_path(__FILE__))
 
 s=WEBrick::HTTPServer.new(
   :Port           => 2000,
+  :BindAddress	  => nil,
   :Logger         => WEBrick::Log::new($stderr, WEBrick::Log::DEBUG),
   :DocumentRoot   => $OPT_r || dir + "/htdocs"
 )
