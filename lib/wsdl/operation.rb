@@ -1,6 +1,6 @@
 =begin
 WSDL4R - WSDL operation definition.
-Copyright (C) 2002 NAKAMURA Hiroshi.
+Copyright (C) 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -107,7 +107,7 @@ class Operation < Info
 private
 
   def sortParts( parts )
-    return parts.dup unless @parameterOrder
+    return parts.dup unless parameterOrder
     result = []
     parameterOrder.each do | orderItem |
       if ( ele = parts.find { | part | part.name == orderItem } )
