@@ -10,6 +10,13 @@ proxy = ENV[ 'HTTP_PROXY' ] || ENV[ 'http_proxy' ]
 raa = RAA::Driver.new( server, proxy )
 raa.setLogDev( nil )
 
+# targetDate = DateTime.civil( 2002, 5, 7 )
+# from = targetDate - targetDate.wday
+# to = from + 7
+# ( raa.getModifiedInfoSince( from ) - raa.getModifiedInfoSince( to )).each do | info |
+#   p info
+# end
+
 p raa.getAllListings().sort
 
 p raa.getProductTree()
