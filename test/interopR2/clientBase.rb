@@ -133,7 +133,7 @@ def getIdObj( obj )
     }
   else
     # String#== compares content of args.
-    "#{ obj.type }##{ obj.__id__ }"
+    "#{ obj.class }##{ obj.__id__ }"
   end
 end
 
