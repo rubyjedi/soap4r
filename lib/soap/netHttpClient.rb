@@ -26,13 +26,17 @@ class NetHttpClient
   attr_accessor :debug_dev
   attr_accessor :ssl_config		# ignored for now.
   attr_accessor :protocol_version	# ignored for now.
+  attr_accessor :connect_timeout
+  attr_accessor :send_timeout           # ignored for now.
+  attr_accessor :receive_timeout
 
   def initialize(proxy = nil, agent = nil)
     @proxy = proxy ? URI.parse(proxy) : nil
     @agent = agent
     @debug_dev = nil
     @session_manager = SessionManager.new
-    @no_proxy = nil
+    @no_proxy = @ssl_config = @protocol_version = nil
+    @connect_timeout = @send_timeout = @receive_timeout = nil
   end
 
   def test_loopback_response
@@ -117,6 +121,8 @@ private
     if http.respond_to?(:set_debug_output)
       http.set_debug_output(@debug_dev)
     end
+    http.open_timeout = @connect_timeout if @connect_timeout
+    http.read_timeout = @receive_timeout if @receive_timeout
     case url
     when URI::HTTPS
       if SSLEnabled
