@@ -28,8 +28,8 @@ class Element < Info
     @type = type
     @local_complextype = nil
     @constraint = nil
-    @maxoccurs = 1
-    @minoccurs = 1
+    @maxoccurs = '1'
+    @minoccurs = '1'
     @nillable = nil
   end
 

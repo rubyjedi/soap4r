@@ -14,6 +14,10 @@ module XMLSchema
 
 
 class Element < Info
+  def map_as_array?
+    maxoccurs != '1'
+  end
+
   def attributes
     @local_complextype.attributes
   end

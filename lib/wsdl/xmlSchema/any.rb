@@ -21,8 +21,8 @@ class Any < Info
 
   def initialize
     super()
-    @maxoccurs = 1
-    @minoccurs = 1
+    @maxoccurs = '1'
+    @minoccurs = '1'
     @namespace = '##any'
     @process_contents = 'strict'
   end
