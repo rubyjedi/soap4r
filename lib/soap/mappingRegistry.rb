@@ -244,140 +244,6 @@ module RPCUtils
     end
   end
 
-  class StructFactory_ < Factory
-    def obj2soap( soapKlass, obj, info, map )
-      if soapKlass != SOAP::SOAPStruct
-	return nil
-      end
-
-      if obj.is_a?( ::SOAP::RPCUtils::Object )
-	typeNamespace = XSD::Namespace
-	typeName = XSD::AnyTypeLiteral
-      else
-	typeName = RPCUtils.getElementNameFromName( obj.type.name )
-	typeNamespace = getNamespace( obj.type ) || RubyTypeNamespace
-      end
-
-      param = SOAPStruct.new( typeName )
-      markMarshalledObj( obj, param )
-      param.typeNamespace = typeNamespace
-      obj.members.each do |member|
-	param.add( RPCUtils.getElementNameFromName( member ),
-	  RPCUtils._obj2soap( obj[ member ], map ))
-      end
-      param
-    end
-
-    def soap2obj( objKlass, node, info, map )
-      if !node.is_a?( SOAPStruct )
-	raise FactoryError.new( "Unknown compound type: #{ node }" )
-      end
-
-      if node.typeEqual( XSD::Namespace, XSD::AnyTypeLiteral )
-	unknownObj( node, map )
-      else
-	struct2obj( node, map )
-      end
-    end
-
-  private
-
-    def unknownObj( node, map )
-      klass = Object	# SOAP::RPCUtils::Object
-
-      obj = klass.new
-      markUnmarshalledObj( node, obj )
-
-      vars = Hash.new
-      node.each do |name, value|
-	vars[ RPCUtils.getNameFromElementName( name ) ] =
-	  RPCUtils._soap2obj( value, map )
-      end
-      setInstanceVariables( obj, vars )
-
-      obj
-    end
-
-    def struct2obj( node, map )
-      obj = nil
-      typeName = RPCUtils.getNameFromElementName( node.typeName ||
-	node.instance_eval( "@name" ))
-      begin
-	klass = begin
-	    RPCUtils.getClassFromName( typeName )
-	  rescue NameError
-	    self.instance_eval( toType( typeName ))
-	  end
-	if getNamespace( klass ) != node.typeNamespace
-	  raise NameError.new()
-	elsif getTypeName( klass ) and ( getTypeName( klass ) != typeName )
-	  raise NameError.new()
-	end
-
-	obj = createEmptyObject( klass )
-	markUnmarshalledObj( node, obj )
-
-	vars = Hash.new
-	node.each do |name, value|
-	  vars[ RPCUtils.getNameFromElementName( name ) ] =
-	    RPCUtils._soap2obj( value, map )
-	end
-	setInstanceVariables( obj, vars )
-
-      rescue NameError
-	raise FactoryError.new( "Unknown compound type: #{ node.typeName }" )
-      end
-
-      obj
-    end
-  end
-
-  class HashFactory_ < Factory
-    def obj2soap( soapKlass, obj, info, map )
-      if obj.is_a?( Hash )
-	param = SOAPStruct.new( "Map" )
-	markMarshalledObj( obj, param )
-	param.typeNamespace = ApacheSOAPTypeNamespace
-	i = 1
-	obj.each do | key, value |
-	  elem = SOAPStruct.new	# Undefined typeName.
-	  elem.add( "key", RPCUtils._obj2soap( key, map ))
-	  elem.add( "value", RPCUtils._obj2soap( value, map ))
-	  # param.add( "item#{ i }", elem )
-	  # ApacheAxis allows only 'item' here.
-	  param.add( "item", elem )
-	  i += 1
-	end
-	param
-      else
-	nil
-      end
-    end
-
-    def soap2obj( objKlass, node, info, map )
-      if node.typeEqual( RubyTypeNamespace, 'Hash' )
-	obj = Hash.new
-	markUnmarshalledObj( node, obj )
-	keyArray = RPCUtils._soap2obj( node[ 'key' ], map )
-	valueArray = RPCUtils._soap2obj( node[ 'value' ], map )
-	while !keyArray.empty?
-	  obj[ keyArray.shift ] = valueArray.shift
-	end
-	obj
-      elsif node.typeEqual( ApacheSOAPTypeNamespace, 'Map' )
-	obj = Hash.new
-	markUnmarshalledObj( node, obj )
-	node.each do | key, value |
-	  obj[ RPCUtils._soap2obj( value[ 'key' ], map ) ] =
-	    RPCUtils._soap2obj( value[ 'value' ], map )
-	end
-	obj
-      else
-	raise FactoryError.new( "#{ node } is not a Hash." )
-      end
-    end
-  end
-
   class TypedArrayFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
       typeName = info[1]
@@ -456,11 +322,49 @@ module RPCUtils
     end
   end
 
+  class HashFactory_ < Factory
+    def obj2soap( soapKlass, obj, info, map )
+      if !obj.is_a?( Hash )
+	return nil
+      end
+
+      param = SOAPStruct.new( "Map" )
+      markMarshalledObj( obj, param )
+      param.typeNamespace = ApacheSOAPTypeNamespace
+      i = 1
+      obj.each do | key, value |
+	elem = SOAPStruct.new # Undefined typeName.
+     	elem.add( "key", RPCUtils._obj2soap( key, map ))
+  	elem.add( "value", RPCUtils._obj2soap( value, map ))
+	# param.add( "item#{ i }", elem )
+     	# ApacheAxis allows only 'item' here.
+  	param.add( "item", elem )
+	i += 1
+      end
+      param
+    end
+
+    def soap2obj( objKlass, node, info, map )
+      if !node.typeEqual( ApacheSOAPTypeNamespace, 'Map' )
+	raise FactoryError.new( "#{ node } is not a Hash." )
+      end
+
+      obj = Hash.new
+      markUnmarshalledObj( node, obj )
+      node.each do | key, value |
+	obj[ RPCUtils._soap2obj( value[ 'key' ], map ) ] =
+     	  RPCUtils._soap2obj( value[ 'value' ], map )
+      end
+      obj
+    end
+  end
+
   class RubytypeFactory_ < Factory
     TYPE_REGEXP = 'Regexp'
     TYPE_CLASS = 'Class'
     TYPE_MODULE = 'Module'
     TYPE_SYMBOL = 'Symbol'
+    TYPE_HASH = 'Map'
 
     def initialize( config = {} )
       @config = config
@@ -483,6 +387,22 @@ module RPCUtils
 	if obj.kcode
 	  # Why Regexp#kcode returns lower case?  Deprecated?
 	  param.add( 'kcode', SOAPString.new( obj.kcode.upcase ))
+	end
+	param
+      when Hash
+	typeName = TYPE_HASH
+	param = SOAPStruct.new( typeName )
+	markMarshalledObj( obj, param )
+	param.typeNamespace = RubyTypeNamespace
+	i = 1
+	obj.each do | key, value |
+	  elem = SOAPStruct.new	# Undefined typeName.
+	  elem.add( "key", RPCUtils._obj2soap( key, map ))
+	  elem.add( "value", RPCUtils._obj2soap( value, map ))
+	  # param.add( "item#{ i }", elem )
+	  # ApacheAxis allows only 'item' here.
+	  param.add( "item", elem )
+	  i += 1
 	end
 	param
       when Class
@@ -527,17 +447,40 @@ module RPCUtils
 	    RPCUtils._obj2soap( obj.instance_eval( var ), map ))
 	end
 	param
+      when Struct
+	typeName = RPCUtils.getElementNameFromName( obj.type.name )
+	param = SOAPStruct.new( typeName )
+	markMarshalledObj( obj, param )
+	param.typeNamespace = getNamespace( obj.type ) ||
+	  RubyCustomTypeNamespace
+	obj.members.each do |member|
+	  param.add( RPCUtils.getElementNameFromName( member ),
+	    RPCUtils._obj2soap( obj[ member ], map ))
+	end
+	param
       when IO, Binding, Continuation, Data, Dir, File::Stat, MatchData, Method,
   	  Proc, Thread, ThreadGroup 
 	# raise FactoryError.new( "can't dump #{ obj.type }." )
 	return nil
+      when ::SOAP::RPCUtils::Object
+	typeNamespace = XSD::Namespace
+	typeName = XSD::AnyTypeLiteral
+	param = SOAPStruct.new( typeName )
+	markMarshalledObj( obj, param )
+	param.typeNamespace = typeNamespace
+      	obj.getInstanceVariables do |var, data|
+	  name = var.dup.sub!( /^@/, '' )
+	  param.add( RPCUtils.getElementNameFromName( name ),
+	    RPCUtils._obj2soap( data, map ))
+	end
+	param
       else
 	typeName = getTypeName( obj.type ) ||
 	  RPCUtils.getElementNameFromName( obj.type.to_s )
+	typeNamespace = getNamespace( obj.type ) || RubyCustomTypeNamespace
 	param = SOAPStruct.new( typeName  )
 	markMarshalledObj( obj, param )
-	param.typeNamespace = getNamespace( obj.type ) ||
-	  RubyCustomTypeNamespace
+	param.typeNamespace = typeNamespace
 	if obj.type.ancestors.member?( Marshallable )
 	  obj.getInstanceVariables do |var, data|
 	    name = var.dup.sub!( /^@/, '' )
@@ -558,85 +501,202 @@ module RPCUtils
 
     def soap2obj( objKlass, node, info, map )
       if node.typeNamespace == RubyTypeNamespace
-	case node.typeName
-	when TYPE_REGEXP
-	  source = node[ 'source' ].toString
-	  options = node.include?( 'options' ) ? node[ 'options' ].data : nil
-	  kcode = node.include?( 'kcode' ) ? node[ 'kcode' ].data : nil
-	  kcode ? Regexp.new( source, options, kcode ) :
-	    Regexp.new( source, options )
-	when TYPE_CLASS
-	  RPCUtils.getClassFromName( node[ 'name' ].data )
-	when TYPE_MODULE
-	  RPCUtils.getClassFromName( node[ 'name' ].data )
-	when TYPE_SYMBOL
-	  node[ 'id' ].data.intern
-	else
-	  # For Exception
-	  begin
-	    typeName = RPCUtils.getNameFromElementName( node.typeName )
-	    klass = RPCUtils.getClassFromName( typeName )
-	  rescue NameError
-	    raise FactoryError.new( "#{ node.typeName } is not a Rubytype." )
-	  end
-	  if klass.ancestors.include?( Exception )
-	    message = RPCUtils._soap2obj( node[ 'message' ], map )
-	    backtrace = RPCUtils._soap2obj( node[ 'backtrace' ], map )
-	    obj = klass.new( message )
-	    markUnmarshalledObj( node, obj )
-	    obj.set_backtrace( backtrace )
-	    vars = Hash.new
-	    node.each do |name, value|
-	      if name != 'message' && name != 'backtrace'
-		vars[ RPCUtils.getNameFromElementName( name ) ] =
-		  RPCUtils._soap2obj( value, map )
-	      end
-	    end
-	    setInstanceVariables( obj, vars )
-	    obj
-	  else
-	    raise FactoryError.new( "#{ node.typeName } is not a Rubytype." )
-	  end
-	end
+	rubyType2obj( node, map )
+      elsif node.typeEqual( XSD::Namespace, XSD::AnyTypeLiteral )
+	anyType2obj( node, map )
       else
-	soapUnknownType2obj( node, map )
+	unknownType2obj( node, map )
       end
     end
 
   private
 
-    def soapUnknownType2obj( node, map )
+    def rubyType2obj( node, map )
+      case node.typeName
+      when TYPE_REGEXP
+	source = node[ 'source' ].toString
+	options = node.include?( 'options' ) ? node[ 'options' ].data : nil
+	kcode = node.include?( 'kcode' ) ? node[ 'kcode' ].data : nil
+	obj = kcode ? Regexp.new( source, options, kcode ) :
+	  Regexp.new( source, options )
+	markUnmarshalledObj( node, obj )
+	obj
+      when TYPE_HASH
+	obj = Hash.new
+	markUnmarshalledObj( node, obj )
+	node.each do | key, value |
+	  obj[ RPCUtils._soap2obj( value[ 'key' ], map ) ] =
+	    RPCUtils._soap2obj( value[ 'value' ], map )
+	end
+	obj
+      when TYPE_CLASS
+	RPCUtils.getClassFromName( node[ 'name' ].data )
+      when TYPE_MODULE
+	RPCUtils.getClassFromName( node[ 'name' ].data )
+      when TYPE_SYMBOL
+	node[ 'id' ].data.intern
+      else
+	exception2obj( node, map )
+      end
+    end
+
+    def exception2obj( node, map )
+      begin
+	typeName = RPCUtils.getNameFromElementName( node.typeName )
+	klass = RPCUtils.getClassFromName( typeName )
+      rescue NameError
+	raise FactoryError.new( "#{ node.typeName } is not a Rubytype." )
+      end
+      if klass.ancestors.include?( Exception )
+	message = RPCUtils._soap2obj( node[ 'message' ], map )
+	backtrace = RPCUtils._soap2obj( node[ 'backtrace' ], map )
+	obj = klass.new( message )
+	markUnmarshalledObj( node, obj )
+	obj.set_backtrace( backtrace )
+	vars = Hash.new
+	node.each do |name, value|
+	  if name != 'message' && name != 'backtrace'
+	    vars[ RPCUtils.getNameFromElementName( name ) ] =
+	      RPCUtils._soap2obj( value, map )
+	  end
+	end
+	setInstanceVariables( obj, vars )
+	obj
+      else
+	raise FactoryError.new( "#{ node.typeName } is not a Rubytype." )
+      end
+    end
+
+    def anyType2obj( node, map )
+      klass = Object	# SOAP::RPCUtils::Object
+      obj = klass.new
+      markUnmarshalledObj( node, obj )
+      node.each do | name, value |
+	obj.setProperty( name, RPCUtils._soap2obj( value, map ))
+      end
+      obj
+    end
+
+    def unknownType2obj( node, map )
+      obj = struct2obj( node, map )
+      return obj if obj
+
       if !@allowUntypedStruct
 	raise FactoryError.new( "Unknown object #{ node.typeName }." )
       end
 
-      # Only Method Struct is allowed untyped in RPC style.
-      if !node.parent.is_a?( SOAPBody )
-	node
-      else
-	typeName = RPCUtils.getNameFromElementName( node.typeName || node.name )
-	klass = nil
-	structName = toType( typeName )
-	members = node.members.collect { |member|
-	  RPCUtils.getNameFromElementName( member )
-	}
-	if ( Struct.constants - Struct.superclass.constants ).member?(
-	    structName )
-	  klass = Struct.const_get( structName )
-	  if klass.members.length != members.length
-	    klass = Struct.new( structName, *members )
-	  end
-	else
+=begin
+      typeName = RPCUtils.getNameFromElementName( node.typeName || node.name )
+      klass = nil
+      structName = toType( typeName )
+      members = node.members.collect { |member|
+	RPCUtils.getNameFromElementName( member )
+      }
+      if ( Struct.constants - Struct.superclass.constants ).member?(
+	  structName )
+	klass = Struct.const_get( structName )
+	if klass.members.length != members.length
 	  klass = Struct.new( structName, *members )
 	end
-	obj = klass.new
-	markUnmarshalledObj( node, obj )
-	node.each do | name, value |
-	  obj.send( RPCUtils.getNameFromElementName( name ) + "=",
-	    RPCUtils._soap2obj( value, map ))
-	end
-	obj
+      else
+	klass = Struct.new( structName, *members )
       end
+      obj = klass.new
+      markUnmarshalledObj( node, obj )
+      node.each do | name, value |
+	obj.send( RPCUtils.getNameFromElementName( name ) + '=',
+	  RPCUtils._soap2obj( value, map ))
+      end
+      # Should this object bear typeName and typeNamespace in her mind?
+      # But, I don't know safe way to do this...
+      obj
+=end
+
+      anyType2obj( node, map )
+    end
+
+    def struct2obj( node, map )
+      obj = nil
+      typeName = RPCUtils.getNameFromElementName( node.typeName )
+      begin
+	klass = begin
+	    RPCUtils.getClassFromName( typeName )
+	  rescue NameError
+	    self.instance_eval( toType( typeName ))
+	  end
+	if ( getNamespace( klass ) and
+	    ( getNamespace( klass ) != node.typeNamespace ))
+	  raise NameError.new()
+	elsif ( getTypeName( klass ) and ( getTypeName( klass ) != typeName ))
+	  raise NameError.new()
+	end
+
+	obj = createEmptyObject( klass )
+	markUnmarshalledObj( node, obj )
+
+	vars = Hash.new
+	node.each do | name, value |
+	  vars[ RPCUtils.getNameFromElementName( name ) ] =
+	    RPCUtils._soap2obj( value, map )
+	end
+	setInstanceVariables( obj, vars )
+
+      rescue NameError
+	obj = nil
+      end
+
+      obj
+    end
+  end
+
+  # For anyType object.
+  class Object; include Marshallable
+    def setProperty( name, value )
+      varName = name
+      begin
+	instance_eval <<-EOS
+	  def #{ varName }
+	    @#{ varName }
+	  end
+
+	  def #{ varName }=( newMember )
+	    @#{ varName } = newMember
+	  end
+	EOS
+	self.send( varName + '=', value )
+      rescue SyntaxError
+	varName = safeName( varName )
+	retry
+      end
+
+      varName
+    end
+
+    def members
+      instance_variables.collect { | str | str[1..-1] }
+    end
+
+    def []( name )
+      if self.methods.include?( name )
+	self.send( name )
+      else
+	self.send( safeName( name ))
+      end
+    end
+
+    def []=( name, value )
+      if self.methods.include?( name )
+	self.send( name + '=', value )
+      else
+	self.send( safeName( name ) + '=', value )
+      end
+    end
+
+  private
+
+    def safeName( name )
+      require 'md5'
+      "var_" << MD5.new( name ).hexdigest
     end
   end
 
@@ -691,7 +751,6 @@ module RPCUtils
 
     BasetypeFactory = BasetypeFactory_.new
     ArrayFactory = ArrayFactory_.new
-    StructFactory = StructFactory_.new
     Base64Factory = Base64Factory_.new
     TypedArrayFactory = TypedArrayFactory_.new
     TypedStructFactory = TypedStructFactory_.new
@@ -717,7 +776,6 @@ module RPCUtils
       [ ::String,	::SOAP::SOAPDecimal,	BasetypeFactory ],
 
       [ ::Array,	::SOAP::SOAPArray,	ArrayFactory ],
-      [ ::Struct, 	::SOAP::SOAPStruct,	StructFactory ],
       [ ::SOAP::RPCUtils::SOAPException,
 			::SOAP::SOAPStruct,	TypedStructFactory,
 			[ RubyCustomTypeNamespace, "SOAPException" ]],
@@ -801,13 +859,6 @@ module RPCUtils
       @soap2objExceptionHandler = newHandler
     end
   end
-
-
-  ###
-  ## Convert parameter
-  #
-  # For anyType object.
-  class Object; end
 end
 
 
