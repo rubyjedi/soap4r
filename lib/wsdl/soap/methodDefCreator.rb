@@ -1,6 +1,6 @@
 =begin
 WSDL4R - Creating driver code from WSDL.
-Copyright (C) 2002 NAKAMURA Hiroshi.
+Copyright (C) 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -93,6 +93,9 @@ __EOD__
       [ mappedType ]
     else
       typeDef = @complexTypes[ type ]
+      if typeDef.nil?
+	raise RuntimeError.new("Type: #{type} not found.")
+      end
       case typeDef.compoundType
       when :TYPE_STRUCT
 	[ '::SOAP::SOAPStruct', type.namespace, type.name ]
@@ -112,6 +115,8 @@ __EOD__
   end
 
   def collectTypes( type )
+    # ignore inline type definition.
+    return if type.nil?
     @types << type
     return unless @complexTypes[ type ]
     @complexTypes[ type ].eachElement do | elementName, element |
