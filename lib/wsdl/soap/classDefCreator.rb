@@ -18,25 +18,88 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/data'
-require 'wsdl/xmlSchema/classDefCreator'
+require 'wsdl/soap/methodDefCreatorSupport'
 
 
 module WSDL
   module SOAP
 
 
-class ClassDefCreator < WSDL::XMLSchema::ClassDefCreator
+class ClassDefCreator
+  include MethodDefCreatorSupport
+
   attr_reader :definitions
+  attr_reader :schema
 
   def initialize( definitions )
     @definitions = definitions
-    super( definitions.types.schema )
+    @schema = @definitions.types.schema
     @faultTypes = getFaultTypes( @definitions )
+  end
+
+  def dump( className = nil )
+    result = ""
+    if className
+      result = dumpClassDef( className )
+    else
+      @schema.complexTypes.each do | complexType |
+	if complexType.content
+	  result << dumpClassDef( complexType.name )
+	elsif complexType.complexContent	# ToDo: too ad-hoc
+	  content = complexType.complexContent.content
+	  if content.attributes.size == 1 and content.attributes[ 0 ].ref ==
+	      Name.new( ::SOAP::EncodingNamespace, ::SOAP::AttrArrayType )
+	    result << dumpArrayDef( complexType.name )
+	  else
+	    raise RuntimeError.new( "Unknown complexContent definition..." )
+	  end
+	end
+	result << "\n"
+      end
+    end
+    result
   end
 
 private
 
-  # Overrides WSDL::XMLSchema::ClassDefCreator#dumpClassName
+  def dumpClassDef( className )
+    complexType = @schema.complexTypes[ className ]
+    elements = complexType.content.elements
+    attr_lines = ""
+    var_lines = ""
+    init_lines = ""
+    elements.each do | element |
+      name = createMethodName( element.name )
+      type = element.type
+      attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
+      init_lines << "    @#{ name } = nil\n"
+      unless var_lines.empty?
+	var_lines << ",\n      "
+      end
+      var_lines << "#{ name } = nil"
+    end
+    init_lines.chomp!
+
+#  @@typeName = "#{ className.name }"
+#  @@typeNamespace = "#{ className.namespace }"
+    return <<__EOD__
+# #{ className.namespace }
+class #{ dumpClassName( className ) }
+#{ attr_lines }
+  def initialize( #{ var_lines } )
+#{ init_lines }
+  end
+end
+__EOD__
+  end
+
+  def dumpArrayDef( arrayName )
+    return <<__EOD__
+# #{ arrayName.namespace }
+class #{ arrayName.name } < Array; end
+__EOD__
+  end
+
   def dumpClassName( className )
     if @faultTypes.index( className )
       "#{ className.name } < StandardError"
