@@ -22,6 +22,7 @@ require 'soap/streamHandler'
 require 'soap/charset'
 
 require 'devel/logger'
+Log = Devel::Logger	# for backward compatibility of Devel::Logger.
 
 
 module SOAP
