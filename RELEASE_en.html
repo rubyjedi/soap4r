@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: May 30, 2001<br />
+Last modified: June 21, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.1
+Target SOAP4R version: SOAP4R/1.3.2
 </p>
 
 <ol>
@@ -56,12 +56,14 @@ Feedback from
 </p>
 
 <ul>
-<li>Heading and trailing whtespaces in Base64 string could not be processed.  Fixed.</li>
-<li>Illegal typeNamespace of SOAP's base64 type.  Fixed.</li>
-<li>Added NaN, INF, -INF support of Float type.</li>
-<li>Extracted xsd:1999 type support to XMLSchemaDatatypes1999.rb.  Use it with 'require &quot;soap/XMLSchemaDatatypes1999&quot;'.</li>
-<li>Added 'root' attribute support.</li>
-<li>Return status 500 when Fault.</li>
+<li>&quot;nil='1'&quot; should be &quot;nil='true'&quot; in 2001 schema
+whereas &quot;null='1'&quot; in 1999 schema.  Fixed.</li>
+<li>SOAP Array was not typed with xsi:type.</li>
+<li>Fixed serialization root handling algorithm.</li>
+<li>Supported kind of SOAP-ENC:String style typed element.</li>
+<li>Default namespace was not derived to child element.  Fixed.</li>
+<li>Support default encodingStyle.</li>
+<li>Added support for void type (SOAP::RPCUtils::SOAPVoid).</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -193,16 +195,14 @@ spec are <strong>NOT</strong> currently supported:
 <li style="margin-top: 2ex;">SOAP Envelope
 <ul>
 <li>SOAP actor attribute</li>
+<li>SOAP mustUnderstand attribute</li>
 <li>SOAP Fault Codes</li>
-<li>encodingStyle in SOAP Envelope must be SOAP Encoding;
-Does not support literal XML encoding such as in SOAP for Java</li>
 </ul></li>
 <li style="margin-top: 2ex;">SOAP Encoding
 <ul>
 <li>encoding/decoding using XML Schema;
 Only xsi:type in SOAP Encoding is checked</li>
 <li>Arrays which has two or more dimensions (rank), Partially Transmitted Arrays, and Sparse Arrays</li>
-<li>SOAP root attribute</li>
 <li>Marshalling references to href/id (Unmarshalling is OK)</li>
 </ul></li>
 <li style="margin-top: 2ex;">Othres
@@ -218,6 +218,21 @@ Does not support 'charset='.
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.2 - June 21, 2001</dt>
+<dd>Feedback from
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+
+<ul>
+<li>&quot;nil='1'&quot; should be &quot;nil='true'&quot; in 2001 schema
+whereas &quot;null='1'&quot; in 1999 schema.  Fixed.</li>
+<li>SOAP Array was not typed with xsi:type.</li>
+<li>Fixed serialization root handling algorithm.</li>
+<li>Supported kind of SOAP-ENC:String style typed element.</li>
+<li>Default namespace was not derived to child element.  Fixed.</li>
+<li>Support default encodingStyle.</li>
+<li>Added support for void type (SOAP::RPCUtils::SOAPVoid).</li>
+</ul></dd>
+
 <dt>1.3.1 - May 30, 2001</dt>
 <dd>Feedback from
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>

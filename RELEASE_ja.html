@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: May 30, 2001<br />
+Last modified: June 21, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 本文書が対象としているSOAP4Rのバージョンは，
-SOAP4R/1.3.1
+SOAP4R/1.3.2
 です．
 </p>
 
@@ -59,12 +59,18 @@ SOAP4R/1.3.1
 </p>
 
 <ul>
-<li>Base64型のデータの先頭および末尾に空白があると誤動作していたのを修正しました．</li>
-<li>SOAP-ENCのBase64型のデータタイプ宣言が間違っていました．</li>
-<li>Float型でNaN, INF, -INFを扱えるようにしました．</li>
-<li>xsd:1999型を利用するための各種宣言をXMLSchemaDatatypes1999.rbとして分離しました．'require &quot;soap/XMLSchemaDatatypes1999&quot;'として利用してください．</li>
-<li>root属性をサポートしました．</li>
-<li>Faultを返す時にはHTTP status 500を返すようにしました．</li>
+<li>XSD 1999（長く流通していたドラフトバージョン）では
+&quot;null='1'&quot;とすべきなのに対し，
+XSD 2001（勧告バージョン）では，
+&quot;nil='1'&quot;は&quot;nil='true'&quot;であるべきです．
+修正しました．</li>
+<li>SOAP Arrayがxsi:typeによって型指定されていませんでした．</li>
+<li>root属性の扱いが間違っていたのを修正しました．</li>
+<li>SOAP-ENC:Stringのような要素名で記述される
+SOAP Encodingデフォルト型付け要素をサポート．</li>
+<li>子要素にデフォルト名前空間機能が継承されていませんでした．修正しました．</li>
+<li>デフォルトのencodingStyleを指定することができます．</li>
+<li>void型をサポート（SOAP::RPCUtils::SOAPVoid）．</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -207,16 +213,14 @@ SOAP4Rは
 <li style="margin-top: 2ex;">SOAP Envelopeについて
 <ul>
 <li>SOAP actor属性に対応していません．</li>
+<li>SOAP mustUnderstand属性に対応していません．</li>
 <li>SOAP Fault Codesを真面目に扱ってません．</li>
-<li>SOAP EnvelopeにおけるencodingStyleが，SOAP Encodingに固定されています．
-SOAP for Javaのように素のXMLを埋めるencoding，などに対応していません．</li>
 </ul></li>
 <li style="margin-top: 2ex;">SOAP Encodingについて
 <ul>
 <li>XML Schemaを読んでencode/decodeすることはできません．
 SOAP Encoding本体に埋め込まれたxsi:typeのみを利用します．</li>
 <li>次元が1以外の配列，Partially Transmitted Arrays（部分配列），Sparse Arrays（粗な配列）に対応していません．</li>
-<li>SOAP root属性に対応していません．</li>
 <li>多重参照へのmarshalling（unmarshallingは可能です）</li>
 </ul></li>
 <li style="margin-top: 2ex;">その他
@@ -231,6 +235,25 @@ charset指定には対応していません．</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.2 - June 21, 2001</dt>
+<dd><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+で検出された非互換性をいくつか修正しました．
+
+<ul>
+<li>XSD 1999（長く流通していたドラフトバージョン）では
+&quot;null='1'&quot;とすべきなのに対し，
+XSD 2001（勧告バージョン）では，
+&quot;nil='1'&quot;は&quot;nil='true'&quot;であるべきです．
+修正しました．</li>
+<li>SOAP Arrayがxsi:typeによって型指定されていませんでした．</li>
+<li>root属性の扱いが間違っていたのを修正しました．</li>
+<li>SOAP-ENC:Stringのような要素名で記述される
+SOAP Encodingデフォルト型付け要素をサポート．</li>
+<li>子要素にデフォルト名前空間機能が継承されていませんでした．修正しました．</li>
+<li>デフォルトのencodingStyleを指定することができます．</li>
+<li>void型をサポート（SOAP::RPCUtils::SOAPVoid）．</li>
+</ul></dd>
+
 <dt>1.3.1 - May 30, 2001</dt>
 <dd><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
 で検出された非互換性をいくつか修正しました．
