@@ -137,6 +137,15 @@ private
   def epilogue
   end
 
+  def setXMLDeclEncoding( charset )
+    if @charset.nil?
+      @charset = charset
+    else
+      # Definition in a stream (like HTTP) has a priority.
+      p "encoding definition: #{ charset } is ignored." if $DEBUG
+    end
+  end
+
   # $1 is necessary.
   NSParseRegexp = Regexp.new( '^xmlns:?(.*)$' )
 
