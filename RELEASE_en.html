@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: March 23, 2001<br />
+Last modified: March 30, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.1.0
+Target SOAP4R version: SOAP4R/1.2.0
 </p>
 
 <ol>
@@ -51,26 +51,39 @@ Target SOAP4R version: SOAP4R/1.1.0
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-Made many changes.
-Since it is tested only for my limited use, please be careful to use.
-Any comments especially "cannot connect to XXX implementation" are welcomed.
-Feel free sending mail to
-<a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>.
+Checked interoperability with
+<a href="http://xml.apache.org/soap/">Apache-SOAP</a>,
+<a href="http://www.pocketsoap.com">pocketSOAP/0.91</a>,
+<a href="http://www.geocities.com/paulclinger/soap.html">SOAP::Lite for Perl</a>,
+and <a href="http://www.develop.com/soap/">SOAP/Perl/0.28</a>.
+It seems to work good except SOAP/Perl/0.28.
 </p>
+
 <ul>
-<li>Added RPC server support.</li>
-<li>Divided RPC client/server implementation from core.</li>
-<li>Added Date, Hash type support. (Unknown type is converted to Struct as usual)</li>
-<li>Adopted Date in date3.rb by Funaba-san instead of Time as TimeInstant.</li>
-<li>Many encoding/decoding bugs around SOAPArray and SOAPStruct were fixed.</li>
+<li>Added href/id unmarshalling support.
+(href/id marshalling has not been supported yet)</li>
+<li>Added SOAP's base64 type support.</li>
+<li>SOAPTimeInstant -&gt; SOAPDateTime.  Following XML Schema PR.</li>
+<li>SOAPStruct can have multiple accessor which have same name.
+Should I separate it from original SOAPStruct?</li>
+<li>Unknown attribute in Header Item raised an exception.  Omitted.</li>
+<li>Router can handle methods which belong to different namespace.</li>
+<li>Added an option to allow unqualified SOAP element.</li>
+<li>Added Apache's Map type support.  Ruby's Hash are mapped to it now.
+(Ruby's Hash marshalled by 1.1 processor in the old way can be unmarshalled,
+but 1.2 processor marshals it in the new way and 1.1 processor does not
+unmarshals it into Hash.  Incompatibility between SOAP4R/1.2 and 1.1)</li>
+<li>Unknown type 'unknown:SOAPStruct' was incorrectly unmarshalled into SOAPStruct.  Fixed.</li>
+<li>Added utility methods map! and members to SOAPArray and SOAPStruct.</li>
+<li>Added methods request, response, and fault to SOAPBody.</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
 
 <p>
 Simply, get the archived file and extract it.
-Files in lib/ are SOAP4R library program itself.
-To use this library, copy files in lib/ to suitable directory and require it since there is no installer yet.
+Files in lib/soap are SOAP4R library program itself.
+To use this library, copy the directory lib/soap as 'soap' to suitable directory and require it like 'require &quot;soap/...&quot;' since there is no installer yet.
 </p>
 
 <p>
@@ -96,34 +109,37 @@ Files in archive:
 </p>
 
 <dl>
-<dt class="path">lib/</dt>
+<dt class="path">lib/soap/</dt>
 <dd>SOAP4R library program.</dd>
 
 <dt class="path">sample/</dt>
 <dd>Sample program using SOAP4R.</dd>
 
-<dt class="path">sample/sampleClient.rb</dt>
+<dt class="path">sample/apacheClient.rb</dt>
 <dd>SOAP-RPC client sample.
 It connects with demonstration server programs stockquote and addressbook in IBM's SOAP for Java or Apache-SOAP.
 You have to install the server either SOAP for Java or Apache-SOAP and deploy demostration programs.<br />
 To execute;
 <pre class="path">
-./sampleClient.rb http://localhsot:2020/ibm-soap/rpcrouter.jsp
+./apacheClient.rb http://localhsot:2020/ibm-soap/rpcrouter.jsp
 </pre>
 </dd>
 
-<dt class="path">sample/sampleClientRAA.rb</dt>
-<dd>SOAP-RPC client sample 2.
-It connects with testing RAA server on www.ruby-lang.org.
+<dt class="path">sample/apacheServer.rb</dt>
+<dd>SOAP-RPC CGI server sample emulates Apache-SOAP sample such as AddressBook.
+Interfaces such as getQuote and getAddressFromName are defined.
+Only interfaces, no implementation.</dd>
+
+<dt class="path">sample/RAA/*</dt>
+<dd>SOAP-RPC client samples.
+<ul>
+<li>soap4r.rb, soap4rApp.rb: Ruby program using SOAP4R</li>
+<li>xmlrpc4r.rb: Ruby program using xmlrpc4r</li>
+<li>pocketSOAP.js: JScript program using pocketSOAP</li>
+<li>SOAP::Lite.pl: Perl program using SOAP::Lite for Perl</li>
+</ul>
+There programs connect with testing RAA server on www.ruby-lang.org.
 Since the server is under testing phase so stable operation is not expected.</dd>
-
-<dt class="path">sample/sampleCGIServer.rb</dt>
-<dd>SOAP-RPC CGI server sample.
-Interfaces such as getQuote and getAddressFromName like Apache-SOAP are
-defined.  Only interfaces, no implementation.</dd>
-
-<dt class="path">sample/sampleDriver.rb</dt>
-<dd>Ruby mapping implementation.</dd>
 
 <dt class="path">redist/</dt>
 <dd>Redistributed programs which SOAP4R is using.
@@ -153,6 +169,12 @@ Delete created files at installation.
 As
 <a href="#restrictions">Restrictions</a>,
 SOAP4R offers only SOAP-RPC specific features now.
+</p>
+
+<p>
+Comments, information such as interoperability between SOAP4R and another implementation are welcomed.
+Feel free sending mail to
+<a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>.
 </p>
 
 <h2 id="dependencies" name="dependencies">5. Dependencies</h2>
@@ -185,7 +207,7 @@ or
 <p>
 The following features of the
 <a href="http://www.w3.org/TR/SOAP/">SOAP 1.1 (W3C Note)</a>
-spec are not currently supported:
+spec are <strong>NOT</strong> currently supported:
 </p>
 
 <ul>
@@ -203,7 +225,7 @@ Does not support literal XML encoding such as in SOAP for Java</li>
 Only xsi:type in SOAP Encoding is checked</li>
 <li>Arrays which has two or more dimensions (rank), Partially Transmitted Arrays, and Sparse Arrays</li>
 <li>SOAP root attribute</li>
-<li>References to values (encoding/decoding)</li>
+<li>Marshalling references to href/id (Unmarshalling is OK)</li>
 </ul></li>
 <li style="margin-top: 2ex;">Othres
 <ul>
@@ -218,6 +240,33 @@ Does not support 'charset='.
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.2.0 - March 30, 2001</dt>
+<dd>Checked interoperability with
+<a href="http://xml.apache.org/soap/">Apache-SOAP</a>,
+<a href="http://www.pocketsoap.com">pocketSOAP/0.91</a>,
+<a href="http://www.geocities.com/paulclinger/soap.html">SOAP::Lite for Perl</a>,
+and <a href="http://www.develop.com/soap/">SOAP/Perl/0.28</a>.
+It seems to work good except SOAP/Perl/0.28.
+
+<ul>
+<li>Added href/id unmarshalling support.
+(href/id marshalling has not been supported yet)</li>
+<li>Added SOAP's base64 type support.</li>
+<li>SOAPTimeInstant -&gt; SOAPDateTime.  Following XML Schema PR.</li>
+<li>SOAPStruct can have multiple accessor which have same name.
+Should I separate it from original SOAPStruct?</li>
+<li>Unknown attribute in Header Item raised an exception.  Omitted.</li>
+<li>Router can handle methods which belong to different namespace.</li>
+<li>Added an option to allow unqualified SOAP element.</li>
+<li>Added Apache's Map type support.  Ruby's Hash are mapped to it now.
+(Ruby's Hash marshalled by 1.1 processor in the old way can be unmarshalled,
+but 1.2 processor marshals it in the new way and 1.1 processor does not
+unmarshals it into Hash.  Incompatibility between SOAP4R/1.2 and 1.1)</li>
+<li>Unknown type 'unknown:SOAPStruct' was incorrectly unmarshalled into SOAPStruct.  Fixed.</li>
+<li>Added utility methods map! and members to SOAPArray and SOAPStruct.</li>
+<li>Added methods request, response, and fault to SOAPBody.</li>
+</ul></dd>
+
 <dt>1.1.0 - March 23, 2001</dt>
 <dd>Made many changes.
 Since it is tested only for my limited use, please be careful to use.
@@ -269,7 +318,7 @@ around SOAP arrays.</dd>
 
 <p style="text-align: center;">
 SOAP4R<br />
-Copyright &copy; 2000 NAKAMURA, Hiroshi.
+Copyright &copy; 2000, 2001 NAKAMURA, Hiroshi.
 </p>
 
 <p>
@@ -292,7 +341,7 @@ You should have received a copy of the GNU General Public License along with thi
 <div class="footer">
 <address>
 <a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/">SOAP4R</a>.<br />
-Copyright &copy; 2000
+Copyright &copy; 2000, 2001
 <a href="http://www.jin.gr.jp/~nahi/">NAKAMURA, Hiroshi</a>.
 </address>
 </div>
