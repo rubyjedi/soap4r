@@ -198,16 +198,16 @@ module SOAP
     def decodeTagEnd( ns, node )
       o = node.node
       if o.is_a?( SOAPUnknown )
-	if /\A\s*\z/ =~ @textBuf
+	newNode = if /\A\s*\z/ =~ @textBuf
 	  o.toStruct
 	else
-	  newNode = o.toString
-	  if newNode.id
-	    @idPool << newNode
-	  end
-	  node.replaceNode( newNode )
-	  o = node.node
+	  o.toString
 	end
+	if newNode.id
+	  @idPool << newNode
+	end
+	node.replaceNode( newNode )
+	o = node.node
       end
 
       decodeTextBuf( o )
@@ -293,8 +293,8 @@ module SOAP
 
       attrs.each do | key, value |
 	if ( ns.compare( XSD::Namespace, XSD::NilLiteral, key ))
-	  isNil = (( value == 'true' ) || ( value == '1' ))
-	  # isNil = ( value == XSD::NilValue )
+	  # isNil = (( value == 'true' ) || ( value == '1' ))
+	  isNil = ( value == XSD::NilValue )
 	elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	  type = value
 	elsif ( ns.compare( EncodingNamespace, AttrArrayType, key ))
