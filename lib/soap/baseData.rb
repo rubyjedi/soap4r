@@ -18,289 +18,49 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/soap'
 require 'soap/XMLSchemaDatatypes'
-require 'xmltreebuilder'
+require 'soap/namespace'
+require 'soap/nqxmlDocument'
+
+
+module SOAP
 
 
 ###
-## SOAP utility module for classes( not instances! )
-#
-class SOAPNS
-  public
-
-  attr_reader :defaultNamespace
-  attr_reader :namespaceTag
-
-  def initialize( initNamespace = {} )
-    @namespaceTag = initNamespace
-    @defaultNamespace = nil
-  end
-
-  def assign( namespace, name = nil )
-    if ( @namespaceTag.has_key?( namespace ))
-      false
-    elsif ( name == '' )
-      @defaultNamespace = namespace
-      name
-    elsif ( @namespaceTag.has_value?( name ))
-      # Already assigned.  Should raise Error?
-      name = SOAPNS.assign( namespace )
-      @namespaceTag[ namespace ] = name
-      name
-    else
-      name ||= SOAPNS.assign( namespace )
-      @namespaceTag[ namespace ] = name
-      name
-    end
-  end
-
-  def []( namespace )
-    if ( @namespaceTag.has_key?( namespace ))
-      @namespaceTag[ namespace ]
-    else
-      nil
-    end
-  end
-
-  def clone()
-    SOAPNS.new( @namespaceTag.dup )
-  end
-
-  def name( namespace, name )
-    if ( namespace == @defaultNamespace )
-      name
-    elsif @namespaceTag.has_key?( namespace )
-      @namespaceTag[ namespace ] + ':' << name
-    else
-      raise FormatDecodeError.new( 'Namespace: ' << namespace << ' not defined yet.' )
-    end
-  end
-
-  def compare( namespace, name, rhs )
-    if ( namespace == @defaultNamespace )
-      return true if ( name == rhs )
-    end
-
-    if @namespaceTag.has_key?( namespace )
-      return (( @namespaceTag[ namespace ] + ':' << name ) == rhs )
-    end
-
-    return false
-  end
-
-  # $1 and $2 are necessary.
-  ParseRegexp = Regexp.new( '^([^:]+)(?::(.+))?$' )
-
-  def parse( elem )
-    namespace = nil
-    name = nil
-    ParseRegexp =~ elem
-    if $2
-      namespace = @namespaceTag.index( $1 )
-      name = $2
-      if !namespace
-	raise FormatDecodeError.new( 'Unknown namespace qualifier: ' << $1 )
-      end
-    elsif $1
-      namespace = @defaultNamespace
-      name = $1
-    end
-    if !name
-      raise FormatDecodeError.new( "Illegal element format: #{ elem }" )
-    end
-    return namespace, name
-  end
-
-  private
-
-  AssigningName = [ 0 ]
-
-  def self.assign( namespace )
-    AssigningName[ 0 ] += 1
-    'n' << AssigningName[ 0 ].to_s
-  end
-
-  def self.reset()
-    AssigningName[ 0 ] = 0
-  end
-end
-
-
-###
-## SOAP related datatypes.
+## Mix-in module for SOAP base type classes.
 #
 module SOAPModuleUtils
   include SOAP
-  include XML::SimpleTree
 
-  public
+public
 
-  def decode( ns, elem )
-    elem.normalize
-    value = if elem.childNodes[0]
-	elem.childNodes[0].nodeValue
-      else
-	''
-      end
-    d = self.new( value )
-    d.namespace = ns.parse( elem.nodeName )[0]
-    d.id = getId( elem )
+  def decode( ns, entity )
+    d = self.new
+    d.namespace, d.name = ns.parse( entity.name )
     d
-  end
-
-  private
-
-  def decodeChild( ns, elem, parentArrayType = nil )
-    if isNull( ns, elem )
-      SOAPNull.decode( ns, elem )
-
-    elsif getArrayType( ns, elem )
-      SOAPArray.decode( ns, elem )
-
-    elsif ( ref = getReference( elem ))
-      SOAPReference.new( ref )
-
-    else
-      type = getType( ns, elem ) || parentArrayType
-      typeNamespace = typeNameString = nil
-      if type
-        typeNamespace, typeNameString = ns.parse( type )
-      end
-
-      if typeNamespace == XSD::Namespace
-	case typeNameString
-	when 'int'
-	  SOAPInt.decode( ns, elem )
-	when 'integer'
-	  SOAPInteger.decode( ns, elem )
-	when 'boolean'
-	  SOAPBoolean.decode( ns, elem )
-	when 'string'
-	  SOAPString.decode( ns, elem )
-	when 'dateTime', 'timeInstant'	# For backward compatibility.
-	  SOAPDateTime.decode( ns, elem )
-	when 'base64Binary'
-	  SOAPBase64.decode( ns, elem )
-	else
-	  # Not supported... Decode as SOAPString by default.
-	  SOAPString.decode( ns, elem )
-	end
-
-      elsif typeNamespace == EncodingNamespace
-	case typeNameString
-	when 'int'
-	  SOAPInt.decode( ns, elem )
-	when 'integer'
-	  SOAPInteger.decode( ns, elem )
-	when 'boolean'
-	  SOAPBoolean.decode( ns, elem )
-	when 'string'
-	  SOAPString.decode( ns, elem )
-	when 'dateTime', 'timeInstant'	# For backward compatibility.
-	  SOAPDateTime.decode( ns, elem )
-	when 'base64'
-	  SOAPBase64.decode( ns, elem )
-	else
-	  # Not supported... Decode as SOAPString by default.
-	  SOAPString.decode( ns, elem )
-	end
-
-      else
-        bOnlyText = true
-        elem.childNodes.each do | child |
-	  next if ( isEmptyText( child ))
-	  bOnlyText = false
-	  break
-        end
-        if bOnlyText
-	  # No type is set. Decode as SOAPString by default.
-	  SOAPString.decode( ns, elem )
-        else
-	  SOAPStruct.decode( ns, elem, parentArrayType )
-        end
-      end
-    end
-  end
-
-  EmptyTextRegexp = Regexp.new( '\s*(?:\n\s*)*' )
-
-  def isEmptyText( node )
-    (( node.nodeName == '#text' ) and ( EmptyTextRegexp =~ node.nodeValue ))
-  end
-
-  def isNull( ns, elem )
-    elem.attributes.each do | attr |
-      if ( ns.compare( XSD::Namespace, 'null', attr.nodeName ))
-	if attr.nodeValue == '1'
-	  return true
-	end
-      end
-    end
-    false
-  end
-
-  def getType( ns, elem )
-    elem.attributes.each do | attr |
-      if ( ns.compare( XSD::InstanceNamespace, 'type', attr.nodeName ))
-	return attr.nodeValue
-      end
-    end
-    nil
-  end
-
-  def getArrayType( ns, elem )
-    elem.attributes.each do | attr |
-      if ( ns.compare( EncodingNamespace, 'arrayType', attr.nodeName ))
-	return attr.nodeValue
-      end
-    end
-    nil
-  end
-
-  def getReference( elem )
-    elem.attributes.each do | attr |
-      if attr.nodeName == 'href'
-	return attr.nodeValue
-      end
-    end
-    nil
-  end
-
-  def getId( elem )
-    elem.attributes.each do | attr |
-      if attr.nodeName == 'id'
-	return attr.nodeValue
-      end
-    end
-    nil
-  end
-
-  # $1 is necessary.
-  NSParseRegexp = Regexp.new( '^xmlns:?(.*)$' )
-
-  def parseNS( ns, elem )
-    return unless elem.attributes
-    elem.attributes.each do | attr |
-      next unless ( NSParseRegexp =~ attr.nodeName )
-      # '' means 'default namespace'.
-      tag = $1 || ''
-      ns.assign( attr.nodeValue, tag )
-    end
   end
 end
 
-module SOAPBasetypeUtils
+
+###
+## Mix-in module for SOAP base type instances.
+#
+module SOAPBasetype
   include SOAP
-  include XML::SimpleTree
+  include NQXML
 
   attr_accessor :namespace
+  attr_accessor :name
   attr_accessor :id
+  attr_accessor :parent
 
-  public
+public
 
   def initialize( *vars )
     super( *vars )
     @namespace = EnvelopeNamespace
+    @name = nil
     @id = nil
+    @parent = nil
   end
 
   def encode( ns, name, parentArray = nil )
@@ -314,20 +74,22 @@ module SOAPBasetypeUtils
     end
 
     if ( self.to_s.empty? )
-      Element.new( name, attrs )
+      # Element.new( name, attrs )
+      Node.initializeWithChildren( name, attrs )
     else
-      Element.new( name, attrs, Text.new( self.to_s ))
+      # Element.new( name, attrs, Text.new( self.to_s ))
+      Node.initializeWithChildren( name, attrs, Text.new( self.to_s ))
     end
   end
 
-  private
+private
 
   def datatypeAttr( ns )
     Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @typeNamespace, @typeName ))
   end
 
   def createNS( attrs, ns )
-    unless ns[ XSD::Namespace ]
+    unless ns.assigned?( XSD::Namespace )
       tag = ns.assign( XSD::Namespace )
       attrs.push( Attr.new( 'xmlns:' << tag, XSD::Namespace ))
     end
@@ -336,98 +98,175 @@ end
 
 
 ###
-## Basic datatypes.
+## Mix-in module for SOAP compound type instances.
 #
-class SOAPReference
-  attr_reader :refId
+module SOAPCompoundtype
+  include SOAP
+  include NQXML
 
-  def initialize( refId )
-    @refId = refId
+  attr_accessor :namespace
+  attr_accessor :name
+  attr_accessor :id
+  attr_accessor :parent
+  attr_reader :extraAttributes
+
+public
+
+  def initialize( typeName )
+    super( typeName, nil )
+    @namespace = EnvelopeNamespace
+    @name = nil
+    @id = nil
+    @parent = nil
+    @extraAttributes = []
   end
 end
 
 
-class SOAPNull < XSDNull
+class SOAPExtraAttributes
+  include NQXML
+
+  def initialize( keyNamespace, keyName, valueNamespace, valueName )
+    @keyNamespace = keyNamespace
+    @keyName = keyName
+    @valueNamespace = valueNamespace
+    @valueName = valueName
+  end
+
+  def create( ns )
+    key = if @keyNamespace
+	ns.name( @keyNamespace, @keyName )
+      else
+	@keyName
+      end
+    value = if @valueNamespace
+	ns.name( @valueNamespace, @valueName )
+      else
+	@valueName
+      end
+    Attr.new( key, value )
+  end
+end
+
+
+###
+## Basic datatypes.
+#
+class SOAPReference < NSDBase
+  include SOAPBasetype
   extend SOAPModuleUtils
-  include SOAPBasetypeUtils
 
-  public
+public
 
-  # Override the definition in SOAPBasetypeUtils.
+  attr_accessor :refId
+
+  # Override the definition in SOAPBasetype.
+  def initialize( refId = nil )
+    @namespace = EnvelopeNamespace
+    @name = nil
+    @id = nil
+    @parent = nil
+    @refId = refId
+    @obj = nil
+  end
+
+  def __getobj__
+    @obj
+  end
+
+  def __setobj__( obj )
+    @obj = obj
+    # Copies NSDBase information
+    obj.typeName = @typeName unless obj.typeName
+    obj.typeNamespace = @typeNamespace unless obj.typeNamespace
+  end
+
+  # Why don't I use delegate.rb?
+  # -> delegate requires target object type at initialize time.
+  # Why don't I use forwardable.rb?
+  # -> forwardable requires a list of forwarding methods.
+  #
+  # ToDo: Maybe I should use forwardable.rb and give it a methods list like
+  # delegate.rb...
+  #
+  def method_missing( msg_id, *params )
+    if @obj
+      @obj.send( msg_id, *params )
+    else
+      nil
+    end
+  end
+
+  def self.decode( ns, entity, refId )
+    d = super( ns, entity )
+    d.refId = refId
+    d
+  end
+end
+
+class SOAPNil < XSDNil
+  include SOAPBasetype
+  extend SOAPModuleUtils
+
+public
+
+  # Override the definition in SOAPBasetype.
   def initialize()
     @namespace = EnvelopeNamespace
+    @name = nil
     @id = nil
+    @parent = nil
   end
 
-  private
+private
 
-  # Override the definition in SOAPBasetypeUtils.
+  # Override the definition in SOAPBasetype.
   def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::Namespace, 'null' ), '1' )
-  end
-
-  # Override the definition in SOAPModuleUtils
-  def self.decode( ns, elem )
-    d = self.new()
-    d.namespace = ns.parse( elem.nodeName )[0]
-    d.id = getId( elem )
-    d
+    Attr.new( ns.name( XSD::Namespace, XSD::NilLiteral ), '1' )
   end
 end
 
 class SOAPBoolean < XSDBoolean
+  include SOAPBasetype
   extend SOAPModuleUtils
-  include SOAPBasetypeUtils
 end
 
 class SOAPString < XSDString
+  include SOAPBasetype
   extend SOAPModuleUtils
-  include SOAPBasetypeUtils
+end
+
+class SOAPFloat < XSDFloat
+  include SOAPBasetype
+  extend SOAPModuleUtils
 end
 
 class SOAPInteger < XSDInteger
+  include SOAPBasetype
   extend SOAPModuleUtils
-  include SOAPBasetypeUtils
 end
 
 class SOAPInt < XSDInt
+  include SOAPBasetype
   extend SOAPModuleUtils
-  include SOAPBasetypeUtils
 end
 
 class SOAPDateTime < XSDDateTime
+  include SOAPBasetype
   extend SOAPModuleUtils
-  include SOAPBasetypeUtils
 end
 
 class SOAPBase64 < XSDBase64Binary
+  include SOAPBasetype
   extend SOAPModuleUtils
-  include SOAPBasetypeUtils
 
-  public
+public
 
-  # Override the definition in SOAPBasetypeUtils.
+  # Override the definition in SOAPBasetype.
   def initialize( *vars )
     super( *vars )
     @typeNamespace = EnvelopeNamespace
     @typeName = 'base64'
-  end
-
-  private
-
-  # Override the definition in SOAPModuleUtils
-  def self.decode( ns, elem )
-    elem.normalize
-    value = if elem.childNodes[0]
-	elem.childNodes[0].nodeValue
-      else
-	''
-      end
-    d = self.new()
-    d.setEncoded( value )
-    d.namespace = ns.parse( elem.nodeName )[0]
-    d.id = getId( elem )
-    d
   end
 end
 
@@ -435,27 +274,11 @@ end
 ###
 ## Compound datatypes.
 #
-class SOAPCompoundBase < NSDBase
-  include SOAP
-  extend SOAPModuleUtils
-
-  attr_accessor :namespace
-  attr_accessor :id
-
-  public
-
-  def initialize( typeName )
-    super( typeName, nil )
-    @namespace = EnvelopeNamespace
-    @id = nil
-  end
-end
-
-
-class SOAPStruct < SOAPCompoundBase
+class SOAPStruct < NSDBase
+  include SOAPCompoundtype
   include Enumerable
 
-  public
+public
 
   def initialize( typeName )
     super( typeName )
@@ -519,7 +342,7 @@ class SOAPStruct < SOAPCompoundBase
   end
 
   def encode( ns, name, parentArray = nil )
-    attrs = []
+    attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
     createNS( attrs, ns )
     if parentArray and parentArray.typeNamespace == @typeNamespace and
 	parentArray.baseTypeName == @typeName
@@ -533,54 +356,36 @@ class SOAPStruct < SOAPCompoundBase
       children.push( @data[ i ].encode( ns.clone, @array[ i ] ))
     end
 
-    Element.new( name, attrs, children )
+    # Element.new( name, attrs, children )
+    Node.initializeWithChildren( name, attrs, children )
   end
 
-  def self.decode( ns, elem, parentArrayType = nil )
-    namespace, name = ns.parse( elem.nodeName )
-    s = nil
-    type = getType( ns, elem ) || parentArrayType
-    if type
-      typeNamespace, typeNameString = ns.parse( type )
-      s = SOAPStruct.new( typeNameString )
-      s.typeNamespace = typeNamespace
-      s.id = getId( elem )
-    else
-      s = SOAPStruct.new( name )
-      s.id = getId( elem )
-    end
-
-    s.namespace = namespace
-
-    elem.childNodes.each do | child |
-      childNS = ns.clone
-      parseNS( childNS, child )
-      next if ( isEmptyText( child ))
-      childName = ns.parse( child.nodeName )[1]
-      s.add( childName, decodeChild( childNS, child ))
-    end
+  def self.decode( ns, entity, typeNamespace, typeName )
+    s = SOAPStruct.new( typeName )
+    s.typeNamespace = typeNamespace
+    s.namespace, s.name = ns.parse( entity.name )
     s
   end
 
-  private
+private
 
   def datatypeAttr( ns )
     Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @typeNamespace, @typeName ))
   end
 
   def createNS( attrs, ns )
-    unless ns[ @namespace ]
+    unless ns.assigned?( @namespace )
       tag = ns.assign( @namespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
     end
-    if @typeNamespace and !ns[ @typeNamespace ]
+    if @typeNamespace and !ns.assigned?( @typeNamespace )
       tag = ns.assign( @typeNamespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
     end
   end
 
   def addMember( name, initMember = nil )
-    initMember = SOAPNull.new() unless initMember
+    initMember = SOAPNil.new() unless initMember
     methodName = name.dup
 
     begin
@@ -603,10 +408,12 @@ class SOAPStruct < SOAPCompoundBase
   end
 end
 
-class SOAPArray < SOAPCompoundBase
+
+class SOAPArray < NSDBase
+  include SOAPCompoundtype
   include Enumerable
 
-  public
+public
 
   ArrayEncodePostfix = 'Ary'
 
@@ -628,6 +435,12 @@ class SOAPArray < SOAPCompoundBase
     if ( @data[ 0 ].empty? and !@typeName )
       @typeName = SOAPArray.getAtype( newMember.typeName, @rank )
       @typeNamespace = newMember.typeNamespace
+    end
+    if @typeName
+      if !newMember.typeName
+	newMember.typeName = @typeName
+	newMember.typeNamespace = @typeNamespace
+      end
     end
     if ( @typeName != newMember.typeName )
       @variant = true
@@ -661,7 +474,7 @@ class SOAPArray < SOAPCompoundBase
   end
 
   def encode( ns, name, parentArray = nil )
-    attrs = []
+    attrs = @extraAttributes.collect { | attr | attr.create( ns ) }
     createNS( attrs, ns )
     if parentArray and parentArray.typeNamespace == @typeNamespace and
 	parentArray.baseTypeName == @typeName
@@ -675,7 +488,9 @@ class SOAPArray < SOAPCompoundBase
     children = @data[ 0 ].collect { | child |
       child.encode( ns.clone, childTypeName, self )
     }
-    Element.new( name, attrs, children )
+
+    # Element.new( name, attrs, children )
+    Node.initializeWithChildren( name, attrs, children )
   end
 
   def isVariant?
@@ -690,22 +505,22 @@ class SOAPArray < SOAPCompoundBase
     @typeName?  @typeName.sub( /(?:\[,*\])+$/, '' ) : ''
   end
 
-  private
+private
 
   def datatypeAttr( ns )
     Attr.new( ns.name( EncodingNamespace, 'arrayType' ), ns.name( @typeNamespace, arrayTypeValue() ))
   end
 
   def createNS( attrs, ns )
-    unless ns[ @namespace ]
+    unless ns.assigned?( @namespace )
       tag = ns.assign( @namespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
     end
-    if @typeNamespace and !ns[ @typeNamespace ]
+    if @typeNamespace and !ns.assigned?( @typeNamespace )
       tag = ns.assign( @typeNamespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @typeNamespace ))
     end
-    unless ns[ EncodingNamespace ]
+    unless ns.assigned?( EncodingNamespace )
       tag = ns.assign( EncodingNamespace )
       attrs.push( Attr.new( 'xmlns:' << tag, EncodingNamespace ))
     end
@@ -717,31 +532,18 @@ class SOAPArray < SOAPCompoundBase
 
   # Module function
 
-  public
+public
 
   # DEBT: Check if getArrayType returns non-nil before invoking this method.
-  def self.decode( ns, elem )
-    typeNamespace, typeNameString = ns.parse( getArrayType( ns, elem ))
+  def self.decode( ns, entity, typeNamespace, typeNameString )
     typeName, nofArray = parseType( typeNameString )
     s = SOAPArray.new( typeName )
-    s.namespace = ns.parse( elem.nodeName )[0]
-    s.id = getId( elem )
-
-    i = 0
-    elem.childNodes.each do | child |
-      childNS = ns.clone
-      parseNS( childNS, child )
-      next if ( isEmptyText( child ))
-      s.add( decodeChild( childNS, child, childNS.name( typeNamespace, typeName )))
-      i += 1
-      if ( nofArray and ( i > nofArray.to_i ))
-	raise ArrayIndexOutOfBoundsError.new( 'In ' << elem.nodeName )
-      end
-    end
+    s.typeNamespace = typeNamespace
+    s.namespace, s.name = ns.parse( entity.name )
     s
   end
 
-  private
+private
 
   def self.getAtype( typeName, rank )
     "#{ typeName }[" << ',' * ( rank - 1 ) << ']'
@@ -753,4 +555,7 @@ class SOAPArray < SOAPCompoundBase
     TypeParseRegexp =~ string
     return $1, $2
   end
+end
+
+
 end
