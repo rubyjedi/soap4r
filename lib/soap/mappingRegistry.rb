@@ -263,9 +263,9 @@ module RPCUtils
 
       # [ [1], [2] ] is converted to Array of Array, not 2-D Array.
       # To create M-D Array, you must call RPCUtils.ary2md.
-      typeName = getTypeName( obj.type ) || obj.instance_eval { @typeName }
+      typeName = getTypeName( obj.type ) || obj.instance_eval( "@typeName" )
       typeNamespace = getNamespace( obj.type ) ||
-	obj.instance_eval { @typeNamespace } || RubyTypeNamespace
+	obj.instance_eval( "@typeNamespace" ) || RubyTypeNamespace
       unless typeName
 	typeName = XSD::AnyTypeLiteral
 	typeNamespace = XSD::Namespace

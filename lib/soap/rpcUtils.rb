@@ -387,6 +387,9 @@ module RPCUtils
   end
 
   def RPCUtils.getClassFromName( name )
+    if /^[A-Z]/ !~ name
+      return nil
+    end
     klass = Object
     name.split( '::' ).each do | klassStr |
       if klass.const_defined?( klassStr )
