@@ -45,8 +45,8 @@ module MethodDefCreatorSupport
   end
   module_function :create_class_name
 
-  def create_method_name(name)
-    uncapitalize(name)
+  def create_method_name(qname)
+    uncapitalize(qname.name)
   end
   module_function :create_method_name
 

@@ -52,7 +52,7 @@ class MethodDefCreator
 private
 
   def dump_method(operation, binding)
-    name = create_method_name(operation.name.name)
+    name = create_method_name(operation.name)
     name_as = operation.name.name
     params = collect_parameter(operation)
     soapaction = binding.soapoperation.soapaction

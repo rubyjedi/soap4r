@@ -81,7 +81,7 @@ __EOD__
       name = create_method_name(ele_name)
       type = element.type
       #attr_lines << "  attr_accessor :#{ name }	# #{ type }\n"
-      attr_lines << dump_attrline(ele_name)
+      attr_lines << dump_attrline(ele_name.name)
       init_lines << "    @#{ name } = #{ name }\n"
       unless var_lines.empty?
 	var_lines << ",\n      "
