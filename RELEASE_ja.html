@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: June 21, 2001<br />
+Last modified: July 4, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 本文書が対象としているSOAP4Rのバージョンは，
-SOAP4R/1.3.2
+SOAP4R/1.3.3
 です．
 </p>
 
@@ -56,21 +56,42 @@ SOAP4R/1.3.2
 <p>
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
 で検出された非互換性をいくつか修正しました．
+また，
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XML-RPCL">XML-RPC module</a>
+作者のMichael Neumannさんにもらったインストーラが付きました!
 </p>
 
 <ul>
-<li>XSD 1999（長く流通していたドラフトバージョン）では
-&quot;null='1'&quot;とすべきなのに対し，
-XSD 2001（勧告バージョン）では，
-&quot;nil='1'&quot;は&quot;nil='true'&quot;であるべきです．
-修正しました．</li>
-<li>SOAP Arrayがxsi:typeによって型指定されていませんでした．</li>
-<li>root属性の扱いが間違っていたのを修正しました．</li>
-<li>SOAP-ENC:Stringのような要素名で記述される
-SOAP Encodingデフォルト型付け要素をサポート．</li>
-<li>子要素にデフォルト名前空間機能が継承されていませんでした．修正しました．</li>
-<li>デフォルトのencodingStyleを指定することができます．</li>
-<li>void型をサポート（SOAP::RPCUtils::SOAPVoid）．</li>
+<li>Michael NeumannさんによるSOAP4R Installerを追加しました．ありがとう!</li>
+<li>型関連の変更:
+  <ul>
+    <li>Boolean: true/falseの他に，1/0を解釈するようになりました．</li>
+    <li>Float: single-precision 32-bit浮動小数点を扱います．
+        RubyのFloatはdoule-precisionです（だよね?）</li>
+    <li>Double: 追加されました．RubyのFloatに対応します．</li>
+    <li>DateTime: タイムゾーンに対応しました．l</li>
+    <li>Long: 追加されました．</li>
+    <li>Int: 内部的に，Longを継承するように変更しました．機能にはあまり関係しません．</li>
+    <li>Array: 'position'と'offset'に対応しました．疎な配列と部分的な配列を扱います．</li>
+    <li>Array: 多次元配列に対応しました．独自実装ですがえらくダサいので，今後は，NArrayがインストールされている環境ではNArrayを使うように変更したいと思います．</li>
+    <li>Decimal: 追加されましたが，まだ不完全です．</li>
+  </ul>
+</li>
+<li>SOAP-ENCの型として定義されていない型をみつけたときのエラーメッセージが不正でした．</li>
+<li>CR(\r)を安全に転送しようと試みます．今後の更なるテストが必要です．．．</li>
+<li>'faultcode'のようなFault項目を，Bodyと同様に解析するようにしました（独自にやっていたので，href/idなどの解析に不備がありました）．</li>
+<li>rpcUtils.rbは大幅に書き換えられました．
+  <ul>
+    <li>言語バインディング（Rubyオブジェクト←→SOAPオブジェクトモデル）のマッピングを外部から指定するようにしました．</li>
+    <li>soap2objとobj2soapのインタフェイスが変更されました．</li>
+    <li>Bignumはintかもしれないし，integerかもしれません．環境に依存します．
+        値域（-2147483648〜+2147483647）を自身でチェックするようにしました.</li>
+    <li>ary2mdというインタフェイスを追加しました．配列（（の配列）．．．）を多次元配列に変換します．</li>
+    <li>struct2obj: Struct#membersが返す配列の並びに不正に依存していました．修正しました．</li>
+    <li>RubyのArrayはanyType型の配列に変換されるべきです．修正しました．</li>
+  </ul>
+</li>
+<li>通信途中でエラーが起きた場合でも，通信結果をログに書き出すようにしました．</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -190,7 +211,7 @@ SOAP4Rを利用するためには，以下のものが必要です．
 クラス変数を使っているため，1.4系では動きません．</li>
 
 <li>SOAP4RはXML関連の処理を
-<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
 に依存しています．
 NQXMLモジュールをインストールしておく必要があります．</li>
 
@@ -220,7 +241,6 @@ SOAP4Rは
 <ul>
 <li>XML Schemaを読んでencode/decodeすることはできません．
 SOAP Encoding本体に埋め込まれたxsi:typeのみを利用します．</li>
-<li>次元が1以外の配列，Partially Transmitted Arrays（部分配列），Sparse Arrays（粗な配列）に対応していません．</li>
 <li>多重参照へのmarshalling（unmarshallingは可能です）</li>
 </ul></li>
 <li style="margin-top: 2ex;">その他
@@ -235,6 +255,46 @@ charset指定には対応していません．</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.3 - July 4, 2001</dt>
+<dd><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+で検出された非互換性をいくつか修正しました．
+また，
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XML-RPCL">XML-RPC module</a>
+作者のMichael Neumannさんにもらったインストーラが付きました!
+
+<ul>
+<li>Michael NeumannさんによるSOAP4R Installerを追加しました．ありがとう!</li>
+<li>型関連の変更:
+  <ul>
+    <li>Boolean: true/falseの他に，1/0を解釈するようになりました．</li>
+    <li>Float: single-precision 32-bit浮動小数点を扱います．
+        RubyのFloatはdoule-precisionです（だよね?）</li>
+    <li>Double: 追加されました．RubyのFloatに対応します．</li>
+    <li>DateTime: タイムゾーンに対応しました．l</li>
+    <li>Long: 追加されました．</li>
+    <li>Int: 内部的に，Longを継承するように変更しました．機能にはあまり関係しません．</li>
+    <li>Array: 'position'と'offset'に対応しました．疎な配列と部分的な配列を扱います．</li>
+    <li>Array: 多次元配列に対応しました．独自実装ですがえらくダサいので，今後は，NArrayがインストールされている環境ではNArrayを使うように変更したいと思います．</li>
+    <li>Decimal: 追加されましたが，まだ不完全です．</li>
+  </ul>
+</li>
+<li>SOAP-ENCの型として定義されていない型をみつけたときのエラーメッセージが不正でした．</li>
+<li>CR(\r)を安全に転送しようと試みます．今後の更なるテストが必要です．．．</li>
+<li>'faultcode'のようなFault項目を，Bodyと同様に解析するようにしました（独自にやっていたので，href/idなどの解析に不備がありました）．</li>
+<li>rpcUtils.rbは大幅に書き換えられました．
+  <ul>
+    <li>言語バインディング（Rubyオブジェクト←→SOAPオブジェクトモデル）のマッピングを外部から指定するようにしました．</li>
+    <li>soap2objとobj2soapのインタフェイスが変更されました．</li>
+    <li>Bignumはintかもしれないし，integerかもしれません．環境に依存します．
+        値域（-2147483648〜+2147483647）を自身でチェックするようにしました.</li>
+    <li>ary2mdというインタフェイスを追加しました．配列（（の配列）．．．）を多次元配列に変換します．</li>
+    <li>struct2obj: Struct#membersが返す配列の並びに不正に依存していました．修正しました．</li>
+    <li>RubyのArrayはanyType型の配列に変換されるべきです．修正しました．</li>
+  </ul>
+</li>
+<li>通信途中でエラーが起きた場合でも，通信結果をログに書き出すようにしました．</li>
+</ul></dd>
+
 <dt>1.3.2 - June 21, 2001</dt>
 <dd><a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
 で検出された非互換性をいくつか修正しました．
