@@ -40,6 +40,7 @@ public
     @option = opt
     @refTarget = nil
     @handlers = {}
+    @encodeType = @option[ 'noEncodeType' ] ? false : true
     EncodingStyleHandler.defaultHandler =
       EncodingStyleHandler.getHandler( @option[ 'defaultEncodingStyle' ] ||
       EncodingNamespace )
@@ -161,6 +162,7 @@ private
   def getHandler( encodingStyle )
     unless @handlers.has_key?( encodingStyle )
       handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle ).new
+      handler.encodeType = @encodeType
       handler.encodePrologue
       @handlers[ encodingStyle ] = handler
     end
