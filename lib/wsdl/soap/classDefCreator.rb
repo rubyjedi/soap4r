@@ -107,9 +107,9 @@ __EOD__
 
   def safe_class_name(name)
     if @faulttypes.index(name)
-      "#{ name.name } < StandardError"
+      "#{ create_class_name(name) } < StandardError"
     else
-      "#{ name.name }"
+      "#{ create_class_name(name) }"
     end
   end
 
