@@ -240,7 +240,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 
 private
 
-  def encodeBaseData(
+  def encodeBaseData()
     attrs = []
     addNSDeclAttr( attrs, ns )
     if parentEncodingStyle != EncodingNamespace
