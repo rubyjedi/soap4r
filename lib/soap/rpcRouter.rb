@@ -41,8 +41,8 @@ class RPCRouter
 
   def initialize( actor )
     @actor = actor
-    @namespace = {}
     @receiver = {}
+    @methodName = {}
     @method = {}
     @allowUnqualifiedElement = false
     @mappingRegistry = nil
@@ -51,9 +51,17 @@ class RPCRouter
 
   # Method definition.
   def addMethod( namespace, receiver, methodName, paramDef, soapAction = nil )
-    name = "#{ namespace }:#{ methodName }"
+    addMethodAs( namespace, receiver, methodName, methodName, paramDef,
+      soapAction )
+  end
+
+  def addMethodAs( namespace, receiver, methodName, methodNameAs, paramDef,
+      soapAction = nil )
+    name = fqName( namespace, methodNameAs )
     @receiver[ name ] = receiver
-    @method[ name ] = SOAPMethodRequest.new( namespace, methodName, paramDef, soapAction )
+    @methodName[ name ] = methodName
+    @method[ name ] = SOAPMethodRequest.new( namespace, methodNameAs, paramDef,
+      soapAction )
   end
 
   def addHeaderHandler
@@ -115,7 +123,7 @@ private
 
   # Create new response.
   def createResponse( namespace, methodName, result )
-    name = "#{ namespace }:#{ methodName }"
+    name = fqName( namespace, methodName )
     if ( @method.has_key?( name ))
       method = @method[ name ]
     else
@@ -169,13 +177,17 @@ private
 
   # Method lookup
   def lookup( namespace, methodName, values )
-    name = "#{ namespace }:#{ methodName }"
+    name = fqName( namespace, methodName )
     # It may be necessary to check all part of method signature...
     if @method.member?( name )
-      @receiver[ name ].method( @method[ name ].name.intern )
+      @receiver[ name ].method( @methodName[ name ].intern )
     else
       nil
     end
+  end
+
+  def fqName( namespace, methodName )
+    "#{ namespace }:#{ methodName }"
   end
 end
 

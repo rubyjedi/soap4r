@@ -57,16 +57,24 @@ class Driver
   # paramDef: See proxy.rb.  Sorry.
 
   def addMethod( name, *paramArg )
-    addMethodWithSOAPAction( name, nil, *paramArg )
+    addMethodWithSOAPActionAs( name, name, nil, *paramArg )
+  end
+
+  def addMethodAs( nameAs, name, *paramArg )
+    addMethodWithSOAPActionAs( nameAs, name, nil, *paramArg )
   end
 
   def addMethodWithSOAPAction( name, soapAction, *paramArg )
+    addMethodWithSOAPActionAs( name, name, soapAction, *paramArg )
+  end
+
+  def addMethodWithSOAPActionAs( nameAs, name, soapAction, *paramArg )
     paramDef = if paramArg.size == 1 and paramArg[ 0 ].is_a?( Array )
 	paramArg[ 0 ]
       else
 	SOAPMethod.createParamDef( paramArg )
       end
-    @proxy.addMethod( name, paramDef, soapAction )
+    @proxy.addMethodAs( nameAs, name, paramDef, soapAction )
     addMethodInterface( name )
   end
 
