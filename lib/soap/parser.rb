@@ -140,7 +140,7 @@ public
       parentEncodingStyle = nil
     end
 
-    parseNS( ns, attrs )
+    attrs = parseNS( ns, attrs )
     encodingStyle = getEncodingStyle( ns, attrs )
 
     # Children's encodingStyle is derived from its parent.
@@ -186,13 +186,18 @@ private
   NSParseRegexp = Regexp.new( '^xmlns:?(.*)$' )
 
   def parseNS( ns, attrs )
-    return unless attrs
+    return attrs if attrs.nil? or attrs.empty?
+    newAttrs = {}
     attrs.each do | key, value |
-      next unless ( NSParseRegexp =~ key )
-      # '' means 'default namespace'.
-      tag = $1 || ''
-      ns.assign( value, tag )
+      if ( NSParseRegexp =~ key )
+        # '' means 'default namespace'.
+        tag = $1 || ''
+        ns.assign( value, tag )
+      else
+        newAttrs[ key ] = value
+      end
     end
+    newAttrs
   end
 
   def getEncodingStyle( ns, attrs )
