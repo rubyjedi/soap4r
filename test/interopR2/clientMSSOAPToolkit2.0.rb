@@ -1,17 +1,17 @@
 #!/usr/bin/env ruby
 
 $serverName = 'Microsoft Soap Toolkit V2'
-$serverBase = 'http://mssoapinterop.org/stk/InteropTyped.wsdl'
-$serverGroupB = 'http://mssoapinterop.org/stk/InteropB.wsdl'
+$serverBase = 'http://mssoapinterop.org/stk/InteropB.wsdl'
+$serverGroupB = 'http://mssoapinterop.org/stk/InteropBtyped.wsdl'
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, 'urn:soapinterop' )
-methodDefBase( drvBase )
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
+methodDefBase(drvBase)
 
-drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+methodDefGroupB(drvGroupB)
 
-doTestBase( drvBase )
-doTestGroupB( drvGroupB )
+doTestBase(drvBase)
+doTestGroupB(drvGroupB)
 submitTestResult

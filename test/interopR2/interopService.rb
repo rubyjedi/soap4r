@@ -1,28 +1,7 @@
-#!/usr/bin/env ruby
+require 'interopbase'
 
-$:.unshift(".")
-
-#$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
-#$KCODE = "EUC"
-$KCODE = "SJIS"
-
-require 'soap/rpc/cgistub'
-require 'base'
-
-class InteropApp < SOAP::CGIStub
+class InteropService
   include SOAP
-
-  def initialize(*arg)
-    super(*arg)
-    self.mapping_registry = SOAPBuildersInterop::MappingRegistry
-    self.sev_threshold = Devel::Logger::ERROR
-  end
-
-  def on_init
-    (SOAPBuildersInterop::MethodsBase + SOAPBuildersInterop::MethodsGroupB + SOAPBuildersInterop::MethodsPolyMorph).each do |name, *params|
-      add_method(self, name, params)
-    end
-  end
 
   # In echoVoid, 'retval' is not defined.  So nothing will be returned.
   def echoVoid
@@ -266,5 +245,3 @@ private
     result
   end
 end
-
-InteropApp.new('InteropApp', InterfaceNS).start

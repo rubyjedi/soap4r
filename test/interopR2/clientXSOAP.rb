@@ -1,15 +1,14 @@
 #!/usr/bin/env ruby
 
-$serverName = 'OpenLink'
+$serverName = 'XSOAP 1.2'
 
-$server = 'http://demo.openlinksw.com:8890/Interop'
-$noEchoMap = true
+$server = 'http://www.wingfoot.com/servlet/wserver'
 
 require 'clientBase'
 
 drv = SOAP::RPC::Driver.new($server, InterfaceNS)
-methodDef(drv)
+methodDefBase(drv)
 
 doTestBase(drv)
-doTestGroupB(drv)
+#doTestGroupB(drv)
 submitTestResult

@@ -7,12 +7,9 @@ $noEchoMap = true
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
-methodDef( drvBase )
+drv = SOAP::RPC::Driver.new($server, InterfaceNS)
+methodDef(drv)
 
-drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
-
-doTestBase( drvBase )
-doTestGroupB( drvGroupB )
+doTestBase(drv)
+doTestGroupB(drv)
 submitTestResult
