@@ -273,6 +273,7 @@ private
     end
   end
 
+  # namespace cannot be defined here.
   def addMethod( receiver, methodName, paramDef = nil )
     @router.addMethod( @namespace, receiver, methodName, paramDef )
   end
