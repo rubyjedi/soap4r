@@ -90,14 +90,13 @@ module SOAPRPCUtils
   private
 
     def datatypeAttr( ns )
-      Attr.new( ns.name( XSD::InstanceNamespace, 'type' ),
-	ns.name( @namespace, @name ))
+      Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @name ))
     end
 
     def createNS( attrs, ns )
       unless ns[ @namespace ]
-        tag = ns.assign( @namespace )
-        attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
+	tag = ns.assign( @namespace )
+	attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
       end
     end
 
@@ -269,7 +268,7 @@ private
   def struct2obj( node )
     obj = nil
     begin
-      klass = eval( capitalize( node.typeName ))
+      klass = Object.const_get( capitalize( node.typeName ))
       if getNamespace( klass ) != node.typeNamespace
 	raise NameError.new()
       elsif getTypeName( klass ) and ( getTypeName( klass ) != node.typeName )
@@ -288,7 +287,7 @@ private
     rescue NameError
       klass = nil
       if ( Struct.constants - Struct.superclass.constants ).member?( node.typeName )
-	klass = eval( "Struct::" << node.typeName )
+	klass = Struct.const_get( node.typeName )
       else
         klass = Struct.new( structName(node.typeName), *node.members )
       end
