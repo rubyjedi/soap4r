@@ -415,13 +415,30 @@ module RPCUtils
 	param.typeNamespace = RubyTypeNamespace
 	param.add( 'source', SOAPBase64.new( obj.source ))
 	if obj.respond_to?( 'options' )
-	  # Regexp#options is from Ruby/1.7
-	  param.add( 'options', SOAPString.new( obj.options ))
+      	  # Regexp#options is from Ruby/1.7
+	  options = obj.options
+	else
+	  options = 0
+	  obj.inspect.sub( /^.*\//, '' ).each_byte do | c |
+	    options += case c
+	      when ?i
+		1
+	      when ?x
+		2
+	      when ?m
+		4
+	      when ?n
+		16
+	      when ?e
+		32
+	      when ?s
+		48
+	      when ?u
+		64
+	      end
+	  end
 	end
-	if obj.kcode
-	  # Why Regexp#kcode returns lower case?  Deprecated?
-	  param.add( 'kcode', SOAPString.new( obj.kcode.upcase ))
-	end
+	param.add( 'options', SOAPInt.new( options ))
 	unless obj.instance_variables.empty?
 	  addiv2soap( param, obj, map )
 	end
@@ -554,12 +571,11 @@ module RPCUtils
       obj = nil
       case node.typeName
       when TYPE_REGEXP
-	source = node[ 'source' ].toString
-	options = node.members.include?( 'options' ) ? node[ 'options' ].data : nil
-	kcode = node.members.include?( 'kcode' ) ? node[ 'kcode' ].data : nil
-	obj = kcode ? Regexp.new( source, options, kcode ) :
-	  Regexp.new( source, options )
+	obj = createEmptyObject( Regexp )
 	markUnmarshalledObj( node, obj )
+	source = node[ 'source' ].toString
+	options = node[ 'options' ].data || 0
+	obj.instance_eval { initialize( source, options ) }
 	if node.members.include?( 'ivars' )
   	  setiv2obj( obj, node[ 'ivars' ], map )
    	end
