@@ -78,8 +78,7 @@ class Property
       when LINE_REGEXP
 	key, value = $1.strip, $2.strip
 	key = "#{key_prefix}.#{key}" unless key_prefix.empty?
-	key = eval("\"#{key}\"")
-	value = eval("\"#{value}\"")
+	key, value = loadstr(key), loadstr(value)
 	self[key] = value
       else
 	raise TypeError.new(
@@ -307,6 +306,10 @@ private
     File.open(file) do |f|
       load(f)
     end
+  end
+
+  def loadstr(str)
+    str.gsub(/\\./) { |c| eval("\"#{c}\"") }
   end
 end
 
