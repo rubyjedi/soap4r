@@ -351,7 +351,9 @@ public
   end
 
   def []( idx )
-    if idx.is_a?( Integer )
+    if idx.is_a?( Range )
+      @data[ idx ]
+    elsif idx.is_a?( Integer )
       if ( idx > @array.size )
         raise ArrayIndexOutOfBoundsError.new( 'In ' << @typeName )
       end
