@@ -55,7 +55,7 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
       begin
         s = sendMPOST( methodNamespace, methodName, soapString )
       rescue MPostUnavailableError
-        raise HTTPError.new( $! )
+        raise HTTPStreamError.new( $! )
       end
     end
   end
@@ -90,6 +90,8 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
     end
     action = methodNamespace.dup << '#' << methodName
 
+    puts soapString if $DEBUG
+
     header = {}
     begin
       timeout( CallTimeout ) do
@@ -108,7 +110,7 @@ EOS
         s.write postData
         puts postData if $DEBUG
 
-        raise HTTPError.new( 'Unexpected EOF...' ) if s.eof
+        raise HTTPStreamError.new( 'Unexpected EOF...' ) if s.eof
 
         # Parse HTTP header
         version = nil
@@ -143,15 +145,15 @@ EOS
           # 405: Method Not Allowed
           raise PostUnavailableError.new( "#{ status }: #{ reason }" )
         elsif ( status != '200' )
-          raise HTTPError.new( "#{ status }: #{ reason }" )
+          raise HTTPStreamError.new( "#{ status }: #{ reason }" )
         elsif ( !header.has_key?( 'content-type' ))
-          raise HTTPError.new( 'Content-type not found.' )
-        elsif ( header[ 'content-type' ] != MediaType )
-#          raise HTTPError.new( 'Illegal content-type: ' << header[ 'content-type' ] )
+          raise HTTPStreamError.new( 'Content-type not found.' )
+	elsif ( /^#{ MediaType }(?:;.*)?/ !~ header[ 'content-type' ] )
+#          raise HTTPStreamError.new( 'Illegal content-type: ' << header[ 'content-type' ] )
         end
       end
     rescue TimeoutError
-      raise HTTPError.new( 'Call timeout' )
+      raise HTTPStreamError.new( 'Call timeout' )
     end
 
     receiveString = ''
@@ -162,9 +164,10 @@ EOS
 	end
       end
     rescue TimeoutError
-      raise HTTPError.new( 'Read timeout' )
+      raise HTTPStreamError.new( 'Read timeout' )
     end
 
+    puts receiveString if $DEBUG
     receiveString
   end
 
@@ -177,7 +180,7 @@ EOS
       # 510: Not Extended
       raise MPostUnavailableError.new( "Status: #{ status }, Reason-phrase: #{ reason }" )
     elsif ( status != '200' )
-      raise HTTPError.new( "#{ status }: #{ reason }" )
+      raise HTTPStreamError.new( "#{ status }: #{ reason }" )
     end
   end
 
