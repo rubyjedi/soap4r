@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: October 4, 2001<br />
+Last modified: December 5, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 $BK\J8=q$,BP>]$H$7$F$$$k(BSOAP4R$B$N%P!<%8%g%s$O!$(B
-SOAP4R/1.3.8
+SOAP4R/1.4
 $B$G$9!%(B
 </p>
 
@@ -53,31 +53,39 @@ SOAP4R/1.3.8
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<p>
-<a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
-$B$G8!=P$5$l$?Hs8_49@-!$$*$h$S(BMichael Neumann$B$5$s$+$i$NJs9p$K4p$E$/=$@5!%(B
-</p>
-
 <ul>
 <li>$B%G!<%?7?(B:
 <ul>
-<li>XSDFloat: '123.0junk'$B$N$h$&$J0[>o%G!<%?$,(B0.0$B$KJQ49$5$l$F$$$^$7$?!%(B
-$B$3$l$O6X;_$5$l$k$Y$-$G$9!%=$@5$7$^$7$?!%(B</li>
-<li>XSDFloat: $BG\@:EY(B-&gt;$BC1@:EYJQ49%3!<%I$r=$@5$7$^$7$?!%(B</li>
+<li>XSDFloat: double float$B$r(Bsingle float$B$K4]$a$k:]$K%P%0$,$"$j$^$7$?!%=$@5$5$l$^$7$?!%(B</li>
+<li>SOAPElement: literal encoding$B!J(Bencoding$B$;$:$K(BXML$B$rKd$a9~$`!K$N$?$a$KDI2C$5$l$^$7$?!%(B</li>
+<li>SOAP data model(baseData.rb)$B$+$i(Bencoding$B4XO"5!G=$r<h$j=|$-$^$7$?!%(BEncondingStyleHandler$B$,E,59H=CG$9$Y$-$G$9!%(B</li>
+<li>SOAPHeaderItem: $B$h$j;H$$0W$/%$%s%?%U%'%$%9$rJQ99$7$^$7$?!%(B</li>
+</ul></li>
+
+<li>SOAP Encoding:
+<ul>
+<li>NQXML$B$NLZ9=B$%b%G%k$KMj$i$:!$<+A0$G(Bencoding$B$7$^$9!%(B</li>
+<li>$B$D$$$KB?=E;2>H$N(Bencoding$B$r<BAu$7$^$7$?(B!</li>
+<li>marshal.rb: Envelope$B$H(BBody$B$rH<$J$C$F(Bmarshal$B$9$k$h$&$K$J$j$^$7$?!%(B
+SOAP Encoding$B$G$O!$B?=E;2>H$N(Bencoding$B$N$?$a$K(BBody$B$,I,MW$G$9!%(B
+$BCm0U(B: $B=>Mh$N<BAu$H$N8_49@-$,$"$j$^$;$s!%(B</li>
+<li>literal encoding$B$N%O%s%I%i$rDI2C$7!$$3$l$r(Bdefault$B$H$7$^$7$?!%(B</li>
+<li>encoding.rb$B$r(BencodingStyleHandler.rb$B$KL>A0$rJQ$($^$7$?!%(B</li>
+<li>ASP.NET$B$N(Bencoding handler$B$rDI2C$7$^$7$?!%(BASP.NET$B$O%G%U%)%k%H$G$O(Bliteral encoding$B$r;HMQ$7$^$9$,!$85$O$H$$$($P$d$C$Q$j4X?t$HG[Ns$G$"$k$?$a!$<u$1B&$G$b$=$l$C$]$/(Bdecode$B$7$?$[$&$,JXMx$G$9!J(BDOM$B%W%m%0%i%_%s%0$J$s$+$7$?$/$J$$!K!%(B</li>
+<li>$BMWAGL>$N(Bescape$BJ}K!$rJQ99$7$^$7$?!%(B
+<ul>
+<li>:: &lt;=&gt; \.\.</li>
+<li>[^a-zA-Z0-9_-] &lt;=&gt; \.[0-F][0-F]
+</ul>
+$B@)8B(B: SOAP4R$B$N(BRPC$B4XO"5!G=$r;H$&>l9g!$%a%=%C%IL>!$%/%i%9L>!$%a%s%PL>$K(B'.'$B$r4^$`(Bobject$B$NE>Aw$r9T$J$&$3$H$O$G$-$^$;$s!%(BRuby$B$NJ8K!E*$K$O$3$l$GLdBj$J$$$O$:$G$9!%(B</li>
 </ul></li>
 
 <li>RPC$B4XO"5!G=(B:
 <ul>
-<li>Ruby$B$N7?L>$H(BXML$BMWAGMQ$N(BNCName$B$NBP1~IU$1@oN,$rJQ99$7$^$7$?!%(B
-'Foo::Bar'$B$H$$$&7?$r(B'Foo.Bar'$B$H$$$&MWAG$KBP1~$5$;$^$9!%(B</li>
-<li>SOAP$B%*%V%8%'%/%H@8@.MQ$N%X%k%Q4X?t$K!$(BmappingRegistry$B$rEO$;$k$h$&$K$7$^$7$?!%(B</li>
-</ul></li>
-
-<li>$B$=$NB>(B:
-<ul>
-<li>SOAP Fault$B$N(Bfaultstring$B$,6u$N;~$K!$(B'(No faultstring)'$B$H$$$&J8;zNs$r%;%C%H$7$^$9!%(B</li>
-<li>server.rb: mappingRegistry$B$r%;%C%H$9$k%$%s%?%U%'%$%9$rDI2C$7$^$7$?!%(B</li>
-<li>marshal.rb: $B7?L>$+$i(BNCName$B$r@8@.$7$^$9!%(B</li>
+<li>Driver: $B%a%C%;!<%8%s%0$r9T$J$&$?$a$N%a%=%C%I!$(B'invoke'$B$rDI2C$7$^$7$?!%(B</li>
+<li>Driver: SOAP Fault$B$N(Bdetail$BMWAG$NCf?H$r!$(BDriver$B$+$i%f!<%6%"%W%j%1!<%7%g%s$KJV$9Nc30$NCf$K%;%C%H$9$k$h$&$K$7$^$7$?!%(B</li>
+<li>Processor: marshal/unmarshal$B$N%$%s%?%U%'%$%9$rJQ99$7$^$7$?!%(B</li>
+<li>mappingRegistry.rb$B$,(BrpcUtils.rb$B$+$iJ,N%$7$^$7$?!%(B</li>
 </ul></li>
 </ul>
 
@@ -102,13 +110,13 @@ lib/soap$B%G%#%l%/%H%j$K4^$^$l$F$$$k%U%!%$%k$,!$(BSOAP4R$B$N%i%$%V%i%j%W%m%0%
 
 <dl>
 <dt class="path">date3.rb</dt>
-<dd>by $B$U$J$P$5$s!J(B<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>$B!K(B</dd>
+<dd>by $B$U$J$P$5$s(B: <a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a></dd>
 
 <dt class="path">parsedate3.rb</dt>
-<dd>by $B$U$J$P$5$s!J(B<a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a>$B!K(B</dd>
+<dd>by $B$U$J$P$5$s(B: <a href="http://www.kt.rim.or.jp/~tadf/ruby.html">http://www.kt.rim.or.jp/~tadf/ruby.html</a></dd>
 
 <dt class="path">GServer</dt>
-<dd>by John W. Small</dd>
+<dd>by John W. Small: <a href="http://fairfax2.laser.net/~jsmall/rubycorner.html">http://fairfax2.laser.net/~jsmall/rubycorner.html</a></dd>
 
 <dt class="path">httpserver.rb</dt>
 <dd>by Michael Neumann: httpserver.rb in <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XML-RPC">[RAA:XML-RPC]</a></dd>
@@ -222,15 +230,13 @@ SOAP4R$B$rMxMQ$9$k$?$a$K$O!$0J2<$N$b$N$,I,MW$G$9!%(B
 $B2TF/%F%9%H$O(B1.6$B7O$G9T$J$C$F$$$^$9!%(B
 $B%/%i%9JQ?t$r;H$C$F$$$k$?$a!$(B1.4$B7O$G$OF0$-$^$;$s!%(B</li>
 
-<li>SOAP4R$B$O(BXML$B4XO"$N=hM}$r(B
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>
-$B$K0MB8$7$F$$$^$9!%(B
-NQXML$B%b%8%e!<%k$r%$%s%9%H!<%k$7$F$*$/I,MW$,$"$j$^$9!%(B</li>
-
-<li>SOAP-RPC$B%/%i%$%"%s%H%5%s%W%k$rF0$+$9$?$a$K$O!$(B
-<a href="http://xml.apache.org/soap/">Apache SOAP</a>
-$B$,I,MW$G$9!%(B
-</li>
+<li>SOAP4R$B$O(BXML$B4XO"$N=hM}$N$?$a$K!$(BXML$B%W%m%;%C%5$rI,MW$H$7$^$9!%(B
+$B:#$N$H$3$m!$0J2<$N$$$:$l$+$N(BXML$B%W%m%;%C%5%b%8%e!<%k$,%$%s%9%H!<%k$5$l$F$$$k(B
+$BI,MW$,$"$j$^$9!J(BSOAP4R$B$,<B9T;~$K<+F08!=P$7$^$9!K!%(B
+<ul>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a></li>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">XMLParser module</a></li>
+</ul></li>
 </ul>
 
 <h2 id="restrictions" name="restrictions">6. Restrictions</h2>
@@ -253,7 +259,6 @@ SOAP4R$B$O(B
 <ul>
 <li>XML Schema$B$rFI$s$G(Bencode/decode$B$9$k$3$H$O$G$-$^$;$s!%(B
 SOAP Encoding$BK\BN$KKd$a9~$^$l$?(Bxsi:type$B$N$_$rMxMQ$7$^$9!%(B</li>
-<li>$BB?=E;2>H$X$N(Bmarshalling$B!J(Bunmarshalling$B$O2DG=$G$9!K(B</li>
 </ul></li>
 <li style="margin-top: 2ex;">$B$=$NB>(B
 <ul>
@@ -265,6 +270,45 @@ SOAP Encoding$BK\BN$KKd$a9~$^$l$?(Bxsi:type$B$N$_$rMxMQ$7$^$9!%(B</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.4 - December 5, 2001</dt>
+<dd>
+<ul>
+<li>$B%G!<%?7?(B:
+<ul>
+<li>XSDFloat: double float$B$r(Bsingle float$B$K4]$a$k:]$K%P%0$,$"$j$^$7$?!%=$@5$5$l$^$7$?!%(B</li>
+<li>SOAPElement: literal encoding$B!J(Bencoding$B$;$:$K(BXML$B$rKd$a9~$`!K$N$?$a$KDI2C$5$l$^$7$?!%(B</li>
+<li>SOAP data model(baseData.rb)$B$+$i(Bencoding$B4XO"5!G=$r<h$j=|$-$^$7$?!%(BEncondingStyleHandler$B$,E,59H=CG$9$Y$-$G$9!%(B</li>
+<li>SOAPHeaderItem: $B$h$j;H$$0W$/%$%s%?%U%'%$%9$rJQ99$7$^$7$?!%(B</li>
+</ul></li>
+
+<li>SOAP Encoding:
+<ul>
+<li>NQXML$B$NLZ9=B$%b%G%k$KMj$i$:!$<+A0$G(Bencoding$B$7$^$9!%(B</li>
+<li>$B$D$$$KB?=E;2>H$N(Bencoding$B$r<BAu$7$^$7$?(B!</li>
+<li>marshal.rb: Envelope$B$H(BBody$B$rH<$J$C$F(Bmarshal$B$9$k$h$&$K$J$j$^$7$?!%(B
+SOAP Encoding$B$G$O!$B?=E;2>H$N(Bencoding$B$N$?$a$K(BBody$B$,I,MW$G$9!%(B
+$BCm0U(B: $B=>Mh$N<BAu$H$N8_49@-$,$"$j$^$;$s!%(B</li>
+<li>literal encoding$B$N%O%s%I%i$rDI2C$7!$$3$l$r(Bdefault$B$H$7$^$7$?!%(B</li>
+<li>encoding.rb$B$r(BencodingStyleHandler.rb$B$KL>A0$rJQ$($^$7$?!%(B</li>
+<li>ASP.NET$B$N(Bencoding handler$B$rDI2C$7$^$7$?!%(BASP.NET$B$O%G%U%)%k%H$G$O(Bliteral encoding$B$r;HMQ$7$^$9$,!$85$O$H$$$($P$d$C$Q$j4X?t$HG[Ns$G$"$k$?$a!$<u$1B&$G$b$=$l$C$]$/(Bdecode$B$7$?$[$&$,JXMx$G$9!J(BDOM$B%W%m%0%i%_%s%0$J$s$+$7$?$/$J$$!K!%(B</li>
+<li>$BMWAGL>$N(Bescape$BJ}K!$rJQ99$7$^$7$?!%(B
+<ul>
+<li>:: &lt;=&gt; \.\.</li>
+<li>[^a-zA-Z0-9_-] &lt;=&gt; \.[0-F][0-F]
+</ul>
+$B@)8B(B: SOAP4R$B$N(BRPC$B4XO"5!G=$r;H$&>l9g!$%a%=%C%IL>!$%/%i%9L>!$%a%s%PL>$K(B'.'$B$r4^$`(Bobject$B$NE>Aw$r9T$J$&$3$H$O$G$-$^$;$s!%(BRuby$B$NJ8K!E*$K$O$3$l$GLdBj$J$$$O$:$G$9!%(B</li>
+</ul></li>
+
+<li>RPC$B4XO"5!G=(B:
+<ul>
+<li>Driver: $B%a%C%;!<%8%s%0$r9T$J$&$?$a$N%a%=%C%I!$(B'invoke'$B$rDI2C$7$^$7$?!%(B</li>
+<li>Driver: SOAP Fault$B$N(Bdetail$BMWAG$NCf?H$r!$(BDriver$B$+$i%f!<%6%"%W%j%1!<%7%g%s$KJV$9Nc30$NCf$K%;%C%H$9$k$h$&$K$7$^$7$?!%(B</li>
+<li>Processor: marshal/unmarshal$B$N%$%s%?%U%'%$%9$rJQ99$7$^$7$?!%(B</li>
+<li>mappingRegistry.rb$B$,(BrpcUtils.rb$B$+$iJ,N%$7$^$7$?!%(B</li>
+</ul></li>
+</ul></dd>
+
+
 <dt>1.3.8 - October 4, 2001</dt>
 <dd><a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
 $B$G8!=P$5$l$?Hs8_49@-!$$*$h$S(BMichael Neumann$B$5$s$+$i$NJs9p$K4p$E$/=$@5!%(B

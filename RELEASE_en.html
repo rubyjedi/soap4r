@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: October 4, 2001<br />
+Last modified: December 5, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.8
+Target SOAP4R version: SOAP4R/1.4
 </p>
 
 <ol>
@@ -50,31 +50,37 @@ Target SOAP4R version: SOAP4R/1.3.8
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<p>
-Feedback from
-<a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
-and Michael Neumann.  Thanks!
-</p>
-
 <ul>
 <li>Datatypes:
 <ul>
-<li>XSDFloat: Creating float data from junk string such as "123.0junk" was
-  converted to 0.0.  It should be avoided.  Fixed.</li>
-<li>XSDFloat: Fixed double -&gt; single rounding code.</li>
+<li>XSDFloat: Bug in rounding double float to single float.  Fixed.</li>
+<li>SOAPElement: Added for literal encoding.</li>
+<li>Removed SOAP encoding functions from baseData.  EncondingStyleHandler should decide how to encode SOAP data model. (ie. ASP.NET seems to have its own encoding style.)</li>
+<li>SOAPHeaderItem: Changed interface for easy use.</li>
+</ul></li>
+
+<li>SOAP Encoding:
+<ul>
+<li>Encoding by itself, not using NQXML's tree object model.</li>
+<li>At last, supported multi-ref encoding!</li>
+<li>marshal.rb: Marshalling with Envelope and Body.  To marshal multi-ref'd object, Body is needed. CAUTION: Not compatible between former implementation.</li>
+<li>Add EncodingStyleHandlerLiteral and set it to default.</li>
+<li>Renamed encoding.rb to encodingStyleHandler.rb.</li>
+<li>Added ASP.NET encoding handler.  ASP.NET seems to use literal encoding (by default) but it is easier with this encodingStyleHandler to access the service which is built with ASP.NET.</li>
+<li>Changed element name escape.
+<ul>
+<li>:: &lt;=&gt; \.\.</li>
+<li>[^a-zA-Z0-9_-] &lt;=&gt; \.[0-F][0-F]
+</ul>
+Limitation: Using SOAP4R's RPC function, you cannot use the name which contains '.' for method name, class/struct name, and accessor name. In Ruby world, it should not be a problem I believe.</li>
 </ul></li>
 
 <li>RPC related functions:
 <ul>
-<li>Changed typename <=> NCName strategy.  '::' &lt;=&gt; '.'</li>
-<li>Added mappingRegistry argument to interfaces for SOAP object creation.</li>
-</ul></li>
-
-<li>Others:
-<ul>
-<li>Set faultstring '(No faultstring)' to SOAP Fault when empty faultstring element.</li>
-<li>server.rb: Added mappingRegistry interface.</li>
-<li>marshal.rb: Create NCName from typename.</li>
+<li>Driver: Added 'invoke' method for messaging.</li>
+<li>Driver: Content of SOAPFault detail element is set in the exception which is thrown from SOAP Node to client application.</li>
+<li>Processor: Changed Processor.(un|)marshal interface.  An instance of NS for parsing/generating XML instance is prepared in parser/generator.</li>
+<li>mappingRegistry.rb is devided from rpcUtils.rb.</li>
 </ul></li>
 </ul>
 
@@ -105,7 +111,7 @@ Followings are redistributed files in redist/.
 <dd>by Funaba-san (<a href="http://www.kt.rim.or.jp/~tadf/ruby-en.html">http://www.kt.rim.or.jp/~tadf/ruby-en.html</a>)</dd>
 
 <dt class="path">GServer</dt>
-<dd>by John W. Small</dd>
+<dd>by John W. Small: <a href="http://fairfax2.laser.net/~jsmall/rubycorner.html">http://fairfax2.laser.net/~jsmall/rubycorner.html</a></dd>
 
 <dt class="path">httpserver.rb</dt>
 <dd>by Michael Neumann: httpserver.rb in <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XML-RPC">[RAA:XML-RPC]</a></dd>
@@ -212,13 +218,13 @@ You have to install Ruby itself.
 Ruby/1.6 series are required.
 It does not works on 1.4 series because of class variable.</li>
 
-<li>SOAP4R delegates XML related processing to
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a>.
-You have to install NQXML module.</li>
-
-<li>To play with SOAP-RPC client sample, you have to install
-<a href="http://xml.apache.org/soap/">Apache SOAP</a>.
-</li>
+<li>SOAP4R requires a XML processor package installed.
+For now, one of following XML processor must be installed
+ (SOAP4R automatically detects it in runtime).
+<ul>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=NQXML">NQXML module</a></li>
+<li><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">XMLParser module</a></li>
+</ul></li>
 </ul>
 
 <h2 id="restrictions" name="restrictions">6. Restrictions</h2>
@@ -240,7 +246,6 @@ spec are <strong>NOT</strong> currently supported:
 <ul>
 <li>encoding/decoding using XML Schema;
 Only xsi:type in SOAP Encoding is checked</li>
-<li>Marshalling references to href/id (Unmarshalling is OK)</li>
 </ul></li>
 <li style="margin-top: 2ex;">Othres
 <ul>
@@ -252,6 +257,42 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.4 - December 5, 2001</dt>
+<dd><ul>
+<li>Datatypes:
+<ul>
+<li>XSDFloat: Bug in rounding double float to single float.  Fixed.</li>
+<li>SOAPElement: Added for literal encoding.</li>
+<li>Removed SOAP encoding functions from baseData.  EncondingStyleHandler should decide how to encode SOAP data model. (ie. ASP.NET seems to have its own encoding style.)</li>
+<li>SOAPHeaderItem: Changed interface for easy use.</li>
+</ul></li>
+
+<li>SOAP Encoding:
+<ul>
+<li>Encoding by itself, not using NQXML's tree object model.</li>
+<li>At last, supported multi-ref encoding!</li>
+<li>marshal.rb: Marshalling with Envelope and Body.  To marshal multi-ref'd object, Body is needed. CAUTION: Not compatible between former implementation.</li>
+<li>Add EncodingStyleHandlerLiteral and set it to default.</li>
+<li>Renamed encoding.rb to encodingStyleHandler.rb.</li>
+<li>Added ASP.NET encoding handler.  ASP.NET seems to use literal encoding (by default) but it is easier with this encodingStyleHandler to access the service which is built with ASP.NET.</li>
+<li>Changed element name escape.
+<ul>
+<li>:: &lt;=&gt; \.\.</li>
+<li>[^a-zA-Z0-9_-] &lt;=&gt; \.[0-F][0-F]
+</ul>
+Limitation: Using SOAP4R's RPC function, you cannot use the name which contains '.' for method name, class/struct name, and accessor name. In Ruby world, it should not be a problem I believe.</li>
+</ul></li>
+
+<li>RPC related functions:
+<ul>
+<li>Driver: Added 'invoke' method for messaging.</li>
+<li>Driver: Content of SOAPFault detail element is set in the exception which is thrown from SOAP Node to client application.</li>
+<li>Processor: Changed Processor.(un|)marshal interface.  An instance of NS for parsing/generating XML instance is prepared in parser/generator.</li>
+<li>mappingRegistry.rb is devided from rpcUtils.rb.</li>
+</ul></li>
+</ul></dd>
+
+
 <dt>1.3.8 - October 4, 2001</dt>
 <dd>Feedback from
 <a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
