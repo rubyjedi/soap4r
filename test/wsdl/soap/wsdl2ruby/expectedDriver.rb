@@ -19,14 +19,14 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
         ["in", "version", [::SOAP::SOAPString]],
         ["retval", "version_struct", [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]]
       ],
-      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"
+      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
     ],
     ["echo_version_r", "echo_version_r",
       [
         ["in", "version_struct", [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]],
         ["retval", "version", [::SOAP::SOAPString]]
       ],
-      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"
+      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
     ]
   ]
 
@@ -40,10 +40,15 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
 private
 
   def init_methods
-    Methods.each do |name_as, name, params, soapaction, namespace|
+    Methods.each do |name_as, name, params, soapaction, namespace, style|
       qname = ::XSD::QName.new(namespace, name_as)
-      @proxy.add_method(qname, soapaction, name, params)
-      add_rpc_method_interface(name, params)
+      if style == :document
+        @proxy.add_document_method(qname, soapaction, name, params)
+        add_document_method_interface(name, name_as)
+      else
+        @proxy.add_rpc_method(qname, soapaction, name, params)
+        add_rpc_method_interface(name, params)
+      end
     end
   end
 end

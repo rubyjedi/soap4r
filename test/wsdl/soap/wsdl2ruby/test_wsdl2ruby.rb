@@ -37,7 +37,7 @@ private
   end
 
   def compare(expected, actual)
-    assert_equal(loadfile(expected), loadfile(actual))
+    assert_equal(loadfile(expected), loadfile(actual), expected)
   end
 
   def loadfile(file)

@@ -20,14 +20,14 @@ class Echo_version_port_type
         ["in", "version", [::SOAP::SOAPString]],
         ["retval", "version_struct", [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]]
       ],
-      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"
+      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
     ],
     ["echo_version_r", "echo_version_r",
       [
         ["in", "version_struct", [::SOAP::SOAPStruct, "urn:example.com:simpletype-rpc-type", "version_struct"]],
         ["retval", "version", [::SOAP::SOAPString]]
       ],
-      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc"
+      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
     ]
   ]
 end
@@ -36,9 +36,13 @@ class Echo_version_port_typeApp < ::SOAP::RPC::StandaloneServer
   def initialize(*arg)
     super(*arg)
     servant = Echo_version_port_type.new
-    Echo_version_port_type::Methods.each do |name_as, name, params, soapaction, ns|
-      qname = XSD::QName.new(ns, name_as)
-      @soaplet.app_scope_router.add_method(servant, qname, soapaction, name, params)
+    Echo_version_port_type::Methods.each do |name_as, name, param_def, soapaction, namespace, style|
+      qname = XSD::QName.new(namespace, name_as)
+      if style == :document
+        @soaplet.app_scope_router.add_document_method(servant, qname, soapaction, name, param_def)
+      else
+        @soaplet.app_scope_router.add_rpc_method(servant, qname, soapaction, name, param_def)
+      end
     end
     self.mapping_registry = Echo_version_port_type::MappingRegistry
   end
