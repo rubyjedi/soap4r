@@ -20,6 +20,8 @@ Ave, Cambridge, MA 02139, USA.
 ## XMLSchamaDatatypes general definitions.
 #
 module XSD
+  #Namespace = 'http://www.w3.org/1999/XMLSchema'
+  #InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
   Namespace = 'http://www.w3.org/1999/XMLSchema/'
   InstanceNamespace = 'http://www.w3.org/1999/XMLSchema/instance/'
 end
@@ -147,11 +149,25 @@ class XSDInteger < XSDDecimal
 
   def initialize( initInteger = nil )
     super()
-    @typeName = 'int'
+    @typeName = 'integer'
     set( initInteger ) if initInteger
   end
 
   def set( newInteger )
     @data = newInteger.to_i
+  end
+end
+
+class XSDInt < XSDInteger
+  public
+
+  def initialize( initInt = nil )
+    super()
+    @typeName = 'int'
+    set( initInt ) if initInt
+  end
+
+  def set( newInt )
+    @data = newInt.to_i
   end
 end
