@@ -4,7 +4,6 @@ require 'runit/cui/testrunner'
 require '../lib/soap/XMLSchemaDatatypes'
 
 class TestXSD < RUNIT::TestCase
-  include XSD
 
 public
   def setup
@@ -21,7 +20,7 @@ public
   end
 
   def test_NSDBase
-    o = NSDBase.new( 'name', 'ns' )
+    o = XSD::NSDBase.new( 'name', 'ns' )
     assert_equal( 'name', o.typeName )
     assert_equal( 'ns', o.typeNamespace )
     o.typeName = 'name2'
@@ -35,7 +34,7 @@ public
   end
 
   def test_XSDBase
-    o = XSDBase.new( 'typeName' )
+    o = XSD::XSDBase.new( 'typeName' )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
     assert_equal( '', o.to_s )
@@ -45,44 +44,44 @@ public
   end
 
   def test_XSDNil
-    o = XSDNil.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( NilLiteral, o.typeName )
+    o = XSD::XSDNil.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::NilLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
-    o = XSDNil.new( nil )
+    o = XSD::XSDNil.new( nil )
     assert_equal( true, o.isNil )
     assert_equal( nil, o.data )
     assert_equal( "", o.to_s )
-    o = XSDNil.new( 'var' )
+    o = XSD::XSDNil.new( 'var' )
     assert_equal( false, o.isNil )
     assert_equal( 'var', o.data )
     assert_equal( 'var', o.to_s )
   end
 
   def test_XSDString
-    o = XSDString.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( StringLiteral, o.typeName )
+    o = XSD::XSDString.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::StringLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
     str = "abc"
-    assert_equal( str, XSDString.new( str ).data )
-    assert_equal( str, XSDString.new( str ).to_s )
+    assert_equal( str, XSD::XSDString.new( str ).data )
+    assert_equal( str, XSD::XSDString.new( str ).to_s )
     assert_exception( XSD::ValueSpaceError ) do
-      XSDString.new( "\0" )
+      XSD::XSDString.new( "\0" )
     end
     assert_exception( XSD::ValueSpaceError ) do
-      p XSDString.new( "\xC0\xC0" ).to_s
+      p XSD::XSDString.new( "\xC0\xC0" ).to_s
     end
   end
 
   def test_XSDBoolean
-    o = XSDBoolean.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( BooleanLiteral, o.typeName )
+    o = XSD::XSDBoolean.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::BooleanLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -93,15 +92,19 @@ public
       [ "0", false ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDBoolean.new( data ).data )
-      assert_equal( expected.to_s, XSDBoolean.new( data ).to_s )
+      assert_equal( expected, XSD::XSDBoolean.new( data ).data )
+      assert_equal( expected.to_s, XSD::XSDBoolean.new( data ).to_s )
+    end
+
+    assert_exception( XSD::ValueSpaceError ) do
+      XSD::XSDBoolean.new( "nil" ).to_s
     end
   end
 
   def test_XSDDecimal
-    o = XSDDecimal.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( DecimalLiteral, o.typeName )
+    o = XSD::XSDDecimal.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::DecimalLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -114,7 +117,7 @@ public
       -1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789,
     ]
     targets.each do | dec |
-      assert_equal( dec.to_s, XSDDecimal.new( dec ).data )
+      assert_equal( dec.to_s, XSD::XSDDecimal.new( dec ).data )
     end
 
     targets = [
@@ -125,7 +128,7 @@ public
       "-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123.45678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
     ]
     targets.each do | str |
-      assert_equal( str, XSDDecimal.new( str ).to_s )
+      assert_equal( str, XSD::XSDDecimal.new( str ).to_s )
     end
 
     targets = [
@@ -150,7 +153,7 @@ public
       ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDDecimal.new( data ).to_s )
+      assert_equal( expected, XSD::XSDDecimal.new( data ).to_s )
     end
 
     targets = [
@@ -160,15 +163,15 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSDDecimal.new( d )
+	XSD::XSDDecimal.new( d )
       end
     end
   end
 
   def test_XSDFloat
-    o = XSDFloat.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( FloatLiteral, o.typeName )
+    o = XSD::XSDFloat.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::FloatLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -179,7 +182,7 @@ public
       -1.4e-45,
     ]
     targets.each do | f |
-      assert_equal( f, XSDFloat.new( f ).data )
+      assert_equal( f, XSD::XSDFloat.new( f ).data )
     end
 
     targets = [
@@ -189,7 +192,7 @@ public
       "-1.4e-45",
     ]
     targets.each do | f |
-      assert_equal( f, XSDFloat.new( f ).to_s )
+      assert_equal( f, XSD::XSDFloat.new( f ).to_s )
     end
 
     targets = [
@@ -206,33 +209,34 @@ public
       [ "1.4E", "1.4" ],
     ]
     targets.each do | f, str |
-      assert_equal( str, XSDFloat.new( f ).to_s )
+      assert_equal( str, XSD::XSDFloat.new( f ).to_s )
     end
 
-    assert_equal( "0", XSDFloat.new( +0.0 ).to_s )
-    assert_equal( "-0", XSDFloat.new( -0.0 ).to_s )
-    assert( XSDFloat.new( 0.0/0.0 ).data.nan? )
-    assert_equal( "INF", XSDFloat.new( 1.0/0.0 ).to_s )
-    assert_equal( 1, XSDFloat.new( 1.0/0.0 ).data.infinite? )
-    assert_equal( "-INF", XSDFloat.new( -1.0/0.0 ).to_s )
-    assert_equal( -1, XSDFloat.new( -1.0/0.0 ).data.infinite? )
+    assert_equal( "0", XSD::XSDFloat.new( +0.0 ).to_s )
+    assert_equal( "-0", XSD::XSDFloat.new( -0.0 ).to_s )
+    assert( XSD::XSDFloat.new( 0.0/0.0 ).data.nan? )
+    assert_equal( "INF", XSD::XSDFloat.new( 1.0/0.0 ).to_s )
+    assert_equal( 1, XSD::XSDFloat.new( 1.0/0.0 ).data.infinite? )
+    assert_equal( "-INF", XSD::XSDFloat.new( -1.0/0.0 ).to_s )
+    assert_equal( -1, XSD::XSDFloat.new( -1.0/0.0 ).data.infinite? )
 
     targets = [
       "0.000000000000a",
       "00a.0000000000001",
       "+-5",
+      "5_0",
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSDFloat.new( d )
+	XSD::XSDFloat.new( d )
       end
     end
   end
 
   def test_XSDDouble
-    o = XSDDouble.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( DoubleLiteral, o.typeName )
+    o = XSD::XSDDouble.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::DoubleLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -243,7 +247,7 @@ public
       -1.4e-45,
     ]
     targets.each do | f |
-      assert_equal( f, XSDDouble.new( f ).data )
+      assert_equal( f, XSD::XSDDouble.new( f ).data )
     end
 
     targets = [
@@ -253,7 +257,7 @@ public
       "-1.4e-45",
     ]
     targets.each do | f |
-      assert_equal( f, XSDDouble.new( f ).to_s )
+      assert_equal( f, XSD::XSDDouble.new( f ).to_s )
     end
 
     targets = [
@@ -270,17 +274,17 @@ public
       [ "1.4E", "1.4" ],
     ]
     targets.each do | f, str |
-      assert_equal( str, XSDDouble.new( f ).to_s )
+      assert_equal( str, XSD::XSDDouble.new( f ).to_s )
     end
 
-    assert_equal( "0", XSDFloat.new( +0.0 ).to_s )
-    assert_equal( "-0", XSDFloat.new( -0.0 ).to_s )
-    assert_equal( "NaN", XSDDouble.new( 0.0/0.0 ).to_s )
-    assert( XSDDouble.new( 0.0/0.0 ).data.nan? )
-    assert_equal( "INF", XSDDouble.new( 1.0/0.0 ).to_s )
-    assert_equal( 1, XSDDouble.new( 1.0/0.0 ).data.infinite? )
-    assert_equal( "-INF", XSDDouble.new( -1.0/0.0 ).to_s )
-    assert_equal( -1, XSDDouble.new( -1.0/0.0 ).data.infinite? )
+    assert_equal( "0", XSD::XSDFloat.new( +0.0 ).to_s )
+    assert_equal( "-0", XSD::XSDFloat.new( -0.0 ).to_s )
+    assert_equal( "NaN", XSD::XSDDouble.new( 0.0/0.0 ).to_s )
+    assert( XSD::XSDDouble.new( 0.0/0.0 ).data.nan? )
+    assert_equal( "INF", XSD::XSDDouble.new( 1.0/0.0 ).to_s )
+    assert_equal( 1, XSD::XSDDouble.new( 1.0/0.0 ).data.infinite? )
+    assert_equal( "-INF", XSD::XSDDouble.new( -1.0/0.0 ).to_s )
+    assert_equal( -1, XSD::XSDDouble.new( -1.0/0.0 ).data.infinite? )
 
     targets = [
       "0.000000000000a",
@@ -289,15 +293,15 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSDDouble.new( d )
+	XSD::XSDDouble.new( d )
       end
     end
   end
 
   def test_XSDDuration
-    o = XSDDuration.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( DurationLiteral, o.typeName )
+    o = XSD::XSDDuration.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::DurationLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -324,7 +328,7 @@ public
       "+P9012DT3456H",
     ]
     targets.each do | str |
-      assertParsedResult( XSDDuration, str )
+      assertParsedResult( XSD::XSDDuration, str )
     end
 
     targets = [
@@ -346,14 +350,14 @@ public
         "P1234Y5678M9012DT3456H7890M1234.5678S" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDDuration.new( data ).to_s )
+      assert_equal( expected, XSD::XSDDuration.new( data ).to_s )
     end
   end
 
   def test_XSDDateTime
-    o = XSDDateTime.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( DateTimeLiteral, o.typeName )
+    o = XSD::XSDDateTime.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::DateTimeLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -377,7 +381,7 @@ public
       "-0001-12-31T23:59:59.00000000000000000001+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSDDateTime, str )
+      assertParsedResult( XSD::XSDDateTime, str )
     end
 
     targets = [
@@ -395,7 +399,7 @@ public
 	"-2002-12-31T23:59:59Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDDateTime.new( data ).to_s )
+      assert_equal( expected, XSD::XSDDateTime.new( data ).to_s )
     end
 
     targets = [
@@ -407,15 +411,15 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError, d.to_s ) do
-	XSDDateTime.new( d )
+	XSD::XSDDateTime.new( d )
       end
     end
   end
 
   def test_XSDTime
-    o = XSDTime.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( TimeLiteral, o.typeName )
+    o = XSD::XSDTime.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::TimeLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -435,7 +439,7 @@ public
       "23:59:59+00:01",
     ]
     targets.each do | str |
-      assertParsedResult( XSDTime, str )
+      assertParsedResult( XSD::XSDTime, str )
     end
 
     targets = [
@@ -447,14 +451,14 @@ public
 	"23:59:59Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDTime.new( data ).to_s )
+      assert_equal( expected, XSD::XSDTime.new( data ).to_s )
     end
   end
 
   def test_XSDDate
-    o = XSDDate.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( DateLiteral, o.typeName )
+    o = XSD::XSDDate.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::DateLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -474,7 +478,7 @@ public
       "-0001-12-31+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSDDate, str )
+      assertParsedResult( XSD::XSDDate, str )
     end
 
     targets = [
@@ -492,14 +496,14 @@ public
 	"-2002-12-31Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDDate.new( data ).to_s )
+      assert_equal( expected, XSD::XSDDate.new( data ).to_s )
     end
   end
 
   def test_XSDgYearMonth
-    o = XSDgYearMonth.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( GYearMonthLiteral, o.typeName )
+    o = XSD::XSDgYearMonth.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::GYearMonthLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -519,7 +523,7 @@ public
       "-0001-12+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSDgYearMonth, str )
+      assertParsedResult( XSD::XSDgYearMonth, str )
     end
 
     targets = [
@@ -537,14 +541,14 @@ public
 	"-2002-12Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDgYearMonth.new( data ).to_s )
+      assert_equal( expected, XSD::XSDgYearMonth.new( data ).to_s )
     end
   end
 
   def test_XSDgYear
-    o = XSDgYear.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( GYearLiteral, o.typeName )
+    o = XSD::XSDgYear.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::GYearLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -564,7 +568,7 @@ public
       "-0001+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSDgYear, str )
+      assertParsedResult( XSD::XSDgYear, str )
     end
 
     targets = [
@@ -582,14 +586,14 @@ public
 	"-2002Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDgYear.new( data ).to_s )
+      assert_equal( expected, XSD::XSDgYear.new( data ).to_s )
     end
   end
 
   def test_XSDgMonthDay
-    o = XSDgMonthDay.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( GMonthDayLiteral, o.typeName )
+    o = XSD::XSDgMonthDay.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::GMonthDayLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -604,7 +608,7 @@ public
       "12-31+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSDgMonthDay, str )
+      assertParsedResult( XSD::XSDgMonthDay, str )
     end
 
     targets = [
@@ -616,14 +620,14 @@ public
 	"12-31Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDgMonthDay.new( data ).to_s )
+      assert_equal( expected, XSD::XSDgMonthDay.new( data ).to_s )
     end
   end
 
   def test_XSDgDay
-    o = XSDgDay.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( GDayLiteral, o.typeName )
+    o = XSD::XSDgDay.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::GDayLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -638,7 +642,7 @@ public
       "31+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSDgDay, str )
+      assertParsedResult( XSD::XSDgDay, str )
     end
 
     targets = [
@@ -650,14 +654,14 @@ public
 	"31Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDgDay.new( data ).to_s )
+      assert_equal( expected, XSD::XSDgDay.new( data ).to_s )
     end
   end
 
   def test_XSDgMonth
-    o = XSDgMonth.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( GMonthLiteral, o.typeName )
+    o = XSD::XSDgMonth.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::GMonthLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -672,7 +676,7 @@ public
       "12+13:30",
     ]
     targets.each do | str |
-      assertParsedResult( XSDgMonth, str )
+      assertParsedResult( XSD::XSDgMonth, str )
     end
 
     targets = [
@@ -684,14 +688,14 @@ public
 	"12Z" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDgMonth.new( data ).to_s )
+      assert_equal( expected, XSD::XSDgMonth.new( data ).to_s )
     end
   end
 
   def test_XSDHexBinary
-    o = XSDHexBinary.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( HexBinaryLiteral, o.typeName )
+    o = XSD::XSDHexBinary.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::HexBinaryLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -702,19 +706,33 @@ public
       "",
     ]
     targets.each do | str |
-      assert_equal( str, XSDHexBinary.new( str ).toString )
+      assert_equal( str, XSD::XSDHexBinary.new( str ).toString )
       assert_equal( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ),
-	XSDHexBinary.new( str ).data )
-      o = XSDHexBinary.new
+	XSD::XSDHexBinary.new( str ).data )
+      o = XSD::XSDHexBinary.new
       o.setEncoded( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ))
       assert_equal( str, o.toString )
+      o.setEncoded( str.unpack( "H*" )[ 0 ].tr( 'A-F', 'a-f' ))
+      assert_equal( str, o.toString )
+    end
+
+    targets = [
+      "0FG7",
+      "0fg7",
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError, d.to_s ) do
+	o = XSD::XSDHexBinary.new
+	o.setEncoded( d )
+	p o.toString
+      end
     end
   end
 
   def test_XSDBase64Binary
-    o = XSDBase64Binary.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( Base64BinaryLiteral, o.typeName )
+    o = XSD::XSDBase64Binary.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::Base64BinaryLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -725,18 +743,30 @@ public
       "",
     ]
     targets.each do | str |
-      assert_equal( str, XSDBase64Binary.new( str ).toString )
-      assert_equal( [ str ].pack( "m" ).chomp, XSDBase64Binary.new( str ).data )
-      o = XSDBase64Binary.new
+      assert_equal( str, XSD::XSDBase64Binary.new( str ).toString )
+      assert_equal( [ str ].pack( "m" ).chomp, XSD::XSDBase64Binary.new( str ).data )
+      o = XSD::XSDBase64Binary.new
       o.setEncoded( [ str ].pack( "m" ).chomp )
       assert_equal( str, o.toString )
+    end
+
+    targets = [
+      "-",
+      "*",
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError, d.to_s ) do
+	o = XSD::XSDBase64Binary.new
+	o.setEncoded( d )
+	p o.toString
+      end
     end
   end
 
   def test_XSDanyURI
-    o = XSDanyURI.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( AnyURILiteral, o.typeName )
+    o = XSD::XSDanyURI.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::AnyURILiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -750,14 +780,14 @@ public
       "HTTP://FOO/BAR%20%20?A+B",
     ]
     targets.each do | str |
-      assertParsedResult( XSDanyURI, str )
+      assertParsedResult( XSD::XSDanyURI, str )
     end
   end
 
   def test_XSDQName
-    o = XSDQName.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( QNameLiteral, o.typeName )
+    o = XSD::XSDQName.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::QNameLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -769,7 +799,7 @@ public
       "a:b",
     ]
     targets.each do | str |
-      assertParsedResult( XSDQName, str )
+      assertParsedResult( XSD::XSDQName, str )
     end
   end
 
@@ -779,9 +809,9 @@ public
   #
 
   def test_XSDInteger
-    o = XSDInteger.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( IntegerLiteral, o.typeName )
+    o = XSD::XSDInteger.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::IntegerLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -794,7 +824,7 @@ public
       -1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789,
     ]
     targets.each do | int |
-      assert_equal( int, XSDInteger.new( int ).data )
+      assert_equal( int, XSD::XSDInteger.new( int ).data )
     end
 
     targets = [
@@ -806,7 +836,7 @@ public
       "-1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
     ]
     targets.each do | str |
-      assert_equal( str, XSDInteger.new( str ).to_s )
+      assert_equal( str, XSD::XSDInteger.new( str ).to_s )
     end
 
     targets = [
@@ -820,7 +850,7 @@ public
       ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDInteger.new( data ).to_s )
+      assert_equal( expected, XSD::XSDInteger.new( data ).to_s )
     end
 
     targets = [
@@ -832,15 +862,15 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSDInteger.new( d )
+	XSD::XSDInteger.new( d )
       end
     end
   end
 
   def test_XSDLong
-    o = XSDLong.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( LongLiteral, o.typeName )
+    o = XSD::XSDLong.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::LongLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -852,7 +882,7 @@ public
       -9223372036854775808,
     ]
     targets.each do | lng |
-      assert_equal( lng, XSDLong.new( lng ).data )
+      assert_equal( lng, XSD::XSDLong.new( lng ).data )
     end
 
     targets = [
@@ -863,7 +893,7 @@ public
       "-9223372036854775808",
     ]
     targets.each do | str |
-      assert_equal( str, XSDLong.new( str ).to_s )
+      assert_equal( str, XSD::XSDLong.new( str ).to_s )
     end
 
     targets = [
@@ -873,7 +903,7 @@ public
       [ "-000123", "-123" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDLong.new( data ).to_s )
+      assert_equal( expected, XSD::XSDLong.new( data ).to_s )
     end
 
     targets = [
@@ -886,15 +916,15 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSDLong.new( d )
+	XSD::XSDLong.new( d )
       end
     end
   end
 
   def test_XSDInt
-    o = XSDInt.new
-    assert_equal( Namespace, o.typeNamespace )
-    assert_equal( IntLiteral, o.typeName )
+    o = XSD::XSDInt.new
+    assert_equal( XSD::Namespace, o.typeNamespace )
+    assert_equal( XSD::IntLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -906,7 +936,7 @@ public
       -2147483648,
     ]
     targets.each do | lng |
-      assert_equal( lng, XSDInt.new( lng ).data )
+      assert_equal( lng, XSD::XSDInt.new( lng ).data )
     end
 
     targets = [
@@ -917,7 +947,7 @@ public
       "-2147483648",
     ]
     targets.each do | str |
-      assert_equal( str, XSDInt.new( str ).to_s )
+      assert_equal( str, XSD::XSDInt.new( str ).to_s )
     end
 
     targets = [
@@ -927,7 +957,7 @@ public
       [ "-000123", "-123" ],
     ]
     targets.each do | data, expected |
-      assert_equal( expected, XSDInt.new( data ).to_s )
+      assert_equal( expected, XSD::XSDInt.new( data ).to_s )
     end
 
     targets = [
@@ -940,7 +970,7 @@ public
     ]
     targets.each do | d |
       assert_exception( XSD::ValueSpaceError ) do
-	XSDInt.new( d )
+	XSD::XSDInt.new( d )
       end
     end
   end
