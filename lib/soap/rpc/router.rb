@@ -11,6 +11,8 @@ require 'soap/processor'
 require 'soap/mapping'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
+require 'soap/streamHandler'
+require 'soap/mimemessage'
 
 
 module SOAP
@@ -67,13 +69,19 @@ class Router
     end
 
     opt = options
-    opt[:mimemessage] = nil
+    opt[:external_content] = nil
     header = SOAPHeader.new
     body = SOAPBody.new(soap_response)
     env = SOAPEnvelope.new(header, body)
     response_string = Processor.marshal(env, opt)
     conn_data.send_string = response_string
-    if mime = opt[:mimemessage]
+    if ext = opt[:external_content]
+      mime = MIMEMessage.new
+      ext.each do |k, v|
+      	mime.add_attachment(v.data)
+      end
+      mime.add_part(conn_data.send_string + "\r\n")
+      mime.close
       conn_data.send_string = mime.content_str
       conn_data.send_contenttype = mime.headers['content-type'].str
     end
@@ -86,12 +94,18 @@ class Router
     body = SOAPBody.new(fault(e))
     env = SOAPEnvelope.new(header, body)
     opt = options
-    opt[:mimemessage] = nil
+    opt[:external_content] = nil
     opt[:charset] = charset
     response_string = Processor.marshal(env, opt)
     conn_data = StreamHandler::ConnectionData.new(response_string)
     conn_data.is_fault = true
-    if mime = opt[:mimemessage]
+    if ext = opt[:external_content]
+      mime = MIMEMessage.new
+      ext.each do |k, v|
+      	mime.add_attachment(v.data)
+      end
+      mime.add_part(conn_data.send_string + "\r\n")
+      mime.close
       conn_data.send_string = mime.content_str
       conn_data.send_contenttype = mime.headers['content-type'].str
     end
@@ -104,9 +118,15 @@ private
     opt = options
     contenttype = conn_data.receive_contenttype
     if /#{MIMEMessage::MultipartContentType}/i =~ contenttype
+      opt[:external_content] = {}
       mime = MIMEMessage.parse("Content-Type: " + contenttype,
 	conn_data.receive_string)
-      opt[:mimemessage] = mime
+      mime.parts.each do |part|
+	value = Attachment.new(part.content)
+	value.contentid = part.contentid
+	obj = SOAPAttachment.new(value)
+	opt[:external_content][value.contentid] = obj
+      end
       opt[:charset] =
 	StreamHandler.parse_media_type(mime.root.headers['content-type'].str)
       env = Processor.unmarshal(mime.root.content, opt)

@@ -29,12 +29,7 @@ module Processor
       generator = create_generator(opt)
       marshalled_str = generator.generate(env, io)
       unless env.external_content.empty?
-	opt[:mimemessage] = mime = MIMEMessage.new
-	env.external_content.each do |k, v|
-	  mime.add_attachment(v.data)
-	end
-	mime.add_part(marshalled_str + "\r\n")
-	mime.close
+	opt[:external_content] = env.external_content
       end
       marshalled_str
     end
