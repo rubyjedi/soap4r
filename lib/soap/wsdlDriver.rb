@@ -144,7 +144,7 @@ class WSDLDriver
 	if ele = @elements[name]
 	  _obj2ele(obj, ele)
 	elsif type = @types[name]
-	  _obj2type(obj, type)
+	  obj2type(obj, type)
 	else
 	  raise RuntimeError.new("Cannot find name #{name} in schema.")
 	end
