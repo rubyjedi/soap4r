@@ -25,21 +25,6 @@ module SOAP
 
 module Marshallable
   @@typeNamespace = RPCUtils::RubyCustomTypeNamespace
-
-  def getInstanceVariables
-    if block_given?
-      self.instance_variables.each do | key |
-	yield( key, eval( key ))
-      end
-    else
-      self.instance_variables
-    end
-  end
-
-  # Not used now...
-  def setInstanceVariable( key, value )
-    eval( "@#{ key } = value" )
-  end
 end
 
 
@@ -120,35 +105,40 @@ module RPCUtils
       end
     else
       def createEmptyObject( klass )
-	yaName = '__original__initialize__renamed_by_SOAP4R__'
-	Thread.critical = true
-	klass.module_eval <<-EOS
-	  begin
-	    alias #{ yaName } initialize
-	  rescue NameError
-	  end
-	  def initialize; end
-	EOS
-   	obj = klass.new
-   	klass.module_eval <<-EOS
-  	  undef initialize
-  	  begin
-	    alias initialize #{ yaName }
-  	  rescue NameError
-  	  end
-   	EOS
-	Thread.critical = false
-   	obj
+	name = klass.name
+	# Below line is from TANAKA, Akira's amarshal.rb.
+	# See http://cvs.m17n.org/cgi-bin/viewcvs/amarshal/?cvsroot=ruby
+	::Marshal.load( sprintf( "\004\006o:%c%s\000", name.length + 5, name ))
       end
     end
 
-    # It breaks Thread.current[ :SOAPDataKey ].
     def setInstanceVariables( obj, values )
       values.each do | name, value |
-	# obj.instance_eval( "@#{ name } = Thread.current[ :SOAPDataKey ]" )
-	# Suggested by m_seki;
 	obj.instance_eval( "@#{ name } = value" )
       end
+    end
+
+    def setiv2obj( obj, node, map )
+      vars = {}
+      node.each do | name, value |
+	vars[ RPCUtils.getNameFromElementName( name ) ] =
+	  RPCUtils._soap2obj( value, map )
+      end
+      setInstanceVariables( obj, vars )
+    end
+
+    def setiv2soap( node, obj, map )
+      obj.instance_variables.each do | var |
+   	name = var.dup.sub!( /^@/, '' )
+	node.add( RPCUtils.getElementNameFromName( name ),
+     	  RPCUtils._obj2soap( obj.instance_eval( var ), map ))
+      end
+    end
+
+    def addiv2soap( node, obj, map )
+      ivars = SOAPStruct.new	# Undefined typeName.
+      setiv2soap( ivars, obj, map )
+      node.add( 'ivars', ivars )
     end
 
     # It breaks Thread.current[ :SOAPMarshalDataKey ].
@@ -339,17 +329,9 @@ module RPCUtils
       markMarshalledObj( obj, param )
       param.typeNamespace = typeNamespace
       if obj.type.ancestors.member?( Marshallable )
-	obj.getInstanceVariables do |var, data|
-	  name = var.dup.sub!( /^@/, '' )
-	  param.add( RPCUtils.getElementNameFromName( name ),
-	    RPCUtils._obj2soap( data, map ))
-	end
+	setiv2soap( param, obj, map )
       else
-        obj.instance_variables.each do |var|
-	  name = var.dup.sub!( /^@/, '' )
-	  param.add( RPCUtils.getElementNameFromName( name ),
-	    RPCUtils._obj2soap( obj.instance_eval( var ), map ))
-        end
+	setiv2soap( param, obj, map )
       end
       param
     end
@@ -364,12 +346,7 @@ module RPCUtils
 
       obj = createEmptyObject( objKlass )
       markUnmarshalledObj( node, obj )
-      vars = Hash.new
-      node.each do |name, value|
-	vars[ RPCUtils.getNameFromElementName( name ) ] =
-	  RPCUtils._soap2obj( value, map )
-      end
-      setInstanceVariables( obj, vars )
+      setiv2obj( obj, node, map )
       return true, obj
     end
   end
@@ -383,16 +360,16 @@ module RPCUtils
       param = SOAPStruct.new( "Map" )
       markMarshalledObj( obj, param )
       param.typeNamespace = ApacheSOAPTypeNamespace
-      i = 1
       obj.each do | key, value |
 	elem = SOAPStruct.new # Undefined typeName.
      	elem.add( "key", RPCUtils._obj2soap( key, map ))
   	elem.add( "value", RPCUtils._obj2soap( value, map ))
-	# param.add( "item#{ i }", elem )
      	# ApacheAxis allows only 'item' here.
   	param.add( "item", elem )
-	i += 1
       end
+#      unless obj.instance_variables.empty?
+#	addiv2soap( param, obj, map )
+#      end
       param
     end
 
@@ -407,12 +384,16 @@ module RPCUtils
 	obj[ RPCUtils._soap2obj( value[ 'key' ], map ) ] =
      	  RPCUtils._soap2obj( value[ 'value' ], map )
       end
+#      if node.members.include?( 'ivars' )
+#	setiv2obj( obj, node[ 'ivars' ], map )
+#      end
       return true, obj
     end
   end
 
   class RubytypeFactory_ < Factory
     TYPE_REGEXP = 'Regexp'
+    TYPE_RANGE = 'Range'
     TYPE_CLASS = 'Class'
     TYPE_MODULE = 'Module'
     TYPE_SYMBOL = 'Symbol'
@@ -441,22 +422,37 @@ module RPCUtils
 	  # Why Regexp#kcode returns lower case?  Deprecated?
 	  param.add( 'kcode', SOAPString.new( obj.kcode.upcase ))
 	end
+	unless obj.instance_variables.empty?
+	  addiv2soap( param, obj, map )
+	end
+	param
+      when Range
+	typeName = TYPE_RANGE
+	param = SOAPStruct.new( typeName  )
+	markMarshalledObj( obj, param )
+	param.typeNamespace = RubyTypeNamespace
+	param.add( 'begin', RPCUtils._obj2soap( obj.begin, map ))
+	param.add( 'end', RPCUtils._obj2soap( obj.end, map ))
+	param.add( 'exclude_end', SOAP::SOAPBoolean.new( obj.exclude_end? ))
+	unless obj.instance_variables.empty?
+	  addiv2soap( param, obj, map )
+	end
 	param
       when Hash
 	typeName = TYPE_HASH
 	param = SOAPStruct.new( typeName )
 	markMarshalledObj( obj, param )
 	param.typeNamespace = RubyTypeNamespace
-	i = 1
 	obj.each do | key, value |
 	  elem = SOAPStruct.new	# Undefined typeName.
 	  elem.add( "key", RPCUtils._obj2soap( key, map ))
 	  elem.add( "value", RPCUtils._obj2soap( value, map ))
-	  # param.add( "item#{ i }", elem )
 	  # ApacheAxis allows only 'item' here.
 	  param.add( "item", elem )
-	  i += 1
 	end
+#	unless obj.instance_variables.empty?
+#	  addiv2soap( param, obj, map )
+#	end
 	param
       when Class
 	if obj.name.empty?
@@ -494,10 +490,8 @@ module RPCUtils
 	param.typeNamespace = RubyTypeNamespace
 	param.add( 'message', RPCUtils._obj2soap( obj.message, map ))
 	param.add( 'backtrace', RPCUtils._obj2soap( obj.backtrace, map ))
-	obj.instance_variables.each do |var|
-	  name = var.dup.sub!( /^@/, '' )
-	  param.add( RPCUtils.getElementNameFromName( name ),
-	    RPCUtils._obj2soap( obj.instance_eval( var ), map ))
+	unless obj.instance_variables.empty?
+	  addiv2soap( param, obj, map )
 	end
 	param
       when Struct
@@ -507,11 +501,14 @@ module RPCUtils
 	param.typeNamespace = RubyTypeNamespace
 	param.add( 'type', typeElem = SOAPString.new( obj.type.to_s ))
 	memberElem = SOAPStruct.new
-	obj.members.each do |member|
+	obj.members.each do | member |
 	  memberElem.add( RPCUtils.getElementNameFromName( member ),
 	    RPCUtils._obj2soap( obj[ member ], map ))
 	end
 	param.add( 'member', memberElem )
+	unless obj.instance_variables.empty?
+	  addiv2soap( param, obj, map )
+	end
 	param
       when IO, Binding, Continuation, Data, Dir, File::Stat, MatchData, Method,
   	  Proc, Thread, ThreadGroup 
@@ -522,11 +519,7 @@ module RPCUtils
 	param = SOAPStruct.new( typeName )
 	markMarshalledObj( obj, param )
 	param.typeNamespace = typeNamespace
-      	obj.getInstanceVariables do |var, data|
-	  name = var.dup.sub!( /^@/, '' )
-	  param.add( RPCUtils.getElementNameFromName( name ),
-	    RPCUtils._obj2soap( data, map ))
-	end
+	setiv2soap( param, obj, map )
 	param
       else
 	typeName = getTypeName( obj.type ) ||
@@ -536,18 +529,10 @@ module RPCUtils
 	markMarshalledObj( obj, param )
 	param.typeNamespace = typeNamespace
 	if obj.type.ancestors.member?( Marshallable )
-	  obj.getInstanceVariables do |var, data|
-	    name = var.dup.sub!( /^@/, '' )
-	    param.add( RPCUtils.getElementNameFromName( name ),
-	      RPCUtils._obj2soap( data, map ))
-	  end
+	  setiv2soap( param, obj, map )
 	else
 	  # Should not be marshalled?
-	  obj.instance_variables.each do |var|
-	    name = var.dup.sub!( /^@/, '' )
-	    param.add( RPCUtils.getElementNameFromName( name ),
-	      RPCUtils._obj2soap( obj.instance_eval( var ), map ))
-	  end
+	  setiv2soap( param, obj, map )
 	end
 	param
       end
@@ -570,11 +555,23 @@ module RPCUtils
       case node.typeName
       when TYPE_REGEXP
 	source = node[ 'source' ].toString
-	options = node.include?( 'options' ) ? node[ 'options' ].data : nil
-	kcode = node.include?( 'kcode' ) ? node[ 'kcode' ].data : nil
+	options = node.members.include?( 'options' ) ? node[ 'options' ].data : nil
+	kcode = node.members.include?( 'kcode' ) ? node[ 'kcode' ].data : nil
 	obj = kcode ? Regexp.new( source, options, kcode ) :
 	  Regexp.new( source, options )
 	markUnmarshalledObj( node, obj )
+	if node.members.include?( 'ivars' )
+  	  setiv2obj( obj, node[ 'ivars' ], map )
+   	end
+      when TYPE_RANGE
+	first = RPCUtils._soap2obj( node[ 'begin' ], map )
+	last = RPCUtils._soap2obj( node[ 'end' ], map )
+	exclude_end = node[ 'exclude_end' ].data
+	obj = Range.new( first, last, exclude_end )
+	markUnmarshalledObj( node, obj )
+	if node.members.include?( 'ivars' )
+  	  setiv2obj( obj, node[ 'ivars' ], map )
+   	end
       when TYPE_HASH
 	obj = Hash.new
 	markUnmarshalledObj( node, obj )
@@ -582,6 +579,9 @@ module RPCUtils
 	  obj[ RPCUtils._soap2obj( value[ 'key' ], map ) ] =
 	    RPCUtils._soap2obj( value[ 'value' ], map )
 	end
+#	if node.members.include?( 'ivars' )
+#  	  setiv2obj( obj, node[ 'ivars' ], map )
+#   	end
       when TYPE_CLASS
 	obj = RPCUtils.getClassFromName( node[ 'name' ].data )
       when TYPE_MODULE
@@ -607,6 +607,9 @@ module RPCUtils
 	rescue NameError
 	  return false
 	end
+	if node.members.include?( 'ivars' )
+  	  setiv2obj( obj, node[ 'ivars' ], map )
+   	end
       else
 	conv, obj = exception2obj( node, map )
 	unless conv
@@ -630,14 +633,9 @@ module RPCUtils
       obj = klass.new( message )
       markUnmarshalledObj( node, obj )
       obj.set_backtrace( backtrace )
-      vars = Hash.new
-      node.each do |name, value|
-	if name != 'message' && name != 'backtrace'
-	  vars[ RPCUtils.getNameFromElementName( name ) ] =
-	    RPCUtils._soap2obj( value, map )
-	end
+      if node.members.include?( 'ivars' )
+	setiv2obj( obj, node[ 'ivars' ], map )
       end
-      setInstanceVariables( obj, vars )
       return true, obj
     end
 
@@ -677,13 +675,7 @@ module RPCUtils
 
 	obj = createEmptyObject( klass )
 	markUnmarshalledObj( node, obj )
-
-	vars = Hash.new
-	node.each do | name, value |
-	  vars[ RPCUtils.getNameFromElementName( name ) ] =
-	    RPCUtils._soap2obj( value, map )
-	end
-	setInstanceVariables( obj, vars )
+	setiv2obj( obj, node, map )
 
       rescue NameError
 	obj = nil
