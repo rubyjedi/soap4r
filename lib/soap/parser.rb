@@ -202,12 +202,9 @@ private
     o = nil
     if ele.name == EleEnvelope
       o = SOAPEnvelope.new
-      if mime = @opt[:mimemessage]
-	mime.parts.each do |part|
-	  value = Attachment.new(part.content)
-	  value.contentid = part.contentid
-	  child = SOAPAttachment.new(value)
-	  o.external_content[value.contentid] = child
+      if ext = @opt[:external_content]
+	ext.each do |k, v|
+	  o.external_content[k] = v
 	end
       end
     elsif ele.name == EleHeader

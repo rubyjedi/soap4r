@@ -12,6 +12,7 @@ require 'xsd/qname'
 require 'soap/element'
 require 'soap/baseData'
 require 'soap/streamHandler'
+require 'soap/mimemessage'
 require 'soap/mapping'
 require 'soap/mapping/wsdlRegistry'
 require 'soap/rpc/rpc'
@@ -272,11 +273,17 @@ class WSDLDriver
     end
 
     def invoke(req_env, op_info, opt)
-      opt[:mimemessage] = nil
+      opt[:external_content] = nil
       send_string = Processor.marshal(req_env, opt)
       log(DEBUG) { "invoke: sending string #{ send_string }" }
       conn_data = StreamHandler::ConnectionData.new(send_string)
-      if mime = opt[:mimemessage]
+      if ext = opt[:external_content]
+       	mime = MIMEMessage.new
+	ext.each do |k, v|
+	  mime.add_attachment(v.data)
+	end
+	mime.add_part(conn_data.send_string + "\r\n")
+	mime.close
 	conn_data.send_string = mime.content_str
 	conn_data.send_contenttype = mime.headers['content-type'].str
       end
@@ -290,11 +297,16 @@ class WSDLDriver
 
     def unmarshal(conn_data, opt)
       contenttype = conn_data.receive_contenttype
-      # detect multipart MIME message and parse
       if /#{MIMEMessage::MultipartContentType}/i =~ contenttype
+	opt[:external_content] = {}
 	mime = MIMEMessage.parse("Content-Type: " + contenttype,
 	  conn_data.receive_string)
-	opt[:mimemessage] = mime
+	mime.parts.each do |part|
+	  value = Attachment.new(part.content)
+	  value.contentid = part.contentid
+	  obj = SOAPAttachment.new(value)
+	  opt[:external_content][value.contentid] = obj
+	end
 	opt[:charset] = @mandatorycharset ||
 	  StreamHandler.parse_media_type(mime.root.headers['content-type'].str)
 	env = Processor.unmarshal(mime.root.content, opt)
