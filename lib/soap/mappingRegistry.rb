@@ -250,9 +250,17 @@ module RPCUtils
 	return nil
       end
 
-      param = SOAPStruct.new( RPCUtils.getElementNameFromName( obj.type.to_s ))
+      if obj.is_a?( ::SOAP::RPCUtils::Object )
+	typeNamespace = XSD::Namespace
+	typeName = XSD::AnyTypeLiteral
+      else
+	typeName = RPCUtils.getElementNameFromName( obj.type.name )
+	typeNamespace = getNamespace( obj.type ) || RubyTypeNamespace
+      end
+
+      param = SOAPStruct.new( typeName )
       markMarshalledObj( obj, param )
-      param.typeNamespace = getNamespace( obj.type ) || RubyTypeNamespace
+      param.typeNamespace = typeNamespace
       obj.members.each do |member|
 	param.add( RPCUtils.getElementNameFromName( member ),
 	  RPCUtils._obj2soap( obj[ member ], map ))
@@ -279,8 +287,6 @@ module RPCUtils
 
       obj = klass.new
       markUnmarshalledObj( node, obj )
-      obj.typeNamespace = node.typeNamespace
-      obj.typeName = node.typeName
 
       vars = Hash.new
       node.each do |name, value|
@@ -800,10 +806,8 @@ module RPCUtils
   ###
   ## Convert parameter
   #
-  # For type unknown object.
-  class Object
-    attr_accessor :typeName, :typeNamespace
-  end
+  # For anyType object.
+  class Object; end
 end
 
 
