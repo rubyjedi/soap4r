@@ -50,6 +50,15 @@ public
     assert_equal( NilLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    o = XSDNil.new( nil )
+    assert_equal( true, o.isNil )
+    assert_equal( nil, o.data )
+    assert_equal( "", o.to_s )
+    o = XSDNil.new( 'var' )
+    assert_equal( false, o.isNil )
+    assert_equal( 'var', o.data )
+    assert_equal( 'var', o.to_s )
   end
 
   def test_XSDBoolean
@@ -58,6 +67,17 @@ public
     assert_equal( BooleanLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      [ "true", true ],
+      [ "1", true ],
+      [ "false", false ],
+      [ "0", false ],
+    ]
+    targets.each do | data, expected |
+      assert_equal( expected, XSDBoolean.new( data ).data )
+      assert_equal( expected.to_s, XSDBoolean.new( data ).to_s )
+    end
   end
 
   def test_XSDString
@@ -66,6 +86,16 @@ public
     assert_equal( StringLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    str = "abc"
+    assert_equal( str, XSDString.new( str ).data )
+    assert_equal( str, XSDString.new( str ).to_s )
+    assert_exception( XSD::ValueSpaceError ) do
+      XSDString.new( "\0" )
+    end
+    assert_exception( XSD::ValueSpaceError ) do
+      p XSDString.new( "\xC0\xC0" ).to_s
+    end
   end
 
   def test_XSDDecimal
@@ -74,6 +104,65 @@ public
     assert_equal( DecimalLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      0,
+      1000000000,
+      -9999999999,
+      12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890,
+      12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890,
+      -1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789,
+    ]
+    targets.each do | dec |
+      assert_equal( dec.to_s, XSDDecimal.new( dec ).data )
+    end
+
+    targets = [
+      "0",
+      "0.00000001",
+      "1000000000",
+      "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+      "-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123.45678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+    ]
+    targets.each do | str |
+      assert_equal( str, XSDDecimal.new( str ).to_s )
+    end
+
+    targets = [
+      [ "-0", "0" ],
+      [ "+0", "0" ],
+      [ "0.0", "0" ],
+      [ "-0.0", "0" ],
+      [ "+0.0", "0" ],
+      [ "0.", "0" ],
+      [ ".0", "0" ],
+      [
+	"+0.12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+	"0.1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+      ],
+      [
+	".0000012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+	"0.000001234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+      ],
+      [
+	"-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890.",
+	"-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+      ],
+    ]
+    targets.each do | data, expected |
+      assert_equal( expected, XSDDecimal.new( data ).to_s )
+    end
+
+    targets = [
+      "0.000000000000a",
+      "00a.0000000000001",
+      "+-5",
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError ) do
+	XSDDecimal.new( d )
+      end
+    end
   end
 
   def test_XSDFloat
@@ -82,6 +171,62 @@ public
     assert_equal( FloatLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      3.14159265358979,
+      12.34e36,
+      1.4e-45,
+      -1.4e-45,
+    ]
+    targets.each do | f |
+      assert_equal( f, XSDFloat.new( f ).data )
+    end
+
+    targets = [
+      "3.141592654",
+      "1.234e+37",
+      "1.4e-45",
+      "-1.4e-45",
+    ]
+    targets.each do | f |
+      assert_equal( f, XSDFloat.new( f ).to_s )
+    end
+
+    targets = [
+      [ 3, "3" ], 	# should be 3.0?
+      [ -2, "-2" ],	# ditto
+      [ 3.14159265358979, "3.141592654" ],
+      [ 12.34e36, "1.234e+37" ],
+      [ 1.4e-45, "1.4e-45" ],
+      [ -1.4e-45, "-1.4e-45" ],
+      [ "1.4e", "1.4" ],
+      [ "12.34E36", "1.234e+37" ],
+      [ "1.4E-45", "1.4e-45" ],
+      [ "-1.4E-45", "-1.4e-45" ],
+      [ "1.4E", "1.4" ],
+    ]
+    targets.each do | f, str |
+      assert_equal( str, XSDFloat.new( f ).to_s )
+    end
+
+    assert_equal( "0", XSDFloat.new( +0.0 ).to_s )
+    assert_equal( "-0", XSDFloat.new( -0.0 ).to_s )
+    assert( XSDFloat.new( 0.0/0.0 ).data.nan? )
+    assert_equal( "INF", XSDFloat.new( 1.0/0.0 ).to_s )
+    assert_equal( 1, XSDFloat.new( 1.0/0.0 ).data.infinite? )
+    assert_equal( "-INF", XSDFloat.new( -1.0/0.0 ).to_s )
+    assert_equal( -1, XSDFloat.new( -1.0/0.0 ).data.infinite? )
+
+    targets = [
+      "0.000000000000a",
+      "00a.0000000000001",
+      "+-5",
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError ) do
+	XSDFloat.new( d )
+      end
+    end
   end
 
   def test_XSDDouble
@@ -90,6 +235,63 @@ public
     assert_equal( DoubleLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      3.14159265358979,
+      12.34e36,
+      1.4e-45,
+      -1.4e-45,
+    ]
+    targets.each do | f |
+      assert_equal( f, XSDDouble.new( f ).data )
+    end
+
+    targets = [
+      "3.14159265358979",
+      "1.234e+37",
+      "1.4e-45",
+      "-1.4e-45",
+    ]
+    targets.each do | f |
+      assert_equal( f, XSDDouble.new( f ).to_s )
+    end
+
+    targets = [
+      [ 3, "3" ],	# should be 3.0?
+      [ -2, "-2" ],	# ditto.
+      [ 3.14159265358979, "3.14159265358979" ],
+      [ 12.34e36, "1.234e+37" ],
+      [ 1.4e-45, "1.4e-45" ],
+      [ -1.4e-45, "-1.4e-45" ],
+      [ "1.4e", "1.4" ],
+      [ "12.34E36", "1.234e+37" ],
+      [ "1.4E-45", "1.4e-45" ],
+      [ "-1.4E-45", "-1.4e-45" ],
+      [ "1.4E", "1.4" ],
+    ]
+    targets.each do | f, str |
+      assert_equal( str, XSDDouble.new( f ).to_s )
+    end
+
+    assert_equal( "0", XSDFloat.new( +0.0 ).to_s )
+    assert_equal( "-0", XSDFloat.new( -0.0 ).to_s )
+    assert_equal( "NaN", XSDDouble.new( 0.0/0.0 ).to_s )
+    assert( XSDDouble.new( 0.0/0.0 ).data.nan? )
+    assert_equal( "INF", XSDDouble.new( 1.0/0.0 ).to_s )
+    assert_equal( 1, XSDDouble.new( 1.0/0.0 ).data.infinite? )
+    assert_equal( "-INF", XSDDouble.new( -1.0/0.0 ).to_s )
+    assert_equal( -1, XSDDouble.new( -1.0/0.0 ).data.infinite? )
+
+    targets = [
+      "0.000000000000a",
+      "00a.0000000000001",
+      "+-5",
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError ) do
+	XSDDouble.new( d )
+      end
+    end
   end
 
   def test_XSDHexBinary
@@ -98,6 +300,21 @@ public
     assert_equal( HexBinaryLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      "abcdef",
+      "‚È‚Ð",
+      "\0",
+      "",
+    ]
+    targets.each do | str |
+      assert_equal( str, XSDHexBinary.new( str ).toString )
+      assert_equal( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ),
+	XSDHexBinary.new( str ).data )
+      o = XSDHexBinary.new
+      o.setEncoded( str.unpack( "H*" )[ 0 ].tr( 'a-f', 'A-F' ))
+      assert_equal( str, o.toString )
+    end
   end
 
   def test_XSDBase64Binary
@@ -106,6 +323,20 @@ public
     assert_equal( Base64BinaryLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      "abcdef",
+      "‚È‚Ð",
+      "\0",
+      "",
+    ]
+    targets.each do | str |
+      assert_equal( str, XSDBase64Binary.new( str ).toString )
+      assert_equal( [ str ].pack( "m" ).chomp, XSDBase64Binary.new( str ).data )
+      o = XSDBase64Binary.new
+      o.setEncoded( [ str ].pack( "m" ).chomp )
+      assert_equal( str, o.toString )
+    end
   end
 
   def test_XSDanyURI
@@ -289,6 +520,7 @@ public
     assert_equal( true, o.isNil )
 
     targets = [
+      "P1Y2M3DT4H5M6S",
       "P1234Y5678M9012DT3456H7890M1234.5678S",
       "P0DT3456H7890M1234.5678S",
       "P1234Y5678M9012D",
@@ -314,6 +546,10 @@ public
     end
 
     targets = [
+      [ "P0Y0M0DT0H0M0S",
+        "P0D" ],
+      [ "-P0DT0S",
+        "-P0D" ],
       [ "P01234Y5678M9012DT3456H7890M1234.5678S",
         "P1234Y5678M9012DT3456H7890M1234.5678S" ],
       [ "P1234Y005678M9012DT3456H7890M1234.5678S",
@@ -535,6 +771,57 @@ public
     assert_equal( IntegerLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      0,
+      1000000000,
+      -9999999999,
+      12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890,
+      12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890,
+      -1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789,
+    ]
+    targets.each do | int |
+      assert_equal( int, XSDInteger.new( int ).data )
+    end
+
+    targets = [
+      "0",
+      "1000000000",
+      "-9999999999",
+      "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+      "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+      "-1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+    ]
+    targets.each do | str |
+      assert_equal( str, XSDInteger.new( str ).to_s )
+    end
+
+    targets = [
+      [ "-0", "0" ],
+      [ "+0", "0" ],
+      [ "000123", "123" ],
+      [ "-000123", "-123" ],
+      [
+	"+12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+	"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+      ],
+    ]
+    targets.each do | data, expected |
+      assert_equal( expected, XSDInteger.new( data ).to_s )
+    end
+
+    targets = [
+      "0.0",
+      "-5.2",
+      "0.000000000000a",
+      "+-5",
+      "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890."
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError ) do
+	XSDInteger.new( d )
+      end
+    end
   end
 
   def test_XSDLong
@@ -543,6 +830,52 @@ public
     assert_equal( LongLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      0,
+      123,
+      -123,
+      9223372036854775807,
+      -9223372036854775808,
+    ]
+    targets.each do | lng |
+      assert_equal( lng, XSDLong.new( lng ).data )
+    end
+
+    targets = [
+      "0",
+      "123",
+      "-123",
+      "9223372036854775807",
+      "-9223372036854775808",
+    ]
+    targets.each do | str |
+      assert_equal( str, XSDLong.new( str ).to_s )
+    end
+
+    targets = [
+      [ "-0", "0" ],
+      [ "+0", "0" ],
+      [ "000123", "123" ],
+      [ "-000123", "-123" ],
+    ]
+    targets.each do | data, expected |
+      assert_equal( expected, XSDLong.new( data ).to_s )
+    end
+
+    targets = [
+      9223372036854775808,
+      -9223372036854775809,
+      "0.0",
+      "-5.2",
+      "0.000000000000a",
+      "+-5",
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError ) do
+	XSDLong.new( d )
+      end
+    end
   end
 
   def test_XSDInt
@@ -551,6 +884,52 @@ public
     assert_equal( IntLiteral, o.typeName )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
+
+    targets = [
+      0,
+      123,
+      -123,
+      2147483647,
+      -2147483648,
+    ]
+    targets.each do | lng |
+      assert_equal( lng, XSDInt.new( lng ).data )
+    end
+
+    targets = [
+      "0",
+      "123",
+      "-123",
+      "2147483647",
+      "-2147483648",
+    ]
+    targets.each do | str |
+      assert_equal( str, XSDInt.new( str ).to_s )
+    end
+
+    targets = [
+      [ "-0", "0" ],
+      [ "+0", "0" ],
+      [ "000123", "123" ],
+      [ "-000123", "-123" ],
+    ]
+    targets.each do | data, expected |
+      assert_equal( expected, XSDInt.new( data ).to_s )
+    end
+
+    targets = [
+      2147483648,
+      -2147483649,
+      "0.0",
+      "-5.2",
+      "0.000000000000a",
+      "+-5",
+    ]
+    targets.each do | d |
+      assert_exception( XSD::ValueSpaceError ) do
+	XSDInt.new( d )
+      end
+    end
   end
 end
 
@@ -560,7 +939,7 @@ if $0 == __FILE__
     suite = TestXSD.suite
   else
     suite = RUNIT::TestSuite.new
-    ARGV.each do |testmethod|
+    ARGV.each do | testmethod |
       suite.add_test( TestXSD.new( testmethod ))
     end
   end
