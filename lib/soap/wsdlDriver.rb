@@ -142,7 +142,6 @@ public
 
   def setWireDumpFileBase( base )
     @dumpFileBase = base
-    @handler.dumpFileBase = @dumpFileBase if @handler
   end
 
   def setHttpProxy( httpProxy )
@@ -160,7 +159,6 @@ private
     @handler = HTTPPostStreamHandler.new( endpointUrl, @httpProxy,
       Charset.getEncodingLabel )
     @handler.dumpDev = @wireDumpDev
-    @handler.dumpFileBase = @dumpFileBase
   end
 
   def createMethodObject( names, params )
