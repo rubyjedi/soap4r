@@ -30,13 +30,12 @@ module SOAP
 
 class RPCRouter
   include SOAP
-  include Processor
   include RPCUtils
 
   class RPCRoutingError < Error; end
 
   attr_reader :actor
-  attr_accessor :allowUnqualifiedElement
+  attr_accessor :allowUnqualifiedElement, :defaultEncodingStyle
   attr_accessor :mappingRegistry
 
   def initialize( actor )
@@ -45,8 +44,8 @@ class RPCRouter
     @methodName = {}
     @method = {}
     @allowUnqualifiedElement = false
+    @defaultEncodingStyle = nil
     @mappingRegistry = nil
-    initParser
   end
 
   # Method definition.
@@ -75,7 +74,7 @@ class RPCRouter
 
       # Is this right?
       soapString = soapString.dup
-      header, body = unmarshal( soapString )
+      header, body = Processor.unmarshal( soapString, getOpt )
 
       # So far, header is omitted...
 
@@ -95,7 +94,7 @@ class RPCRouter
 
     header = SOAPHeader.new
     body = SOAPBody.new( soapResponse )
-    responseString = marshal( header, body )
+    responseString = Processor.marshal( header, body, getOpt )
 
     return responseString, isFault
   end
@@ -106,18 +105,12 @@ class RPCRouter
 
     header = SOAPHeader.new
     body = SOAPBody.new( soapResponse )
-    responseString = marshal( header, body )
+    responseString = Processor.marshal( header, body, getOpt )
 
     responseString
   end
 
 private
-
-  def initParser
-    opt = {}
-    opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
-    Processor.setDefaultParser( opt )
-  end
 
   # Create new response.
   def createResponse( namespace, methodName, result )
@@ -186,6 +179,17 @@ private
 
   def fqName( namespace, methodName )
     "#{ namespace }:#{ methodName }"
+  end
+
+  def getOpt
+    opt = {}
+    if @defaultEncodingStyle
+      opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
+    end
+    if @allowUnqualifiedElement
+      opt[ 'allowUnqualifiedElement' ] = true
+    end
+    opt
   end
 end
 
