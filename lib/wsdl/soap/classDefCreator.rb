@@ -53,7 +53,7 @@ private
 
   def dump_element
     @elements.collect { |ele|
-      dump_classdef(ele)
+      ele.local_complextype ? dump_classdef(ele) : ''
     }.join("\n")
   end
 
