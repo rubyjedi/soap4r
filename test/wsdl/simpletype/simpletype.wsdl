@@ -34,10 +34,19 @@
     <part name="parameters" element="xsd:string"/>
   </message>
 
+  <message name="versionmsg">
+    <part name="version" element="tns:version"/>
+  </message>
+
   <portType name="ping_port_type">
     <operation name="ping">
       <input message="tns:ping_in"/>
       <output message="tns:ping_out"/>
+    </operation>
+
+    <operation name="echo_version">
+      <input message="tns:versionmsg"/>
+      <output message="tns:versionmsg"/>
     </operation>
   </portType>
 
