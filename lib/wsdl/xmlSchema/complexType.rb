@@ -74,6 +74,14 @@ class ComplexType < Info
     end
   end
 
+  def setAllElements( elements )
+    @content = Content.new
+    @content.type = 'all'
+    elements.each do | element |
+      @content << element
+    end
+  end
+
   def parseElement( element )
     case element
     when AllName, SequenceName, ChoiceName

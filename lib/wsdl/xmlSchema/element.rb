@@ -27,14 +27,16 @@ module WSDL
 class Element < Info
   attr_accessor :name	# required
   attr_accessor :type
+  attr_accessor :localComplexType
   attr_accessor :maxOccurs
   attr_accessor :minOccurs
   attr_accessor :nillable
 
-  def initialize( name = nil, type = XSD::XSDAnyType::Type )
+  def initialize( name = nil, type = XSD::AnyTypeName )
     super()
     @name = name
     @type = type
+    @localComplexType = nil
     @maxOccurs = 1
     @minOccurs = 1
     @nillable = nil
@@ -47,12 +49,9 @@ class Element < Info
   def parseElement( element )
     case element
     when ComplexTypeName
-      raise NotImplementedError.new( "Local complex type is not supported now." )
-#      o = ComplexType.new
-#      @type = XSD::QName.new( targetNamespace, createAnonymousTypeName )
-#      o.setAnonymousTypeName( @type )
-#      root.addType( o )
-#      o
+      @type = nil
+      @localComplexType = ComplexType.new
+      @localComplexType
     else
       nil
     end
