@@ -105,6 +105,9 @@ public
     @mappingRegistry = nil	# for unmarshal
     @wsdlMappingRegistry = nil	# for marshal
     @actor = self.class.name
+    @endpointUrl = nil
+    @wireDumpDev = nil
+    @dumpFileBase = nil
 
     @opt = opt.dup
     @opt[ 'decodeComplexTypes' ] = @wsdl.getComplexTypesWithMessages
@@ -120,6 +123,11 @@ public
       operation, paramNames, = value
       addMethodInterface( operationName.name, paramNames )
     end
+  end
+
+  def setEndpointUrl( endpointUrl )
+    @endpointUrl = endpointUrl
+    @handler.endpointUrl = @endpointUrl if @handler
   end
 
   def setWireDumpDev( dumpDev )
@@ -143,7 +151,7 @@ private
     unless @port.soapAddress
       raise RuntimeError.new( "soap:address element not found in WSDL." )
     end
-    endpointUrl = @port.soapAddress.location
+    endpointUrl = @endpointUrl || @port.soapAddress.location
     @handler = HTTPPostStreamHandler.new( endpointUrl )
     @handler.dumpDev = @wireDumpDev
     @handler.dumpFileBase = @dumpFileBase
