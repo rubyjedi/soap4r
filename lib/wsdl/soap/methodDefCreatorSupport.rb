@@ -55,6 +55,8 @@ module MethodDefCreatorSupport
     input = operation.input
     output = operation.output
     fault = operation.fault
+    fault_string = fault.empty? ? '#   (undefined)' :
+      (fault.collect { |f| dump_inout_type(f).chomp }).join(', ')
     signature = "#{ name }#{ dump_inputparam(input) }"
     return <<__EOD__
 # SYNOPSIS
@@ -67,7 +69,7 @@ module MethodDefCreatorSupport
 #{ dump_inout_type(output).chomp }
 #
 # RAISES
-#{ (fault.collect { |f| dump_inout_type(f).chomp }).join(', ') }
+#{ fault_string }
 #
 __EOD__
   end
@@ -84,7 +86,7 @@ __EOD__
         return params
       end
     end
-    "#    N/A\n"
+    "#   N/A\n"
   end
   module_function :dump_inout_type
 
