@@ -1,6 +1,6 @@
 =begin
 SOAP4R - XML Schema Datatype implementation.
-Copyright (C) 2000, 2001 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001, 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -63,6 +63,7 @@ module XSD
   AttrNilName = QName.new( InstanceNamespace, NilLiteral )
 
   AnyTypeName = QName.new( Namespace, AnyTypeLiteral )
+  AnySimpleTypeName = QName.new( Namespace, AnySimpleTypeLiteral )
 
   class Error < StandardError; end
   class ValueSpaceError < Error; end
@@ -108,6 +109,7 @@ public
 
   def initialize( initObj = nil )
     super()
+    @type = Type
     @data = nil
     @isNil = true
     set( initObj ) if initObj
