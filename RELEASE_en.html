@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 27, 2001<br />
+Last modified: August 24, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.6
+Target SOAP4R version: SOAP4R/1.3.7
 </p>
 
 <ol>
@@ -50,17 +50,35 @@ Target SOAP4R version: SOAP4R/1.3.6
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<p>Many feedbacks from Michael Neumann.  Thanks!</p>
+<p>
+Feedback from
+<a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
+and Michael Neumann.  Thanks!
+</p>
 
 <ul>
-<li>hexBinary type: Added.</li>
-<li>nil type: Should not be xsd:nil but xsi:nil.</li>
-<li>Added StandaloneServer implementation.  Thanks to Michael Neumann!</li>
-<li>Illegal parsing of XMLDecl.  Fixed.</li>
-<li>RPC's 'inout' param was not supported.  Fixed.  Thanks to Michael Neumann!</li>
-<li>URb::Generic#path returns '' when abs_path is empty (such as http://foo).
-Added checking code.</li>
-<li>Use http-access2 instead of original HTTP implementation.  http-access2 supports HTTP/1.1's persistent connection.</li>
+<li>Datatypes:
+<ul>
+<li>All datatypes try to keep nil correctly.</li>
+<li>XSDInt/Integer/Long: to_i -&gt; Integer() to detect format error.</li>
+<li>XSDDateTime, XSDDate, XSDTime: Add trailing 'Z' to indicate UTC.</li>
+<li>SOAPStruct: Accept untyped struct.</li>
+<li>Map(Hash): Let &lt;item&gt; untyped.</li>
+<li>Apache allows only 'item' in Map type.</li>
+</ul></li>
+
+<li>Stream handler:
+<ul>
+<li>Removed MPOST support.</li>
+<li>ECONNRESET was not caught.  Fixed.</li>
+<li>Added timeout support.</li>
+</ul></li>
+
+<li>Others:
+<ul>
+<li>Changed using URI library: URb -&gt; URI; following its name change.</li>
+<li>Added NQXML/1.1.0 support.  A XMLDecl now recognized as a XMLDecl, not a PI.</li>
+</ul></li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -88,9 +106,6 @@ Followings are redistributed files in redist/.
 
 <dt class="path">parsedate3.rb</dt>
 <dd>by Funaba-san (<a href="http://www.kt.rim.or.jp/~tadf/ruby-en.html">http://www.kt.rim.or.jp/~tadf/ruby-en.html</a>)</dd>
-
-<dt class="path">URb</dt>
-<dd>by akira yamada-san: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=URb">[RAA:URb]</a></dd>
 
 <dt class="path">GServer</dt>
 <dd>by John W. Small</dd>
@@ -240,6 +255,36 @@ Only xsi:type in SOAP Encoding is checked</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.7 - August 24, 2001</dt>
+<dd>Feedback from
+<a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>
+and Michael Neumann.  Thanks!
+
+<ul>
+<li>Datatypes:
+<ul>
+<li>All datatypes try to keep nil correctly.</li>
+<li>XSDInt/Integer/Long: to_i -&gt; Integer() to detect format error.</li>
+<li>XSDDateTime, XSDDate, XSDTime: Add trailing 'Z' to indicate UTC.</li>
+<li>SOAPStruct: Accept untyped struct.</li>
+<li>Map(Hash): Let &lt;item&gt; untyped.</li>
+<li>Apache allows only 'item' in Map type.</li>
+</ul></li>
+
+<li>Stream handler:
+<ul>
+<li>Removed MPOST support.</li>
+<li>ECONNRESET was not caught.  Fixed.</li>
+<li>Added timeout support.</li>
+</ul></li>
+
+<li>Others:
+<ul>
+<li>Changed using URI library: URb -&gt; URI; following its name change.</li>
+<li>Added NQXML/1.1.0 support.  A XMLDecl now recognized as a XMLDecl, not a PI.</li>
+</ul></li>
+</ul></dd>
+
 <dt>1.3.6 - July 27, 2001</dt>
 <dd>Many feedbacks from Michael Neumann.  Thanks!
 
@@ -252,7 +297,7 @@ Only xsi:type in SOAP Encoding is checked</li>
 <li>URb::Generic#path returns '' when abs_path is empty (such as http://foo).
 Added checking code.</li>
 <li>Use http-access2 instead of original HTTP implementation.  http-access2 supports HTTP/1.1's persistent connection.</li>
-</ul>
+</ul></dd>
 
 <dt>1.3.5 - July 14, 2001</dt>
 <dd>Many feedbacks from Michael Neumann.
