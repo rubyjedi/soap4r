@@ -21,7 +21,7 @@ require 'soap/qname'
 module SOAP
 
 
-Version = '1.5.0-devel'
+Version = '1.4.8'
 
 EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
 EncodingNamespace = 'http://schemas.xmlsoap.org/soap/encoding/'
