@@ -29,35 +29,33 @@ class ComplexType < Info
   attr_reader :name
   attr_accessor :complexContent
   attr_accessor :content
+  attr_reader :attributes
 
-  def initialize
-    super
-    @name = nil
+  def initialize( name = nil )
+    super()
+    @name = name
     @complexContent = nil
     @content = nil
-    @anonymousType = false
-  end
-
-  def setAnonymousTypeName( name )
-    @name = name
-    @anonymousType = true
-  end
-
-  def isAnonymousType
-    @anonymousType
+    @attributes = NamedElements.new
   end
 
   def targetNamespace
     parent.targetNamespace
   end
 
-  def addSequenceElements( elements )
-    unless @content
-      @content = Content.new( self )
+  def eachContent
+    if content
+      content.each do | item |
+	yield( item )
+      end
     end
-    @content.type = Content::TypeSequence
-    elements.each do | element |
-      @content.addElement( element )
+  end
+
+  def eachElement
+    if content
+      content.elements.each do | name, element |
+	yield( name, element )
+      end
     end
   end
 
@@ -68,20 +66,32 @@ class ComplexType < Info
     nil
   end
 
-  ComplexContentName = XSD::QName.new( XSD::Namespace, 'complexContent' )
-  def parseElement( element )
-    case element
-    when ComplexContentName
-      o = ComplexContent.new
-      @complexContent = o
-      o
-    else
-      @content = Content.new( self )
-      @content.parseElement( element )
+  def setSequenceElements( elements )
+    @content = Content.new
+    @content.type = 'sequence'
+    elements.each do | element |
+      @content << element
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
+  def parseElement( element )
+    case element
+    when AllName, SequenceName, ChoiceName
+      @content = Content.new
+      @content.type = element.name
+      @content
+    when ComplexContentName
+      @complexContent = ComplexContent.new
+      @complexContent
+    when AttributeName
+      o = Attribute.new
+      @attributes << o
+      o
+    else
+      nil
+    end
+  end
+
   def parseAttr( attr, value )
     case attr
     when NameAttrName
