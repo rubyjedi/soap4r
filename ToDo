@@ -54,8 +54,6 @@
   mappingRegistry.
 * wsdlRouter: return value must be converted to the specified element name,
   not "fooResponse" style.
-* Implement message router: lib/soap/msgRouter.rb.
-  * Messaging sample.
 * Support all derived built-in types in XML Schema Part2 Sec. 3.2.
   * normalizedString, token, language, NMTOKEN, NMTOKENS, Name, NCName, ID,
     IDREF, IDREFS, ENTITY, ENTITIES
@@ -94,3 +92,5 @@
 * style="document" rpc driver 
 * wsdl2ruby literal support.
 * WSDL attribute support.
+* Implement message router: lib/soap/msgRouter.rb.
+  * Messaging sample.
