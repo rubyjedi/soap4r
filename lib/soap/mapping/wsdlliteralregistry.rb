@@ -45,11 +45,12 @@ class WSDLLiteralRegistry < Factory
     raise MappingError.new("Cannot map #{ obj.class.name } to SOAP/OM.")
   end
 
+  # node should be a SOAPElement
   def soap2obj(node)
-    typestr = Mapping.elename2name(node.type.name)
+    typestr = Mapping.elename2name(node.elename.name)
     klass = Mapping.class_from_name(typestr)
     begin
-      return unknownsoap2obj(node, klass)
+      return soapele2obj(node, klass)
     rescue MappingError
     end
     if @excn_handler_soap2obj
@@ -83,7 +84,7 @@ private
           child_ele))
       end
     else
-      raise MappingError.new("Illegal schema?")
+      raise MappingError.new('Illegal schema?')
     end
     o
   end
@@ -117,7 +118,7 @@ private
   end
 
   def unknownobj2soap(obj, name)
-    if obj.class.class_variables.include?("@@schema_element")
+    if obj.class.class_variables.include?('@@schema_element')
       ele = SOAPElement.new(name)
       add_elements2soap(obj, ele)
       add_attributes2soap(obj, ele)
@@ -130,7 +131,7 @@ private
   end
 
   def add_elements2soap(obj, ele)
-    elements = obj.class.class_eval("@@schema_element")
+    elements = obj.class.class_eval('@@schema_element')
     elements.each do |elename, type|
       child = Mapping.find_attribute(obj, elename)
       name = ::XSD::QName.new(nil, elename)
@@ -145,9 +146,9 @@ private
   end
   
   def add_attributes2soap(obj, ele)
-    attributes = obj.class.class_eval("@@schema_attribute")
-    attributes.each do |attrname|
-      attr = Mapping.find_attribute(obj, "attr_" + attrname)
+    attributes = obj.class.class_eval('@@schema_attribute')
+    attributes.each do |attrname, param|
+      attr = Mapping.find_attribute(obj, 'attr_' + attrname)
       ele.extraattr[attrname] = attr
     end
   end
@@ -164,10 +165,10 @@ private
     soap_obj
   end
 
-  def unknownsoap2obj(node, obj_class)
+  def soapele2obj(node, obj_class)
     obj = create_empty_object(obj_class)
     mark_unmarshalled_obj(node, obj)
-    if obj_class.class_variables.include?("@@schema_element")
+    if obj_class.class_variables.include?('@@schema_element')
       add_elements2obj(node, obj)
       add_attributes2obj(node, obj)
     else
@@ -181,16 +182,27 @@ private
   end
 
   def add_elements2obj(node, obj)
+    elements = {}
+    as_array = []
+    obj.class.class_eval('@@schema_element').each do |name, class_name|
+      if class_name.sub!(/\[\]$/, '')
+        as_array << class_name
+      end
+      elements[name] = class_name
+    end
     vars = {}
-    elements = obj.class.class_eval("@@schema_element")
-    elements.each do |elename, class_name|
-      if node[elename]
-        if class_name
-          child = unknownsoap2obj(node[elename], Mapping.class_from_name(class_name))
-        else
-          child = Mapping.soap2obj(node[elename])
-        end
-        vars[elename] = child
+    node.each do |name, value|
+      class_name = elements[name]
+      klass = Mapping.class_from_name(class_name)
+      if klass.ancestors.include?(::SOAP::SOAPBasetype)
+        child = klass.new(value.data).data
+      else
+        child = soapele2obj(value, klass)
+      end
+      if as_array.include?(class_name)
+        (vars[name] ||= []) << child
+      else
+        vars[name] = child
       end
     end
     Mapping.set_instance_vars(obj, vars)
@@ -199,10 +211,17 @@ private
   def add_attributes2obj(node, obj)
     Mapping.set_instance_vars(obj, {'__soap_attribute' => {}})
     vars = {}
-    attributes = obj.class.class_eval("@@schema_attribute")
-    attributes.each do |attrname|
+    attributes = obj.class.class_eval('@@schema_attribute')
+    attributes.each do |attrname, class_name|
       attr = node.extraattr[::XSD::QName.new(nil, attrname)]
-      vars['attr_' + attrname] = attr if attr
+      next if attr.nil? or attr.empty?
+      klass = Mapping.class_from_name(class_name)
+      if klass.ancestors.include?(::SOAP::SOAPBasetype)
+        child = klass.new(attr).data
+      else
+        child = attr
+      end
+      vars['attr_' + attrname] = child
     end
     Mapping.set_instance_vars(obj, vars)
   end
