@@ -41,10 +41,9 @@ class ClassDefCreator
 	result << "\n"
       end
 
-      # ??
-      @simpletypes.each do |type|
-        result << dump_simpletypedef(type)
-      end
+      result << @simpletypes.collect { |type|
+        dump_simpletypedef(type)
+      }.join("\n")
     end
     result
   end
@@ -79,10 +78,18 @@ private
     init_lines = ""
     params = []
     complextype.each_element do |element|
-      c.def_attr(element.name.name, true, safevarname(element.name.name))
-      name = safevarname(element.name.name)
-      init_lines << "@#{ name } = #{ name }\n"
-      params << "#{ name } = nil"
+      name = element.name.name
+      varname = safevarname(name)
+      c.def_attr(name, true, varname)
+      init_lines << "@#{ varname } = #{ varname }\n"
+      params << "#{ varname } = nil"
+    end
+    complextype.attributes.each do |attribute|
+      name = "attr_" + attribute.name
+      varname = safevarname(name)
+      c.def_attr(name, true, varname)
+      init_lines << "@#{ varname } = #{ varname }\n"
+      params << "#{ varname } = nil"
     end
     c.def_method("initialize", *params) do
       init_lines
