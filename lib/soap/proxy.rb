@@ -83,7 +83,7 @@ class SOAPProxy
     if ( @method.has_key?( methodName ))
       method = @method[ methodName ]
     else
-      raise SOAP::MethodDefinitionError.new( 'Method: ' << methodName << ' not defined.' )
+      raise SOAP::RPCUtils::MethodDefinitionError.new( 'Method: ' << methodName << ' not defined.' )
     end
 
     Request.new( method, values )
@@ -103,7 +103,7 @@ class SOAPProxy
 
     # StreamHandler returns receiveCharset to use.
     if receiveCharset
-      receiveString.sub!( /^([^>]*)\s+encoding=(['"]).*\2/ ) { $1 }
+      receiveString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
 
       # For NQXML Parser.
       if SOAP.const_defined?( "SOAPNQXMLLightWeightParser" )
