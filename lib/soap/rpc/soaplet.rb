@@ -38,6 +38,9 @@ public
   # A factory must respond to :create.
   #
   def add_rpc_request_servant(factory, namespace, mapping_registry = nil)
+    unless factory.respond_to?(:create)
+      raise TypeError.new("factory must respond to 'create'")
+    end
     router = setup_request_router(namespace)
     router.factory = factory
     router.mapping_registry = mapping_registry
@@ -52,6 +55,9 @@ public
   alias add_servant add_rpc_servant
 
   def add_rpc_request_headerhandler(factory)
+    unless factory.respond_to?(:create)
+      raise TypeError.new("factory must respond to 'create'")
+    end
     @headerhandlerfactory << factory
   end
 
