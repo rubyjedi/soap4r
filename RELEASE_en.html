@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: June 21, 2001<br />
+Last modified: July 10, 2001<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.3.3
+Target SOAP4R version: SOAP4R/1.3.4
 </p>
 
 <ol>
@@ -57,48 +57,65 @@ and Michael Neumann.  Thanks!
 </p>
 
 <ul>
-<li>Added SOAP4R Installer by Michael Neumann.  Thanks!</li>
 <li>Types changed:
   <ul>
-    <li>Boolean: Accepts 1 and 0 in addition to true and falue.</li>
-    <li>Float: handles single-precision 32-bit floating point.
-        Ruby's float is doule-precision.</li>
-    <li>Double: Added.  Mapped to Ruby's Float.</li>
-    <li>DateTime: Added TZ support.</li>
-    <li>Long: Added.</li>
-    <li>Int: Changed class hierarchy; derived from Long now.</li>
-    <li>Array: Added 'position' and 'offset' support.</li>
-    <li>Array: Added M-D Array support.</li>
-    <li>Decimal: Added but it's incomplete now.</li>
+    <li>Array: Incomplete sparse array support.  Fixed.</li>
+    <li>Date: Added.</li>
+    <li>Time: Added.</li>
+    <li>DateTime: Added precision of time support.</li>
+    <li>String: Default data should not be nil but ''.</li>
+    <li>Nil: Attribute value of xsi:nil might be '1' instead of 'true'.  Fixed.</li>
   </ul>
 </li>
-<li>Illegal error message when a type not found in SOAP-ENC.</li>
-<li>Tries to transmit \r safely.  To be checked...</li>
-<li>Parse Fault items like 'faultcode' as same as Body ie. href/id.</li>
-<li>rpcUtils.rb was completely re-written.
+
+<li>Supported XML parser:
   <ul>
-    <li>Added mappingRegistry interface.</li>
-    <li>Changed soap2obj and obj2soap's interface.</li>
-    <li>Bignum might be int or integer.  It's dependent on platform.
-        Changed to check range  -2147483648~+2147483647 itself.</li>
-    <li>ary2md: Added.  Converting Array ((of Array)...) to M-D Array.</li>
-    <li>struct2obj: Illegal dependency on ordering of Struct#members.  Fixed.</li>
-    <li>Ruby's Array should be converted to SOAP's Array of anyType.  Fixed.</li>
+    <li>Added SOAPXMLParser and SOAPSAXDriver for XMLParser which uses expat.
+        You can get the module from RAA: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">XMLParser module</a>.<br/>
+        To use XMLParser -&gt; add &quot;require 'soap/xmlparser'&quot;.<br/>
+        To use SAX driver of XMLParser -&gt; add &quot;require 'soap/saxdriver'&quot;.<br/>
+        To use NQXMLParser -&gt; nothing to do.<br/>
+        FYI:
+        <ul>
+          <li>XMLParser version is faster than others</li>
+          <li>SAXDriver version is extremely slow</li>
+          <li>NQXMLParser version is somewhat slower than XMLParser version</li>
+          <li>XMLParser is a Ruby extension module; To use it, you must compile and install it.</li>
+          <li>So far, automatic code conversion support is for XMLParser and SAXDriver.  See below.</li>
+        </ul>
+    </li>
+    <li>Added automatic CES conversion support: UTF-8 <-> EUC, SJIS.
+        Requires Uconv module.  Works with XMLParser module only now.</li>
+    <li>Added XMLDecl for CES.</li>
   </ul>
 </li>
-<li>Dump HTTP header even when an error was raised.</li>
+
+<li>RPC related functions changed:</li>
+  <ul>
+    <li>Changed signature of CGIStub#addMethod.  You cannot define namespace with this method.  CGIStub instance supports only one namespace.</li>
+    <li>Added output parameter support.</li>
+    <li>Changed method definition interfaces(RPCRouter#addMethod and Driver#addMethod).  You can specify paramter names and 'in', 'inout', 'out' and 'retval' parameter types of each method.  So far, parameter names are not checked on RPC server side, but should be checked in the future version of SOAP4R.  Thanks to Michael Neumann for valuable comments.</li>
+  </ul>
+</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
 
 <p>
-Simply, get the archived file and extract it.
-Files in lib/soap are SOAP4R library program itself.
-To use this library, copy the directory lib/soap as 'soap' to suitable directory and require it like 'require &quot;soap/...&quot;' since there is no installer yet.
+Simply, get the archived file and extract it.  Then, try;
+</p>
+
+<pre>
+&quot;ruby install.rb&quot;
+</pre>
+
+<p>
+Necessary files will be installed to suitable directory.
 </p>
 
 <p>
-To play with SOAP4R, you also have copy redistributed files below in redist/ to suitable directory.
+Files in lib/soap directory are SOAP4R library program itself.
+Followings are redistributed files in redist/.
 </p>
 
 <dl>
@@ -120,6 +137,15 @@ Files in archive:
 <dt class="path">lib/soap/</dt>
 <dd>SOAP4R library program.</dd>
 
+<dt class="path">test/</dt>
+<dd>Clients/Server for
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+Because of no documents or &quot;How-to&quot; things there,
+test/interopR2/server.cgi is a must RPC Server side sample to check.
+test/interopR2/client*.rb is a must RPC Client side sample to check.
+test/interopR2/base.rb includes common definitions for client/server side.
+</dd>
+
 <dt class="path">sample/</dt>
 <dd>Sample program using SOAP4R.</dd>
 
@@ -133,11 +159,6 @@ To execute;
 </pre>
 </dd>
 
-<dt class="path">sample/apacheServer.rb</dt>
-<dd>SOAP-RPC CGI server sample emulates Apache-SOAP sample such as AddressBook.
-Interfaces such as getQuote and getAddressFromName are defined.
-Only interfaces, no implementation.</dd>
-
 <dt class="path">sample/RAA/*</dt>
 <dd>SOAP-RPC client samples.
 <ul>
@@ -148,10 +169,6 @@ Only interfaces, no implementation.</dd>
 </ul>
 There programs connect with testing RAA server on www.ruby-lang.org.
 Since the server is under testing phase so stable operation is not expected.</dd>
-
-<dt class="path">test/</dt>
-<dd>Clients/Server for
-<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a></dd>
 
 <dt class="path">redist/</dt>
 <dd>Redistributed programs which SOAP4R is using.
@@ -168,6 +185,15 @@ Follow the term of each archive to use these programs.
 
 <p>
 Delete created files at installation.
+</p>
+
+<pre>
+ruby -rrbconfig -e 'include Config; puts CONFIG[&quot;sitedir&quot;] + &quot;/&quot; + CONFIG[&quot;MAJOR&quot;] + &quot;.&quot; + CONFIG[&quot;MINOR&quot;]'
+</pre>
+
+<p>
+should be dump installation root directory.
+Here, check &quot;soap&quot; directory and filename of files in &quot;redist&quot; directory.
 </p>
 
 <h2 id="whats" name="whats">4. What is SOAP4R?</h2>
@@ -231,15 +257,51 @@ Only xsi:type in SOAP Encoding is checked</li>
 <ul>
 <li>Transport binding except HTTP server(CGI) and client</li>
 <li>HTTP Extension Framework (M-POST)</li>
-<li>Content-Type is 'text/xml';
-Does not support 'charset='.
-</li>
 </ul></li>
 </ul>
 
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.3.4 - July 10, 2001</dt>
+<dd>Feedback from
+<a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
+and Michael Neumann.  Thanks!
+
+<ul>
+<li>Types changed:
+  <ul>
+    <li>Array: Incomplete sparse array support.  Fixed.</li>
+    <li>Date: Added.</li>
+    <li>Time: Added.</li>
+    <li>DateTime: Added precision of time support.</li>
+    <li>String: Default data should not be nil but ''.</li>
+    <li>Nil: Attribute value of xsi:nil might be '1' instead of 'true'.  Fixed.</li>
+  </ul>
+</li>
+
+<li>Supported XML parser:
+  <ul>
+    <li>Added SOAPXMLParser and SOAPSAXDriver for XMLParser which uses expat.
+        You can get the module from RAA: <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=XMLParser">XMLParser module</a>.<br/>
+        To use XMLParser -&gt; add &quot;require 'soap/xmlparser'&quot;.<br/>
+        To use SAX driver of XMLParser -&gt; add &quot;require 'soap/saxdriver'&quot;.<br/>
+        To use NQXMLParser -&gt; nothing to do.<br/>
+        FYI:
+        <ul>
+          <li>XMLParser version is faster than others</li>
+          <li>SAXDriver version is extremely slow</li>
+          <li>NQXMLParser version is somewhat slower than XMLParser version</li>
+          <li>XMLParser is a Ruby extension module; To use it, you must compile and install it.</li>
+          <li>So far, automatic code conversion support is for XMLParser and SAXDriver.  See below.</li>
+        </ul>
+    </li>
+    <li>Added automatic CES conversion support: UTF-8 <-> EUC, SJIS.
+        Requires Uconv module.  Works with XMLParser module only now.</li>
+    <li>Added XMLDecl for CES.</li>
+  </ul>
+</li></dd>
+
 <dt>1.3.3 - July 4, 2001</dt>
 <dd>Feedback from
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
