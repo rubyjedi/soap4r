@@ -48,6 +48,7 @@ class Definitions < Info
     @bindings = NamedElements.new
     @services = NamedElements.new
 
+    @anonymousTypes = NamedElements.new
     @root = self
   end
 
@@ -59,7 +60,7 @@ class Definitions < Info
   end
 
   def complexTypes
-    result = NamedElements.new
+    result = @anonymousTypes.dup
     if @types
       result.concat( @types.schema.complexTypes )
     end
@@ -67,6 +68,10 @@ class Definitions < Info
       result.concat( import.content.complexTypes )
     end
     result
+  end
+
+  def addType( complexType )
+    @anonymousTypes << complexType
   end
 
   def messages

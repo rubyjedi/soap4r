@@ -26,16 +26,25 @@ module WSDL
 
 class Element < Info
   attr_reader :name	# required
-  attr_reader :type	# required
+  attr_reader :type
   attr_reader :maxOccurs
   attr_reader :minOccurs
 
+  AnyType = Name.new( XSD::Namespace, XSD::AnyTypeLiteral )
   def initialize
     super()
     @name = nil
-    @type = nil
+    @type = AnyType
     @maxOccurs = 1
     @minOccurs = 1
+  end
+
+  def targetNamespace
+    parent.targetNamespace
+  end
+
+  def getParentComplexType
+    parent.parent
   end
   
   ComplexTypeName = Name.new( XSD::Namespace, 'complexType' )
@@ -43,11 +52,12 @@ class Element < Info
     case element
     when ComplexTypeName
       o = ComplexType.new
-      @complexType = o
+      @type = Name.new( targetNamespace, createAnonymousTypeName )
+      o.setAnonymousTypeName( @type )
+      root.addType( o )
       o
     else
-      raise WSDLParser::UnknownElementError.new(
-	"Unknown element #{ element }." )
+      nil
     end
   end
 
@@ -93,6 +103,24 @@ class Element < Info
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
+  end
+
+private
+
+  def createAnonymousTypeName
+    base = capitalize( @name )
+    begin
+      if getParentComplexType.isAnonymousType
+	base = capitalize( getParentComplexType.parent.name.name ) + base
+      else
+	base = capitalize( getParentComplexType.name.name ) + base
+      end
+    end while getParentComplexType.isAnonymousType
+    base << 'Type'
+  end
+
+  def capitalize( target )
+    target.gsub( /^([a-z])/ ) { $1.tr!( '[a-z]', '[A-Z]' ) }
   end
 end
 
