@@ -43,6 +43,19 @@ class Header < Info
     @headerfault = nil
   end
 
+  def find_message
+    root.message(@message)
+  end
+
+  def find_part
+    find_message.parts.each do |part|
+      if part.name == @part
+	return part
+      end
+    end
+    nil
+  end
+
   def parse_element(element)
     case element
     when HeaderFaultName

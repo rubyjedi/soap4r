@@ -25,39 +25,8 @@ module WSDL
 
 
 class Definitions < Info
-  def soap_complextypes(binding)
-    types = collect_complextypes
-    binding.operations.each do |op_bind|
-      operation = op_bind.find_operation
-      if op_bind.input
-      	message  = messages[operation.input.message]
-	type = if op_bind.soapoperation and op_bind.soapoperation.style == :rpc
-	    XMLSchema::ComplexType.new(operation.input.name || operation.name)
-	  else
-	      ????? this method is for rpc.
-	    XMLSchema::ComplexType.new(message.name)
-	  end
-	elements = message.parts.collect { |part|
-	    XMLSchema::Element.new(part.name, part.type)
-	  }
-       	type.sequence_elements = elements
-	types << type
-      end
-      if op_bind.output
-	message  = messages[operation.output.message]
-	type = if op_bind.soapoperation and op_bind.soapoperation.style == :rpc
-	    XMLSchema::ComplexType.new(operation.output.name ||
-	      XSD::QName.new(operation.name.namespace, operation.name.name + "Response"))
-	  else
-	    XMLSchema::ComplexType.new(message.name)
-	  end
-	elements = message.parts.collect { |part|
-       	    XMLSchema::Element.new(part.name, part.type)
-	  }
-	type.sequence_elements = elements
-	types << type
-      end
-    end
+  def soap_rpc_complextypes(binding)
+    types = rpc_operation_complextypes(binding)
     types << array_complextype
     types << fault_complextype
     types << exception_complextype
@@ -65,6 +34,47 @@ class Definitions < Info
   end
 
 private
+
+  def rpc_operation_complextypes(binding)
+    types = NamedElements.new
+    binding.operations.each do |op_bind|
+      if op_bind_rpc?(op_bind)
+	operation = op_bind.find_operation
+	if op_bind.input
+	  type = XMLSchema::ComplexType.new(operation_input_name(operation))
+	  message = messages[operation.input.message]
+	  type.sequence_elements = elements_from_message(message)
+	  types << type
+	end
+	if op_bind.output
+	  type = XMLSchema::ComplexType.new(operation_output_name(operation))
+	  message = messages[operation.output.message]
+	  type.sequence_elements = elements_from_message(message)
+	  types << type
+	end
+      end
+    end
+    types
+  end
+
+  def operation_input_name(operation)
+    operation.input.name || operation.name
+  end
+
+  def operation_output_name(operation)
+    operation.output.name ||
+      XSD::QName.new(operation.name.namespace, operation.name.name + "Response")
+  end
+
+  def op_bind_rpc?(op_bind)
+    op_bind.soapoperation and op_bind.soapoperation.operation_style == :rpc
+  end
+
+  def elements_from_message(message)
+    message.parts.collect { |part|
+      XMLSchema::Element.new(part.name, part.type)
+    }
+  end
 
   def array_complextype
     type = XMLSchema::ComplexType.new(::SOAP::ValueArrayName)
