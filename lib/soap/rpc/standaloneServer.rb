@@ -110,7 +110,7 @@ class StandaloneServer < Devel::Application
 private
 
   def run
-    @server.start.join
+    @server.start
   end
 end
 
