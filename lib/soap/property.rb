@@ -18,20 +18,10 @@ class Property
   #   key/value separator is ':', '=', or \s.
   #   '\' as escape character.  but line separator cannot be escaped.
   #   \s at the head/tail of key/value are trimmed.
+
   def self.load(stream)
     prop = new
-    stream.each_with_index do |line, lineno|
-      line.sub!(/\r?\n\z/, '')
-      next if /^(#.*|)$/ =~ line
-      if /^\s*([^=:\s\\]+(?:\\.[^=:\s\\]*)*)\s*[=:\s]\s*(.*)$/ =~ line
-	key, value = $1, $2
-	key = eval("\"#{key}\"")
-	value = eval("\"#{value.strip}\"")
-	prop[key] = value
-      else
-	raise TypeError.new("property format error at line #{lineno + 1}: `#{line}'")
-      end
-    end
+    prop.load(stream)
     prop
   end
 
@@ -41,6 +31,7 @@ class Property
     end
   end
 
+  # find property from $:.
   def self.loadproperty(propname)
     $:.each do |path|
       if File.file?(file = File.join(path, propname))
@@ -55,6 +46,25 @@ class Property
     @hook = Hash.new
     @self_hook = Array.new
     @locked = false
+  end
+
+  KEY_REGSRC = '\\s*([^=:\\s\\\\]+(?:\\\\.[^=:\\s\\\\]*)*)\\s*[=:\\s]\\s*(.*)'
+  CAT_REGEXP = Regexp.new()
+  LINE_REGEXP = Regexp.new("^#{KEY_REGSRC}$")
+  def load(stream)
+    stream.each_with_index do |line, lineno|
+      line.sub!(/\r?\n\z/, '')
+      next if /^(#.*|)$/ =~ line
+      if LINE_REGEXP =~ line
+	key, value = $1, $2
+	key = eval("\"#{key}\"")
+	value = eval("\"#{value.strip}\"")
+	self[key] = value
+      else
+	raise TypeError.new("property format error at line #{lineno + 1}: `#{line}'")
+      end
+    end
+    self
   end
 
   # name: a Symbol, String or an Array
