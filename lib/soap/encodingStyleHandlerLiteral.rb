@@ -81,7 +81,7 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
     end
   end
 
-  def encode_data_end(buf, ns, qualified, data, parent)
+  def encode_data_end(buf, ns, qualified, data, parent, indent)
     name = if qualified and data.elename.namespace
         ns.name(data.elename)
       else
