@@ -271,7 +271,7 @@ class WSDLDriver
       @rpc_decode_typemap = @wsdl_types +
 	@wsdl.soap_rpc_complextypes(port.find_binding)
       @wsdl_mapping_registry = Mapping::WSDLEncodedRegistry.new(
-        @rpc_decode_typemap, @wsdl_elements)
+        @rpc_decode_typemap)
       @doc_mapper = Mapping::WSDLLiteralRegistry.new(
         @wsdl_types, @wsdl_elements)
       endpoint_url = @port.soap_address.location
@@ -324,8 +324,8 @@ class WSDLDriver
       resopt = create_options({
         :decode_typemap => @rpc_decode_typemap})
       env = @proxy.route(req_header, req_body, reqopt, resopt)
+      raise EmptyResponseError unless env
       receive_headers(env.header)
-      raise EmptyResponseError.new("empty response") unless env
       begin
         @proxy.check_fault(env.body)
       rescue ::SOAP::FaultError => e
@@ -354,7 +354,7 @@ class WSDLDriver
         :soapaction => op_info.soapaction || @soapaction,
         :decode_typemap => @wsdl_types})
       env = @proxy.invoke(req_header, req_body, opt)
-      raise EmptyResponseError.new("empty response") unless env
+      raise EmptyResponseError unless env
       if env.body.fault
 	raise ::SOAP::FaultError.new(env.body.fault)
       end

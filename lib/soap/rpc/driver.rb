@@ -22,8 +22,6 @@ module RPC
 
 
 class Driver
-  class EmptyResponseError < Error; end
-
   class << self
     def __attr_proxy(symbol, assignable = false)
       name = symbol.to_s
