@@ -83,15 +83,20 @@ end
 
 module Marshallable
   @@typeNamespace = RPCUtils::RubyCustomTypeNamespace
-  alias __instance_variables instance_variables
-  def instance_variables
+
+  def getInstanceVariables
     if block_given?
-      self.__instance_variables.each do |key|
+      self.instance_variables.each do |key|
 	yield( key, eval( key ))
       end
     else
-      self.__instance_variables
+      self.instance_variables
     end
+  end
+
+  # Not used now...
+  def setInstanceVariable( key, value )
+    eval( "@#{ key } = value" )
   end
 end
 
@@ -289,7 +294,7 @@ module RPCUtils
     include Marshallable
     attr_reader :exceptionTypeName, :message, :backtrace
     def initialize( e )
-      @exceptionTypeName = RPCUtils.getElementNameFromType( e.type )
+      @exceptionTypeName = RPCUtils.getElementNameFromName( e.type.to_s )
       @message = e.message
       @backtrace = e.backtrace
     end
@@ -374,36 +379,12 @@ module RPCUtils
       obj
     end
 
-    def addWriter( klass, values )
-      values.each do |name, value|
-	klass.module_eval <<-EOS
-	  begin
-	    alias __#{ name }= #{ name }=
-	  rescue NameError
-	  end
-	  def #{ name }=( var )
-	    @#{ name } = var
-	  end
-	EOS
+    # It breaks Thread.current[ :SOAPDataKey ].
+    def setInstanceVariables( obj, values )
+      values.each do | name, value |
+	Thread.current[ :SOAPDataKey ] = value
+	obj.instance_eval( "@#{ name } = Thread.current[ :SOAPDataKey ]" )
       end
-    end
-
-    def restoreWriter( klass, values )
-      values.each do |name, value|
-	klass.module_eval <<-EOS
-	  undef #{ name }=
-	  begin
-	    alias #{ name }= __#{ name }=
-	  rescue NameError
-	  end
-	EOS
-      end
-    end
-
-    def setInstanceVar( obj, var )
-      obj.instance_eval( "alias __initialize initialize; def initialize; end" )
-      obj.instance_eval( "undef initialize; alias initialize __initialize" )
-      obj
     end
 
     def toType( name )
@@ -463,10 +444,10 @@ module RPCUtils
 	end
 	param
       elsif soapKlass == SOAP::SOAPStruct
-	param = SOAPStruct.new( RPCUtils.getElementNameFromType( obj.type ))
+	param = SOAPStruct.new( RPCUtils.getElementNameFromName( obj.type.to_s ))
 	param.typeNamespace = getNamespace( obj.type ) || RubyTypeNamespace
 	obj.members.each do |member|
-	  param.add( member, RPCUtils.obj2soap( obj[ member ], map ))
+	  param.add( RPCUtils.getElementNameFromName( member ), RPCUtils.obj2soap( obj[ member ], map ))
 	end
 	param
       else
@@ -496,22 +477,23 @@ module RPCUtils
 
     def unknownObj( node, map )
       klass = Object	# SOAP::RPCUtils::Object
-      Thread.critical = true
-      addWriter( klass, node )
+
       obj = klass.new
-      node.each do |name, value|
-	obj.send( name + "=", RPCUtils.soap2obj( value, map ))
-      end
-      restoreWriter( klass, node )
-      Thread.critical = false
       obj.typeNamespace = node.typeNamespace
       obj.typeName = node.typeName
+
+      vars = Hash.new
+      node.each do |name, value|
+	vars[ RPCUtils.getNameFromElementName( name ) ] = RPCUtils.soap2obj( value, map )
+      end
+      setInstanceVariables( obj, vars )
+
       obj
     end
 
     def struct2obj( node, map )
       obj = nil
-      typeName = node.typeName || node.instance_eval( "@name" )
+      typeName = RPCUtils.getNameFromElementName( node.typeName || node.instance_eval( "@name" ))
       begin
 	klass = begin
 	  RPCUtils.getClassFromName( typeName )
@@ -524,29 +506,29 @@ module RPCUtils
 	  raise NameError.new()
 	end
 
-	Thread.critical = true
-	addWriter( klass, node )
 	obj = createEmptyObject( klass )
+
+	vars = Hash.new
 	node.each do |name, value|
-	  obj.send( name + "=", RPCUtils.soap2obj( value, map ))
+	  vars[ RPCUtils.getNameFromElementName( name ) ] = RPCUtils.soap2obj( value, map )
 	end
-	restoreWriter( klass, node )
-	Thread.critical = false
+	setInstanceVariables( obj, vars )
 
       rescue NameError
 	klass = nil
 	structName = toType( typeName )
+	members = node.members.collect { |member| RPCUtils.getNameFromElementName( member ) }
 	if ( Struct.constants - Struct.superclass.constants ).member?( structName )
 	  klass = Struct.const_get( structName )
-	  if klass.members.length != node.members.length
-	    klass = Struct.new( structName, *node.members )
+	  if klass.members.length != members.length
+	    klass = Struct.new( structName, *members )
 	  end
 	else
-	  klass = Struct.new( structName, *node.members )
+	  klass = Struct.new( structName, *members )
 	end
 	obj = klass.new
 	node.each do | name, value |
-	  obj.send( name + "=", RPCUtils.soap2obj( value, map ))
+	  obj.send( RPCUtils.getNameFromElementName( name ) + "=", RPCUtils.soap2obj( value, map ))
 	end
       end
 
@@ -599,19 +581,19 @@ module RPCUtils
 
   class UnknownKlassFactory_ < Factory
     def obj2soap( soapKlass, obj, info, map )
-      typeName = getTypeName( obj.type ) || RPCUtils.getElementNameFromType( obj.type )
+      typeName = getTypeName( obj.type ) || RPCUtils.getElementNameFromName( obj.type.to_s )
       param = SOAPStruct.new( typeName  )
       param.typeNamespace = getNamespace( obj.type ) || RubyCustomTypeNamespace
       if obj.type.ancestors.member?( Marshallable )
-	obj.instance_variables do |var, data|
+	obj.getInstanceVariables do |var, data|
 	  name = var.dup.sub!( /^@/, '' )
-	  param.add( name, RPCUtils.obj2soap( data, map ))
+	  param.add( RPCUtils.getElementNameFromName( name ), RPCUtils.obj2soap( data, map ))
 	end
       else
 	# Should not be marshalled?
         obj.instance_variables.each do |var|
 	  name = var.dup.sub!( /^@/, '' )
-	  param.add( name, RPCUtils.obj2soap( obj.instance_eval( var ), map ))
+	  param.add( RPCUtils.getElementNameFromName( name ), RPCUtils.obj2soap( obj.instance_eval( var ), map ))
         end
       end
       param
@@ -661,14 +643,14 @@ module RPCUtils
       param = SOAPStruct.new( typeName  )
       param.typeNamespace = typeNamespace
       if obj.type.ancestors.member?( Marshallable )
-	obj.instance_variables do |var, data|
+	obj.getInstanceVariables do |var, data|
 	  name = var.dup.sub!( /^@/, '' )
-	  param.add( name, RPCUtils.obj2soap( data, map ))
+	  param.add( RPCUtils.getElementNameFromName( name ), RPCUtils.obj2soap( data, map ))
 	end
       else
         obj.instance_variables.each do |var|
 	  name = var.dup.sub!( /^@/, '' )
-	  param.add( name, RPCUtils.obj2soap( obj.instance_eval( var ), map ))
+	  param.add( RPCUtils.getElementNameFromName( name ), RPCUtils.obj2soap( obj.instance_eval( var ), map ))
         end
       end
       param
@@ -681,14 +663,12 @@ module RPCUtils
 	raise FactoryError.new( "Type mismatch" )
       end
 
-      Thread.critical = true
-      addWriter( objKlass, node )
       obj = createEmptyObject( objKlass )
+      vars = Hash.new
       node.each do |name, value|
-	obj.send( name + "=", RPCUtils.soap2obj( value, map ))
+	vars[ RPCUtils.getNameFromElementName( name ) ] = RPCUtils.soap2obj( value, map )
       end
-      restoreWriter( objKlass, node )
-      Thread.critical = false
+      setInstanceVariables( obj, vars )
 
       obj
     end
@@ -863,13 +843,27 @@ module RPCUtils
   end
 
 
-  def RPCUtils.getElementNameFromType( type )
-    type.to_s.gsub( '::', '.' )
+  # Allow only (Letter | '_') (Letter | Digit | '-' | '_')* here.
+  # Caution: '.' is not allowed here.
+  # To follow XML spec., it should be NCName.
+  #   (denied chars) => .[0-F][0-F]
+  #   ex. a.b => a.2eb
+  #
+  def RPCUtils.getElementNameFromName( name )
+    name.gsub( /([^a-zA-Z0-9:_-]+)/n ) {
+      '.' << $1.unpack( 'H2' * $1.size ).join( '.' )
+    }.gsub( /::/n, '..' )
+  end
+
+  def RPCUtils.getNameFromElementName( name )
+    name.gsub( /\.\./n, '::' ).gsub( /((?:\.[0-9a-fA-F]{2})+)/n ) {
+      [ $1.delete( '.' ) ].pack( 'H*' )
+    }
   end
 
   def RPCUtils.getClassFromName( name )
     klass = Object
-    name.split( '.' ).each do | klassStr |
+    name.split( '::' ).each do | klassStr |
       klass = klass.const_get( klassStr )
     end
     klass
