@@ -31,8 +31,9 @@
 /home/nahi/bin/ruby clientWhiteMesa.rb
 /home/nahi/bin/ruby clientSilverStream.rb
 /home/nahi/bin/ruby clientXMLBus.rb
-/home/nahi/bin/ruby clientXMLRPC-EPI.rb
-/home/nahi/bin/ruby clientZSI.rb
 /home/nahi/bin/ruby clienteSOAP.rb
 /home/nahi/bin/ruby clientgSOAP.rb
 /home/nahi/bin/ruby clientkSOAP.rb
+
+#/home/nahi/bin/ruby clientXMLRPC-EPI.rb
+#/home/nahi/bin/ruby clientZSI.rb
