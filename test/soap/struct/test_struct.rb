@@ -9,7 +9,6 @@ module SOAP; module Struct
 class TestStruct < Test::Unit::TestCase
   Namespace = "urn:example.com:simpletype-rpc"
   class Server < ::SOAP::RPC::HTTPServer
-    @@test_struct = ::Struct.new("MyStruct", :one, :two)
     @@test_struct = ::Struct.new(:one, :two)
 
     def on_init
@@ -31,6 +30,7 @@ class TestStruct < Test::Unit::TestCase
   def setup_server
     @server = Server.new(
       :Port => Port,
+      :AccessLog => [],
       :SOAPDefaultNamespace => Namespace
     )
     @server.level = Logger::Severity::ERROR
