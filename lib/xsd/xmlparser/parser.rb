@@ -28,7 +28,7 @@ module XMLParser
 
 class Parser
   class ParseError < Error; end
-  class FormatDecodeError < Error; end
+  class FormatDecodeError < ParseError; end
   class UnknownElementError < FormatDecodeError; end
   class UnknownAttributeError < FormatDecodeError; end
   class UnexpectedElementError < FormatDecodeError; end
