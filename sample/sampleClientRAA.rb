@@ -6,7 +6,6 @@ $:.push( '../redist' )
 require 'sampleDriver'
 require 'application'
 
-
 RAAInterfaceNS = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"
 
 class Category
@@ -141,10 +140,7 @@ private
   end
 end
 
-server = ARGV.shift or raise ArgumentError.new( 'Target URL was not given.' )
-proxy = ARGV.shift || nil
-
-#server = 'http://www.ruby-lang.org/~nahi/soap/raa/'
-#proxy = nil
+server = 'http://www.ruby-lang.org/~nahi/soap/raa/'
+proxy = nil
 
 app = SampleClient.new( server, proxy ).start()
