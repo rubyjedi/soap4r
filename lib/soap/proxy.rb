@@ -34,6 +34,7 @@ class SOAPProxy
   attr_reader :namespace
   attr_accessor :soapAction
   attr_accessor :allowUnqualifiedElement, :defaultEncodingStyle
+  attr_reader :method
 
   def initialize( namespace, streamHandler, soapAction = nil )
     @namespace = namespace

@@ -121,9 +121,9 @@ module RPCUtils
     end
 
     def eachParamName( *type )
-      @paramSignature.each do | ioType, paramType, paramName |
+      @paramSignature.each do | ioType, name, paramType |
 	if type.include?( ioType )
-	  yield( paramName )
+	  yield( name )
 	end
       end
     end
@@ -142,37 +142,42 @@ module RPCUtils
       end
     end
 
-    def each
-      eachParamName( IN, INOUT ) do | paramName |
-	unless @inParam[ paramName ]
-	  raise ParameterError.new( "Parameter: #{ paramName } was not given." )
-	end
-	yield( paramName, @inParam[ paramName ] )
-      end
-    end
+# Defined in derived class.
+#    def each
+#      eachParamName( IN, INOUT ) do | name |
+#	unless @inParam[ name ]
+#	  raise ParameterError.new( "Parameter: #{ name } was not given." )
+#	end
+#	yield( name, @inParam[ name ] )
+#      end
+#    end
 
     def SOAPMethod.createParamDef( paramNames )
       paramDef = []
       paramNames.each do | paramName |
-	paramDef.push( [ IN, nil, paramName ] )
+	paramDef.push( [ IN, paramName, nil ] )
       end
-      paramDef.push( [ RETVAL, nil, 'return' ] )
+      paramDef.push( [ RETVAL, 'return', nil ] )
       paramDef
+    end
+
+    def SOAPMethod.getParamNames( paramDef )
+      paramDef.collect { | ioType, name, type | name }
     end
 
   private
 
     def setParamDef
-      @paramDef.each do | ioType, paramType, name |
+      @paramDef.each do | ioType, name, paramType |
   	case ioType
   	when IN
-	  @paramSignature.push( [ IN, paramType, name ] )
+	  @paramSignature.push( [ IN, name, paramType ] )
 	  @inParamNames.push( name )
   	when OUT
-	  @paramSignature.push( [ OUT, paramType, name ] )
+	  @paramSignature.push( [ OUT, name, paramType ] )
 	  @outParamNames.push( name )
   	when INOUT
-	  @paramSignature.push( [ INOUT, paramType, name ] )
+	  @paramSignature.push( [ INOUT, name, paramType ] )
 	  @inoutParamNames.push( name )
   	when RETVAL
   	  if ( @retName )
@@ -212,11 +217,11 @@ module RPCUtils
     end
 
     def each
-      eachParamName( IN, INOUT ) do | paramName |
-	unless @inParam[ paramName ]
-	  raise ParameterError.new( "Parameter: #{ paramName } was not given." )
+      eachParamName( IN, INOUT ) do | name |
+	unless @inParam[ name ]
+	  raise ParameterError.new( "Parameter: #{ name } was not given." )
 	end
-	yield( paramName, @inParam[ paramName ] )
+	yield( name, @inParam[ name ] )
       end
     end
 
