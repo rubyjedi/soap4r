@@ -21,6 +21,8 @@ module SOAP
 
 
 module RPC
+  ServerException = Mapping::MappedException
+
   def self.defined_methods(obj)
     if obj.is_a?(Module)
       obj.methods - Module.methods

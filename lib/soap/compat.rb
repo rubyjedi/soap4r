@@ -41,7 +41,6 @@ module RPC
   RubyCustomTypeNamespace = Mapping::RubyCustomTypeNamespace
   ApacheSOAPTypeNamespace = Mapping::ApacheSOAPTypeNamespace
 
-  ServerException = Mapping::MappedException
   DefaultMappingRegistry = Mapping::DefaultRegistry
 
   def self.obj2soap(*arg); Mapping.obj2soap(*arg); end
