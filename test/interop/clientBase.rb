@@ -67,93 +67,154 @@ def dumpResult( dumpDev, expected, actual )
   dumpDev << 'Result: ' << assert( expected, actual ) << "\n\n\n"
 end
 
+def dumpException( dumpDev )
+  dumpDev << "Result: #{ $! } (#{ $!.type})\n" << $@.join( "\n" ) << "\n\n\n"
+end
+
 
 ###
 ## Invoke methods.
 #
 def doTest( drv )
   dumpDev = getWireDumpLogFile
-  drv.setWireDumpDev( dumpDev )
-#  drv.setWireDumpFileBase( getWireDumpLogFileBase )
+#  drv.setWireDumpDev( dumpDev )
+  drv.setWireDumpFileBase( getWireDumpLogFileBase )
 
   dumpTitle( dumpDev, 'echoVoid' )
-  var =  drv.echoVoid()
-  dumpResult( dumpDev, var, nil )
+  begin
+    var =  drv.echoVoid()
+    dumpResult( dumpDev, var, nil )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoString' )
-  arg = "SOAP4R Interoperability Test"
-  var = drv.echoString( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    arg = "SOAP4R Interoperability Test"
+    var = drv.echoString( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoString (space)' )
-  arg = ' '
-  var = drv.echoString( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    arg = ' '
+    var = drv.echoString( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoString (whitespaces)' )
-  arg = "\r\n\t\r\n\t"
-  var = drv.echoString( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    arg = "\r\n\t\r\n\t"
+    var = drv.echoString( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoStringArray' )
-  arg = [ "SOAP4R", "Interoperability", "Test" ]
-  var = drv.echoStringArray( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    arg = [ "SOAP4R", "Interoperability", "Test" ]
+    var = drv.echoStringArray( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoInteger' )
-  arg = 1
-  # arg = 4294967296
-  var = drv.echoInteger( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    arg = 1
+    # arg = 4294967296
+    var = drv.echoInteger( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoIntegerArray' )
-  arg = [ 1, 2, 3 ]
-  # arg = [ 4294967295, 4294967296, 4294967297 ]
-  var = drv.echoIntegerArray( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    arg = [ 1, 2, 3 ]
+    # arg = [ 4294967295, 4294967296, 4294967297 ]
+    var = drv.echoIntegerArray( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoIntegerArray with empty Array' )
-  arg = []
-  var = drv.echoIntegerArray( arg )
+  begin
+    arg = SOAP::SOAPArray.new( XSD::IntLiteral )
+    arg.typeNamespace = XSD::Namespace
+    var = drv.echoIntegerArray( arg )
+    dumpResult( dumpDev, [], var )
+  rescue
+    dumpException( dumpDev )
+  end
 
-  dumpResult( dumpDev, arg, var )
   dumpTitle( dumpDev, 'echoFloat' )
-  arg = 3.14159265358979
-  var = drv.echoFloat( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    arg = 3.14159265358979
+    var = drv.echoFloat( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoFloatArray' )
-  nan = 0.0/0.0
-  inf = 1.0/0.0
-  inf_ = -1.0/0.0
-  arg = [ nan, inf, inf_ ]
-  var = drv.echoFloatArray( arg )
-  dumpResult( dumpDev, arg, var ) << "\n"
+  begin
+    nan = 0.0/0.0
+    inf = 1.0/0.0
+    inf_ = -1.0/0.0
+    arg = [ nan, inf, inf_ ]
+    var = drv.echoFloatArray( arg )
+    dumpResult( dumpDev, arg, var ) << "\n"
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoStruct' )
-  arg = SOAPStruct.new( 1, 1.1, "a" )
-  var = drv.echoStruct( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    arg = SOAPStruct.new( 1, 1.1, "a" )
+    var = drv.echoStruct( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoStructArray' )
-  s1 = SOAPStruct.new( 1, 1.1, "a" )
-  s2 = SOAPStruct.new( 2, 2.2, "b" )
-  s3 = SOAPStruct.new( 3, 3.3, "c" )
-  arg = [ s1, s2, s3 ]
-  var = drv.echoStructArray( arg )
-  dumpResult( dumpDev, arg, var ) 
+  begin
+    s1 = SOAPStruct.new( 1, 1.1, "a" )
+    s2 = SOAPStruct.new( 2, 2.2, "b" )
+    s3 = SOAPStruct.new( 3, 3.3, "c" )
+    arg = [ s1, s2, s3 ]
+    var = drv.echoStructArray( arg )
+    dumpResult( dumpDev, arg, var ) 
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoDate' )
-  t = Time.now.gmtime
-  arg = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
-  var = drv.echoDate( arg )
-  dumpResult( dumpDev, arg, var )
+  begin
+    t = Time.now.gmtime
+    arg = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
+    var = drv.echoDate( arg )
+    dumpResult( dumpDev, arg, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpTitle( dumpDev, 'echoBase64' )
-  str = "Hello (日本語Japanese) こんにちは"
-  arg = SOAP::SOAPBase64.new( str )
-  var = drv.echoBase64( arg )
-  dumpResult( dumpDev, str, var )
+  begin
+    str = "Hello (日本語Japanese) こんにちは"
+    arg = SOAP::SOAPBase64.new( str )
+    var = drv.echoBase64( arg )
+    dumpResult( dumpDev, str, var )
+  rescue
+    dumpException( dumpDev )
+  end
 
   dumpDev.close
 end
