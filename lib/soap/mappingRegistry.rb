@@ -249,16 +249,25 @@ module RPCUtils
   end
 
   class ArrayFactory_ < Factory
+    # [ [1], [2] ] is converted to Array of Array, not 2-D Array.
+    # To create M-D Array, you must call RPCUtils.ary2md.
     def obj2soap( soapKlass, obj, info, map )
       if soapKlass != SOAP::SOAPArray
 	return nil
       end
-
-      # [ [1], [2] ] is converted to Array of Array, not 2-D Array.
-      # To create M-D Array, you must call RPCUtils.ary2md.
-      typeName = getTypeName( obj.type ) || obj.instance_eval( "@typeName" )
-      typeNamespace = getNamespace( obj.type ) ||
-	obj.instance_eval( "@typeNamespace" ) || RubyTypeNamespace
+      typeName = getTypeName( obj.type )
+      typeNamespace = getNamespace( obj.type )
+      unless typeName
+	ivars = obj.instance_variables
+	if ivars.include?( "@typeName" )
+	  typeName = obj.instance_eval( "@typeName" )
+	  if ivars.include?( "@typeNamespace" )
+	    typeNamespace = obj.instance_eval( "@typeNamespace" )
+	  else
+	    typeNamespace = RubyTypeNamespace
+	  end
+	end
+      end
       unless typeName
 	typeName = XSD::AnyTypeLiteral
 	typeNamespace = XSD::Namespace
@@ -606,24 +615,25 @@ module RPCUtils
       when TYPE_SYMBOL
 	obj = node[ 'id' ].data.intern
       when TYPE_STRUCT
-	typeName = RPCUtils.getNameFromElementName( node[ 'type' ] )
-	begin
-	  klass = RPCUtils.getClassFromName( typeName )
-	  if klass.nil?
-	    klass = self.instance_eval( toType( typeName ))
-	  end
-	  if !klass.ancestors.include?( ::Struct )
-	    raise NameError.new
-	  end
-	  obj = klass.new
-	  markUnmarshalledObj( node, obj )
-	  node[ 'member'].each do | name, value |
-	    obj[ RPCUtils.getNameFromElementName( name ) ] =
-	      RPCUtils._soap2obj( value, map )
-	  end
-	rescue NameError
+	typeName = RPCUtils.getNameFromElementName( node[ 'type' ].data )
+	klass = RPCUtils.getClassFromName( typeName )
+	if klass.nil?
+	  klass = RPCUtils.getClassFromName( toType( typeName ))
+	  #klass = self.instance_eval( toType( typeName ))
+	end
+	if klass.nil?
 	  return false
 	end
+	if !klass.ancestors.include?( ::Struct )
+	  return false
+	end
+	obj = klass.new
+	markUnmarshalledObj( node, obj )
+	node[ 'member'].each do | name, value |
+	  obj[ RPCUtils.getNameFromElementName( name ) ] =
+	    RPCUtils._soap2obj( value, map )
+	end
+
 	if node.members.include?( 'ivars' )
   	  setiv2obj( obj, node[ 'ivars' ], map )
    	end
@@ -678,25 +688,25 @@ module RPCUtils
     def struct2obj( node, map )
       obj = nil
       typeName = RPCUtils.getNameFromElementName( node.typeName )
-      begin
-	klass = RPCUtils.getClassFromName( typeName )
-	if klass.nil?
-	  klass = self.instance_eval( toType( typeName ))
-       	end
-	if ( getNamespace( klass ) and
-	    ( getNamespace( klass ) != node.typeNamespace ))
-	  raise NameError.new
-	elsif ( getTypeName( klass ) and ( getTypeName( klass ) != typeName ))
-	  raise NameError.new
-	end
-
-	obj = createEmptyObject( klass )
-	markUnmarshalledObj( node, obj )
-	setiv2obj( obj, node, map )
-
-      rescue NameError
-	obj = nil
+      klass = RPCUtils.getClassFromName( typeName )
+      if klass.nil?
+	klass = RPCUtils.getClassFromName( toType( typeName ))
+	#klass = self.instance_eval( toType( typeName ))
       end
+
+      if klass.nil?
+	return nil
+      end
+      if ( getNamespace( klass ) and
+	  ( getNamespace( klass ) != node.typeNamespace ))
+	return nil
+      elsif ( getTypeName( klass ) and ( getTypeName( klass ) != typeName ))
+	return nil
+      end
+
+      obj = createEmptyObject( klass )
+      markUnmarshalledObj( node, obj )
+      setiv2obj( obj, node, map )
 
       obj
     end
