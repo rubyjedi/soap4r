@@ -89,8 +89,6 @@ public
     @lastNode
   end
 
-protected
-
   def tag( entity )
     unless entity.isTagEnd
       lastFrame = @parseStack.last
@@ -287,15 +285,6 @@ class SOAPNQXMLStreamingParser < SOAPParser
 	raise FormatDecodeError.new( "Unexpected XML: #{ entity }." )
       end
     end
-  end
-end
-
-class SOAPXMLParserParser < SOAPParser
-  def initialize( stringOrReadable )
-    raise NotImplementError.new
-  end
-
-  def doParse
   end
 end
 
