@@ -38,7 +38,7 @@ class Importer
       content = File.open(location).read
     else
       proxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
-      content = web_client.new(@proxy, "WSDL4R").get_content(location)
+      content = web_client.new(proxy, "WSDL4R").get_content(location)
     end
     opt = {}	# charset?
     begin
