@@ -59,7 +59,6 @@ public
 
     io = '' if io.nil?
 
-    NS.reset
     ns = NS.new
     io << xmldecl
     encode_data(io, ns, true, obj, nil, 0)
@@ -106,7 +105,7 @@ public
     indent_str = ' ' * indent
     child_indent = @pretty ? indent + 2 : indent
     handler.encode_data(buf, ns, qualified, obj, parent, indent_str) do |child, child_q|
-      encode_data(buf, ns.clone, child_q, child, obj, child_indent)
+      encode_data(buf, ns.clone_ns, child_q, child, obj, child_indent)
     end
     handler.encode_data_end(buf, ns, qualified, obj, parent, indent_str)
   end
@@ -118,7 +117,7 @@ public
     if obj.is_a?(SOAPBody)
       @reftarget = obj
       obj.encode(buf, ns, attrs, indent_str) do |child, child_q|
-        encode_data(buf, ns.clone, child_q, child, obj, child_indent)
+        encode_data(buf, ns.clone_ns, child_q, child, obj, child_indent)
       end
       @reftarget = nil
     else
@@ -131,7 +130,7 @@ public
         end
       end
       obj.encode(buf, ns, attrs, indent_str) do |child, child_q|
-        encode_data(buf, ns.clone, child_q, child, obj, child_indent)
+        encode_data(buf, ns.clone_ns, child_q, child, obj, child_indent)
       end
     end
   end

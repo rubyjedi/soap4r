@@ -17,7 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-STDERR.puts "Loading compatibility library."
+STDERR.puts "Loading compatibility library."; raise
 
 
 require 'xsd/qname'

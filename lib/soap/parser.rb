@@ -133,11 +133,10 @@ public
     lastframe = @parsestack.last
     ns = parent = parent_encodingstyle = nil
     if lastframe
-      ns = lastframe.ns.clone
+      ns = lastframe.ns.clone_ns
       parent = lastframe.node
       parent_encodingstyle = lastframe.encodingstyle
     else
-      NS.reset
       ns = NS.new
       parent = ParseFrame::NodeContainer.new(nil)
       parent_encodingstyle = nil
