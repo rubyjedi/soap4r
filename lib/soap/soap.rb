@@ -26,6 +26,8 @@ module SOAP
 
   AttrMustUnderstand = 'mustUnderstand'
   AttrEncodingStyle = 'encodingStyle'
+  AttrRoot = 'root'
+  AttrArrayType = 'arrayType'
   AttrActor = 'actor'
 
   Base64Literal = 'base64'
