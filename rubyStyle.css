@@ -8,6 +8,7 @@ body {
     color: black;
     margin-left: 2%;
     margin-right: 2%;
+    font-family: Georgia, "Times New Roman", "Times Roman", Times;
 }
 
 h1 {
@@ -29,12 +30,6 @@ h2 {
 div.header p.status { text-align: right; }
 div.header p.last-modified { text-align: left; }
 
-span.download {
-    font-weight: normal;
-    color: blue;
-    background: #EEEEEE;
-}
-
 dt {
     font-weight: bold;
     margin-top: 2ex;
@@ -49,6 +44,12 @@ address {
     font-style: normal;
     font-variant: normal;
     font-weight: normal;
+}
+
+span.download {
+    font-weight: normal;
+    color: blue;
+    background: #EEEEEE;
 }
 
 .path {
