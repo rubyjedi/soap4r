@@ -96,13 +96,31 @@ end
 class SOAPBody < SOAPCompoundBase
   public
 
-  attr_reader :data
-  attr_reader :isFault
-
   def initialize( data, isFault = false )
     super( self.type.to_s )
     @data = data
     @isFault = isFault
+  end
+
+  def request
+    @data
+  end
+
+  def response
+    unless @isFault
+      # Initial element is [retVal].
+      @data[ 0 ]
+    else
+      @data
+    end
+  end
+
+  def fault
+    if @isFault
+      @data
+    else
+      nil
+    end
   end
 
   def encode( ns )
@@ -138,15 +156,40 @@ class SOAPBody < SOAPCompoundBase
       elsif !data
 	data = SOAPStruct.decode( childNS, child )
       else
-	# ToDo: May be a pointer...
-	result.push( child )
-	raise FormatDecodeError.new( 'Unknown node name: ' << child.nodeName )
+	# May be a pointer...
+	result.push( decodeChild( childNS, child ))
+	# raise FormatDecodeError.new( 'Unknown node name: ' << child.nodeName )
       end
     end
 
-    # ToDo: Must resolve pointers in result...
-
+    SOAPBody.resolveId( data, result )
     SOAPBody.new( data, isFault )
+  end
+
+  private
+
+  def SOAPBody.resolveId( node, pool )
+    case node
+    when SOAPReference
+      pool.find { | item |
+	# Quick hack...
+	item.id && ( '#' << item.id == node.refId )
+      }
+    when SOAPStruct
+      node.map! do | ele |
+	SOAPBody.resolveId( ele, pool )
+      end
+      node
+    when SOAPArray
+      node.map! do | array |
+	array.map! do | item |
+	  SOAPBody.resolveId( item, pool )
+	end
+      end
+      node
+    else
+      node
+    end
   end
 end
 
@@ -193,7 +236,7 @@ class SOAPHeaderItem < SOAPCompoundBase
 	raise FormatDecodeError.new( 'Duplicated encodingStyle in HeaderItem' ) if encodingStyle
     	encodingStyle = attr.nodeValue
       else
-    	raise FormatDecodeError.new( 'Unknown attribute: ' << name )
+    	# raise FormatDecodeError.new( 'Unknown attribute: ' << name )
       end
     end
     elemNamespace, elemName = ns.parse( elem.nodeName )
@@ -277,15 +320,18 @@ class SOAPEnvelope < SOAPCompoundBase
 
   public
 
-  def self.decode( ns, doc )
+  def self.decode( ns, doc, allowUnqualifiedElement = false )
     if ( doc.childNodes.size != 1 )
       raise FormatDecodeError.new( 'Envelope must be a child.' )
     end
 
     elem = doc.childNodes[ 0 ]
     parseNS( ns, elem )
-
-    if ( !ns.compare( EnvelopeNamespace, 'Envelope', elem.nodeName ))
+    if ( ns.compare( EnvelopeNamespace, 'Envelope', elem.nodeName ))
+      # OK
+    elsif ( allowUnqualifiedElement and ( elem.nodeName == 'Envelope' ))
+      # OK
+    else
       raise FormatDecodeError.new( 'Envelope not found.' )
     end
 
@@ -297,10 +343,12 @@ class SOAPEnvelope < SOAPCompoundBase
       name = child.nodeName
       if ( isEmptyText( child ))
 	# Nothing to do.
-      elsif ( childNS.compare( EnvelopeNamespace, 'Header', name ))
+      elsif (( childNS.compare( EnvelopeNamespace, 'Header', name )) ||
+	  ( allowUnqualifiedElement and ( name == 'Header' )))
 	raise FormatDecodeError.new( 'Duplicated Header in Envelope' ) if header
 	header = SOAPHeader.decode( childNS, child )
-      elsif ( childNS.compare( EnvelopeNamespace, 'Body', name ))
+      elsif (( childNS.compare( EnvelopeNamespace, 'Body', name )) ||
+	  ( allowUnqualifiedElement and ( name == 'Body' )))
 	raise FormatDecodeError.new( 'Duplicated Body in Envelope' ) if body
 	body = SOAPBody.decode( childNS, child )
       else
