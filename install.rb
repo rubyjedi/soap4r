@@ -40,6 +40,7 @@ begin
   install_dir('soap', 'rpc')
   install_dir('soap', 'mapping')
   install_dir('soap', 'encodingstyle')
+  install_dir('soap', 'header')
   install_dir('wsdl')
   install_dir('wsdl', 'xmlSchema')
   install_dir('wsdl', 'soap')
