@@ -38,10 +38,13 @@ class CGIStub < Server
 
   class SOAPRequest
     ALLOWED_LENGTH = 1024 * 1024
+    ReceiveMediaType = 'text/xml'
 
     def initialize( sourceStream = $stdin )
       @method = ENV[ 'REQUEST_METHOD' ]
       @size = ENV[ 'CONTENT_LENGTH' ].to_i || 0
+      @content_type = ENV[ 'CONTENT_TYPE' ]
+      @charset = nil
       @soap_action = ENV[ 'HTTP_SOAPAction' ]
       @source = sourceStream
       @body = nil
@@ -49,6 +52,7 @@ class CGIStub < Server
 
     def init
       validate
+      parseContentType
       @body = @source.read( @size )
       self
     end
@@ -61,11 +65,22 @@ class CGIStub < Server
       @soap_action
     end
 
+    def charset
+      @charset
+    end
+
     def to_s
       "method: #{ @method }, size: #{ @size }"
     end
 
   private
+
+    def parseContentType
+      if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ @content_type
+	raise CGIError.new( "Illegal content-type." )
+      end
+      @charset = $1
+    end
 
     def validate # raise CGIError
       if @method != 'POST'
@@ -108,8 +123,32 @@ private
       requestString = @request.dump
       log( SEV_DEBUG ) { "XML Request: #{requestString}" }
 
-      responseString, isFault = route( requestString )
-      log( SEV_DEBUG ) { "XML Response: #{responseString}" }
+      parser = Processor.getDefaultParser
+      kcodeAdjusted = false
+      requestCharset = @request.charset.dup
+      charsetStrBackup = nil
+      if requestCharset
+       	requestString.sub!( /^([^>]*)\s+encoding=(['"])[^'"]*\2/ ) { $1 }
+
+	if parser.adjustKCode
+  	  charsetStr = Charset.getCharsetStr( requestCharset )
+  	  charsetStrBackup = $KCODE.to_s.dup
+  	  $KCODE = charsetStr
+  	  Charset.setXMLInstanceEncoding( charsetStr )
+	  kcodeAdjusted = true
+   	end
+      end
+
+      responseString = isFault = nil
+      begin
+	responseString, isFault = route( requestString )
+	log( SEV_DEBUG ) { "XML Response: #{responseString}" }
+      ensure
+	if kcodeAdjusted
+	  $KCODE = charsetStrBackup
+	  Charset.setXMLInstanceEncoding( $KCODE )
+	end
+      end
 
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
@@ -120,7 +159,7 @@ private
 	@response.status = 500
       end
       @response.body.type = 'text/xml'
-      @response.body.charset = Charset.getXMLInstanceEncoding
+      @response.body.charset = requestCharset || Charset.getXMLInstanceEncoding
       str = @response.dump
       log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
       print str
