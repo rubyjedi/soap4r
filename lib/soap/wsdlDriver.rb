@@ -231,9 +231,9 @@ class WSDLDriver
 	res_env = invoke(req_env, op_info, opt)
 	receive_headers(res_env.header)
 	if res_env.body.fault
-	  raise SOAP::FaultError.new(res_env.body.fault)
+	  raise ::SOAP::FaultError.new(res_env.body.fault)
 	end
-      rescue SOAP::FaultError => e
+      rescue ::SOAP::FaultError => e
 	Mapping.fault2exception(e)
       end
 
@@ -261,7 +261,7 @@ class WSDLDriver
       opt = create_options
       res_env = invoke(req_env, op_info, opt)
       if res_env.body.fault
-	raise SOAP::FaultError.new(res_env.body.fault)
+	raise ::SOAP::FaultError.new(res_env.body.fault)
       end
       res_body_obj = res_env.body.response ?
 	Mapping.soap2obj(res_env.body.response, @mapping_registry) : nil
@@ -488,6 +488,7 @@ class WSDLDriver
       opt
     end
 
+    class MappingError < StandardError; end
     class Mapper
       def initialize(elements, types)
 	@elements = elements
@@ -500,7 +501,7 @@ class WSDLDriver
 	elsif type = @types[name]
 	  obj2type(obj, type)
 	else
-	  raise RuntimeError.new("Cannot find name #{name} in schema.")
+	  raise MappingError.new("Cannot find name #{name} in schema.")
 	end
       end
 
@@ -528,7 +529,7 @@ class WSDLDriver
 	  elsif type = TypeMap[ele.type]
 	    o = base2soap(obj, type)
 	  else
-	    raise RuntimeError.new("Cannot find type #{ele.type}.")
+	    raise MappingError.new("Cannot find type #{ele.type}.")
 	  end
 	  o.elename = ele.name
 	elsif ele.local_complextype
@@ -538,7 +539,7 @@ class WSDLDriver
               child_ele))
 	  end
 	else
-	  raise RuntimeError.new("Illegal schema?")
+	  raise MappingError.new("Illegal schema?")
 	end
 	o
       end
@@ -547,13 +548,19 @@ class WSDLDriver
         if type.is_a?(::WSDL::XMLSchema::SimpleType)
           simple2soap(obj, type)
         else
-          complext2soap(obj, type)
+          complex2soap(obj, type)
         end
       end
 
       def simple2soap(obj, type)
         o = base2soap(obj, TypeMap[type.base])
-        # ToDo: should handle restriction, etc.
+        if type.restriction.enumeration.empty?
+          STDERR.puts("#{type.name}: simpleType which is not enum type not supported.")
+          return o
+        end
+        if type.restriction.enumeration.include?(o)
+	  raise MappingError.new("#{o} is not allowed for #{type.name}")
+        end
         o
       end
 
