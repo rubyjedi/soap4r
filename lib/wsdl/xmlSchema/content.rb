@@ -28,9 +28,9 @@ class Content < Info
   TypeAll = Object.new
   TypeSequence = Object.new
 
-  attr_reader :final
-  attr_reader :mixed
-  attr_reader :type
+  attr_accessor :final
+  attr_accessor :mixed
+  attr_accessor :type
   attr_reader :attributes
   attr_reader :elements
 
@@ -41,11 +41,16 @@ class Content < Info
     @mixed = false
     @type = nil
     @attributes = []
+    @parsedElements = []
     @elements = []
   end
 
   def targetNamespace
     parent.targetNamespace
+  end
+
+  def addElement( element )
+    @elements << [ element.name, element ]
   end
 
   AllName = XSD::QName.new( XSD::Namespace, 'all' )
@@ -70,14 +75,11 @@ class Content < Info
 	  "Unexpected element #{ element }." )
       end
       o = Element.new
+      @parsedElements << o
       o
     else
       nil
     end
-  end
-
-  def addElement( element )
-    @elements << [ element.name, element ]
   end
 
   FinalAttrName = XSD::QName.new( nil, 'final' )
@@ -91,6 +93,13 @@ class Content < Info
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
+  end
+
+  def postParse
+    @parsedElements.each do | element |
+      @elements << [ element.name, element ]
+    end
+    @parsedElements.clear
   end
 end
 

@@ -29,6 +29,7 @@ class Schema < Info
   attr_reader :targetNamespace	# required
   attr_reader :complexTypes
   attr_reader :elements
+  attr_reader :attributes
   attr_reader :imports
   attr_accessor :elementFormDefault
 
@@ -37,17 +38,19 @@ class Schema < Info
     @targetNamespace = nil
     @complexTypes = NamedElements.new
     @elements = NamedElements.new
+    @attributes = NamedElements.new
     @imports = []
     @elementFormDefault = nil
   end
 
-  def addElement( element )
-    @elements << element
+  def addAttribute( attribute )
+    @attributes << attribute
   end
 
   ImportName = XSD::QName.new( XSD::Namespace, 'import' )
   ComplexTypeName = XSD::QName.new( XSD::Namespace, 'complexType' )
   ElementName = XSD::QName.new( XSD::Namespace, 'element' )
+  AttributeName = XSD::QName.new( XSD::Namespace, 'attribute' )
   def parseElement( element )
     case element
     when ImportName
@@ -60,6 +63,9 @@ class Schema < Info
       o
     when ElementName
       o = Element.new
+      o
+    when AttributeName
+      o = Attribute.new
       o
     else
       nil

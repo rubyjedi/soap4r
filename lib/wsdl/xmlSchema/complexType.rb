@@ -51,14 +51,14 @@ class ComplexType < Info
     parent.targetNamespace
   end
 
-  def addElement( name, type )
+  def addSequenceElements( elements )
     unless @content
       @content = Content.new( self )
     end
-    ele = Element.new
-    ele.name = name
-    ele.type = type
-    @content.addElement( ele )
+    @content.type = Content::TypeSequence
+    elements.each do | element |
+      @content.addElement( element )
+    end
   end
 
   def getElement( name )
