@@ -114,7 +114,8 @@ private
     else
       o = parent.parse_element(element)
       unless o
-	raise UnknownElementError.new("Unknown element #{ element }.")
+	STDERR.puts("Unknown element #{ element }.")
+	o = Documentation.new	# which accepts any element.
       end
       # node could be a pseudo element.  pseudo element has its own parent.
       o.parent = parent if o.parent.nil?
