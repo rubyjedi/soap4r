@@ -156,7 +156,8 @@ class Driver
       end
     end
 
-    ret = RPCUtils.soap2obj( body.response, @mappingRegistry )
+    ret = body.response ?
+      RPCUtils.soap2obj( body.response, @mappingRegistry ) : nil
     if body.outParams
       outParams = body.outParams.collect { | outParam |
 	RPCUtils.soap2obj( outParam )
