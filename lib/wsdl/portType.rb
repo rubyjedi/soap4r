@@ -37,6 +37,23 @@ class PortType < Info
     @operations = []
   end
 
+  def getBinding
+    parent.bindings.find { | item | item.type == @name }
+  end
+
+  def getLocations
+    bindingName = getBinding.name
+    result = []
+    parent.services.each do | service |
+      service.ports.each do | port |
+        if port.binding == bindingName
+          result << port.soapAddress.location if port.soapAddress
+        end
+      end
+    end
+    result
+  end
+
   OperationName = Name.new( Namespace, 'operation' )
   def parseElement( element )
     case element

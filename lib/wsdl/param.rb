@@ -39,6 +39,14 @@ class Param < Info
     parent.targetNamespace
   end
 
+  def getDefinitions
+    parent.parent.parent
+  end
+
+  def getMessage
+    getDefinitions.messages[ @message ]
+  end
+
   SOAPBodyName = Name.new( SOAPBindingNamespace, 'body' )
   SOAPFaultName = Name.new( SOAPBindingNamespace, 'fault' )
   def parseElement( element )

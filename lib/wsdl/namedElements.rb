@@ -27,8 +27,12 @@ class NamedElements
     @elements = []
   end
 
-  def []( name )
-    @elements.find { | item | item.name == name }
+  def []( idx )
+    if idx.is_a?( Numeric )
+      @elements[ idx ]
+    else
+      @elements.find { | item | item.name == idx }
+    end
   end
 
   def each

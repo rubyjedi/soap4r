@@ -39,6 +39,18 @@ class Port < Info
     parent.targetNamespace
   end
 
+  def getDefinitions
+    parent.parent
+  end
+
+  def getPortType
+    getDefinitions.portTypes[ getBinding.type ]
+  end
+
+  def getBinding
+    getDefinitions.bindings[ @binding ]
+  end
+
   SOAPAddressName = Name.new( SOAPBindingNamespace, 'address' )
   def parseElement( element )
     case element
