@@ -1,6 +1,6 @@
 =begin
 SOAP4R - SOAP WSDL driver
-Copyright (C) 2002 NAKAMURA Hiroshi.
+Copyright (C) 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -92,8 +92,7 @@ public
   attr_accessor :mappingRegistry
   attr_accessor :wsdlMappingRegistry
   attr_reader :opt
-  attr_accessor :actor
-  attr_reader :endPointUrl
+  attr_reader :endpointUrl
   attr_reader :wireDumpDev
   attr_reader :wireDumpFileBase
   attr_reader :httpProxy
@@ -108,7 +107,6 @@ public
     @logDev = logDev
     @mappingRegistry = nil	# for unmarshal
     @wsdlMappingRegistry = nil	# for marshal
-    @actor = self.class.name
     @endpointUrl = nil
     @wireDumpDev = nil
     @dumpFileBase = nil
