@@ -24,11 +24,13 @@ module SOAP
   class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     class SOAPTemporalObject
       attr_accessor :parent
+      attr_accessor :position
       attr_accessor :id
       attr_accessor :root
 
       def initialize
 	@parent = nil
+	@position = nil
 	@id = nil
 	@root = nil
       end
@@ -52,6 +54,7 @@ module SOAP
 	o.id = @id
 	o.root = @root
 	o.parent = @parent
+	o.position = @position
 	@handler.decodeParent( @parent, o )
 	o
       end
@@ -61,6 +64,7 @@ module SOAP
 	o.id = @id
 	o.root = @root
 	o.parent = @parent
+	o.position = @position
 	@handler.decodeParent( @parent, o )
 	o
       end
@@ -70,6 +74,7 @@ module SOAP
 	o.id = @id
 	o.root = @root
 	o.parent = @parent
+	o.position = @position
 	@handler.decodeParent( @parent, o )
 	o
       end
@@ -82,7 +87,7 @@ module SOAP
     end
 
     def decodeTag( ns, entity, parent )
-      isNil, type, arrayType, reference, id, root = parseAttrs( ns, entity )
+      isNil, type, arrayType, reference, id, root, offset, position = parseAttrs( ns, entity )
       o = nil
       if isNil
 	o = SOAPNil.decode( ns, entity )
@@ -90,6 +95,10 @@ module SOAP
       elsif arrayType
 	typeNamespace, typeNameString = ns.parse( arrayType )
 	o = SOAPArray.decode( ns, entity, typeNamespace, typeNameString )
+	if offset
+	  o.offset = parseArrayPosition( offset )
+	end
+	# ToDo: xsi:type should be checked here...
 
       elsif reference
 	o = SOAPReference.decode( ns, entity, reference )
@@ -145,10 +154,14 @@ module SOAP
     def decodeTagAsXSD( ns, typeNameString, entity )
       if typeNameString == XSD::AnyTypeLiteral
 	SOAPUnknown.new( self, ns, entity, XSD::Namespace, typeNameString )
-      elsif typeNameString == XSD::IntLiteral
-    	SOAPInt.decode( ns, entity )
+      elsif typeNameString == XSD::DecimalLiteral
+    	SOAPDecimal.decode( ns, entity )
       elsif typeNameString == XSD::IntegerLiteral
     	SOAPInteger.decode( ns, entity )
+      elsif typeNameString == XSD::LongLiteral
+    	SOAPLong.decode( ns, entity )
+      elsif typeNameString == XSD::IntLiteral
+    	SOAPInt.decode( ns, entity )
       elsif typeNameString == XSD::FloatLiteral
     	SOAPFloat.decode( ns, entity )
       elsif typeNameString == XSD::BooleanLiteral
@@ -165,10 +178,14 @@ module SOAP
     end
 
     def decodeTagAsSOAPENC( ns, typeNameString, entity )
-      if typeNameString == XSD::IntLiteral
-    	SOAPInt.decode( ns, entity )
+      if typeNameString == XSD::DecimalLiteral
+    	SOAPDecimal.decode( ns, entity )
       elsif typeNameString == XSD::IntegerLiteral
     	SOAPInteger.decode( ns, entity )
+      elsif typeNameString == XSD::LongLiteral
+    	SOAPLong.decode( ns, entity )
+      elsif typeNameString == XSD::IntLiteral
+    	SOAPInt.decode( ns, entity )
       elsif typeNameString == XSD::FloatLiteral
         SOAPFloat.decode( ns, entity )
       elsif typeNameString == XSD::BooleanLiteral
@@ -241,7 +258,11 @@ module SOAP
        	parent.node.add( node.name, node )
 
       when SOAPArray
-	parent.node.add( node )
+	if node.position
+	  parent.node[ *( parseArrayPosition( node.position )) ] = node
+	else
+	  parent.node.add( node )
+	end
 
       when SOAPBasetype
 	raise FormatDecodeError.new( "SOAP base type must not have a child." )
@@ -261,6 +282,8 @@ module SOAP
       reference = nil
       id = nil
       root = nil
+      offset = nil
+      position = nil
 
       entity.attrs.each do | key, value |
 	if ( ns.compare( XSD::Namespace, XSD::NilLiteral, key ))
@@ -281,10 +304,19 @@ module SOAP
 	  else
 	    raise FormatDecodeError.new( "Illegal root attribute value: #{ value }." )
 	  end
+	elsif ( ns.compare( EncodingNamespace, AttrOffset, key ))
+	  offset = value
+	elsif ( ns.compare( EncodingNamespace, AttrPosition, key ))
+	  position = value
 	end
       end
 
-      return isNil, type, arrayType, reference, id, root
+      return isNil, type, arrayType, reference, id, root, offset, position
+    end
+
+    def parseArrayPosition( position )
+      /^\[(.+)\]$/ =~ position
+      $1.split( ',' ).collect { |s| s.to_i }
     end
 
     def resolveId
