@@ -99,9 +99,14 @@ class TestProperty < Test::Unit::TestCase
       assert_equal(tag, value)
       tested += 1
     end
+    @prop.add_hook("foo.bar.baz.qux") do |key, value|
+      assert_equal("foo.bar.baz.qux", key)
+      assert_equal(tag, value)
+      tested += 1
+    end
     @prop["foo.bar.baz.qux"] = tag
     assert_equal(tag, @prop["foo.bar.baz.qux"])
-    assert_equal(3, tested)
+    assert_equal(4, tested)
   end
 
   def test_keys
@@ -149,6 +154,7 @@ class TestProperty < Test::Unit::TestCase
     assert_nil(@prop["a.a"])
     @prop["a.b"] = nil
     assert_nil(@prop["a.b"])
+    @prop["a.a"] = 2
     #
     @prop.unlock
     assert_nil(@prop["c"])
@@ -163,6 +169,22 @@ class TestProperty < Test::Unit::TestCase
     end
     @prop["a.c"] = 3
     assert(tested)
+  end
+
+  def test_hook_then_lock
+    tested = false
+    @prop.add_hook("a.b.c") do |name, value|
+      assert_equal("a.b.c", name)
+      tested = true
+    end
+    @prop.lock
+    assert(!tested)
+    @prop["a.b.c"] = 5
+    assert(tested)
+    assert_equal(5, @prop["a.b.c"])
+    assert_raises(TypeError) do
+      @prop["a.b.d"] = 5
+    end
   end
 end
 
