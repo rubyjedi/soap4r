@@ -58,8 +58,7 @@ class ExplicitTypedArrayFactory < SOAP::Mapping::Factory
     soap_obj = soap_class.new(ValueArrayName, 1, obj.arytype)
     mark_marshalled_obj(obj, soap_obj)
     obj.each do |item|
-      child = Mapping._obj2soap(item, map)
-      soap_obj.add(child)
+      soap_obj.add(Mapping._obj2soap(item, map))
     end
     soap_obj
   end
