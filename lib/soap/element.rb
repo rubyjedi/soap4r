@@ -69,7 +69,7 @@ class SOAPFault < SOAPCompoundBase
 
       if child.nodeName == 'faultcode'
 	raise FormatDecodeError.new( 'Duplicated faultcode in Fault' ) if faultCode
-	faultCode = SOAPInteger.decode( childNS, child )
+	faultCode = SOAPString.decode( childNS, child )
 
       elsif child.nodeName == 'faultstring'
 	raise FormatDecodeError.new( 'Duplicated faultstring in Fault' ) if faultString
@@ -320,12 +320,7 @@ class SOAPEnvelope < SOAPCompoundBase
 
   public
 
-  def self.decode( ns, doc, allowUnqualifiedElement = false )
-    if ( doc.childNodes.size != 1 )
-      raise FormatDecodeError.new( 'Envelope must be a child.' )
-    end
-
-    elem = doc.childNodes[ 0 ]
+  def self.decode( ns, elem, allowUnqualifiedElement = false )
     parseNS( ns, elem )
     if ( ns.compare( EnvelopeNamespace, 'Envelope', elem.nodeName ))
       # OK
