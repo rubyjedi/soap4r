@@ -322,7 +322,20 @@ end
 
 require 'rational'
 require 'date3'
+module XSDDateTimeToTime
+  def to_time
+    begin
+      Time.gm( @data.year, @data.month, @data.mday, @data.hour, @data.min,
+       	@data.sec )
+    rescue ArgumentError
+      nil
+    end
+  end
+end
+
 class XSDDateTime < XSDBase
+  include XSDDateTimeToTime
+
 public
   def initialize( initDateTime = nil )
     super( DateTimeLiteral )
@@ -417,6 +430,8 @@ private
 end
 
 class XSDTime < XSDBase
+  include XSDDateTimeToTime
+
 public
   def initialize( initTime = nil )
     super( TimeLiteral )
@@ -477,6 +492,8 @@ private
 end
 
 class XSDDate < XSDBase
+  include XSDDateTimeToTime
+
 public
   def initialize( initDate = nil )
     super( DateLiteral )
