@@ -18,7 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
-require 'soap/rpcUtils'
+require 'soap/mapping'
 
 
 module WSDL
@@ -108,7 +108,7 @@ private
 
   def exception_complextype
     type = XMLSchema::ComplexType.new(XSD::QName.new(
-	::SOAP::RPCUtils::RubyCustomTypeNamespace, 'SOAPException'))
+	::SOAP::Mapping::RubyCustomTypeNamespace, 'SOAPException'))
     excn_name = XMLSchema::Element.new('exceptionTypeName', XSD::XSDString::Type)
     cause = XMLSchema::Element.new('cause', XSD::AnyTypeName)
     backtrace = XMLSchema::Element.new('backtrace', ::SOAP::ValueArrayName)

@@ -16,22 +16,5 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-require 'soap/rpc/standaloneServer'
 
-
-module SOAP
-
-
-class StandaloneServer < RPC::StandaloneServer
-  def initialize(*arg)
-    super
-    methodDef if respond_to?('methodDef')
-  end
-
-  alias addServant add_servant
-  alias addMethod add_method
-  alias addMethodAs add_method_as
-end
-
-
-end
+require 'soap/compat'

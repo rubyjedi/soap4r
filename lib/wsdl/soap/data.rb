@@ -16,14 +16,13 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-
+require 'xsd/qname'
 require 'wsdl/soap/definitions'
 require 'wsdl/soap/binding'
 require 'wsdl/soap/operation'
 require 'wsdl/soap/body'
 require 'wsdl/soap/address'
 require 'wsdl/soap/complexType'
-require 'soap/qname'
 
 
 module WSDL

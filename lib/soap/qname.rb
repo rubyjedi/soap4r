@@ -1,6 +1,6 @@
 =begin
-WSDL4R - XML QName definition.
-Copyright (C) 2002, 2003  NAKAMURA, Hiroshi.
+SOAP4R - XML QName definition.
+Copyright (C) 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,57 +17,4 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-module XSD
-
-
-class QName
-  attr_accessor :namespace
-  attr_accessor :name
-
-  def initialize( namespace = nil, name = nil )
-    @namespace = namespace
-    @name = name
-  end
-
-  def match( rhs )
-    unless self.class === rhs
-      return false
-    end
-    if rhs.namespace and ( rhs.namespace != @namespace )
-      return false
-    end
-    if rhs.name and ( rhs.name != @name )
-      return false
-    end
-    true
-  end
-
-  def ==( rhs )
-    ( self.class === rhs && @namespace == rhs.namespace && @name == rhs.name )
-  end
-
-  def ===( rhs )
-    ( self == rhs )
-  end
-
-  def eql?( rhs )
-    ( self == rhs )
-  end
-
-  def hash
-    @namespace.hash ^ @name.hash
-  end
-  
-  def to_s
-    "{#{ namespace }}#{ name }"
-  end
-
-  NormalizedNameRegexp = /^\{([^}]*)\}(.*)$/
-  def parse( str )
-    NormalizedNameRegexp =~ str
-    self.new( $1, $2 )
-  end
-end
-
-
-end
+require 'soap/compat'

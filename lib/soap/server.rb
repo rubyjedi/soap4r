@@ -17,20 +17,4 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'soap/rpc/server'
-
-
-module SOAP
-
-
-class Server < RPC::Server
-  def initialize(*arg)
-    super
-  end
-
-  alias addServant add_servant
-  alias addMethod add_method
-end
-
-
-end
+require 'soap/compat'

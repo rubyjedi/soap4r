@@ -16,9 +16,9 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
+require 'xsd/datatypes'
 require 'soap/soap'
-require 'soap/qname'
-require 'soap/XMLSchemaDatatypes'
 
 
 module SOAP
@@ -754,7 +754,7 @@ private
 end
 
 
-require 'soap/typeMap'
+require 'soap/mapping/typeMap'
 
 
 end

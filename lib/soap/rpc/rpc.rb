@@ -1,6 +1,6 @@
 =begin
 SOAP4R - RPC utility.
-Copyright (C) 2000, 2001, 2003  NAKAMURA, Hiroshi.
+Copyright (C) 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,27 +17,10 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'soap/mapping'
-
-
 module SOAP
 
 
 module RPC
-  RubyTypeNamespace = Mapping::RubyTypeNamespace
-  RubyTypeInstanceNamespace = Mapping::RubyTypeInstanceNamespace
-  RubyCustomTypeNamespace = Mapping::RubyCustomTypeNamespace
-  ApacheSOAPTypeNamespace = Mapping::ApacheSOAPTypeNamespace
-
-  ServerException = Mapping::MappedException
-  DefaultMappingRegistry = Mapping::DefaultRegistry
-
-  def self.obj2soap(*arg); Mapping.obj2soap(*arg); end
-  def self.soap2obj(*arg); Mapping.soap2obj(*arg); end
-  def self.ary2soap(*arg); Mapping.ary2soap(*arg); end
-  def self.ary2md(*arg); Mapping.ary2md(*arg); end
-  def self.fault2exception(*arg); Mapping.fault2exception(*arg); end
-
   def self.defined_methods(obj)
     if obj.is_a?(Module)
       obj.methods - Module.methods

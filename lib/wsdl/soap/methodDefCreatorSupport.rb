@@ -19,8 +19,8 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'wsdl/info'
 require 'wsdl/data'
-require 'soap/mappingRegistry'
-require 'soap/typeMap'
+require 'soap/mapping'
+require 'soap/mapping/typeMap'
 
 
 module WSDL
@@ -34,8 +34,7 @@ module MethodDefCreatorSupport
 
   def create_class_name(name)
     if klass = basetype_mapped_class(name)
-      ::SOAP::RPCUtils::DefaultMappingRegistry.find_mapped_obj_class(
-	klass.name)
+      ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass.name)
     else
       result = capitalize(name.name)
       unless /^[A-Z]/ =~ result

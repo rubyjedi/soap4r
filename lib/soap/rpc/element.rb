@@ -262,7 +262,7 @@ end
 class SOAPVoid < XSDAnySimpleType
   include SOAPBasetype
   extend SOAPModuleUtils
-  Name = XSD::QName.new(RubyCustomTypeNamespace, nil)
+  Name = XSD::QName.new(Mapping::RubyCustomTypeNamespace, nil)
 
 public
   def initialize()

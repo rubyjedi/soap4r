@@ -18,8 +18,8 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'soap/baseData'
-require 'soap/charset'
 require 'soap/mapping/mapping'
+require 'soap/mapping/typeMap'
 require 'soap/mapping/factory'
 require 'soap/mapping/rubytypeFactory'
 
