@@ -78,6 +78,15 @@ class Schema < Info
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
   end
+
+  SchemaName = XSD::QName.new( XSD::Namespace, 'schema' )
+  def self.parseElement( element )
+    if element == SchemaName
+      Schema.new
+    else
+      nil
+    end
+  end
 end
 
 
