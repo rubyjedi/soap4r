@@ -101,6 +101,12 @@ module SOAP
 	  typeNamespace, typeNameString = ns.parse( type )
 	elsif parent.node.is_a?( SOAPArray )
 	  typeNamespace, typeNameString = parent.node.typeNamespace, parent.node.typeName
+	else
+	  # Since it's in dynamic(without any type) encoding process,
+	  # assumes entity as its type itself.
+	  #   <SOAP-ENC:Array ...> => type Array in SOAP-ENC.
+	  #   <Country xmlns="foo"> => type Country in foo.
+	  typeNamespace, typeNameString = ns.parse( entity.name )
 	end
 
 	if typeNamespace == XSD::Namespace
@@ -254,11 +260,11 @@ module SOAP
       arrayType = nil
       reference = nil
       id = nil
-      root = false
+      root = nil
 
       entity.attrs.each do | key, value |
 	if ( ns.compare( XSD::Namespace, XSD::NilLiteral, key ))
-	  isNil = ( value == '1' )
+	  isNil = ( value == NilValue )
 	elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	  type = value
 	elsif ( ns.compare( EncodingNamespace, AttrArrayType, key ))
@@ -268,7 +274,13 @@ module SOAP
 	elsif ( key == 'id' )
 	  id = value
 	elsif ( ns.compare( EncodingNamespace, AttrRoot, key ))
-	  root = ( value == '1' )
+	  if value == '1'
+	    root = 1
+	  elsif value == '0'
+	    root = 0
+	  else
+	    raise FormatDecodeError.new( "Illegal root attribute value: #{ value }." )
+	  end
 	end
       end
 
