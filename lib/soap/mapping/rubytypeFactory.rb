@@ -23,6 +23,7 @@ module Mapping
 
 class RubytypeFactory < Factory
   TYPE_STRING = 'String'
+  TYPE_TIME = 'Time'
   TYPE_ARRAY = 'Array'
   TYPE_REGEXP = 'Regexp'
   TYPE_RANGE = 'Range'
@@ -31,6 +32,8 @@ class RubytypeFactory < Factory
   TYPE_SYMBOL = 'Symbol'
   TYPE_STRUCT = 'Struct'
   TYPE_HASH = 'Map'
+
+  RubyIVarName = 'ivars'
   
   def initialize(config = {})
     @config = config
@@ -55,6 +58,17 @@ class RubytypeFactory < Factory
       mark_marshalled_obj(obj, param)
       param.add('string', SOAPString.new(encoded))
       if obj.class != String
+        param.extraattr[RubyTypeName] = obj.class.name
+      end
+      addiv2soap(param, obj, map)
+    when Time
+      unless @allow_original_mapping
+        return nil
+      end
+      param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_TIME))
+      mark_marshalled_obj(obj, param)
+      param.add('time', SOAPDateTime.new(obj))
+      if obj.class != Time
         param.extraattr[RubyTypeName] = obj.class.name
       end
       addiv2soap(param, obj, map)
@@ -88,6 +102,9 @@ class RubytypeFactory < Factory
         param.extraattr[RubyTypeName] = obj.class.name
       end
     when Regexp
+      unless @allow_original_mapping
+        return nil
+      end
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_REGEXP))
       mark_marshalled_obj(obj, param)
       if obj.class != Regexp
@@ -121,6 +138,9 @@ class RubytypeFactory < Factory
       param.add('options', SOAPInt.new(options))
       addiv2soap(param, obj, map)
     when Range
+      unless @allow_original_mapping
+        return nil
+      end
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_RANGE))
       mark_marshalled_obj(obj, param)
       if obj.class != Range
@@ -151,6 +171,9 @@ class RubytypeFactory < Factory
       param.add('default', Mapping._obj2soap(obj.default, map))
       addiv2soap(param, obj, map)
     when Class
+      unless @allow_original_mapping
+        return nil
+      end
       if obj.name.empty?
         raise TypeError.new("Can't dump anonymous class #{ obj }.")
       end
@@ -159,6 +182,9 @@ class RubytypeFactory < Factory
       param.add('name', SOAPString.new(obj.name))
       addiv2soap(param, obj, map)
     when Module
+      unless @allow_original_mapping
+        return nil
+      end
       if obj.name.empty?
         raise TypeError.new("Can't dump anonymous module #{ obj }.")
       end
@@ -167,18 +193,17 @@ class RubytypeFactory < Factory
       param.add('name', SOAPString.new(obj.name))
       addiv2soap(param, obj, map)
     when Symbol
+      unless @allow_original_mapping
+        return nil
+      end
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_SYMBOL))
       mark_marshalled_obj(obj, param)
       param.add('id', SOAPString.new(obj.id2name))
       addiv2soap(param, obj, map)
-    when Exception
-      typestr = Mapping.name2elename(obj.class.to_s)
-      param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, typestr))
-      mark_marshalled_obj(obj, param)
-      param.add('message', Mapping._obj2soap(obj.message, map))
-      param.add('backtrace', Mapping._obj2soap(obj.backtrace, map))
-      addiv2soap(param, obj, map)
     when Struct
+      unless @allow_original_mapping
+        return nil
+      end
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_STRUCT))
       mark_marshalled_obj(obj, param)
       param.add('type', ele_type = SOAPString.new(obj.class.to_s))
@@ -190,29 +215,51 @@ class RubytypeFactory < Factory
       param.add('member', ele_member)
       addiv2soap(param, obj, map)
     when IO, Binding, Continuation, Data, Dir, File::Stat, MatchData, Method,
-        Proc, Thread, ThreadGroup 
+        Proc, Thread, ThreadGroup
+	# from 1.8: Process::Status, UnboundMethod
+       	# rest: FalseClass, Float, Bignum, Fixnum, TrueClass, NilClass
       return nil
     when ::SOAP::Mapping::Object
       param = SOAPStruct.new(XSD::AnyTypeName)
       mark_marshalled_obj(obj, param)
-      setiv2soap(param, obj, map)   # addiv2soap?
+      addiv2soap(param, obj, map)
+    when Exception
+      typestr = Mapping.name2elename(obj.class.to_s)
+      param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, typestr))
+      mark_marshalled_obj(obj, param)
+      param.add('message', Mapping._obj2soap(obj.message, map))
+      param.add('backtrace', Mapping._obj2soap(obj.backtrace, map))
+      addiv2soap(param, obj, map)
     else
       if obj.class.name.empty?
         raise TypeError.new("Can't dump anonymous class #{ obj }.")
       end
-      if check_singleton(obj)
+      singleton_class = class << obj; self; end
+      if !singleton_methods_true(obj).empty? or
+	  !singleton_class.instance_variables.empty?
         raise TypeError.new("singleton can't be dumped #{ obj }")
       end
-      type = Mapping.class2element(obj.class)
+      if !(singleton_class.ancestors - obj.class.ancestors).empty?
+	typestr = Mapping.name2elename(obj.class.to_s)
+	type = XSD::QName.new(RubyTypeNamespace, typestr)
+      else
+	type = Mapping.class2element(obj.class)
+      end
       param = SOAPStruct.new(type)
       mark_marshalled_obj(obj, param)
-      if obj.class <= Marshallable
-        setiv2soap(param, obj, map)
-      else
-        setiv2soap(param, obj, map) # Should not be marshalled?
-      end
+      setiv2soap(param, obj, map)
     end
     param
+  end
+
+  if RUBY_VERSION >= '1.8.0'
+    def singleton_methods_true(obj)
+      obj.singleton_methods(true)
+    end
+  else
+    def singleton_methods_true(obj)
+      obj.singleton_methods
+    end
   end
 
   def soap2obj(obj_class, node, info, map)
@@ -228,26 +275,11 @@ class RubytypeFactory < Factory
 
 private
 
-  def check_singleton(obj)
-    unless singleton_methods_true(obj).empty?
-      return true
-    end
-    singleton_class = class << obj; self; end
-    if !singleton_class.instance_variables.empty? or
-	!(singleton_class.ancestors - obj.class.ancestors).empty?
-      return true
-    end
-    false
-  end
-
-  if RUBY_VERSION >= '1.8.0'
-    def singleton_methods_true(obj)
-      obj.singleton_methods(true)
-    end
-  else
-    def singleton_methods_true(obj)
-      obj.singleton_methods
-    end
+  def addiv2soap(node, obj, map)
+    return if obj.instance_variables.empty?
+    ivars = SOAPStruct.new    # Undefined type.
+    setiv2soap(ivars, obj, map)
+    node.add(RubyIVarName, ivars)
   end
 
   def rubytype2obj(node, map, rubytype)
@@ -269,21 +301,24 @@ private
     when TYPE_STRING
       obj = string2obj(node, map, rubytype)
       obj.replace(node['string'].data)
-      setiv2obj(obj, node['ivars'], map)
+    when TYPE_TIME
+      klass = rubytype ? Mapping.class_from_name(rubytype) : Time
+      t = node['time'].to_time
+      arg = [t.year, t.month, t.mday, t.hour, t.min, t.sec, t.usec]
+      obj = t.gmt? ? klass.gm(*arg) : klass.local(*arg)
+      mark_unmarshalled_obj(node, obj)
     when TYPE_ARRAY
       obj = array2obj(node, map, rubytype)
       node['array'].soap2array(obj) do |elem|
         elem ? Mapping._soap2obj(elem, map) : nil
       end
-      setiv2obj(obj, node['ivars'], map)
     when TYPE_REGEXP
       klass = rubytype ? Mapping.class_from_name(rubytype) : Regexp
       obj = create_empty_object(klass)
       mark_unmarshalled_obj(node, obj)
       source = node['source'].string
       options = node['options'].data || 0
-      obj.instance_eval { initialize(source, options) }
-      setiv2obj(obj, node['ivars'], map)
+      Regexp.instance_method(:initialize).bind(obj).call(source, options)
     when TYPE_RANGE
       klass = rubytype ? Mapping.class_from_name(rubytype) : Range
       obj = create_empty_object(klass)
@@ -291,12 +326,8 @@ private
       first = Mapping._soap2obj(node['begin'], map)
       last = Mapping._soap2obj(node['end'], map)
       exclude_end = node['exclude_end'].data
-      obj.instance_eval { initialize(first, last, exclude_end) }
-      setiv2obj(obj, node['ivars'], map)
+      Range.instance_method(:initialize).bind(obj).call(first, last, exclude_end)
     when TYPE_HASH
-      unless @allow_original_mapping
-        return false
-      end
       klass = rubytype ? Mapping.class_from_name(rubytype) : Hash
       obj = create_empty_object(klass)
       mark_unmarshalled_obj(node, obj)
@@ -308,16 +339,12 @@ private
       if node.key?('default')
         obj.default = Mapping._soap2obj(node['default'], map)
       end
-      setiv2obj(obj, node['ivars'], map)
     when TYPE_CLASS
       obj = Mapping.class_from_name(node['name'].data)
-      setiv2obj(obj, node['ivars'], map)
     when TYPE_MODULE
       obj = Mapping.class_from_name(node['name'].data)
-      setiv2obj(obj, node['ivars'], map)
     when TYPE_SYMBOL
       obj = node['id'].data.intern
-      setiv2obj(obj, node['ivars'], map)
     when TYPE_STRUCT
       typestr = Mapping.elename2name(node['type'].data)
       klass = Mapping.class_from_name(typestr)
@@ -333,36 +360,22 @@ private
       obj = create_empty_object(klass)
       mark_unmarshalled_obj(node, obj)
       node['member'].each do |name, value|
-        obj[Mapping.elename2name(name)] =
-          Mapping._soap2obj(value, map)
+        obj[Mapping.elename2name(name)] = Mapping._soap2obj(value, map)
       end
-      setiv2obj(obj, node['ivars'], map)
     else
-      conv, obj = exception2obj(node, map)
-      unless conv
-        return false
+      typestr = Mapping.elename2name(node.type.name)
+      klass = Mapping.class_from_name(typestr)
+      if klass.nil?
+       	return false
       end
-      setiv2obj(obj, node['ivars'], map)
+      if klass <= ::Exception
+	obj = exception2obj(klass, node, map)
+      else
+	obj = create_empty_object(klass)
+	mark_unmarshalled_obj(node, obj)
+      end
     end
-    return true, obj
-  end
-
-  def exception2obj(node, map)
-    typestr = Mapping.elename2name(node.type.name)
-    klass = Mapping.class_from_name(typestr)
-    if klass.nil?
-      return false
-    end
-    unless klass <= Exception
-      return false
-    end
-    message = Mapping._soap2obj(node['message'], map)
-    backtrace = Mapping._soap2obj(node['backtrace'], map)
-    obj = create_empty_object(klass)
-    obj = obj.exception(message)
-    mark_unmarshalled_obj(node, obj)
-    obj.set_backtrace(backtrace)
-    setiv2obj(obj, node['ivars'], map)
+    setiv2obj(obj, node[RubyIVarName], map)
     return true, obj
   end
 
@@ -385,7 +398,7 @@ private
 
   def unknowntype2obj(node, map)
     if node.is_a?(SOAPStruct)
-      obj = struct2obj(node, map)
+      obj = unknownstruct2obj(node, map)
       return true, obj if obj
       if !@allow_untyped_struct
         return false
@@ -397,7 +410,7 @@ private
     end
   end
 
-  def struct2obj(node, map)
+  def unknownstruct2obj(node, map)
     obj = nil
     typestr = Mapping.elename2name(node.type.name)
     klass = Mapping.class_from_name(typestr)
@@ -412,6 +425,16 @@ private
     obj = create_empty_object(klass)
     mark_unmarshalled_obj(node, obj)
     setiv2obj(obj, node, map)
+    obj
+  end
+
+  def exception2obj(klass, node, map)
+    message = Mapping._soap2obj(node['message'], map)
+    backtrace = Mapping._soap2obj(node['backtrace'], map)
+    obj = create_empty_object(klass)
+    obj = obj.exception(message)
+    mark_unmarshalled_obj(node, obj)
+    obj.set_backtrace(backtrace)
     obj
   end
 

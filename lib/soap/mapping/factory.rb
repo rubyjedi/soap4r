@@ -76,13 +76,6 @@ class Factory
     end
   end
 
-  def addiv2soap(node, obj, map)
-    return if obj.instance_variables.empty?
-    ivars = SOAPStruct.new    # Undefined type.
-    setiv2soap(ivars, obj, map)
-    node.add('ivars', ivars)
-  end
-
   # It breaks Thread.current[:SOAPMarshalDataKey].
   def mark_marshalled_obj(obj, soap_obj)
     Thread.current[:SOAPMarshalDataKey][obj.__id__] = soap_obj
@@ -104,6 +97,7 @@ end
 
 class StringFactory_ < Factory
   def obj2soap(soap_class, obj, info, map)
+    return nil unless obj.instance_variables.empty?
     begin
       if XSD::Charset.is_ces(obj, $KCODE)
         encoded = XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding)
@@ -127,6 +121,7 @@ end
 
 class BasetypeFactory_ < Factory
   def obj2soap(soap_class, obj, info, map)
+    return nil unless obj.instance_variables.empty?
     soap_obj = nil
     begin
       soap_obj = soap_class.new(obj)
@@ -146,6 +141,7 @@ end
 
 class DateTimeFactory_ < Factory
   def obj2soap(soap_class, obj, info, map)
+    return nil if Time === obj and !obj.instance_variables.empty?
     soap_obj = nil
     begin
       soap_obj = soap_class.new(obj)
@@ -176,6 +172,7 @@ end
 
 class Base64Factory_ < Factory
   def obj2soap(soap_class, obj, info, map)
+    return nil unless obj.instance_variables.empty?
     soap_obj = soap_class.new(obj)
     mark_marshalled_obj(obj, soap_obj) if soap_obj
     soap_obj
@@ -192,6 +189,7 @@ class ArrayFactory_ < Factory
   # [[1], [2]] is converted to Array of Array, not 2-D Array.
   # To create M-D Array, you must call Mapping.ary2md.
   def obj2soap(soap_class, obj, info, map)
+    return nil unless obj.instance_variables.empty?
     arytype = Mapping.obj2element(obj)
     if arytype.name
       arytype.namespace ||= RubyTypeNamespace
@@ -218,6 +216,7 @@ end
 
 class TypedArrayFactory_ < Factory
   def obj2soap(soap_class, obj, info, map)
+    return nil unless obj.instance_variables.empty?
     arytype = info[:type] || info[0]
     param = SOAPArray.new(ValueArrayName, 1, arytype)
     mark_marshalled_obj(obj, param)
@@ -272,6 +271,7 @@ end
 MapQName = XSD::QName.new(ApacheSOAPTypeNamespace, 'Map')
 class HashFactory_ < Factory
   def obj2soap(soap_class, obj, info, map)
+    return nil unless obj.instance_variables.empty?
     if obj.default or
         (obj.respond_to?(:default_proc) and obj.default_proc)
       return nil
