@@ -96,6 +96,8 @@ private
   def run
     @log.sevThreshold = SEV_INFO
 
+    prologue
+
     begin
       log( SEV_INFO, "Received a request from '#{ @remote_user }@#{ @remote_host }'." )
     
@@ -123,6 +125,8 @@ private
       log( SEV_DEBUG, "SOAP CGI Response:\n#{ str }" )
       print str
 
+      epilogue
+
     rescue Exception
       responseString = createFaultResponseString( $! )
       @response = HTTP::Message.newResponse( responseString )
@@ -137,6 +141,9 @@ private
 
     end
   end
+
+  def prologue; end
+  def epilogue; end
 end
 
 
