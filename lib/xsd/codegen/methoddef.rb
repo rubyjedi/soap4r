@@ -7,6 +7,7 @@
 
 
 require 'xsd/codegen/gensupport'
+require 'xsd/codegen/commentdef'
 
 
 module XSD
@@ -15,12 +16,14 @@ module CodeGen
 
 class MethodDef
   include GenSupport
+  include CommentDef
 
-  attr_accessor :comment
   attr_accessor :definition
 
   def initialize(name, *params)
-    raise ArgumentError, name unless safemethodname?(name)
+    unless safemethodname?(name)
+      raise ArgumentError.new("#{name} seems to be unsafe")
+    end
     @name = name
     @params = params
     @comment = nil
@@ -28,40 +31,30 @@ class MethodDef
   end
 
   def dump
-    @buf = ""
-    dump_comment
-    dump_method_def
-    dump_definition
-    dump_method_def_end
-    @buf
+    buf = ""
+    buf << dump_comment if @comment
+    buf << dump_method_def
+    buf << dump_definition if @definition
+    buf << dump_method_def_end
+    buf
   end
 
 private
 
-  def dump_emptyline
-    @buf << "\n"
-  end
-
-  def dump_comment
-    if @comment
-      @buf << format(@comment)
-    end
-  end
-
   def dump_method_def
     if @params.empty?
-      @buf << format("def #{@name}")
+      format("def #{@name}")
     else
-      @buf << format("def #{@name}(#{@params.join(", ")})")
+      format("def #{@name}(#{@params.join(", ")})")
     end
   end
 
   def dump_method_def_end
-    @buf << format("end")
+    format("end")
   end
 
   def dump_definition
-    @buf << format(@definition, 2) if @definition
+    format(@definition, 2)
   end
 end
 
