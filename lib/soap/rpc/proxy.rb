@@ -126,8 +126,8 @@ private
 
   def create_header(headers)
     header = SOAPHeader.new()
-    headers.each do |content, must_understand, encodingstyle|
-      header.add(SOAPHeaderItem.new(content, must_understand, encodingstyle))
+    headers.each do |content, mustunderstand, encodingstyle|
+      header.add(SOAPHeaderItem.new(content, mustunderstand, encodingstyle))
     end
     header
   end
