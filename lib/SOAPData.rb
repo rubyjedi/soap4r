@@ -40,6 +40,12 @@ class SOAPNS
       false
     elsif ( name == '' )
       @defaultNamespace = namespace
+      name
+    elsif ( @namespaceTag.has_value?( name ))
+      # Already assigned.  Should raise Error?
+      name = SOAPNS.assign( namespace )
+      @namespaceTag[ namespace ] = name
+      name
     else
       name ||= SOAPNS.assign( namespace )
       @namespaceTag[ namespace ] = name
@@ -108,12 +114,12 @@ class SOAPNS
 
   AssigningName = [ 0 ]
 
-  def SOAPNS.assign( namespace )
+  def self.assign( namespace )
     AssigningName[ 0 ] += 1
     'n' << AssigningName[ 0 ].to_s
   end
 
-  def SOAPNS.reset()
+  def self.reset()
     AssigningName[ 0 ] = 0
   end
 end
@@ -148,14 +154,16 @@ module SOAPModuleUtils
     end
 
     case getType( ns, elem )
+    when 'int'
+      SOAPInt.decode( ns, elem )
+    when 'integer'
+      SOAPInteger.decode( ns, elem )
     when 'boolean'
       SOAPBoolean.decode( ns, elem )
     when 'string'
       SOAPString.decode( ns, elem )
     when 'timeInstant'
       SOAPTimeInstant.decode( ns, elem )
-    when 'integer'
-      SOAPInteger.decode( ns, elem )
     when /\[\d*\]$/
       SOAPArray.decode( ns, elem )
     else
@@ -218,8 +226,6 @@ module SOAPBasetypeUtils
 
   public
 
-  attr_reader :attrs
-
   def initialize( *vars )
     super( *vars )
 
@@ -228,21 +234,14 @@ module SOAPBasetypeUtils
 
   end
 
-  def encode( ns, namespace, name )
+  def encode( ns, name )
     attrs = []
-    unless ns[ XSD::Namespace ]
-      tag = ns.assign( XSD::Namespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, XSD::Namespace ))
-    end
-
-    # @typeName is in XSDBase
-    attrs.push( datatypeAttr( ns ))
+    getExtraNSAttr( attrs, ns )
+    getDatatypeAttr( attrs, ns )
 
     if ( self.to_s.empty? )
-      #Element.new( ns.name( namespace, name ), attrs )
       Element.new( name, attrs )
     else
-      #Element.new( ns.name( namespace, name ), attrs, Text.new( self.to_s ))
       Element.new( name, attrs, Text.new( self.to_s ))
     end
   end
@@ -253,8 +252,15 @@ module SOAPBasetypeUtils
 
   private
 
-  def datatypeAttr( ns )
-    Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @typeName ))
+  def getDatatypeAttr( attrs, ns )
+    attrs.push( Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @typeName )))
+  end
+
+  def getExtraNSAttr( attrs, ns )
+    unless ns[ XSD::Namespace ]
+      tag = ns.assign( XSD::Namespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, XSD::Namespace ))
+    end
   end
 end
 
@@ -269,7 +275,7 @@ class SOAPNull < XSDNull
   private
 
   # Override the definition in SOAPBasetypeUtils.
-  def datatypeAttr( ns )
+  def getDatatypeAttr( ns )
     Attr.new( ns.name( XSD::Namespace, 'null' ), '1' )
   end
 
@@ -292,6 +298,11 @@ class SOAPString < XSDString
 end
 
 class SOAPInteger < XSDInteger
+  extend SOAPModuleUtils
+  include SOAPBasetypeUtils
+end
+
+class SOAPInt < XSDInt
   extend SOAPModuleUtils
   include SOAPBasetypeUtils
 end
@@ -359,24 +370,19 @@ class SOAPStruct < SOAPCompoundBase
     end
   end
 
-  def encode( ns, namespace, name )
+  def encode( ns, name )
     attrs = []
-    unless ns[ @namespace ]
-      tag = ns.assign( @namespace )
-      attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
-    end
-
-    attrs.push( Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @typeName )))
+    getExtraNSAttr( attrs, ns )
+    getDatatypeAttr( attrs, ns )
 
     children = @array.collect { | child |
-      @data[ child ].encode( ns.clone, namespace, child )
+      @data[ child ].encode( ns.clone, child )
     }
 
-    #Element.new( ns.name( namespace, name ), attrs, children )
     Element.new( name, attrs, children )
   end
 
-  def decode( ns, elem )
+  def self.decode( ns, elem )
     namespace, name = ns.parse( elem.nodeName )
     s = SOAPStruct.new( name )
     s.namespace = namespace
@@ -390,9 +396,19 @@ class SOAPStruct < SOAPCompoundBase
     end
     s
   end
-  module_function :decode
 
   private
+
+  def getDatatypeAttr( attrs, ns )
+    attrs.push( Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @typeName )))
+  end
+
+  def getExtraNSAttr( attrs, ns )
+    unless ns[ @namespace ]
+      tag = ns.assign( @namespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
+    end
+  end
 
   def addMember( name, initMember = nil )
     initMember = SOAPNull.new() unless initMember
@@ -421,8 +437,9 @@ class SOAPArray < SOAPCompoundBase
 
   def initialize( typeName = nil )
     super( typeName )
-    @data = []
+    @data = [ [] ]
     @variant = false
+    @rank = 1
   end
 
   def set( newArray )
@@ -430,47 +447,84 @@ class SOAPArray < SOAPCompoundBase
   end
 
   def add( newMember )
-    if ( @data.empty? and !@typeName )
-      @typeName = newMember.typeName
+    if ( @rank != 1 )
+      raise NotImplementError.new( 'Rank must be 1' )
+    end
+    if ( @data[ 0 ].empty? and !@typeName )
+      @typeName = SOAPArray.getAtype( newMember.typeName, @rank )
+      @namespace = newMember.namespace # ??
     end
     if ( @typeName != newMember.typeName )
       @variant = true
     end
-    @data << newMember
+    @data[ 0 ] << newMember
   end
 
   def []( idx )
-    if ( idx > @data.size )
+    if ( @rank != 1 )
+      raise NotImplementError.new( 'Rank must be 1' )
+    end
+    if ( idx > @data[ 0 ].size )
       raise ArrayIndexOutOfBoundsError.new( 'In ' << @typeName )
     end
-    @data[ idx ]
+    @data[ 0 ][ idx ]
   end
 
   def each
-    @data.each do | datum |
+    if ( @rank != 1 )
+      raise NotImplementError.new( 'Rank must be 1' )
+    end
+    @data[ 0 ].each do | datum |
       yield( datum )
     end
   end
 
-  def encode( ns, namespace, name )
-    children = @data.collect { | child |
-      child.encode( ns.clone, namespace, @typeName )
+  def encode( ns, name )
+    attrs = []
+    getExtraNSAttr( attrs, ns )
+    getDatatypeAttr( attrs, ns )
+
+    children = @data[ 0 ].collect { | child |
+      childTypeName = contentsTypeName().gsub( /\[,*\]/, 'Array' )
+      child.encode( ns.clone, childTypeName )
     }
-    attr = Attr.new( ns.name( XSD::InstanceNamespace, 'type' ),
-      ns.name( namespace, createType( @typeName, @data.size )))
-    #Element.new( ns.name( namespace, name ), attr, children )
-    Element.new( name, attr, children )
+    Element.new( name, attrs, children )
   end
 
   def isVariant?
     @variant
   end
 
+  private
+
+  def getDatatypeAttr( attrs, ns )
+    attrs.push( Attr.new( ns.name( EncodingNamespace, 'arrayType' ), ns.name( @namespace, arrayTypeValue() )))
+  end
+
+  def getExtraNSAttr( attrs, ns )
+    unless ns[ @namespace ]
+      tag = ns.assign( @namespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
+    end
+    unless ns[ EncodingNamespace ]
+      tag = ns.assign( EncodingNamespace )
+      attrs.push( Attr.new( 'xmlns:' << tag, EncodingNamespace ))
+    end
+  end
+
+  def contentsTypeName()
+    @typeName.dup.sub( /\[,*\]$/, '' )
+  end
+
+  def arrayTypeValue()
+    contentsTypeName << '[' << @data.collect { |i| i.size }.join( ',' ) << ']'
+  end
+
   # Module function
 
   public
 
-  def decode( ns, elem )
+  def self.decode( ns, elem )
     typeNamespace, typeNameString = ns.parse( getType( ns, elem ))
     typeName, nofArray = parseType( typeNameString )
     s = SOAPArray.new( typeName )
@@ -489,20 +543,17 @@ class SOAPArray < SOAPCompoundBase
     end
     s
   end
-  module_function :decode
 
   private
 
-  def createType( typeName, length = nil )
-    "#{ typeName }[#{ length }]"
+  def self.getAtype( typeName, rank )
+    "#{ typeName }[" << ',' * ( rank - 1 ) << ']'
   end
-  module_function :createType
 
   TypeParseRegexp = Regexp.new( '^(.+)\[(\d*)\]$' )
 
-  def parseType( string )
+  def self.parseType( string )
     TypeParseRegexp =~ string
     return $1, $2
   end
-  module_function :parseType
 end
