@@ -25,10 +25,10 @@ module WSDL
 
 
 class Element < Info
-  attr_reader :name	# required
-  attr_reader :type
-  attr_reader :maxOccurs
-  attr_reader :minOccurs
+  attr_accessor :name	# required
+  attr_accessor :type
+  attr_accessor :maxOccurs
+  attr_accessor :minOccurs
 
   AnyType = XSD::QName.new( XSD::Namespace, XSD::AnyTypeLiteral )
   def initialize
@@ -69,6 +69,7 @@ class Element < Info
     case attr
     when NameAttrName
       @name = value
+      parent.addElement( self )
     when TypeAttrName
       @type = if value.is_a?( XSD::QName )
 	  value
