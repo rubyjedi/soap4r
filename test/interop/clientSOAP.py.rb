@@ -3,6 +3,7 @@
 $serverName = 'SOAP.py'
 
 require 'clientBase'
+require 'soap/XMLSchemaDatatypes1999'
 
 $server = 'http://208.177.157.221:9595/xmethodsInterop'
 $soapAction = 'urn:soapinterop'
