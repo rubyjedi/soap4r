@@ -79,7 +79,7 @@ public
     super()
     @client = Client.new(nil, "SOAP4R/#{ Version }")
     @wiredump_file_base = nil
-    @charset = @wiredump_dev = nil
+    @charset = @wiredump_dev = @nil
     @options = options
     set_options
     @client.debug_dev = @wiredump_dev
@@ -151,6 +151,15 @@ private
     set_basic_auth(basic_auth)
     basic_auth.add_hook do |key, value|
       set_basic_auth(basic_auth)
+    end
+    @options.add_hook("connect_timeout") do |key, value|
+      @client.connect_timeout = value
+    end
+    @options.add_hook("send_timeout") do |key, value|
+      @client.send_timeout = value
+    end
+    @options.add_hook("receive_timeout") do |key, value|
+      @client.receive_timeout = value
     end
     @options.lock(true)
     ssl_config.unlock
