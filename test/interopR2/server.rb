@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
-
 require 'soap/standaloneServer'
 require 'base'
 
