@@ -44,6 +44,9 @@ class Message < Info
       o = Part.new
       @parts << o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end

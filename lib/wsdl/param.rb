@@ -51,6 +51,9 @@ class Param < Info
       o = WSDL::SOAP::Body.new
       @soapBody = o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end

@@ -201,6 +201,7 @@ private
   end
 
   def decodeTagEnd( ns, node )
+    # Should check element name.
     node.postParse
   end
 

@@ -112,6 +112,9 @@ class OperationBinding < Info
       o = WSDL::SOAP::Operation.new
       @soapOperation = o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end

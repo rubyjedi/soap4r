@@ -38,6 +38,9 @@ class Types < Info
       o = XMLSchema::Schema.new
       @schemas << o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end

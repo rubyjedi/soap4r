@@ -83,6 +83,9 @@ class Operation < Info
       o = Param.new
       @fault = o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end

@@ -36,7 +36,13 @@ class Import < Info
   end
 
   def parseElement( element )
-    nil
+    case element
+    when DocumentationName
+      o = Documentation.new
+      o
+    else
+      nil
+    end
   end
 
   NamespaceAttrName = XSD::QName.new( nil, 'namespace' )
