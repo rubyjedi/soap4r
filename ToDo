@@ -1,6 +1,8 @@
 = ToDo
 
-* Add XSD tests to the interop test client.
+* RAA exception
+* RAA uri-fy
+* Support SwA.
 * Rewrite the interop test client with runit?
 * Support all derived built-in types in XML Schema Part2 Sec. 3.2.
 * Design and implement SOAPHeader handler API.
@@ -11,9 +13,7 @@
   does lib/soap/encodingStyleHandlerASPDotNet.rb is enough?
 * Follow SOAP/1.2.  I heard it is going to be Last Call soon without Candidate
   Recommendation phase...
-* Support derived types in XML Schema Part2
-* WSDL4R.
-  * encoding/decoding based on type information.
+* encoding/decoding based on type information in WSDL.
 * Create unit tests.
 
 
@@ -25,3 +25,5 @@
   slow.
 * Create unit tests for XMLSchemaDatatypes.rb.
 * Create unit tests for baseData.rb.
+* Add XSD tests to the interop test client.
+* WSDL4R.
