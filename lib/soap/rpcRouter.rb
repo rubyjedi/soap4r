@@ -38,6 +38,7 @@ class RPCRouter
 
   attr_reader :actor
   attr_accessor :allowUnqualifiedElement
+  attr_accessor :mappingRegistry
 
   def initialize( actor )
     @actor = actor
@@ -45,6 +46,7 @@ class RPCRouter
     @receiver = {}
     @method = {}
     @allowUnqualifiedElement = false
+    @mappingRegistry = nil
   end
 
   # Method definition.
@@ -117,7 +119,7 @@ private
     end
 
     soapResponse = method.dup
-    soapResponse.retVal = obj2soap( retVal )
+    soapResponse.retVal = RPCUtils.obj2soap( retVal, @mappingRegistry )
     soapResponse
   end
 
@@ -137,7 +139,7 @@ private
     namespace = soapMethod.namespace
     methodName = soapMethod.typeName || soapMethod.name
 
-    requestStruct = soap2obj( soapMethod )
+    requestStruct = RPCUtils.soap2obj( soapMethod, @mappingRegistry )
     values = requestStruct.members.collect { |member|
       requestStruct[ member ]
     }
