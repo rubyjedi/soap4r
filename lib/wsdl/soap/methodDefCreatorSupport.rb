@@ -20,6 +20,7 @@ Ave, Cambridge, MA 02139, USA.
 require 'wsdl/info'
 require 'wsdl/data'
 require 'soap/mappingRegistry'
+require 'soap/typeMap'
 
 
 module WSDL
@@ -28,22 +29,14 @@ module WSDL
 
 module MethodDefCreatorSupport
   BaseMappingRegistry = ::SOAP::RPCUtils::MappingRegistry.new
-  SOAPBaseMap = {}
-  XSD::NSDBase.types.each do | klass |
-    begin
-      obj = klass.new
-      SOAPBaseMap[ obj.type ] = klass
-    rescue ArgumentError
-    end
-  end
 
   def getBaseTypeMappedClass( name )
-    SOAPBaseMap[ name ]
+    ::SOAP::TypeMap[ name ]
   end
 
   def createClassName( name )
-    if SOAPBaseMap[ name ]
-      BaseMappingRegistry.searchMappedRubyClass( SOAPBaseMap[ name ] ).to_s
+    if ::SOAP::TypeMap[ name ]
+      BaseMappingRegistry.searchMappedRubyClass( ::SOAP::TypeMap[ name ] ).to_s
     else
       result = capitalize( name.name )
       unless /^[A-Z]/ =~ result
