@@ -282,8 +282,7 @@ private
     end
 
     def add_document_method(name_as, soapaction, name, param_def)
-      qname = XSD::QName.new(@namespace, name_as)
-      @proxy.add_document_method(qname, soapaction, name, param_def)
+      @proxy.add_document_method(soapaction, name, param_def)
       add_document_method_interface(name, param_def)
     end
 
