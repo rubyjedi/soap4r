@@ -128,7 +128,7 @@ module RPCUtils
     end
 
     def eachParamName( *type )
-      @paramSignature.each do | ioType, paramName |
+      @paramSignature.each do | ioType, paramType, paramName |
 	if type.include?( ioType )
 	  yield( paramName )
 	end
@@ -161,27 +161,25 @@ module RPCUtils
     def SOAPMethod.createParamDef( paramNames )
       paramDef = []
       paramNames.each do | paramName |
-	paramDef.push( [ IN, paramName ] )
+	paramDef.push( [ IN, nil, paramName ] )
       end
-      paramDef.push( [ RETVAL, 'return' ] )
+      paramDef.push( [ RETVAL, nil, 'return' ] )
       paramDef
     end
 
   private
 
     def setParamDef
-      @paramDef.each do | definition |
-	ioType, name = definition
-
+      @paramDef.each do | ioType, paramType, name |
   	case ioType
   	when IN
-	  @paramSignature.push( [ IN, name ] )
+	  @paramSignature.push( [ IN, paramType, name ] )
 	  @inParamNames.push( name )
   	when OUT
-	  @paramSignature.push( [ OUT, name ] )
+	  @paramSignature.push( [ OUT, paramType, name ] )
 	  @outParamNames.push( name )
   	when INOUT
-	  @paramSignature.push( [ INOUT, name ] )
+	  @paramSignature.push( [ INOUT, paramType, name ] )
 	  @inoutParamNames.push( name )
   	when RETVAL
   	  if ( @retName )
@@ -207,10 +205,10 @@ module RPCUtils
       params.each do | param |
 	paramName = "p#{ i }"
 	i += 1
-	paramDef << [ IN, paramName ]
+	paramDef << [ IN, nil, paramName ]
 	paramValue << [ paramName, param ]
       end
-      paramDef << [ RETVAL, 'return' ]
+      paramDef << [ RETVAL, nil, 'return' ]
       o = new( namespace, name, paramDef )
       o.setParams( paramValue )
       o
@@ -276,7 +274,7 @@ module RPCUtils
   #    ...
   #    return SOAP::RPCUtils::SOAPVoid.new
   #  end
-  class SOAPVoid < XSDBase
+  class SOAPVoid < XSDAnyType
     include SOAPBasetype
     extend SOAPModuleUtils
 
