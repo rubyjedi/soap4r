@@ -321,7 +321,7 @@ private
 end
 
 require 'rational'
-require 'date'
+require 'date2'
 module XSDDateTimeImpl
   def to_time
     begin
@@ -368,7 +368,7 @@ private
     elsif ( t.is_a?( Time ))
       # Should TZ be saved?
       gt = t.dup.gmtime
-      @data = DateTime.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
+      @data = DateTime.civil( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
     else
       /^([+-]?\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
       unless Regexp.last_match
@@ -384,27 +384,27 @@ private
       usec = $7
       zoneStr = $8
 
-      @data = DateTime.new3( year, mon, mday, hour, min, sec,
+      @data = DateTime.civil( year, mon, mday, hour, min, sec,
 	ofFromTZ( zoneStr ))
 
       if usec
 	diffDay = usec.to_i.to_r / ( 10 ** usec.size ) / SecInDay
 	jd = @data.jd
-	fr1 = @data.fr1 + diffDay
-	@data = DateTime.new0( DateTime.jd_to_rjd( jd, fr1, @data.of ),
-	  @data.of )
+	day_fraction = @data.day_fraction + diffDay
+	@data = DateTime.new0( DateTime.jd_to_rjd( jd, day_fraction,
+	  @data.offset ), @data.offset )
       end
     end
   end
 
   def _to_s
     # Adjust to UTC.
-    d = @data.newof
+    d = @data.new_offset
     # This format string is from date.rb of newdate-0.2.
     s = format('%.4d-%02d-%02dT%02d:%02d:%02d',
       d.year, d.mon, d.mday, d.hour, d.min, d.sec )
-    if d.fr2.nonzero?
-      fr = d.fr2 * SecInDay
+    if d.sec_fraction.nonzero?
+      fr = d.sec_fraction * SecInDay
       shiftSize = fr.denominator.to_s.size
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
       s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
@@ -486,7 +486,7 @@ private
       @data = t
     elsif ( t.is_a?( Time ))
       gt = t.dup.gmtime
-      @data = DateTime.new3( gt.year, gt.mon, gt.mday )
+      @data = DateTime.civil( gt.year, gt.mon, gt.mday )
     else
       /^([+-]?\d\d\d\d)-(\d\d)-(\d\d)$/ =~ trim( t.to_s )
       unless Regexp.last_match
@@ -497,7 +497,7 @@ private
       mon = $2.to_i
       mday = $3.to_i
 
-      @data = DateTime.new3( year, mon, mday )
+      @data = DateTime.civil( year, mon, mday )
     end
   end
 
