@@ -1,3 +1,5 @@
+$KCODE = "UTF8"
+
 require 'runit/testcase'
 require 'runit/cui/testrunner'
 
@@ -21,8 +23,8 @@ public
 
   def test_SOAPNil
     o = SOAP::SOAPNil.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::NilLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::NilLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -38,8 +40,8 @@ public
 
   def test_SOAPString
     o = SOAP::SOAPString.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::StringLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::StringLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -56,8 +58,8 @@ public
 
   def test_SOAPBoolean
     o = SOAP::SOAPBoolean.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::BooleanLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::BooleanLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -79,8 +81,8 @@ public
 
   def test_SOAPDecimal
     o = SOAP::SOAPDecimal.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DecimalLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DecimalLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -146,8 +148,8 @@ public
 
   def test_SOAPFloat
     o = SOAP::SOAPFloat.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::FloatLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::FloatLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -211,8 +213,8 @@ public
 
   def test_SOAPDouble
     o = SOAP::SOAPDouble.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DoubleLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DoubleLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -276,8 +278,8 @@ public
 
   def test_SOAPDuration
     o = SOAP::SOAPDuration.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DurationLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DurationLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -332,8 +334,8 @@ public
 
   def test_SOAPDateTime
     o = SOAP::SOAPDateTime.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DateTimeLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DateTimeLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -381,7 +383,7 @@ public
     end
 
     targets = [
-      "0001-05-18T16:52:20Z",
+      "1-05-18T16:52:20Z",
       "05-18T16:52:20Z",
       "2002-05T16:52:20Z",
       "2002-05-18T16:52Z",
@@ -396,8 +398,8 @@ public
 
   def test_SOAPTime
     o = SOAP::SOAPTime.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::TimeLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::TimeLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -435,8 +437,8 @@ public
 
   def test_SOAPDate
     o = SOAP::SOAPDate.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::DateLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::DateLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -480,8 +482,8 @@ public
 
   def test_SOAPGYearMonth
     o = SOAP::SOAPGYearMonth.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GYearMonthLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GYearMonthLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -525,8 +527,8 @@ public
 
   def test_SOAPGYear
     o = SOAP::SOAPGYear.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GYearLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GYearLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -570,8 +572,8 @@ public
 
   def test_SOAPGMonthDay
     o = SOAP::SOAPGMonthDay.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GMonthDayLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GMonthDayLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -604,8 +606,8 @@ public
 
   def test_SOAPGDay
     o = SOAP::SOAPGDay.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GDayLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GDayLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -638,8 +640,8 @@ public
 
   def test_SOAPGMonth
     o = SOAP::SOAPGMonth.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::GMonthLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::GMonthLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -672,8 +674,8 @@ public
 
   def test_SOAPHexBinary
     o = SOAP::SOAPHexBinary.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::HexBinaryLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::HexBinaryLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -709,8 +711,8 @@ public
 
   def test_SOAPBase64Binary
     o = SOAP::SOAPBase64.new
-    assert_equal( SOAP::EncodingNamespace, o.typeNamespace )
-    assert_equal( SOAP::Base64Literal, o.typeName )
+    assert_equal( SOAP::EncodingNamespace, o.type.namespace )
+    assert_equal( SOAP::Base64Literal, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -743,8 +745,8 @@ public
 
   def test_SOAPAnyURI
     o = SOAP::SOAPAnyURI.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::AnyURILiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::AnyURILiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -764,8 +766,8 @@ public
 
   def test_SOAPQName
     o = SOAP::SOAPQName.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::QNameLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::QNameLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -788,8 +790,8 @@ public
 
   def test_SOAPInteger
     o = SOAP::SOAPInteger.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::IntegerLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::IntegerLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -847,8 +849,8 @@ public
 
   def test_SOAPLong
     o = SOAP::SOAPLong.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::LongLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::LongLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
@@ -901,8 +903,8 @@ public
 
   def test_SOAPInt
     o = SOAP::SOAPInt.new
-    assert_equal( XSD::Namespace, o.typeNamespace )
-    assert_equal( XSD::IntLiteral, o.typeName )
+    assert_equal( XSD::Namespace, o.type.namespace )
+    assert_equal( XSD::IntLiteral, o.type.name )
     assert_equal( nil, o.data )
     assert_equal( true, o.isNil )
 
