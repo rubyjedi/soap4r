@@ -742,11 +742,16 @@ module RPCUtils
     alias :set :add
 
     def obj2soap( klass, obj )
-      ret = @map.obj2soap( klass, obj ) ||
-	@defaultFactory.obj2soap( klass, obj, nil, self )
+      ret = nil
+      begin 
+	ret = @map.obj2soap( klass, obj ) ||
+	  @defaultFactory.obj2soap( klass, obj, nil, self )
+      rescue Factory::FactoryError
+      end
+
       if ret.nil? && @obj2soapExceptionHandler
 	ret = @obj2soapExceptionHandler.call( obj ) { | yieldObj |
-	  RPCUtils._obj2soap( obj, self )
+	  RPCUtils._obj2soap( yieldObj, self )
 	}
       end
       if ret.nil?
