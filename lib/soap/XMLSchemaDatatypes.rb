@@ -33,6 +33,8 @@ module XSD
   FloatLiteral = 'float'
   DoubleLiteral = 'double'
   DateTimeLiteral = 'dateTime'
+  TimeLiteral = 'time'
+  DateLiteral = 'date'
   Base64BinaryLiteral = 'base64Binary'
   DecimalLiteral = 'decimal'
   IntegerLiteral = 'integer'
@@ -81,6 +83,14 @@ public
 
   def to_s()
     @data.to_s
+  end
+
+  def method_missing( msg_id, *params )
+    if @data
+      @data.send( msg_id, *params )
+    else
+      nil
+    end
   end
 end
 
@@ -140,11 +150,37 @@ public
 
   def initialize( initDecimal = nil )
     super( DecimalLiteral )
+    @sign = ''
+    @integerP = 0
+    @fractionP = 0
     set( initDecimal ) if initDecimal
   end
 
   def set( newDecimal )
-    @data = newDecimal.to_f
+    /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ newDecimal.to_s
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "Decimal: #{ newDecimal } is not acceptable." )
+    end
+
+    @sign = $1 || '+'
+    @integerP = $2.to_i
+    @fractionP = $3.to_i
+
+    # normalize
+    @sign = '' if @sign == '+'
+  end
+
+  def data
+    self.to_s
+  end
+
+  # 0.0 -> 0; right?
+  def to_s
+    str = @sign + @integerP.to_s
+    if @fractionP.nonzero?
+      str << '.' << @fractionP.to_s
+    end
+    str
   end
 end
 
@@ -234,10 +270,9 @@ public
 end
 
 require 'rational'
+require 'date3'
+require 'parsedate3'
 class XSDDateTime < XSDBase
-  require 'date3'
-  require 'parsedate3'
-
 public
 
   def initialize( initDateTime = nil )
@@ -252,37 +287,151 @@ public
       gt = t.dup.gmtime
       @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
     else
-      tStr = t.to_s.sub( 'Z([-+]\d\d:?\d\d)?$' ) { $1 }
-      ( year, mon, mday, hour, min, sec, zone, wday ) = ParseDate.parsedate( tStr )
+      /^([+-]?\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ t.to_s
+      unless Regexp.last_match
+	raise ValueSpaceError.new( "DateTime: #{ t } is not acceptable." )
+      end
+
+      year = $1.to_i
+      mon = $2.to_i
+      mday = $3.to_i
+      hour = $4.to_i
+      min = $5.to_i
+      sec = $6.to_i
+      usec = $7.to_i
+      zoneStr = $8
+
       @data = Date.new3( year, mon, mday, hour, min, sec )
 
-      if zone
-	/^([-+])(\d\d):(\d\d)$/ =~ zone
-	zoneSign = $1
-	zoneHour = $2.to_i
-	zoneMin = $3.to_i
+      if usec.nonzero?
+	diffDay = usec.to_r / ( 10 ** usec.size ) / 84600
+	jd = @data.jd
+	fr1 = @data.fr1 + diffDay
+	@data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
+      end
+
+      @data = XSDDateTime.tzAdjust( @data, zoneStr ) if zoneStr
+    end
+  end
+
+  def to_s
+    @data.to_s.sub( /,.*$/, 'Z' )
+  end
+
+  # Debt: collect syntax.
+  def self.tzAdjust( date, zoneStr )
+    newDate = date
+
+    /^(?:Z|(?:([+-])(\d\d):(\d\d))?)$/ =~ zoneStr
+    zoneSign = $1
+    zoneHour = $2.to_i
+    zoneMin = $3.to_i
+
+    if zoneSign
+      if !zoneHour.zero? || !zoneMin.zero?
+       	diffDay = 0.to_r
+	case zoneSign
+	when '+'
+	  diffDay = +( zoneHour * 3600 + zoneMin * 60 ).to_r / 86400
+	when '-'
+	  diffDay = -( zoneHour * 3600 + zoneMin * 60 ).to_r / 86400
+	end
+	jd = newDate.jd
+	fr1 = newDate.fr1 - diffDay
+	newDate = Date.new0( Date.jd_to_rjd( jd, fr1 ))
+      end
+    end
+    newDate
+  end
+end
+
+class XSDTime < XSDBase
+public
+
+  def initialize( initTime = nil )
+    super( TimeLiteral )
+    set( initTime ) if initTime
+  end
+
+  def set( t )
+    if ( t.is_a?( Time ))
+      @data = t
+    else
+      /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(?:Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ t.to_s
+      unless Regexp.last_match
+	raise ValueSpaceError.new( "Time: #{ t } is not acceptable." )
+      end
+
+      hour = $1.to_i
+      min = $2.to_i
+      sec = $3.to_i
+      usec = $4.to_i
+      zoneSign = $5
+      zoneHour = $6.to_i
+      zoneMin = $7.to_i
+
+      @data = Time.mktime( 2000, 1, 1, hour, min, sec, usec )
+
+      if zoneSign
 	if !zoneHour.zero? || !zoneMin.zero?
-	  diffDay = 0
+	  diffSec = 0
 	  case zoneSign
 	  when '+'
-	    diffDay = +( zoneHour * 3600 + zoneMin * 60 ).to_r / 86400
+	    diffSec = +( zoneHour * 3600 + zoneMin * 60 )
 	  when '-'
-	    diffDay = -( zoneHour * 3600 + zoneMin * 60 ).to_r / 86400
+	    diffSec = -( zoneHour * 3600 + zoneMin * 60 )
 	  when nil
-	    raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
+	    raise ValueSpaceError.new( "TimeZone: #{ zoneHour }:#{ zoneMin } is not acceptable." )
 	  else
-	    raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
+	    raise ValueSpaceError.new( "TimeZone: #{ zoneHour }:#{ zoneMin } is not acceptable." )
 	  end
-	  jd = @data.jd
-	  fr1 = @data.fr1 - diffDay
-	  @data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
+	  @data += diffSec
 	end
       end
     end
   end
 
   def to_s
-    @data.to_s.sub( /,.*$/, 'Z' )
+    if @data.usec.zero?
+      format( '%02d:%02d:%02d', @data.hour, @data.min, @data.sec )
+    else
+      format( '%02d:%02d:%02d.%d', @data.hour, @data.min, @data.sec, @data.usec )
+    end
+  end
+end
+
+class XSDDate < XSDBase
+public
+
+  def initialize( initDate = nil )
+    super( DateLiteral )
+    set( initDate ) if initDate
+  end
+
+  def set( t )
+    if ( t.is_a?( Date ))
+      @data = t.dup
+    elsif ( t.is_a?( Time ))
+      gt = t.dup.gmtime
+      @data = Date.new3( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
+    else
+      /^([+-]?\d+)-(\d\d)-(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ t.to_s
+      unless Regexp.last_match
+	raise ValueSpaceError.new( "Time: #{ t } is not acceptable." )
+      end
+
+      year = $1.to_i
+      mon = $2.to_i
+      mday = $3.to_i
+      zoneStr = $4
+
+      @data = Date.new3( year, mon, mday, 0, 0, 0 )
+      @data = XSDDateTime.tzAdjust( @data, zoneStr ) if zoneStr
+    end
+  end
+
+  def to_s
+    @data.to_s.sub( /T.*$/, '' )
   end
 end
 
@@ -325,6 +474,14 @@ public
 
   def set( newInteger )
     @data = newInteger.to_i
+  end
+
+  def data
+    @data
+  end
+
+  def to_s()
+    @data.to_s
   end
 end
 
