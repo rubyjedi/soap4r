@@ -67,7 +67,7 @@ public
     elsif @ns2tag.has_key?( name.namespace )
       @ns2tag[ name.namespace ] + ':' << name.name
     else
-      raise FormatError.new( 'Namespace: ' << namespace << ' not defined yet.' )
+      raise FormatError.new( 'Namespace: ' << name.namespace << ' not defined yet.' )
     end
   end
 =begin
