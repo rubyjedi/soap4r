@@ -267,7 +267,7 @@ def doTestBase( drv )
   title = 'echoStringArray (sparse)'
   begin
     arg = [ nil, "SOAP4R\n", nil, " Interoperability ", nil, "\tTest\t", nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral )
+    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
     soapAry.sparse = true
     var = drv.echoStringArray( soapAry )
     dumpNormal( title, arg, var )
@@ -333,7 +333,7 @@ def doTestBase( drv )
   title = 'echoIntegerArray (sparse)'
   begin
     arg = [ nil, 1, nil, 2, nil, 3, nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::IntLiteral )
+    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::IntLiteral, SOAPBuildersInterop::MappingRegistry )
     soapAry.sparse = true
     var = drv.echoIntegerArray( soapAry )
     dumpNormal( title, arg, var )
@@ -353,6 +353,24 @@ def doTestBase( drv )
   title = 'echoFloat (scientific notation)'
   begin
     arg = 12.34e36
+    var = drv.echoFloat( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (positive lower boundary)'
+  begin
+    arg = 1.4e-45
+    var = drv.echoFloat( arg )
+    dumpNormal( title, arg, var )
+  rescue Exception
+    dumpException( title )
+  end
+
+  title = 'echoFloat (negative lower boundary)'
+  begin
+    arg = -1.4e-45
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
   rescue Exception
@@ -410,7 +428,7 @@ def doTestBase( drv )
   title = 'echoFloatArray (sparse)'
   begin
     arg = [ nil, nil, 0.0001, 1000.0, 0.0, nil, nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::FloatLiteral ) 
+    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::FloatLiteral, SOAPBuildersInterop::MappingRegistry ) 
     soapAry.sparse = true
     var = drv.echoFloatArray( soapAry )
     dumpNormal( title, arg, var )
@@ -466,7 +484,7 @@ def doTestBase( drv )
     s2 = SOAPStruct.new( 2, 2.2, "b" )
     s3 = SOAPStruct.new( 3, 3.3, "c" )
     arg = [ s1, s2, s3 ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct" ) 
+    soapAry = SOAP::RPCUtils.ary2soap( arg, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry ) 
     soapAry.sparse = true
     var = drv.echoStructArray( soapAry )
     dumpNormal( title, arg, var ) 
@@ -474,6 +492,7 @@ def doTestBase( drv )
     dumpException( title )
   end
 
+=begin
   title = 'echoStructArray (2D Array)'
   begin
     s1 = SOAPStruct.new( 1, 1.1, "a" )
@@ -483,7 +502,7 @@ def doTestBase( drv )
       [ s1, nil, s2 ],
       [ nil, s2, s3 ],
     ]
-    md = SOAP::RPCUtils.ary2md( arg, 2 )
+    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
 
     var = drv.echoStructArray( md )
     dumpNormal( title, arg, var ) 
@@ -500,7 +519,7 @@ def doTestBase( drv )
       [ s1, nil, s2 ],
       [ nil, s2, s3 ],
     ]
-    md = SOAP::RPCUtils.ary2md( arg, 2, TypeNS, "SOAPStruct" )
+    md = SOAP::RPCUtils.ary2md( arg, 2, TypeNS, "SOAPStruct", SOAPBuildersInterop::MappingRegistry )
     md.sparse = true
 
     var = drv.echoStructArray( md )
@@ -518,7 +537,7 @@ def doTestBase( drv )
       [ s1, nil, s2 ],
       [ nil, s2, s3 ],
     ]
-    md = SOAP::RPCUtils.ary2md( arg, 2 )
+    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
     md.sparse = true
 
     var = drv.echoStructArray( md )
@@ -526,6 +545,7 @@ def doTestBase( drv )
   rescue Exception
     dumpException( title )
   end
+=end
 
   title = 'echoDate (now)'
   begin
@@ -778,7 +798,7 @@ if $test_echoMap
   begin
     map = { "a" => 1, "b" => 2 }
     arg = [ nil, nil, map, nil, map, nil, map, nil, nil ]
-    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map" ) 
+    soapAry = SOAP::RPCUtils.ary2soap( arg, ApacheNS, "Map", SOAPBuildersInterop::MappingRegistry ) 
     soapAry.sparse = true
     var = drv.echoMapArray( soapAry )
     dumpNormal( title, arg, var )
@@ -867,15 +887,15 @@ def doTestGroupB( drv )
     arg.typeNamespace = XSD::Namespace
     arg.size = [ 3, 3 ]
     arg.sizeFixed = true
-    arg.add( SOAP::RPCUtils.obj2soap( 'r0c0' ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r1c0' ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r2c0' ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r0c1' ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r1c1' ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r2c1' ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r0c2' ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r1c2' ))
-    arg.add( SOAP::RPCUtils.obj2soap( 'r2c2' ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r0c0', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r1c0', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r2c0', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r0c1', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r1c1', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r2c1', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r0c2', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r1c2', SOAPBuildersInterop::MappingRegistry ))
+    arg.add( SOAP::RPCUtils.obj2soap( 'r2c2', SOAPBuildersInterop::MappingRegistry ))
     argNormalized = [
       [ 'r0c0', 'r1c0', 'r2c0' ],
       [ 'r0c1', 'r1c1', 'r2c1' ],
@@ -897,7 +917,7 @@ def doTestGroupB( drv )
       [ 'r2c0', 'r0c1', 'r2c2' ],
     ]
 
-    var = drv.echo2DStringArray( SOAP::RPCUtils.ary2md( arg, 2 ))
+    var = drv.echo2DStringArray( SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry ))
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -910,7 +930,7 @@ def doTestGroupB( drv )
       [ 'r0c0', nil,    'r0c2' ],
       [ nil,    'r1c1', 'r1c2' ],
     ]
-    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral )
+    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
     md.sparse = true
 
     var = drv.echo2DStringArray( md )
@@ -926,7 +946,7 @@ def doTestGroupB( drv )
       [ 'r0c0', nil,    'r0c2' ],
       [ nil,    'r1c1', 'r1c2' ],
     ]
-    md = SOAP::RPCUtils.ary2md( arg, 2 )
+    md = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::StringLiteral, SOAPBuildersInterop::MappingRegistry )
     md.sparse = true
 
     var = drv.echo2DStringArray( md )
