@@ -67,18 +67,20 @@ private
     @drvSubscriber.extend( Subscriber )
 
     # Service information
-    services = @drvServices.ServiceList
-    groupA = services.find { | service | service.name == 'SoapBuilders Interop Group A' }
-    groupB = services.find { | service | service.name == 'SoapBuilders Interop Group B' }
+    #services = @drvServices.ServiceList
+    #groupA = services.find { | service | service.name == 'SoapBuilders Interop Group A' }
+    #groupB = services.find { | service | service.name == 'SoapBuilders Interop Group B' }
 
     # SOAP4R information
     version = '1.3.5'
-    soap4rClientInfo = Clients::ClientInfo.new( 'SOAP4R', version )
+    soap4rClientInfo = Clients::ClientInfo.new( 'SOAP4R', version,
+      'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/wiki.cgi?cmd=view;name=InteropResults'
+    )
     soap4rServerInfo = Servers::ServerInfo.new( 'SOAP4R', version,
       'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/',
       'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/SOAP4R_SOAPBuildersInteropTest_R2base.wsdl' )
-    soap4rGroupAClientID = ''
-    soap4rGroupBClientID = ''
+    soap4rGroupAClientID = '{7B1DF876-055E-4259-ACAE-55E13E399264}'
+    soap4rGroupBClientID = '{62723003-BC86-4BC0-AABC-C6A3FDE11655}'
     soap4rGroupAServerID = '{3094F6C7-F6AA-4BE5-A4EB-194C82103728}'
     soap4rGroupBServerID = '{A16357C9-6C7F-45CD-AC3D-72F0FC5F4F99}'
 
@@ -95,10 +97,10 @@ private
     # p serverID
 
     # Update
-    #@drvClients.UpdateServer( soap4rGroupAClientID, soap4rClientInfo )
-    #@drvClients.UpdateServer( soap4rGroupBClientID, soap4rClientInfo )
-    @drvServers.UpdateServer( soap4rGroupAServerID, soap4rServerInfo )
-    @drvServers.UpdateServer( soap4rGroupBServerID, soap4rServerInfo )
+    #@drvClients.UpdateClient( soap4rGroupAClientID, soap4rClientInfo )
+    #@drvClients.UpdateClient( soap4rGroupBClientID, soap4rClientInfo )
+    #@drvServers.UpdateServer( soap4rGroupAServerID, soap4rServerInfo )
+    #@drvServers.UpdateServer( soap4rGroupBServerID, soap4rServerInfo )
   end
 
 
