@@ -191,6 +191,27 @@ class TestProperty < Test::Unit::TestCase
     assert_equal(@prop, @prop.lock)
     assert_equal(@prop, @prop.unlock)
   end
+
+  def test_lock_split
+    @prop["a.b.c"] = 1
+    assert_instance_of(::SOAP::Property, @prop["a.b"])
+    @prop["a.b.d"] = branch = ::SOAP::Property.new
+    @prop["a.b.d.e"] = 2
+    assert_equal(branch, @prop["a.b.d"])
+    assert_equal(branch, @prop[:a][:b][:d])
+    @prop.lock
+    assert_raises(TypeError) do
+      @prop["a.b"]
+    end
+    assert_raises(TypeError) do
+      @prop["a"]
+    end
+    @prop["a.b.c"] = 2
+    assert_equal(2, @prop["a.b.c"])
+    assert_raises(TypeError) do
+      @prop["a.b.c"] = ::SOAP::Property.new
+    end
+  end
 end
 
 
