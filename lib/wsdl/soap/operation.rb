@@ -57,7 +57,11 @@ class Operation < Info
   def parse_attr(attr, value)
     case attr
     when StyleAttrName
-      @style = value
+      if ["document", "rpc"].include?(value)
+	@style = value.intern
+      else
+	raise AttributeConstraintError.new("Unexpected value #{ value }.")
+      end
     when SOAPActionAttrName
       @soapaction = value
     else
@@ -75,8 +79,7 @@ class Operation < Info
     end
     name_info.op_name.namespace = soapbody.namespace if soapbody.namespace
     soapaction = parent.soapoperation.soapaction
-    style = parent.soapoperation.style
-    OperationInfo.new(style, name_info, soapaction)
+    OperationInfo.new(retrieve_style, name_info, soapaction)
   end
 
   def output_info
@@ -88,8 +91,7 @@ class Operation < Info
 	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
     end
     name_info.op_name.namespace = soapbody.namespace if soapbody.namespace
-    style = parent.soapoperation.style
-    OperationInfo.new(style, name_info)
+    OperationInfo.new(retrieve_style, name_info)
   end
 
 private
