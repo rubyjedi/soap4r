@@ -35,6 +35,16 @@ class ComplexType < Info
     @name = nil
     @complexContent = nil
     @content = nil
+    @anonymousType = false
+  end
+
+  def setAnonymousTypeName( name )
+    @name = name
+    @anonymousType = true
+  end
+
+  def isAnonymousType
+    @anonymousType
   end
 
   def targetNamespace
@@ -58,7 +68,7 @@ class ComplexType < Info
   def parseAttr( attr, value )
     case attr
     when NameAttrName
-      @name = Name.new( parent.targetNamespace, value )
+      @name = Name.new( targetNamespace, value )
     else
       raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
     end
