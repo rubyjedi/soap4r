@@ -6,6 +6,9 @@
 # either the dual license version in 2003, or any later version.
 
 
+require 'soap/attachment'
+
+
 module SOAP
 
 
