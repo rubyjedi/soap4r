@@ -88,6 +88,11 @@ module RPCUtils
   class ParameterError < RPCError; end
 
   class SOAPMethod < SOAPStruct
+    RETVAL = 'retval'
+    IN = 'in'
+    OUT = 'out'
+    INOUT = 'inout'
+
     attr_reader :namespace
     attr_reader :name
     attr_accessor :encodingStyle
@@ -96,7 +101,7 @@ module RPCUtils
 
     attr_reader :inParam
     attr_reader :outParam
-  
+
     def initialize( namespace, name, paramDef = nil )
       super( self.type.to_s )
       @typeName = nil
@@ -145,7 +150,7 @@ module RPCUtils
     end
 
     def each
-      eachParamName( 'in', 'inout' ) do | paramName |
+      eachParamName( IN, INOUT ) do | paramName |
 	unless @inParam[ paramName ]
 	  raise ParameterError.new( "Parameter: #{ paramName } was not given." )
 	end
@@ -156,9 +161,9 @@ module RPCUtils
     def SOAPMethod.createParamDef( paramNames )
       paramDef = []
       paramNames.each do | paramName |
-	paramDef.push( [ 'in', paramName ] )
+	paramDef.push( [ IN, paramName ] )
       end
-      paramDef.push( [ 'retval', 'return' ] )
+      paramDef.push( [ RETVAL, 'return' ] )
       paramDef
     end
 
@@ -169,16 +174,16 @@ module RPCUtils
 	ioType, name = definition
 
   	case ioType
-  	when 'in'
-	  @paramSignature.push( [ 'in', name ] )
+  	when IN
+	  @paramSignature.push( [ IN, name ] )
 	  @inParamNames.push( name )
-  	when 'out'
-	  @paramSignature.push( [ 'out', name ] )
+  	when OUT
+	  @paramSignature.push( [ OUT, name ] )
 	  @outParamNames.push( name )
-  	when 'inout'
-	  @paramSignature.push( [ 'inout', name ] )
+  	when INOUT
+	  @paramSignature.push( [ INOUT, name ] )
 	  @inoutParamNames.push( name )
-  	when 'retval'
+  	when RETVAL
   	  if ( @retName )
 	    raise MethodDefinitionError.new( 'Duplicated retval' )
   	  end
@@ -193,15 +198,31 @@ module RPCUtils
 
   class SOAPMethodRequest < SOAPMethod
 
-    attr_reader :soapAction
+    attr_accessor :soapAction
   
+    def SOAPMethodRequest.createRequest( namespace, name, *params )
+      paramDef = []
+      paramValue = []
+      i = 0
+      params.each do | param |
+	paramName = "p#{ i }"
+	i += 1
+	paramDef << [ IN, paramName ]
+	paramValue << [ paramName, param ]
+      end
+      paramDef << [ RETVAL, 'return' ]
+      o = new( namespace, name, paramDef )
+      o.setParams( paramValue )
+      o
+    end
+
     def initialize( namespace, name, paramDef = nil, soapAction = nil )
       super( namespace, name, paramDef )
       @soapAction = soapAction
     end
 
     def each
-      eachParamName( 'in', 'inout' ) do | paramName |
+      eachParamName( IN, INOUT ) do | paramName |
 	unless @inParam[ paramName ]
 	  raise ParameterError.new( "Parameter: #{ paramName } was not given." )
 	end
@@ -239,7 +260,7 @@ module RPCUtils
 	yield( @retName, @retVal )
       end
 
-      eachParamName( 'out', 'inout' ) do | paramName |
+      eachParamName( OUT, INOUT ) do | paramName |
 	unless @outParam[ paramName ]
 	  raise ParameterError.new( "Parameter: #{ paramName } was not given." )
 	end
