@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.16 2001/12/05 02:06:10 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.17 2001/12/07 09:06:23 nakahiro Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -77,7 +77,7 @@ public
   SendTimeout = 60	# [sec]
   ReceiveTimeout = 60   # [sec]
 
-  def initialize( endPointUri, proxy = nil, charset = $KCODE )
+  def initialize( endPointUri, proxy = nil, charset = nil )
     super( endPointUri )
     @server = endPointUri
     @proxy = proxy
@@ -125,7 +125,7 @@ private
     end
 
     extra = {}
-    extra[ 'Content-Type' ] = "#{ SendMediaType }; charset=#{ Charset.getCharsetLabel( charset ) }"
+    extra[ 'Content-Type' ] = "#{ SendMediaType }; charset=#{ Charset.getCharsetLabel( charset || Charset.getXMLInstanceEncoding ) }"
     extra[ 'SOAPAction' ] = "\"#{ soapAction }\""
 
     dumpDev << "Wire dump:\n\n" if dumpDev

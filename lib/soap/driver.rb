@@ -41,7 +41,7 @@ class Driver
     @logIdPrefix = "<#{ @logId }> "
     log( SEV_INFO ) { 'initialize: initializing SOAP driver...' }
     @namespace = namespace
-    @handler = HTTPPostStreamHandler.new( endPoint, httpProxy, Charset.getXMLInstanceEncoding )
+    @handler = HTTPPostStreamHandler.new( endPoint, httpProxy )
     @proxy = SOAPProxy.new( @namespace, @handler, soapAction )
     @proxy.allowUnqualifiedElement = true
     @mappingRegistry = nil
