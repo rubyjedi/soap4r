@@ -61,12 +61,18 @@ public
 
   def setEndpointUrl( endpointUrl )
     @endpointUrl = endpointUrl
-    @handler.endpointUrl = @endpointUrl if @handler
+    if @handler
+      @handler.endpointUrl = @endpointUrl
+      @handler.reset
+    end
   end
 
   def setWireDumpDev( dumpDev )
     @wireDumpDev = dumpDev
-    @handler.dumpDev = @wireDumpDev if @handler
+    if @handler
+      @handler.dumpDev = @wireDumpDev
+      @handler.reset
+    end
   end
 
   def setWireDumpFileBase( base )
@@ -75,7 +81,10 @@ public
 
   def setHttpProxy( httpProxy )
     @httpProxy = httpProxy
-    @handler.proxy = @httpProxy if @handler
+    if @handler
+      @handler.proxy = @httpProxy
+      @handler.reset
+    end
   end
 
 
@@ -175,6 +184,10 @@ public
     else
       return ret
     end
+  end
+
+  def resetStream
+    @handler.reset
   end
 
 private
