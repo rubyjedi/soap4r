@@ -21,7 +21,7 @@ require 'soap/rpcRouter'
 # Ruby bundled library
 
 # Redist library
-require 'application'
+require 'devel/logger'
 
 module SOAP
 
