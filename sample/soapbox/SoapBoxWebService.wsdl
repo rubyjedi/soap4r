@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<definitions xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:i1="http://www.winfessor.com/SoapBoxWebService/RosterDataSet.xsd" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:s0="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService" xmlns:i2="http://www.winfessor.com/SoapBoxWebService/ExceptionDataSet.xsd" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:i0="http://www.winfessor.com/SoapBoxWebService/MessageDataSet.xsd" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" targetNamespace="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService" xmlns="http://schemas.xmlsoap.org/wsdl/">
+<definitions xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:i1="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:s0="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService" xmlns:i2="http://www.winfessor.com/SoapBoxWebService/ExceptionDataSet.xsd" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:i0="http://www.winfessor.com/SoapBoxWebService/MessageDataSet.xsd" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" targetNamespace="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService" xmlns="http://schemas.xmlsoap.org/wsdl/">
   <import namespace="http://www.winfessor.com/SoapBoxWebService/MessageDataSet.xsd" location="MessageDataSet.xml" />
-  <import namespace="http://www.winfessor.com/SoapBoxWebService/RosterDataSet.xsd" location="RosterDataSet.xml" />
+  <import namespace="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" location="ContactsDataSet.xml" />
   <import namespace="http://www.winfessor.com/SoapBoxWebService/ExceptionDataSet.xsd" location="ExceptionDataSet.xml" />
   <types>
     <s:schema elementFormDefault="qualified" targetNamespace="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService">
       <s:import namespace="http://www.winfessor.com/SoapBoxWebService/MessageDataSet.xsd" />
-      <s:import namespace="http://www.winfessor.com/SoapBoxWebService/RosterDataSet.xsd" />
+      <s:import namespace="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" />
       <s:import namespace="http://www.winfessor.com/SoapBoxWebService/ExceptionDataSet.xsd" />
-      <s:element name="SessionClose">
-        <s:complexType />
+      <s:element name="SettingsSetAutoAwayPresenceValues">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="autoAwayStatus" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="autoAwayShowValue" type="s:string" />
+          </s:sequence>
+        </s:complexType>
       </s:element>
-      <s:element name="SessionCloseResponse">
+      <s:element name="SettingsSetAutoAwayPresenceValuesResponse">
         <s:complexType />
       </s:element>
       <s:element name="SoapBoxHeader" type="s0:SoapBoxHeader" />
@@ -20,6 +25,24 @@
           <s:element minOccurs="0" maxOccurs="1" name="SessionID" type="s:string" />
         </s:sequence>
       </s:complexType>
+      <s:element name="SettingsSetSessionTimeouts">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="autoAwayTimeoutSeconds" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="autoBlockMessagesTimeoutSeconds" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="autoLogoutTimeoutSeconds" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SettingsSetSessionTimeoutsResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="SessionClose">
+        <s:complexType />
+      </s:element>
+      <s:element name="SessionCloseResponse">
+        <s:complexType />
+      </s:element>
       <s:element name="SessionAuthenticate">
         <s:complexType>
           <s:sequence>
@@ -33,10 +56,10 @@
       <s:element name="SessionAuthenticateResponse">
         <s:complexType />
       </s:element>
-      <s:element name="Logout">
+      <s:element name="SessionLogout">
         <s:complexType />
       </s:element>
-      <s:element name="LogoutResponse">
+      <s:element name="SessionLogoutResponse">
         <s:complexType />
       </s:element>
       <s:element name="MessageSend">
@@ -44,6 +67,7 @@
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="text" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="toUser" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="thread" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -55,6 +79,7 @@
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="text" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="toUser" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="thread" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="payload">
               <s:complexType>
                 <s:sequence>
@@ -73,6 +98,7 @@
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="text" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="toUser" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="thread" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="subject" type="s:string" />
           </s:sequence>
         </s:complexType>
@@ -85,6 +111,7 @@
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="text" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="toUser" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="thread" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="subject" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="payload">
               <s:complexType>
@@ -98,26 +125,6 @@
       </s:element>
       <s:element name="MessageSendEx3Response">
         <s:complexType />
-      </s:element>
-      <s:element name="MessageNewQueued">
-        <s:complexType />
-      </s:element>
-      <s:element name="MessageNewQueuedResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="MessageNewQueuedResult" type="s:boolean" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="MessageQueueCount">
-        <s:complexType />
-      </s:element>
-      <s:element name="MessageQueueCountResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="MessageQueueCountResult" type="s:int" />
-          </s:sequence>
-        </s:complexType>
       </s:element>
       <s:element name="MessageDequeue">
         <s:complexType />
@@ -135,119 +142,39 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="MessageDequeueAsRawXML">
+      <s:element name="ContactsGet">
         <s:complexType />
       </s:element>
-      <s:element name="MessageDequeueAsRawXMLResponse">
+      <s:element name="ContactsGetResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="MessageDequeueAsRawXMLResult">
-              <s:complexType mixed="true">
-                <s:sequence>
-                  <s:any />
-                </s:sequence>
-              </s:complexType>
-            </s:element>
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterGet">
-        <s:complexType />
-      </s:element>
-      <s:element name="RosterGetResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="RosterGetResult">
+            <s:element minOccurs="0" maxOccurs="1" name="ContactsGetResult">
               <s:complexType>
                 <s:sequence>
-                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/RosterDataSet.xsd" />
+                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" />
                 </s:sequence>
               </s:complexType>
             </s:element>
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="RosterGetAsRawXML">
+      <s:element name="ContactsGetDelta">
         <s:complexType />
       </s:element>
-      <s:element name="RosterGetAsRawXMLResponse">
+      <s:element name="ContactsGetDeltaResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="RosterGetAsRawXMLResult">
-              <s:complexType mixed="true">
-                <s:sequence>
-                  <s:any />
-                </s:sequence>
-              </s:complexType>
-            </s:element>
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterGetDelta">
-        <s:complexType />
-      </s:element>
-      <s:element name="RosterGetDeltaResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="RosterGetDeltaResult">
+            <s:element minOccurs="0" maxOccurs="1" name="ContactsGetDeltaResult">
               <s:complexType>
                 <s:sequence>
-                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/RosterDataSet.xsd" />
+                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" />
                 </s:sequence>
               </s:complexType>
             </s:element>
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="RosterGetDeltaAsRawXML">
-        <s:complexType />
-      </s:element>
-      <s:element name="RosterGetDeltaAsRawXMLResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="RosterGetDeltaAsRawXMLResult">
-              <s:complexType mixed="true">
-                <s:sequence>
-                  <s:any />
-                </s:sequence>
-              </s:complexType>
-            </s:element>
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterSendRequest">
-        <s:complexType />
-      </s:element>
-      <s:element name="RosterSendRequestResponse">
-        <s:complexType />
-      </s:element>
-      <s:element name="RosterHasChanged">
-        <s:complexType />
-      </s:element>
-      <s:element name="RosterHasChangedResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="RosterHasChangedResult" type="s:boolean" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterSendChangeRequest">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="rosterChanges">
-              <s:complexType>
-                <s:sequence>
-                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/RosterDataSet.xsd" />
-                </s:sequence>
-              </s:complexType>
-            </s:element>
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterSendChangeRequestResponse">
-        <s:complexType />
-      </s:element>
-      <s:element name="RosterAddUser">
+      <s:element name="ContactsAddUser">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="friendlyName" type="s:string" />
@@ -256,10 +183,20 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="RosterAddUserResponse">
+      <s:element name="ContactsAddUserResponse">
         <s:complexType />
       </s:element>
-      <s:element name="RosterUpdateUser">
+      <s:element name="ContactsRemoveUser">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="jid" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ContactsRemoveUserResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="ContactsUpdateUser">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="friendlyName" type="s:string" />
@@ -268,10 +205,10 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="RosterUpdateUserResponse">
+      <s:element name="ContactsUpdateUserResponse">
         <s:complexType />
       </s:element>
-      <s:element name="PresenceSendAvailableEx2">
+      <s:element name="PresenceSendAvailable">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="showValue" type="s:string" />
@@ -279,39 +216,29 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="PresenceSendAvailableEx2Response">
+      <s:element name="PresenceSendAvailableResponse">
         <s:complexType />
       </s:element>
       <s:element name="PresenceSendAvailableEx">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="showValue" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="longText" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="priority" type="s:int" />
           </s:sequence>
         </s:complexType>
       </s:element>
       <s:element name="PresenceSendAvailableExResponse">
         <s:complexType />
       </s:element>
-      <s:element name="PresenceSendAvailable">
-        <s:complexType />
-      </s:element>
-      <s:element name="PresenceSendAvailableResponse">
-        <s:complexType />
-      </s:element>
       <s:element name="PresenceSendCurrent">
-        <s:complexType />
-      </s:element>
-      <s:element name="PresenceSendCurrentResponse">
-        <s:complexType />
-      </s:element>
-      <s:element name="PresenceSendCurrentEx">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="toUser" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="toUserJID" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="PresenceSendCurrentExResponse">
+      <s:element name="PresenceSendCurrentResponse">
         <s:complexType />
       </s:element>
       <s:element name="PresenceSendUnavailable">
@@ -323,7 +250,7 @@
       <s:element name="PresenceSendUnavailableEx">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="toUser" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="toUserJID" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -336,11 +263,24 @@
             <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="hostname" type="s:string" />
-            <s:element minOccurs="1" maxOccurs="1" name="port" type="s:int" />
           </s:sequence>
         </s:complexType>
       </s:element>
       <s:element name="RegisterUserResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="RegisterUserEx">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="hostname" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="port" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="UseSSL" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RegisterUserExResponse">
         <s:complexType />
       </s:element>
       <s:element name="RegisterUserWithGateway">
@@ -355,26 +295,6 @@
       <s:element name="RegisterUserWithGatewayResponse">
         <s:complexType />
       </s:element>
-      <s:element name="AsyncExceptionsNewQueued">
-        <s:complexType />
-      </s:element>
-      <s:element name="AsyncExceptionsNewQueuedResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="AsyncExceptionsNewQueuedResult" type="s:boolean" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="AsncExceptionsQueueCount">
-        <s:complexType />
-      </s:element>
-      <s:element name="AsncExceptionsQueueCountResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="AsncExceptionsQueueCountResult" type="s:int" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
       <s:element name="AsyncExceptionsDequeue">
         <s:complexType />
       </s:element>
@@ -385,22 +305,6 @@
               <s:complexType>
                 <s:sequence>
                   <s:any namespace="http://www.winfessor.com/SoapBoxWebService/ExceptionDataSet.xsd" />
-                </s:sequence>
-              </s:complexType>
-            </s:element>
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="AsyncExceptionsDequeueAsRawXML">
-        <s:complexType />
-      </s:element>
-      <s:element name="AsyncExceptionsDequeueAsRawXMLResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="AsyncExceptionsDequeueAsRawXMLResult">
-              <s:complexType mixed="true">
-                <s:sequence>
-                  <s:any />
                 </s:sequence>
               </s:complexType>
             </s:element>
@@ -419,7 +323,7 @@
       <s:element name="SessionOpenResponse">
         <s:complexType />
       </s:element>
-      <s:element name="LoginEx">
+      <s:element name="SessionLoginEx">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
@@ -431,10 +335,10 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="LoginExResponse">
+      <s:element name="SessionLoginExResponse">
         <s:complexType />
       </s:element>
-      <s:element name="Login">
+      <s:element name="SessionLogin">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
@@ -443,7 +347,7 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="LoginResponse">
+      <s:element name="SessionLoginResponse">
         <s:complexType />
       </s:element>
       <s:element name="MessageWaitForIncoming">
@@ -466,115 +370,45 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="MessageWaitForIncomingAsRawXML">
+      <s:element name="ContactsRequestFromServerAndWait">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="1" maxOccurs="1" name="waitMilliseconds" type="s:int" />
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="MessageWaitForIncomingAsRawXMLResponse">
+      <s:element name="ContactsRequestFromServerAndWaitResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="MessageWaitForIncomingAsRawXMLResult">
-              <s:complexType mixed="true">
-                <s:sequence>
-                  <s:any />
-                </s:sequence>
-              </s:complexType>
-            </s:element>
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterRequestFromServerAndWait">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="waitMilliseconds" type="s:int" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterRequestFromServerAndWaitResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="RosterRequestFromServerAndWaitResult">
+            <s:element minOccurs="0" maxOccurs="1" name="ContactsRequestFromServerAndWaitResult">
               <s:complexType>
                 <s:sequence>
-                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/RosterDataSet.xsd" />
+                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" />
                 </s:sequence>
               </s:complexType>
             </s:element>
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="RosterRequestFromServerAndWaitAsRawXML">
+      <s:element name="ContactsWaitForDelta">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="1" maxOccurs="1" name="waitMilliseconds" type="s:int" />
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="RosterRequestFromServerAndWaitAsRawXMLResponse">
+      <s:element name="ContactsWaitForDeltaResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="RosterRequestFromServerAndWaitAsRawXMLResult">
-              <s:complexType mixed="true">
-                <s:sequence>
-                  <s:any />
-                </s:sequence>
-              </s:complexType>
-            </s:element>
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterWaitForDelta">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="waitMilliseconds" type="s:int" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterWaitForDeltaResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="RosterWaitForDeltaResult">
+            <s:element minOccurs="0" maxOccurs="1" name="ContactsWaitForDeltaResult">
               <s:complexType>
                 <s:sequence>
-                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/RosterDataSet.xsd" />
+                  <s:any namespace="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" />
                 </s:sequence>
               </s:complexType>
             </s:element>
           </s:sequence>
         </s:complexType>
-      </s:element>
-      <s:element name="RosterWaitForDeltaAsRawXML">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="waitMilliseconds" type="s:int" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterWaitForDeltaAsRawXMLResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="RosterWaitForDeltaAsRawXMLResult">
-              <s:complexType mixed="true">
-                <s:sequence>
-                  <s:any />
-                </s:sequence>
-              </s:complexType>
-            </s:element>
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterRemoveUser">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="jid" type="s:string" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="RosterRemoveUserResponse">
-        <s:complexType />
       </s:element>
       <s:element name="RegisterRemoveUser">
         <s:complexType />
@@ -594,6 +428,24 @@
       </s:element>
     </s:schema>
   </types>
+  <message name="SettingsSetAutoAwayPresenceValuesSoapIn">
+    <part name="parameters" element="s0:SettingsSetAutoAwayPresenceValues" />
+  </message>
+  <message name="SettingsSetAutoAwayPresenceValuesSoapOut">
+    <part name="parameters" element="s0:SettingsSetAutoAwayPresenceValuesResponse" />
+  </message>
+  <message name="SettingsSetAutoAwayPresenceValuesSoapBoxHeader">
+    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
+  </message>
+  <message name="SettingsSetSessionTimeoutsSoapIn">
+    <part name="parameters" element="s0:SettingsSetSessionTimeouts" />
+  </message>
+  <message name="SettingsSetSessionTimeoutsSoapOut">
+    <part name="parameters" element="s0:SettingsSetSessionTimeoutsResponse" />
+  </message>
+  <message name="SettingsSetSessionTimeoutsSoapBoxHeader">
+    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
+  </message>
   <message name="SessionCloseSoapIn">
     <part name="parameters" element="s0:SessionClose" />
   </message>
@@ -612,13 +464,13 @@
   <message name="SessionAuthenticateSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="LogoutSoapIn">
-    <part name="parameters" element="s0:Logout" />
+  <message name="SessionLogoutSoapIn">
+    <part name="parameters" element="s0:SessionLogout" />
   </message>
-  <message name="LogoutSoapOut">
-    <part name="parameters" element="s0:LogoutResponse" />
+  <message name="SessionLogoutSoapOut">
+    <part name="parameters" element="s0:SessionLogoutResponse" />
   </message>
-  <message name="LogoutSoapBoxHeader">
+  <message name="SessionLogoutSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
   <message name="MessageSendSoapIn">
@@ -657,24 +509,6 @@
   <message name="MessageSendEx3SoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="MessageNewQueuedSoapIn">
-    <part name="parameters" element="s0:MessageNewQueued" />
-  </message>
-  <message name="MessageNewQueuedSoapOut">
-    <part name="parameters" element="s0:MessageNewQueuedResponse" />
-  </message>
-  <message name="MessageNewQueuedSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="MessageQueueCountSoapIn">
-    <part name="parameters" element="s0:MessageQueueCount" />
-  </message>
-  <message name="MessageQueueCountSoapOut">
-    <part name="parameters" element="s0:MessageQueueCountResponse" />
-  </message>
-  <message name="MessageQueueCountSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
   <message name="MessageDequeueSoapIn">
     <part name="parameters" element="s0:MessageDequeue" />
   </message>
@@ -684,112 +518,49 @@
   <message name="MessageDequeueSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="MessageDequeueAsRawXMLSoapIn">
-    <part name="parameters" element="s0:MessageDequeueAsRawXML" />
+  <message name="ContactsGetSoapIn">
+    <part name="parameters" element="s0:ContactsGet" />
   </message>
-  <message name="MessageDequeueAsRawXMLSoapOut">
-    <part name="parameters" element="s0:MessageDequeueAsRawXMLResponse" />
+  <message name="ContactsGetSoapOut">
+    <part name="parameters" element="s0:ContactsGetResponse" />
   </message>
-  <message name="MessageDequeueAsRawXMLSoapBoxHeader">
+  <message name="ContactsGetSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="RosterGetSoapIn">
-    <part name="parameters" element="s0:RosterGet" />
+  <message name="ContactsGetDeltaSoapIn">
+    <part name="parameters" element="s0:ContactsGetDelta" />
   </message>
-  <message name="RosterGetSoapOut">
-    <part name="parameters" element="s0:RosterGetResponse" />
+  <message name="ContactsGetDeltaSoapOut">
+    <part name="parameters" element="s0:ContactsGetDeltaResponse" />
   </message>
-  <message name="RosterGetSoapBoxHeader">
+  <message name="ContactsGetDeltaSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="RosterGetAsRawXMLSoapIn">
-    <part name="parameters" element="s0:RosterGetAsRawXML" />
+  <message name="ContactsAddUserSoapIn">
+    <part name="parameters" element="s0:ContactsAddUser" />
   </message>
-  <message name="RosterGetAsRawXMLSoapOut">
-    <part name="parameters" element="s0:RosterGetAsRawXMLResponse" />
+  <message name="ContactsAddUserSoapOut">
+    <part name="parameters" element="s0:ContactsAddUserResponse" />
   </message>
-  <message name="RosterGetAsRawXMLSoapBoxHeader">
+  <message name="ContactsAddUserSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="RosterGetDeltaSoapIn">
-    <part name="parameters" element="s0:RosterGetDelta" />
+  <message name="ContactsRemoveUserSoapIn">
+    <part name="parameters" element="s0:ContactsRemoveUser" />
   </message>
-  <message name="RosterGetDeltaSoapOut">
-    <part name="parameters" element="s0:RosterGetDeltaResponse" />
+  <message name="ContactsRemoveUserSoapOut">
+    <part name="parameters" element="s0:ContactsRemoveUserResponse" />
   </message>
-  <message name="RosterGetDeltaSoapBoxHeader">
+  <message name="ContactsRemoveUserSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="RosterGetDeltaAsRawXMLSoapIn">
-    <part name="parameters" element="s0:RosterGetDeltaAsRawXML" />
+  <message name="ContactsUpdateUserSoapIn">
+    <part name="parameters" element="s0:ContactsUpdateUser" />
   </message>
-  <message name="RosterGetDeltaAsRawXMLSoapOut">
-    <part name="parameters" element="s0:RosterGetDeltaAsRawXMLResponse" />
+  <message name="ContactsUpdateUserSoapOut">
+    <part name="parameters" element="s0:ContactsUpdateUserResponse" />
   </message>
-  <message name="RosterGetDeltaAsRawXMLSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterSendRequestSoapIn">
-    <part name="parameters" element="s0:RosterSendRequest" />
-  </message>
-  <message name="RosterSendRequestSoapOut">
-    <part name="parameters" element="s0:RosterSendRequestResponse" />
-  </message>
-  <message name="RosterSendRequestSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterHasChangedSoapIn">
-    <part name="parameters" element="s0:RosterHasChanged" />
-  </message>
-  <message name="RosterHasChangedSoapOut">
-    <part name="parameters" element="s0:RosterHasChangedResponse" />
-  </message>
-  <message name="RosterHasChangedSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterSendChangeRequestSoapIn">
-    <part name="parameters" element="s0:RosterSendChangeRequest" />
-  </message>
-  <message name="RosterSendChangeRequestSoapOut">
-    <part name="parameters" element="s0:RosterSendChangeRequestResponse" />
-  </message>
-  <message name="RosterSendChangeRequestSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterAddUserSoapIn">
-    <part name="parameters" element="s0:RosterAddUser" />
-  </message>
-  <message name="RosterAddUserSoapOut">
-    <part name="parameters" element="s0:RosterAddUserResponse" />
-  </message>
-  <message name="RosterAddUserSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterUpdateUserSoapIn">
-    <part name="parameters" element="s0:RosterUpdateUser" />
-  </message>
-  <message name="RosterUpdateUserSoapOut">
-    <part name="parameters" element="s0:RosterUpdateUserResponse" />
-  </message>
-  <message name="RosterUpdateUserSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="PresenceSendAvailableEx2SoapIn">
-    <part name="parameters" element="s0:PresenceSendAvailableEx2" />
-  </message>
-  <message name="PresenceSendAvailableEx2SoapOut">
-    <part name="parameters" element="s0:PresenceSendAvailableEx2Response" />
-  </message>
-  <message name="PresenceSendAvailableEx2SoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="PresenceSendAvailableExSoapIn">
-    <part name="parameters" element="s0:PresenceSendAvailableEx" />
-  </message>
-  <message name="PresenceSendAvailableExSoapOut">
-    <part name="parameters" element="s0:PresenceSendAvailableExResponse" />
-  </message>
-  <message name="PresenceSendAvailableExSoapBoxHeader">
+  <message name="ContactsUpdateUserSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
   <message name="PresenceSendAvailableSoapIn">
@@ -801,6 +572,15 @@
   <message name="PresenceSendAvailableSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
+  <message name="PresenceSendAvailableExSoapIn">
+    <part name="parameters" element="s0:PresenceSendAvailableEx" />
+  </message>
+  <message name="PresenceSendAvailableExSoapOut">
+    <part name="parameters" element="s0:PresenceSendAvailableExResponse" />
+  </message>
+  <message name="PresenceSendAvailableExSoapBoxHeader">
+    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
+  </message>
   <message name="PresenceSendCurrentSoapIn">
     <part name="parameters" element="s0:PresenceSendCurrent" />
   </message>
@@ -808,15 +588,6 @@
     <part name="parameters" element="s0:PresenceSendCurrentResponse" />
   </message>
   <message name="PresenceSendCurrentSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="PresenceSendCurrentExSoapIn">
-    <part name="parameters" element="s0:PresenceSendCurrentEx" />
-  </message>
-  <message name="PresenceSendCurrentExSoapOut">
-    <part name="parameters" element="s0:PresenceSendCurrentExResponse" />
-  </message>
-  <message name="PresenceSendCurrentExSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
   <message name="PresenceSendUnavailableSoapIn">
@@ -843,6 +614,12 @@
   <message name="RegisterUserSoapOut">
     <part name="parameters" element="s0:RegisterUserResponse" />
   </message>
+  <message name="RegisterUserExSoapIn">
+    <part name="parameters" element="s0:RegisterUserEx" />
+  </message>
+  <message name="RegisterUserExSoapOut">
+    <part name="parameters" element="s0:RegisterUserExResponse" />
+  </message>
   <message name="RegisterUserWithGatewaySoapIn">
     <part name="parameters" element="s0:RegisterUserWithGateway" />
   </message>
@@ -850,24 +627,6 @@
     <part name="parameters" element="s0:RegisterUserWithGatewayResponse" />
   </message>
   <message name="RegisterUserWithGatewaySoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="AsyncExceptionsNewQueuedSoapIn">
-    <part name="parameters" element="s0:AsyncExceptionsNewQueued" />
-  </message>
-  <message name="AsyncExceptionsNewQueuedSoapOut">
-    <part name="parameters" element="s0:AsyncExceptionsNewQueuedResponse" />
-  </message>
-  <message name="AsyncExceptionsNewQueuedSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="AsncExceptionsQueueCountSoapIn">
-    <part name="parameters" element="s0:AsncExceptionsQueueCount" />
-  </message>
-  <message name="AsncExceptionsQueueCountSoapOut">
-    <part name="parameters" element="s0:AsncExceptionsQueueCountResponse" />
-  </message>
-  <message name="AsncExceptionsQueueCountSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
   <message name="AsyncExceptionsDequeueSoapIn">
@@ -879,15 +638,6 @@
   <message name="AsyncExceptionsDequeueSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="AsyncExceptionsDequeueAsRawXMLSoapIn">
-    <part name="parameters" element="s0:AsyncExceptionsDequeueAsRawXML" />
-  </message>
-  <message name="AsyncExceptionsDequeueAsRawXMLSoapOut">
-    <part name="parameters" element="s0:AsyncExceptionsDequeueAsRawXMLResponse" />
-  </message>
-  <message name="AsyncExceptionsDequeueAsRawXMLSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
   <message name="SessionOpenSoapIn">
     <part name="parameters" element="s0:SessionOpen" />
   </message>
@@ -897,22 +647,22 @@
   <message name="SessionOpenSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="LoginExSoapIn">
-    <part name="parameters" element="s0:LoginEx" />
+  <message name="SessionLoginExSoapIn">
+    <part name="parameters" element="s0:SessionLoginEx" />
   </message>
-  <message name="LoginExSoapOut">
-    <part name="parameters" element="s0:LoginExResponse" />
+  <message name="SessionLoginExSoapOut">
+    <part name="parameters" element="s0:SessionLoginExResponse" />
   </message>
-  <message name="LoginExSoapBoxHeader">
+  <message name="SessionLoginExSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="LoginSoapIn">
-    <part name="parameters" element="s0:Login" />
+  <message name="SessionLoginSoapIn">
+    <part name="parameters" element="s0:SessionLogin" />
   </message>
-  <message name="LoginSoapOut">
-    <part name="parameters" element="s0:LoginResponse" />
+  <message name="SessionLoginSoapOut">
+    <part name="parameters" element="s0:SessionLoginResponse" />
   </message>
-  <message name="LoginSoapBoxHeader">
+  <message name="SessionLoginSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
   <message name="MessageWaitForIncomingSoapIn">
@@ -924,58 +674,22 @@
   <message name="MessageWaitForIncomingSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="MessageWaitForIncomingAsRawXMLSoapIn">
-    <part name="parameters" element="s0:MessageWaitForIncomingAsRawXML" />
+  <message name="ContactsRequestFromServerAndWaitSoapIn">
+    <part name="parameters" element="s0:ContactsRequestFromServerAndWait" />
   </message>
-  <message name="MessageWaitForIncomingAsRawXMLSoapOut">
-    <part name="parameters" element="s0:MessageWaitForIncomingAsRawXMLResponse" />
+  <message name="ContactsRequestFromServerAndWaitSoapOut">
+    <part name="parameters" element="s0:ContactsRequestFromServerAndWaitResponse" />
   </message>
-  <message name="MessageWaitForIncomingAsRawXMLSoapBoxHeader">
+  <message name="ContactsRequestFromServerAndWaitSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
-  <message name="RosterRequestFromServerAndWaitSoapIn">
-    <part name="parameters" element="s0:RosterRequestFromServerAndWait" />
+  <message name="ContactsWaitForDeltaSoapIn">
+    <part name="parameters" element="s0:ContactsWaitForDelta" />
   </message>
-  <message name="RosterRequestFromServerAndWaitSoapOut">
-    <part name="parameters" element="s0:RosterRequestFromServerAndWaitResponse" />
+  <message name="ContactsWaitForDeltaSoapOut">
+    <part name="parameters" element="s0:ContactsWaitForDeltaResponse" />
   </message>
-  <message name="RosterRequestFromServerAndWaitSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterRequestFromServerAndWaitAsRawXMLSoapIn">
-    <part name="parameters" element="s0:RosterRequestFromServerAndWaitAsRawXML" />
-  </message>
-  <message name="RosterRequestFromServerAndWaitAsRawXMLSoapOut">
-    <part name="parameters" element="s0:RosterRequestFromServerAndWaitAsRawXMLResponse" />
-  </message>
-  <message name="RosterRequestFromServerAndWaitAsRawXMLSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterWaitForDeltaSoapIn">
-    <part name="parameters" element="s0:RosterWaitForDelta" />
-  </message>
-  <message name="RosterWaitForDeltaSoapOut">
-    <part name="parameters" element="s0:RosterWaitForDeltaResponse" />
-  </message>
-  <message name="RosterWaitForDeltaSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterWaitForDeltaAsRawXMLSoapIn">
-    <part name="parameters" element="s0:RosterWaitForDeltaAsRawXML" />
-  </message>
-  <message name="RosterWaitForDeltaAsRawXMLSoapOut">
-    <part name="parameters" element="s0:RosterWaitForDeltaAsRawXMLResponse" />
-  </message>
-  <message name="RosterWaitForDeltaAsRawXMLSoapBoxHeader">
-    <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
-  </message>
-  <message name="RosterRemoveUserSoapIn">
-    <part name="parameters" element="s0:RosterRemoveUser" />
-  </message>
-  <message name="RosterRemoveUserSoapOut">
-    <part name="parameters" element="s0:RosterRemoveUserResponse" />
-  </message>
-  <message name="RosterRemoveUserSoapBoxHeader">
+  <message name="ContactsWaitForDeltaSoapBoxHeader">
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
   <message name="RegisterRemoveUserSoapIn">
@@ -997,189 +711,191 @@
     <part name="SoapBoxHeader" element="s0:SoapBoxHeader" />
   </message>
   <portType name="SoapBoxWebServiceSoap">
+    <operation name="SettingsSetAutoAwayPresenceValues">
+      <documentation>Sets the values that will be used for your presence when you go idle.  The timeout defaults to ten minutes but you can set it using the SetSessionTimeouts method.  Idle time is calculated based on the last time you accessed the web service.</documentation>
+      <input message="s0:SettingsSetAutoAwayPresenceValuesSoapIn" />
+      <output message="s0:SettingsSetAutoAwayPresenceValuesSoapOut" />
+    </operation>
+    <operation name="SettingsSetSessionTimeouts">
+      <documentation>Specifies the timeout in seconds, for AutoAway, AutoBlockMessages and AutoLogout.  These default to 600, 10, and 3600 respectively.  Each timeout action is performed based on the last time you accessed the web service.</documentation>
+      <input message="s0:SettingsSetSessionTimeoutsSoapIn" />
+      <output message="s0:SettingsSetSessionTimeoutsSoapOut" />
+    </operation>
     <operation name="SessionClose">
+      <documentation>Closes your session to the Jabber server.  Also removes your session on the Web Service server.  Your SessionID will no longer be valid.  Consider using SessionLogout as it performs PresenceSendUnavailable and SessionClose.</documentation>
       <input message="s0:SessionCloseSoapIn" />
       <output message="s0:SessionCloseSoapOut" />
     </operation>
     <operation name="SessionAuthenticate">
+      <documentation>Authenticates your session with the Jabber server using the provided credentials.  Consider using SessionLogin as it performs SessionOpen, SessionAuthenticate, PresenceSendAvailable, and ContactsRequestFromServer with one method call.</documentation>
       <input message="s0:SessionAuthenticateSoapIn" />
       <output message="s0:SessionAuthenticateSoapOut" />
     </operation>
-    <operation name="Logout">
-      <input message="s0:LogoutSoapIn" />
-      <output message="s0:LogoutSoapOut" />
+    <operation name="SessionLogout">
+      <documentation>Performs PresenceSendUnavailable and SessionClose.  Closes your session to the Jabber server.  Removes your session on the Web Service server.  Your SessionID will no longer be valid.</documentation>
+      <input message="s0:SessionLogoutSoapIn" />
+      <output message="s0:SessionLogoutSoapOut" />
     </operation>
     <operation name="MessageSend">
+      <documentation>Sends a message of type 'chat' to the specified user with the message text.</documentation>
       <input message="s0:MessageSendSoapIn" />
       <output message="s0:MessageSendSoapOut" />
     </operation>
     <operation name="MessageSendEx">
+      <documentation>Sends a message of type 'chat' to the specified user with the message text and the payload.  The payload must be an element with its own default namespace.</documentation>
       <input message="s0:MessageSendExSoapIn" />
       <output message="s0:MessageSendExSoapOut" />
     </operation>
     <operation name="MessageSendEx2">
+      <documentation>Sends a message of type 'chat' to the specified user with the message text and a subject.</documentation>
       <input message="s0:MessageSendEx2SoapIn" />
       <output message="s0:MessageSendEx2SoapOut" />
     </operation>
     <operation name="MessageSendEx3">
+      <documentation>Sends a message of type 'chat' to the specified user with the message text, payload, and a subject.  The payload must be an element with its own default namespace.</documentation>
       <input message="s0:MessageSendEx3SoapIn" />
       <output message="s0:MessageSendEx3SoapOut" />
     </operation>
-    <operation name="MessageNewQueued">
-      <input message="s0:MessageNewQueuedSoapIn" />
-      <output message="s0:MessageNewQueuedSoapOut" />
-    </operation>
-    <operation name="MessageQueueCount">
-      <input message="s0:MessageQueueCountSoapIn" />
-      <output message="s0:MessageQueueCountSoapOut" />
-    </operation>
     <operation name="MessageDequeue">
+      <documentation>Dequeues all unread messages from your incoming message queue and returns them to you in a MessageDataSet.  Returns messages as a separate DataTable for each user.  The name of the DataTable is the Bare JID (JID with no resource) of the user the messages are from.</documentation>
       <input message="s0:MessageDequeueSoapIn" />
       <output message="s0:MessageDequeueSoapOut" />
     </operation>
-    <operation name="MessageDequeueAsRawXML">
-      <input message="s0:MessageDequeueAsRawXMLSoapIn" />
-      <output message="s0:MessageDequeueAsRawXMLSoapOut" />
+    <operation name="ContactsGet">
+      <documentation>Returns a cached copy of the ContactsDataSet populated with all your contacts and their availability.</documentation>
+      <input message="s0:ContactsGetSoapIn" />
+      <output message="s0:ContactsGetSoapOut" />
     </operation>
-    <operation name="RosterGet">
-      <input message="s0:RosterGetSoapIn" />
-      <output message="s0:RosterGetSoapOut" />
+    <operation name="ContactsGetDelta">
+      <documentation>Returns any changes to the cached copy of the ContactsDataSet since you last requested it.</documentation>
+      <input message="s0:ContactsGetDeltaSoapIn" />
+      <output message="s0:ContactsGetDeltaSoapOut" />
     </operation>
-    <operation name="RosterGetAsRawXML">
-      <input message="s0:RosterGetAsRawXMLSoapIn" />
-      <output message="s0:RosterGetAsRawXMLSoapOut" />
+    <operation name="ContactsAddUser">
+      <documentation>Adds a user to your list of Contacts.  Adds the user to your Jabber roster and also subscribes to their presence.</documentation>
+      <input message="s0:ContactsAddUserSoapIn" />
+      <output message="s0:ContactsAddUserSoapOut" />
     </operation>
-    <operation name="RosterGetDelta">
-      <input message="s0:RosterGetDeltaSoapIn" />
-      <output message="s0:RosterGetDeltaSoapOut" />
+    <operation name="ContactsRemoveUser">
+      <documentation>Removes a user from your list of Contacts.  Removes the user from your Jabber roster and also unsubscribes from their presence.</documentation>
+      <input message="s0:ContactsRemoveUserSoapIn" />
+      <output message="s0:ContactsRemoveUserSoapOut" />
     </operation>
-    <operation name="RosterGetDeltaAsRawXML">
-      <input message="s0:RosterGetDeltaAsRawXMLSoapIn" />
-      <output message="s0:RosterGetDeltaAsRawXMLSoapOut" />
-    </operation>
-    <operation name="RosterSendRequest">
-      <input message="s0:RosterSendRequestSoapIn" />
-      <output message="s0:RosterSendRequestSoapOut" />
-    </operation>
-    <operation name="RosterHasChanged">
-      <input message="s0:RosterHasChangedSoapIn" />
-      <output message="s0:RosterHasChangedSoapOut" />
-    </operation>
-    <operation name="RosterSendChangeRequest">
-      <input message="s0:RosterSendChangeRequestSoapIn" />
-      <output message="s0:RosterSendChangeRequestSoapOut" />
-    </operation>
-    <operation name="RosterAddUser">
-      <input message="s0:RosterAddUserSoapIn" />
-      <output message="s0:RosterAddUserSoapOut" />
-    </operation>
-    <operation name="RosterUpdateUser">
-      <input message="s0:RosterUpdateUserSoapIn" />
-      <output message="s0:RosterUpdateUserSoapOut" />
-    </operation>
-    <operation name="PresenceSendAvailableEx2">
-      <input message="s0:PresenceSendAvailableEx2SoapIn" />
-      <output message="s0:PresenceSendAvailableEx2SoapOut" />
-    </operation>
-    <operation name="PresenceSendAvailableEx">
-      <input message="s0:PresenceSendAvailableExSoapIn" />
-      <output message="s0:PresenceSendAvailableExSoapOut" />
+    <operation name="ContactsUpdateUser">
+      <documentation>Updates the specified jid with a new friendlyname and group.  You should specify a value for both friendlyname and group.  A blank username will be defaulted to the jid and a blank group will be defaulted to Unspecified.</documentation>
+      <input message="s0:ContactsUpdateUserSoapIn" />
+      <output message="s0:ContactsUpdateUserSoapOut" />
     </operation>
     <operation name="PresenceSendAvailable">
+      <documentation>Announces your presence as available with the specified showValue and longText.  Valid values for showValue are: 'dnd', 'xa', 'chat', 'normal', and 'away'.  These stand for 'Do Not Disturb', 'Extended Away', 'I Want to Chat', 'Available', and 'Away', respectively.  You can specify more detailed messages with longText such as: 'I am in a quick meeting.  Be back soon.'</documentation>
       <input message="s0:PresenceSendAvailableSoapIn" />
       <output message="s0:PresenceSendAvailableSoapOut" />
     </operation>
+    <operation name="PresenceSendAvailableEx">
+      <documentation>Announces your presence as available with the specified showValue, longText, and priority.  Valid values for showValue are: 'dnd', 'xa', 'chat', 'normal', and 'away'.  These stand for 'Do Not Disturb', 'Extended Away', 'I Want to Chat', 'Available', and 'Away', respectively.  You can specify more detailed messages with longText such as: 'I am in a quick meeting.  Be back soon.'  Priority is used by the Jabber server when making message routing decisoins for messages sent to 'username@host' without a resource (username@host/resource).  The logged in resource with the highest priority will receive the message.  Any resource with a negative priority will never receive any messages.</documentation>
+      <input message="s0:PresenceSendAvailableExSoapIn" />
+      <output message="s0:PresenceSendAvailableExSoapOut" />
+    </operation>
     <operation name="PresenceSendCurrent">
+      <documentation>Sends your presence to the user of your choice.  The presence to send is determined by the last presence broadcast you sent using PresenceSendAvailable or PresenceSendUnavailable.</documentation>
       <input message="s0:PresenceSendCurrentSoapIn" />
       <output message="s0:PresenceSendCurrentSoapOut" />
     </operation>
-    <operation name="PresenceSendCurrentEx">
-      <input message="s0:PresenceSendCurrentExSoapIn" />
-      <output message="s0:PresenceSendCurrentExSoapOut" />
-    </operation>
     <operation name="PresenceSendUnavailable">
+      <documentation>Announces your presence as unavailable.  This is done automatically when you call SessionLogout.</documentation>
       <input message="s0:PresenceSendUnavailableSoapIn" />
       <output message="s0:PresenceSendUnavailableSoapOut" />
     </operation>
     <operation name="PresenceSendUnavailableEx">
+      <documentation>Announces your presence as unavailable to the specified user.  This allows you to temporarily hide from users you do not wish to know you are online.</documentation>
       <input message="s0:PresenceSendUnavailableExSoapIn" />
       <output message="s0:PresenceSendUnavailableExSoapOut" />
     </operation>
     <operation name="RegisterUser">
+      <documentation>Registers the specified user with the specified Jabber server.  This does not return you a SessionID.  If the method succeeds and you wish to log in to the server, you must call SessionLogin with your new user's information.</documentation>
       <input message="s0:RegisterUserSoapIn" />
       <output message="s0:RegisterUserSoapOut" />
     </operation>
+    <operation name="RegisterUserEx">
+      <documentation>Registers the specified user with the specified Jabber server on the specified port.  It will use SSL to the Jabber server if you set UseSSL to true.  This does not return you a SessionID.  If the method succeeds and you wish to log in to the server, you must call SessionLogin with your new user's information.</documentation>
+      <input message="s0:RegisterUserExSoapIn" />
+      <output message="s0:RegisterUserExSoapOut" />
+    </operation>
     <operation name="RegisterUserWithGateway">
+      <documentation>Registers with a gateway on a Jabber server.  This is useful for communicating with outside networks such as AIM, MSN, or Yahoo!.</documentation>
       <input message="s0:RegisterUserWithGatewaySoapIn" />
       <output message="s0:RegisterUserWithGatewaySoapOut" />
     </operation>
-    <operation name="AsyncExceptionsNewQueued">
-      <input message="s0:AsyncExceptionsNewQueuedSoapIn" />
-      <output message="s0:AsyncExceptionsNewQueuedSoapOut" />
-    </operation>
-    <operation name="AsncExceptionsQueueCount">
-      <input message="s0:AsncExceptionsQueueCountSoapIn" />
-      <output message="s0:AsncExceptionsQueueCountSoapOut" />
-    </operation>
     <operation name="AsyncExceptionsDequeue">
+      <documentation>Returns an ExceptionDataSet containing all of the exceptions that have occurred in background threads.  If no exceptions have occurred, returns an empty ExceptionDataSet.</documentation>
       <input message="s0:AsyncExceptionsDequeueSoapIn" />
       <output message="s0:AsyncExceptionsDequeueSoapOut" />
     </operation>
-    <operation name="AsyncExceptionsDequeueAsRawXML">
-      <input message="s0:AsyncExceptionsDequeueAsRawXMLSoapIn" />
-      <output message="s0:AsyncExceptionsDequeueAsRawXMLSoapOut" />
-    </operation>
     <operation name="SessionOpen">
+      <documentation>Opens your session to the Jabber server.  Returns your unique SessionID on the SoapBoxHeader SessionID property.  This SessionID must be passed on the header in all subsequent calls.  Consider using SessionLogin as it performs SessionOpen, SessionAuthenticate, PresenceSendAvailable, and ContactsRequestFromServer with one method call.</documentation>
       <input message="s0:SessionOpenSoapIn" />
       <output message="s0:SessionOpenSoapOut" />
     </operation>
-    <operation name="LoginEx">
-      <input message="s0:LoginExSoapIn" />
-      <output message="s0:LoginExSoapOut" />
+    <operation name="SessionLoginEx">
+      <documentation>Performs SessionOpen, SessionAuthenticate, PresenceSendAvailable, and ContactsRequestFromServer with one method call.  Returns your unique SessionID on the SoapBoxHeader SessionID property.  This SessionID must be passed on the header in all subsequent calls.</documentation>
+      <input message="s0:SessionLoginExSoapIn" />
+      <output message="s0:SessionLoginExSoapOut" />
     </operation>
-    <operation name="Login">
-      <input message="s0:LoginSoapIn" />
-      <output message="s0:LoginSoapOut" />
+    <operation name="SessionLogin">
+      <documentation>Performs SessionOpen, SessionAuthenticate, PresenceSendAvailable, and ContactsRequestFromServer with one method call.  Uses the web service defaults for resource, port number, and SSL.  Returns your unique SessionID on the SoapBoxHeader SessionID property.  This SessionID must be passed on the header in all subsequent calls.</documentation>
+      <input message="s0:SessionLoginSoapIn" />
+      <output message="s0:SessionLoginSoapOut" />
     </operation>
     <operation name="MessageWaitForIncoming">
+      <documentation>Waits for the specified amount of time (in milliseconds) for incoming messages.  As soon as an incoming message is received, or the timeout period has elapsed, a MessageDataSet is returned.  Returns an emtpy MessageDataSet if the timeout period elapsed.  Returns messages as a separate DataTable for each user.  The name of the DataTable is the Bare JID (JID with no resource) of the user the messages are from.</documentation>
       <input message="s0:MessageWaitForIncomingSoapIn" />
       <output message="s0:MessageWaitForIncomingSoapOut" />
     </operation>
-    <operation name="MessageWaitForIncomingAsRawXML">
-      <input message="s0:MessageWaitForIncomingAsRawXMLSoapIn" />
-      <output message="s0:MessageWaitForIncomingAsRawXMLSoapOut" />
+    <operation name="ContactsRequestFromServerAndWait">
+      <documentation>Sends a request to your Jabber server for a copy of your roster.  Returns the updated copy of the ContactsDataSet after the server responds with your roster, or the timeout period (in milliseconds) elapses.</documentation>
+      <input message="s0:ContactsRequestFromServerAndWaitSoapIn" />
+      <output message="s0:ContactsRequestFromServerAndWaitSoapOut" />
     </operation>
-    <operation name="RosterRequestFromServerAndWait">
-      <input message="s0:RosterRequestFromServerAndWaitSoapIn" />
-      <output message="s0:RosterRequestFromServerAndWaitSoapOut" />
-    </operation>
-    <operation name="RosterRequestFromServerAndWaitAsRawXML">
-      <input message="s0:RosterRequestFromServerAndWaitAsRawXMLSoapIn" />
-      <output message="s0:RosterRequestFromServerAndWaitAsRawXMLSoapOut" />
-    </operation>
-    <operation name="RosterWaitForDelta">
-      <input message="s0:RosterWaitForDeltaSoapIn" />
-      <output message="s0:RosterWaitForDeltaSoapOut" />
-    </operation>
-    <operation name="RosterWaitForDeltaAsRawXML">
-      <input message="s0:RosterWaitForDeltaAsRawXMLSoapIn" />
-      <output message="s0:RosterWaitForDeltaAsRawXMLSoapOut" />
-    </operation>
-    <operation name="RosterRemoveUser">
-      <input message="s0:RosterRemoveUserSoapIn" />
-      <output message="s0:RosterRemoveUserSoapOut" />
+    <operation name="ContactsWaitForDelta">
+      <documentation>Waits for the specified amount of time (in milliseconds) for any change to the cached ContactsDataSet.  As soon as any change is made to the ContactsDataSet -- whether it be a presence update or adding/updating/removing a contact -- or the timout period elapses, you will get a ContactsDataSet in return.  This dataset contains only the changes that have occurred.  If no changes were made by the time the timeout period is reached, an empty ContactsDataSet is returned.</documentation>
+      <input message="s0:ContactsWaitForDeltaSoapIn" />
+      <output message="s0:ContactsWaitForDeltaSoapOut" />
     </operation>
     <operation name="RegisterRemoveUser">
+      <documentation>Removes the currently logged in user from the Jabber server.</documentation>
       <input message="s0:RegisterRemoveUserSoapIn" />
       <output message="s0:RegisterRemoveUserSoapOut" />
     </operation>
     <operation name="RegisterRemoveUserFromGateway">
+      <documentation>Removes the currently logged in user from a gateway you had previously registered with.</documentation>
       <input message="s0:RegisterRemoveUserFromGatewaySoapIn" />
       <output message="s0:RegisterRemoveUserFromGatewaySoapOut" />
     </operation>
   </portType>
   <binding name="SoapBoxWebServiceSoap" type="s0:SoapBoxWebServiceSoap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
+    <operation name="SettingsSetAutoAwayPresenceValues">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/SettingsSetAutoAwayPresenceValues" style="document" />
+      <input>
+        <soap:body use="literal" />
+        <soap:header message="s0:SettingsSetAutoAwayPresenceValuesSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+        <soap:header message="s0:SettingsSetAutoAwayPresenceValuesSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+      </output>
+    </operation>
+    <operation name="SettingsSetSessionTimeouts">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/SettingsSetSessionTimeouts" style="document" />
+      <input>
+        <soap:body use="literal" />
+        <soap:header message="s0:SettingsSetSessionTimeoutsSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+        <soap:header message="s0:SettingsSetSessionTimeoutsSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+      </output>
+    </operation>
     <operation name="SessionClose">
       <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/SessionClose" style="document" />
       <input>
@@ -1202,15 +918,15 @@
         <soap:header message="s0:SessionAuthenticateSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="Logout">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/Logout" style="document" />
+    <operation name="SessionLogout">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/SessionLogout" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:LogoutSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:SessionLogoutSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:LogoutSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:SessionLogoutSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
     <operation name="MessageSend">
@@ -1257,28 +973,6 @@
         <soap:header message="s0:MessageSendEx3SoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="MessageNewQueued">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/MessageNewQueued" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:MessageNewQueuedSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:MessageNewQueuedSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="MessageQueueCount">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/MessageQueueCount" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:MessageQueueCountSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:MessageQueueCountSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
     <operation name="MessageDequeue">
       <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/MessageDequeue" style="document" />
       <input>
@@ -1290,136 +984,59 @@
         <soap:header message="s0:MessageDequeueSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="MessageDequeueAsRawXML">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/MessageDequeueAsRawXML" style="document" />
+    <operation name="ContactsGet">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/ContactsGet" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:MessageDequeueAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsGetSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:MessageDequeueAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsGetSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="RosterGet">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterGet" style="document" />
+    <operation name="ContactsGetDelta">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/ContactsGetDelta" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterGetSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsGetDeltaSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterGetSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsGetDeltaSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="RosterGetAsRawXML">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterGetAsRawXML" style="document" />
+    <operation name="ContactsAddUser">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/ContactsAddUser" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterGetAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsAddUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterGetAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsAddUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="RosterGetDelta">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterGetDelta" style="document" />
+    <operation name="ContactsRemoveUser">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/ContactsRemoveUser" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterGetDeltaSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsRemoveUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterGetDeltaSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsRemoveUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="RosterGetDeltaAsRawXML">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterGetDeltaAsRawXML" style="document" />
+    <operation name="ContactsUpdateUser">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/ContactsUpdateUser" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterGetDeltaAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsUpdateUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterGetDeltaAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterSendRequest">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterSendRequest" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterSendRequestSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterSendRequestSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterHasChanged">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterHasChanged" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterHasChangedSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterHasChangedSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterSendChangeRequest">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterSendChangeRequest" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterSendChangeRequestSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterSendChangeRequestSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterAddUser">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterAddUser" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterAddUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterAddUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterUpdateUser">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterUpdateUser" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterUpdateUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterUpdateUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="PresenceSendAvailableEx2">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/PresenceSendAvailableEx2" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:PresenceSendAvailableEx2SoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:PresenceSendAvailableEx2SoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="PresenceSendAvailableEx">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/PresenceSendAvailableEx" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:PresenceSendAvailableExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:PresenceSendAvailableExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsUpdateUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
     <operation name="PresenceSendAvailable">
@@ -1433,6 +1050,17 @@
         <soap:header message="s0:PresenceSendAvailableSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
+    <operation name="PresenceSendAvailableEx">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/PresenceSendAvailableEx" style="document" />
+      <input>
+        <soap:body use="literal" />
+        <soap:header message="s0:PresenceSendAvailableExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+        <soap:header message="s0:PresenceSendAvailableExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+      </output>
+    </operation>
     <operation name="PresenceSendCurrent">
       <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/PresenceSendCurrent" style="document" />
       <input>
@@ -1442,17 +1070,6 @@
       <output>
         <soap:body use="literal" />
         <soap:header message="s0:PresenceSendCurrentSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="PresenceSendCurrentEx">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/PresenceSendCurrentEx" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:PresenceSendCurrentExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:PresenceSendCurrentExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
     <operation name="PresenceSendUnavailable">
@@ -1486,6 +1103,15 @@
         <soap:body use="literal" />
       </output>
     </operation>
+    <operation name="RegisterUserEx">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RegisterUserEx" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
     <operation name="RegisterUserWithGateway">
       <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RegisterUserWithGateway" style="document" />
       <input>
@@ -1495,28 +1121,6 @@
       <output>
         <soap:body use="literal" />
         <soap:header message="s0:RegisterUserWithGatewaySoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="AsyncExceptionsNewQueued">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/AsyncExceptionsNewQueued" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:AsyncExceptionsNewQueuedSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:AsyncExceptionsNewQueuedSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="AsncExceptionsQueueCount">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/AsncExceptionsQueueCount" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:AsncExceptionsQueueCountSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:AsncExceptionsQueueCountSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
     <operation name="AsyncExceptionsDequeue">
@@ -1530,17 +1134,6 @@
         <soap:header message="s0:AsyncExceptionsDequeueSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="AsyncExceptionsDequeueAsRawXML">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/AsyncExceptionsDequeueAsRawXML" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:AsyncExceptionsDequeueAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:AsyncExceptionsDequeueAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
     <operation name="SessionOpen">
       <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/SessionOpen" style="document" />
       <input>
@@ -1552,26 +1145,26 @@
         <soap:header message="s0:SessionOpenSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="LoginEx">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/LoginEx" style="document" />
+    <operation name="SessionLoginEx">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/SessionLoginEx" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:LoginExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:SessionLoginExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:LoginExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:SessionLoginExSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="Login">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/Login" style="document" />
+    <operation name="SessionLogin">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/SessionLogin" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:LoginSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:SessionLoginSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:LoginSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:SessionLoginSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
     <operation name="MessageWaitForIncoming">
@@ -1585,70 +1178,26 @@
         <soap:header message="s0:MessageWaitForIncomingSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="MessageWaitForIncomingAsRawXML">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/MessageWaitForIncomingAsRawXML" style="document" />
+    <operation name="ContactsRequestFromServerAndWait">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/ContactsRequestFromServerAndWait" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:MessageWaitForIncomingAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsRequestFromServerAndWaitSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:MessageWaitForIncomingAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsRequestFromServerAndWaitSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
-    <operation name="RosterRequestFromServerAndWait">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterRequestFromServerAndWait" style="document" />
+    <operation name="ContactsWaitForDelta">
+      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/ContactsWaitForDelta" style="document" />
       <input>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterRequestFromServerAndWaitSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsWaitForDeltaSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </input>
       <output>
         <soap:body use="literal" />
-        <soap:header message="s0:RosterRequestFromServerAndWaitSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterRequestFromServerAndWaitAsRawXML">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterRequestFromServerAndWaitAsRawXML" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterRequestFromServerAndWaitAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterRequestFromServerAndWaitAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterWaitForDelta">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterWaitForDelta" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterWaitForDeltaSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterWaitForDeltaSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterWaitForDeltaAsRawXML">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterWaitForDeltaAsRawXML" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterWaitForDeltaAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterWaitForDeltaAsRawXMLSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </output>
-    </operation>
-    <operation name="RosterRemoveUser">
-      <soap:operation soapAction="http://www.winfessor.com/SoapBoxWebService/SoapBoxWebService/RosterRemoveUser" style="document" />
-      <input>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterRemoveUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
-      </input>
-      <output>
-        <soap:body use="literal" />
-        <soap:header message="s0:RosterRemoveUserSoapBoxHeader" part="SoapBoxHeader" use="literal" />
+        <soap:header message="s0:ContactsWaitForDeltaSoapBoxHeader" part="SoapBoxHeader" use="literal" />
       </output>
     </operation>
     <operation name="RegisterRemoveUser">
@@ -1675,9 +1224,10 @@
     </operation>
   </binding>
   <service name="SoapBoxWebService">
-    <documentation>Enables users to perform standard XMPP/Jabber instant messaging over a web service.  This service maintains state for the user based on the SessionID provided in the SoapBoxHeader.</documentation>
+    <documentation>Enables users to perform standard XMPP/Jabber instant messaging over a web service.  This service maintains state for the user based on the SessionID provided in the SOAP Header.</documentation>
     <port name="SoapBoxWebServiceSoap" binding="s0:SoapBoxWebServiceSoap">
-      <soap:address location="http://www.winfessor.com/SoapBoxWebservice/SoapBoxWebService.asmx" />
+      <soap:address location="http://localhost:10080" />
+      <!-- <soap:address location="http://www.winfessor.com/SoapBoxWebservice/SoapBoxWebService.asmx" /> -->
     </port>
   </service>
 </definitions>

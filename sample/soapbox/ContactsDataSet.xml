@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:mstns="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://www.winfessor.com/SoapBoxWebService/ContactsDataSet.xsd" id="ContactsDataSet" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element msdata:IsDataSet="true" name="ContactsDataSet">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element name="group">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="contact">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" name="contactpoint">
+                      <xs:complexType>
+                        <xs:attribute form="unqualified" name="barejid" type="xs:string" />
+                        <xs:attribute default="normal" form="unqualified" name="show" type="xs:string" />
+                        <xs:attribute form="unqualified" name="priority" type="xs:int" />
+                        <xs:attribute form="unqualified" name="status" type="xs:string" />
+                        <xs:attribute form="unqualified" name="resource" type="xs:string" />
+                        <xs:attribute form="unqualified" name="name" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute form="unqualified" name="ask" type="xs:string" />
+                  <xs:attribute form="unqualified" name="subscription" type="xs:string" />
+                  <xs:attribute form="unqualified" name="jid" type="xs:string" />
+                  <xs:attribute form="unqualified" name="available" type="xs:boolean" />
+                  <xs:attribute form="unqualified" name="name" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute default="Unspecified" form="unqualified" name="name" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
