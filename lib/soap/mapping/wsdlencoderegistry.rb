@@ -15,7 +15,7 @@ module SOAP
 module Mapping
 
 
-class WSDLRPCRegistry
+class WSDLEncodeRegistry
   include TraverseSupport
 
   attr_reader :definedtypes
