@@ -52,9 +52,9 @@ class CGIStub < Logger::Application
     set_log(STDERR)
     self.level = ERROR
     @default_namespace = default_namespace
-    @router = SOAP::RPC::Router.new(appname)
     @remote_host = ENV['REMOTE_HOST'] || ENV['REMOTE_ADDR'] || 'unknown'
-    @soaplet = ::SOAP::RPC::SOAPlet.new
+    @router = ::SOAP::RPC::Router.new(self.class.name)
+    @soaplet = ::SOAP::RPC::SOAPlet.new(@router)
     on_init
   end
   
@@ -73,13 +73,14 @@ class CGIStub < Logger::Application
   # servant entry interface
 
   def add_rpc_servant(obj, namespace = @default_namespace)
-    @soaplet.add_rpc_servant(obj, namespace)
+    @router.add_rpc_servant(obj, namespace)
   end
   alias add_servant add_rpc_servant
 
-  def add_rpc_headerhandler(obj)
-    @soaplet.add_rpc_headerhandler(obj)
+  def add_headerhandler(obj)
+    @router.add_headerhandler(obj)
   end
+  alias add_rpc_headerhandler add_headerhandler
 
   # method entry interface
 
@@ -92,8 +93,7 @@ class CGIStub < Logger::Application
     qname = XSD::QName.new(@default_namespace, name_as)
     soapaction = nil
     param_def = create_rpc_param_def(obj, name, param)
-    @soaplet.app_scope_router.add_rpc_operation(obj, qname, soapaction, name,
-      param_def)
+    @router.add_rpc_operation(obj, qname, soapaction, name, param_def)
   end
   alias add_method_as add_rpc_method_as
 
@@ -106,8 +106,7 @@ class CGIStub < Logger::Application
     qname = XSD::QName.new(namespace, name_as)
     soapaction = nil
     param_def = create_rpc_param_def(obj, name, param)
-    @soaplet.app_scope_router.add_rpc_operation(obj, qname, soapaction, name,
-      param_def)
+    @router.add_rpc_operation(obj, qname, soapaction, name, param_def)
   end
   alias add_method_with_namespace_as add_rpc_method_with_namespace_as
 
@@ -127,12 +126,11 @@ private
 
   def run
     prologue
-
     httpversion = WEBrick::HTTPVersion.new('1.0')
     res = WEBrick::HTTPResponse.new({:HTTPVersion => httpversion})
     conn_data = nil
     begin
-      @log.info { "Received a request from '#{ @remote_host }'." }
+      @log.info { "received a request from '#{ @remote_host }'" }
       req = SOAPRequest.new($stdin)
       @soaplet.do_POST(req, res)
       epilogue
@@ -150,8 +148,8 @@ private
       buf.sub!(/^[^\r]+\r\n/, '')       # Trim status line.
       @log.debug { "SOAP CGI Response:\n#{ buf }" }
       print buf
-      epilogue
     end
+    epilogue
     0
   end
 

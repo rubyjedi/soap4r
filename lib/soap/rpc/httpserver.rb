@@ -27,7 +27,8 @@ class HTTPServer < Logger::Application
     self.level = Logger::Severity::ERROR # keep silent by default
     @webrick_config[:Logger] ||= @log
     @log = @webrick_config[:Logger]     # sync logger of App and HTTPServer
-    @soaplet = ::SOAP::RPC::SOAPlet.new
+    @router = ::SOAP::RPC::Router.new(self.class.name)
+    @soaplet = ::SOAP::RPC::SOAPlet.new(@router)
     on_init
     @server = WEBrick::HTTPServer.new(@webrick_config)
     @server.mount('/', @soaplet)
@@ -46,30 +47,31 @@ class HTTPServer < Logger::Application
   end
 
   def mapping_registry
-    @soaplet.app_scope_router.mapping_registry
+    @router.mapping_registry
   end
 
   def mapping_registry=(mapping_registry)
-    @soaplet.app_scope_router.mapping_registry = mapping_registry
+    @router.mapping_registry = mapping_registry
   end
 
   # servant entry interface
 
   def add_rpc_request_servant(factory, namespace = @default_namespace)
-    @soaplet.add_rpc_request_servant(factory, namespace)
+    @router.add_rpc_request_servant(factory, namespace)
   end
 
   def add_rpc_servant(obj, namespace = @default_namespace)
-    @soaplet.add_rpc_servant(obj, namespace)
+    @router.add_rpc_servant(obj, namespace)
   end
   
-  def add_rpc_request_headerhandler(factory)
-    @soaplet.add_rpc_request_headerhandler(factory)
+  def add_request_headerhandler(factory)
+    @router.add_request_headerhandler(factory)
   end
 
-  def add_rpc_headerhandler(obj)
-    @soaplet.add_rpc_headerhandler(obj)
+  def add_headerhandler(obj)
+    @router.add_headerhandler(obj)
   end
+  alias add_rpc_headerhandler add_headerhandler
 
   # method entry interface
 
@@ -82,15 +84,13 @@ class HTTPServer < Logger::Application
     qname = XSD::QName.new(@default_namespace, name_as)
     soapaction = nil
     param_def = create_rpc_param_def(obj, name, param)
-    @soaplet.app_scope_router.add_rpc_operation(obj, qname, soapaction, name,
-      param_def)
+    @router.add_rpc_operation(obj, qname, soapaction, name, param_def)
   end
   alias add_method_as add_rpc_method_as
 
   def add_document_method(obj, name, soapaction, req_qnames, res_qnames)
     param_def = create_doc_param_def(req_qnames, res_qnames)
-    @soaplet.app_scope_router.add_document_operation(obj, soapaction, name,
-      param_def, opt)
+    @router.add_document_operation(obj, soapaction, name, param_def, opt)
   end
 
 private

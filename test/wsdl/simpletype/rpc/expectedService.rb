@@ -39,9 +39,9 @@ class Echo_version_port_typeApp < ::SOAP::RPC::StandaloneServer
     Echo_version_port_type::Methods.each do |name_as, name, param_def, soapaction, namespace, style|
       qname = XSD::QName.new(namespace, name_as)
       if style == :document
-        @soaplet.app_scope_router.add_document_method(servant, qname, soapaction, name, param_def)
+        @router.add_document_method(servant, qname, soapaction, name, param_def)
       else
-        @soaplet.app_scope_router.add_rpc_method(servant, qname, soapaction, name, param_def)
+        @router.add_rpc_method(servant, qname, soapaction, name, param_def)
       end
     end
     self.mapping_registry = Echo_version_port_type::MappingRegistry

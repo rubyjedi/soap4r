@@ -95,8 +95,7 @@ class RAABaseServiceServer < SOAP::RPC::StandaloneServer
     servant = RAABaseServicePortType.new
     RAABaseServicePortType::Methods.each do |name_as, name, params, soapaction, namespace|
       qname = XSD::QName.new(namespace, name_as)
-      @soaplet.app_scope_router.add_method(servant, qname, soapaction,
-	name, params)
+      @router.add_method(servant, qname, soapaction, name, params)
     end
 
     self.mapping_registry = RAABaseServicePortType::MappingRegistry
