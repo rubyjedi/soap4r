@@ -16,12 +16,14 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
-require 'soap/soap'
-require 'soap/charset'
-
+# Ruby bundled library
 require 'urb'
 require 'socket'
 require 'timeout'
+
+# Extra library
+require 'soap/soap'
+require 'soap/charset'
 
 
 module SOAP
@@ -29,6 +31,10 @@ module SOAP
 
 class StreamHandler
   public
+
+  RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
+  %q$Id: streamHandler.rb,v 1.11 2001/07/18 13:28:56 nakahiro Exp $ =~ /: (\S+),v (\S+)/
+  RCS_FILE, RCS_REVISION = $1, $2
 
   attr_reader :endPoint
 
@@ -114,6 +120,7 @@ public
       absPath = @server if @proxy
     else
       absPath = server.path.dup
+      absPath = '/' if absPath.empty?
       absPath << '?' << server.query if server.query
     end
     action = "\"#{ soapAction }\""
