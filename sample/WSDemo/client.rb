@@ -40,9 +40,9 @@ def getTicket( drv )
   encodedResponse = calcDigest( $userId, token )
 
   # Preparing header items in SOAP Header.
-  authEle = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'auth' )
-  authEle.add( SOAPElement.new( nil, 'token', token ))
-  authEle.add( SOAPElement.new( nil, 'response', encodedResponse ))
+  authEle = SOAPElement.new( XSD::QName.new( ISubscribeService::MSGInterfaceNS, 'auth' ))
+  authEle.add( SOAPElement.new( XSD::QName.new( nil, 'token' ), token ))
+  authEle.add( SOAPElement.new( XSD::QName.new( nil, 'response' ), encodedResponse ))
   return authEle
 end
 
@@ -54,8 +54,8 @@ end
 headerItems = [ getTicket(rpcDrv) ]
 
 # Preparing message in SOAP Body.
-msg = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'subscribe' )
-address = SOAPElement.new( nil, 'address', $subscribeAddress )
+msg = SOAPElement.new( XSD::QName.new( ISubscribeService::MSGInterfaceNS, 'subscribe' ))
+address = SOAPElement.new( XSD::QName.new( nil, 'address' ), $subscribeAddress )
 address.attr[ 'type' ] = 'mailto'
 msg.add( address )
 
@@ -70,7 +70,7 @@ msgDrv.invoke( headerItems, msg )
 headerItems = [ getTicket(rpcDrv) ]
 
 # Preparing message in SOAP Body.
-msg = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'list' )
+msg = SOAPElement.new( XSD::QName.new( ISubscribeService::MSGInterfaceNS, 'list' ))
 
 # Invoke.
 data = msgDrv.invoke( headerItems, msg )
@@ -85,8 +85,8 @@ sleep 10;
 headerItems = [ getTicket(rpcDrv) ]
 
 # Preparing message in SOAP Body.
-msg = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'bye' )
-address = SOAPElement.new( nil, 'address', $subscribeAddress )
+msg = SOAPElement.new( XSD::QName.new( ISubscribeService::MSGInterfaceNS, 'bye' ))
+address = SOAPElement.new( XSD::QName.new( nil, 'address' ), $subscribeAddress )
 address.attr[ 'type' ] = 'mailto'
 msg.add( address )
 
@@ -101,7 +101,7 @@ msgDrv.invoke( headerItems, msg )
 headerItems = [ getTicket(rpcDrv) ]
 
 # Preparing message in SOAP Body.
-msg = SOAPElement.new( ISubscribeService::MSGInterfaceNS, 'list' )
+msg = SOAPElement.new( XSD::QName.new( ISubscribeService::MSGInterfaceNS, 'list' ))
 
 # Invoke.
 data = msgDrv.invoke( headerItems, msg )
