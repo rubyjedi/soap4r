@@ -73,10 +73,10 @@ class TestSimpleType < Test::Unit::TestCase
     result = @client.echo_version("1.9")
     assert_equal("1.9", result.version)
     assert_equal("checked", result.msg)
-    assert_raise(::XSD::ValueSpaceError) do
+    assert_raise(XSD::ValueSpaceError) do
       @client.echo_version("2.0")
     end
-    assert_raise(::XSD::ValueSpaceError) do
+    assert_raise(XSD::ValueSpaceError) do
       @client.echo_version(nil) # nil => "2.0" => out of range
     end
   end

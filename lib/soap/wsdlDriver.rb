@@ -94,7 +94,7 @@ private
       op = op_bind.find_operation
       soapaction = op_bind.soapoperation ? op_bind.soapoperation.soapaction : ''
       orgname = op.name.name
-      name = ::XSD::CodeGen::GenSupport.safemethodname(orgname)
+      name = XSD::CodeGen::GenSupport.safemethodname(orgname)
       param_def = create_param_def(op_bind)
       opt = {}
       opt[:request_style] = opt[:response_style] = op_bind.soapoperation_style
@@ -446,7 +446,7 @@ class WSDLDriver
       else
 	header = SOAPHeader.new()
 	op_info.headerparts.each do |part|
-	  child = Mapping.find_attribute(obj, part.name)
+	  child = Mapping.get_attribute(obj, part.name)
 	  ele = headeritem_from_obj(child, part.element || part.eletype)
 	  header.add(part.name, ele)
 	end
@@ -480,7 +480,7 @@ class WSDLDriver
       else
 	body = SOAPBody.new
 	op_info.bodyparts.each do |part|
-	  child = Mapping.find_attribute(obj, part.name)
+	  child = Mapping.get_attribute(obj, part.name)
 	  ele = bodyitem_from_obj(child, part.element || part.type)
 	  body.add(ele.elename.name, ele)
 	end
@@ -499,7 +499,7 @@ class WSDLDriver
     end
 
     def add_method_interface(op_info)
-      name = ::XSD::CodeGen::GenSupport.safemethodname(op_info.op_name.name)
+      name = XSD::CodeGen::GenSupport.safemethodname(op_info.op_name.name)
       orgname = op_info.op_name.name
       parts_names = op_info.bodyparts.collect { |part| part.name }
       case op_info.style

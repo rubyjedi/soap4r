@@ -1,5 +1,5 @@
 # WSDL4R - XMLSchema simpleType definition for WSDL.
-# Copyright (C) 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2004, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -63,7 +63,7 @@ private
 
   def check_restriction(value)
     unless @restriction.valid?(value)
-      raise ::XSD::ValueSpaceError.new("#{@name}: cannot accept '#{value}'.")
+      raise XSD::ValueSpaceError.new("#{@name}: cannot accept '#{value}'")
     end
   end
 end
