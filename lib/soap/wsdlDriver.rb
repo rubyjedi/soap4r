@@ -99,8 +99,8 @@ class WSDLDriver
 
   __attr_proxy :opt
   __attr_proxy :logdev, true
-  __attr_proxy :mapping_registry, true
-  __attr_proxy :wsdl_mapping_registry, true
+  __attr_proxy :mapping_registry, true		# for RPC unmarshal
+  __attr_proxy :wsdl_mapping_registry, true	# for RPC marshal
   __attr_proxy :endpoint_url, true
   __attr_proxy :wiredump_dev, true
   __attr_proxy :wiredump_file_base, true
@@ -117,7 +117,7 @@ class WSDLDriver
   # Backward compatibility.
   alias generateEncodeType= generate_explicit_type=
 
-  class Servant
+  class Servant__
     include Devel::Logger::Severity
     include SOAP
 
@@ -134,21 +134,102 @@ class WSDLDriver
     attr_accessor :allow_unqualified_element
     attr_accessor :generate_explicit_type
 
+    class Mapper
+      def initialize(elements, types)
+	@elements = elements
+	@types = types
+      end
+
+      def obj2ele(obj, name)
+	if ele = @elements[name]
+	  _obj2ele(obj, ele)
+	elsif type = @types[name]
+	  _obj2type(obj, type)
+	else
+	  raise RuntimeError.new("Cannot find name #{name} in schema.")
+	end
+      end
+
+      def ele2obj(ele, *arg)
+	raise NotImplementedError.new
+      end
+
+    private
+
+      def _obj2ele(obj, ele)
+	o = nil
+	if ele.type
+	  if type = @types[ele.type]
+	    o = obj2type(obj, type)
+	  elsif type = TypeMap[ele.type]
+	    o = base2soap(obj, type)
+	  else
+	    raise RuntimeError.new("Cannot find type #{ele.type}.")
+	  end
+	  o.elename = ele.name
+	elsif ele.local_complextype
+	  o = SOAPElement.new(ele.name)
+	  ele.local_complextype.each_element do |child_name, child_ele|
+	    o.add(_obj2ele(find_attribute(obj, child_name.name), child_ele))
+	  end
+	else
+	  raise RuntimeError.new("Illegal schema?")
+	end
+	o
+      end
+
+      def obj2type(obj, type)
+	o = SOAPElement.new(type.name)
+	type.each_element do |child_name, child_ele|
+	  o.add(_obj2ele(find_attribute(obj, child_name.name), child_ele))
+	end
+	o
+      end
+
+      def _ele2obj(ele)
+	raise NotImplementedError.new
+      end
+
+      def base2soap(obj, type)
+	soap_obj = nil
+	if type <= XSD::XSDString
+	  soap_obj = type.new(Charset.is_ces(obj, $KCODE) ?
+	    Charset.encoding_conv(obj, $KCODE, Charset.encoding) : obj)
+	else
+	  soap_obj = type.new(obj)
+	end
+	soap_obj
+      end
+
+      def find_attribute(obj, attr_name)
+	if obj.respond_to?(attr_name)
+	  obj.__send__(attr_name)
+	elsif obj.is_a?(Hash)
+	  obj[attr_name] || obj[attr_name.intern]
+	else
+	  obj.instance_eval("@#{ attr_name }")
+	end
+      end
+    end
+
     def initialize(host, wsdl, port, logdev, opt)
       @host = host
       @wsdl = wsdl
       @port = port
       @logdev = logdev
-      @mapping_registry = nil		# for unmarshal
-      @wsdl_mapping_registry = nil	# for marshal
+      @opt = opt.dup
+      @mapping_registry = nil		# for rpc unmarshal
+      @wsdl_mapping_registry = nil	# for rpc marshal
       @endpoint_url = nil
       @wiredump_dev = nil
       @wiredump_file_base = nil
       @httpproxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
 
-      @opt = opt.dup
-      @decode_typemap = @wsdl.soap_complextypes(port.find_binding)
-      @wsdl_mapping_registry = Mapping::WSDLRegistry.new(@decode_typemap)
+      @wsdl_elements = @wsdl.collect_elements
+      @wsdl_types = @wsdl.collect_complextypes
+      @rpc_decode_typemap = @wsdl_types + @wsdl.soap_rpc_complextypes(port.find_binding)
+      @wsdl_mapping_registry = Mapping::WSDLRegistry.new(@rpc_decode_typemap)
+      @doc_mapper = Mapper.new(@wsdl_elements, @wsdl_types)
       @default_encodingstyle = EncodingNamespace
       @allow_unqualified_element = true
       @generate_explicit_type = false
@@ -199,8 +280,9 @@ class WSDLDriver
       log(SEV_DEBUG) { "call: parameters '#{ params.inspect }'." }
 
       op_info = @operations[method_name]
-      obj = create_method_obj(op_info.param_names, params)
-      method = Mapping.obj2soap(obj, @wsdl_mapping_registry, op_info.msg_name)
+      parts_names = op_info.bodyparts.collect { |part| part.name }
+      obj = create_method_obj(parts_names, params)
+      method = Mapping.obj2soap(obj, @wsdl_mapping_registry, op_info.optype_name)
       method.elename = op_info.op_name
       method.type = XSD::QName.new	# Request should not be typed.
       req_header = nil
@@ -232,22 +314,14 @@ class WSDLDriver
       end
     end
 
-    # req_header: [[element, must_understand, encodingstyle(QName/String)], ...]
+    # req_header: [[element, mustunderstand, encodingstyle(QName/String)], ...]
     # req_body: SOAPBasetype/SOAPCompoundtype
-    def document_send(name, header, body)
+    def document_send(name, header_obj, body_obj)
       log(SEV_INFO) { "send: sending document '#{ name }'." }
-
       op_info = @operations[name]
-
-      if header and !header.is_a?(SOAPHeader)
-	header = create_header(header)
-      end
-      if !body.is_a?(SOAPElement)
-	body = @wsdl_mapping_registry.obj2ele(body, op_info.msg_name)
-      end
-      body = SOAPBody.new(body)
-
-      res_header, res_body = invoke(header, body, op_info)
+      req_header = header_from_obj(header_obj, op_info)
+      req_body = body_from_obj(body_obj, op_info)
+      res_header, res_body = invoke(req_header, req_body, op_info)
       return res_header, res_body
     end
 
@@ -268,8 +342,6 @@ class WSDLDriver
       o
     end
 
-    # req_header: [[element, must_understand, encodingstyle(QName/String)], ...]
-    # req_body: SOAPBasetype/SOAPCompoundtype
     def invoke(req_header, req_body, op_info)
       opt = create_options
       send_string = Processor.marshal(req_header, req_body, opt)
@@ -284,12 +356,73 @@ class WSDLDriver
       return res_header, res_body
     end
 
-    def create_header(headers)
-      header = SOAPHeader.new()
-      headers.each do |content, must_understand, encodingstyle|
-	header.add(SOAPHeaderItem.new(content, must_understand, encodingstyle))
+    def header_from_obj(obj, op_info)
+      if obj.is_a?(SOAPHeader)
+	obj
+      elsif op_info.headerparts.empty?
+	if obj.nil?
+	  nil
+	else
+	  raise RuntimeError.new("No header definition in schema.")
+	end
+      elsif op_info.headerparts.size == 1
+       	part = op_info.headerparts[0]
+	header = SOAPHeader.new()
+	header.add(headeritem_from_obj(obj, part.element || part.eletype))
+	header
+      else
+	header = SOAPHeader.new()
+	op_info.headerparts.each do |part|
+	  child = obj[part.elename.name]
+	  ele = headeritem_from_obj(child, part.element || part.eletype)
+	  header.add(ele)
+	end
+	header
       end
-      header
+    end
+
+    def headeritem_from_obj(obj, name)
+      if obj.nil?
+	SOAPElement.new(name)
+      elsif obj.is_a?(SOAPHeaderItem)
+	obj
+      else
+	@doc_mapper.obj2ele(obj, name)
+      end
+    end
+
+    def body_from_obj(obj, op_info)
+      if obj.is_a?(SOAPBody)
+	obj
+      elsif op_info.bodyparts.empty?
+	if obj.nil?
+	  nil
+	else
+	  raise RuntimeError.new("No body found in schema.")
+	end
+      elsif op_info.bodyparts.size == 1
+       	part = op_info.bodyparts[0]
+	ele = bodyitem_from_obj(obj, part.element || part.type)
+	SOAPBody.new(ele)
+      else
+	body = SOAPBody.new
+	op_info.bodyparts.each do |part|
+	  child = obj[part.elename.name]
+	  ele = bodyitem_from_obj(child, part.element || part.type)
+	  body.add(ele.elename.name, ele)
+	end
+	body
+      end
+    end
+
+    def bodyitem_from_obj(obj, name)
+      if obj.nil?
+	SOAPElement.new(name)
+      elsif obj.is_a?(SOAPElement)
+	obj
+      else
+	@doc_mapper.obj2ele(obj, name)
+      end
     end
 
     def add_method_interface(op_info)
@@ -297,7 +430,8 @@ class WSDLDriver
       when :document
 	add_document_method_interface(op_info.op_name.name)
       when :rpc
-	add_rpc_method_interface(op_info.op_name.name, op_info.param_names)
+	parts_names = op_info.bodyparts.collect { |part| part.name }
+	add_rpc_method_interface(op_info.op_name.name, parts_names)
       else
 	raise RuntimeError.new("Unknown style: #{op_info.style}")
       end
@@ -311,9 +445,9 @@ class WSDLDriver
       EOS
     end
 
-    def add_rpc_method_interface(name, param_names)
+    def add_rpc_method_interface(name, parts_names)
       i = 0
-      param_names = param_names.collect { |orgname| i += 1; "arg#{ i }" }
+      param_names = parts_names.collect { |orgname| i += 1; "arg#{ i }" }
       callparam_str = (param_names.collect { |pname| ", " + pname }).join
       @host.instance_eval <<-EOS
 	def #{ name }(#{ param_names.join(", ") })
@@ -324,7 +458,7 @@ class WSDLDriver
 
     def create_options
       opt = @opt.dup
-      opt[:decode_typemap] = @decode_typemap
+      opt[:decode_typemap] = @rpc_decode_typemap
       opt[:default_encodingstyle] = @default_encodingstyle
       opt[:allow_unqualified_element] = @allow_unqualified_element
       opt[:generate_explicit_type] = @generate_explicit_type
@@ -337,7 +471,7 @@ class WSDLDriver
   end
 
   def initialize(wsdl, port, logdev, opt)
-    @servant = Servant.new(self, wsdl, port, logdev, opt)
+    @servant = Servant__.new(self, wsdl, port, logdev, opt)
   end
 end
 
