@@ -63,12 +63,12 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
   private
 
   def sendPOST( methodNamespace, methodName, soapString )
-    server = URIModule::URI.create( @server )
+    server = URI.create( @server )
 
     retryNo = NofRetry
     begin
       if @proxy
-	proxy = URIModule::URI.create( @proxy )
+	proxy = URI.create( @proxy )
 	s = TCPSocket.new( proxy.host, proxy.port )
       else
 	s = TCPSocket.new( server.host, server.port )
@@ -79,7 +79,7 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
         puts 'Retrying connection ...' if $DEBUG
         retry
       end
-      raise
+      raise HTTPStreamError.new( 'Connection failed.' )
     end
 
     if @proxy
@@ -126,6 +126,7 @@ EOS
           lastValue = nil
           while !s.eof
             line = s.gets.chop
+            puts line if $DEBUG
             if ( /^$/ =~ line )
               header[ lastKey ] = lastValue if lastKey
               break
@@ -158,7 +159,9 @@ EOS
     begin
       timeout( ReadTimeout ) do
 	while !s.eof
-	  receiveString << s.gets
+	  line = s.gets
+	  receiveString << line
+	  print line if $DEBUG
 	end
       end
     rescue TimeoutError
