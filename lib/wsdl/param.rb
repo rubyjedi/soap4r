@@ -35,7 +35,7 @@ class Param < Info
     @message = nil
     @name = nil
     @soapbody = nil
-    @soapheader = nil
+    @soapheader = []
     @soapfault = nil
   end
 
@@ -55,7 +55,7 @@ class Param < Info
       o
     when SOAPHeaderName
       o = WSDL::SOAP::Header.new
-      @soap_header = o
+      @soapheader << o
       o
     when SOAPFaultName
       o = WSDL::SOAP::Fault.new

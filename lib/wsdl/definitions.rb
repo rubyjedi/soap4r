@@ -59,6 +59,19 @@ class Definitions < Info
     end
   end
 
+  def collect_elements
+    result = NamedElements.new
+    if @types
+      @types.schemas.each do |schema|
+	result.concat(schema.elements)
+      end
+    end
+    @imports.each do |import|
+      result.concat(import.content.collect_elements)
+    end
+    result
+  end
+
   def collect_complextypes
     result = @anontypes.dup
     if @types

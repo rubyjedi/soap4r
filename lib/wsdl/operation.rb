@@ -26,12 +26,12 @@ module WSDL
 class Operation < Info
   class NameInfo
     attr_reader :op_name
-    attr_reader :msg_name
-    attr_reader :param_names
-    def initialize(op_name, msg_name, param_names)
+    attr_reader :optype_name
+    attr_reader :parts
+    def initialize(op_name, optype_name, parts)
       @op_name = op_name
-      @msg_name = msg_name
-      @param_names = param_names
+      @optype_name = optype_name
+      @parts = parts
     end
   end
 
@@ -57,17 +57,15 @@ class Operation < Info
   end
 
   def input_info
-    op_name = @name.dup
-    msg_name = XSD::QName.new(targetnamespace, input.name ? input.name.name : @name.name)
-    param_names = inputparts.collect { |part| part.name }
-    NameInfo.new(op_name, msg_name, param_names)
+    op_name = @name
+    optype_name = XSD::QName.new(targetnamespace, input.name ? input.name.name : @name.name)
+    NameInfo.new(op_name, optype_name, inputparts)
   end
 
   def output_info
-    op_name = @name.dup
-    msg_name = XSD::QName.new(targetnamespace, output.name ? output.name.name : @name.name)
-    param_names = outputparts.collect { |part| part.name }
-    NameInfo.new(op_name, msg_name, param_names)
+    op_name = @name
+    optype_name = XSD::QName.new(targetnamespace, output.name ? output.name.name : @name.name)
+    NameInfo.new(op_name, optype_name, outputparts)
   end
 
   def inputparts
