@@ -20,5 +20,18 @@ require 'soap/rpc/standaloneServer'
 
 
 module SOAP
-  StandaloneServer = RPC::StandaloneServer
+
+
+class StandaloneServer < RPC::StandaloneServer
+  def initialize(*arg)
+    super
+    methodDef if respond_to?('methodDef')
+  end
+
+  alias addServant add_servant
+  alias addMethod add_method
+  alias addMethodAs add_method_as
+end
+
+
 end

@@ -17,4 +17,28 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
+require 'soap/rpcUtils'
 require 'soap/mapping'
+
+
+module SOAP
+module RPC
+
+
+class MappingRegistry < SOAP::Mapping::Registry
+  def initialize(*arg)
+    super
+  end
+
+  def add(obj_class, soap_class, factory, info = nil)
+    if (info.size > 1)
+      raise RuntimeError.new("Parameter signature changed.")
+    end
+    @map.add(obj_class, soap_class, factory, { :type => info[0] })
+  end
+  alias :set :add
+end
+
+
+end
+end

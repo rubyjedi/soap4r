@@ -62,6 +62,9 @@ class WSDLDriverFactory
     drv
   end
 
+  # Backward compatibility.
+  alias createDriver create_driver
+
 private
   
   def parse(wsdl)
@@ -159,6 +162,9 @@ public
   def reset_stream
     @handler.reset
   end
+
+  # Backward compatibility.
+  alias generateEncodeType= generate_explicit_type=
 
 private
 

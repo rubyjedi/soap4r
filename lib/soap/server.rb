@@ -21,5 +21,16 @@ require 'soap/rpc/server'
 
 
 module SOAP
-  Server = RPC::Server
+
+
+class Server < RPC::Server
+  def initialize(*arg)
+    super
+  end
+
+  alias addServant add_servant
+  alias addMethod add_method
+end
+
+
 end
