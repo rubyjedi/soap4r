@@ -66,22 +66,17 @@ class RPCRouter
   def route( soapString )
     isFault = false
     begin
-
       # Is this right?
       soapString = soapString.dup
       header, body = Processor.unmarshal( soapString, getOpt )
 
       # So far, header is omitted...
-
       soapRequest = body.request
+
       unless soapRequest.is_a?( SOAPStruct )
 	raise RPCRoutingError.new( "Not an RPC style." )
       end
-
-      soapResponse = nil
-
       soapResponse = dispatch( soapRequest )
-
     rescue Exception
       soapResponse = fault( $! )
       isFault = true
