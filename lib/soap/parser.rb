@@ -36,23 +36,20 @@ class SOAPParser
   end
 
   @@parserFactory = nil
-  class << self
-  public
-    def factory
-      @@parserFactory
-    end
 
-    def createParser( opt = {} )
-      @@parserFactory.new( opt )
-    end
+  def self.factory
+    @@parserFactory
+  end
 
-  private
-    def setFactory( factory )
-      if $DEBUG
-	puts "Set #{ factory } as XML processor."
-      end
-      @@parserFactory = factory
+  def self.createParser( opt = {} )
+    @@parserFactory.new( opt )
+  end
+
+  def self.setFactory( factory )
+    if $DEBUG
+      puts "Set #{ factory } as XML processor."
     end
+    @@parserFactory = factory
   end
 
 private
