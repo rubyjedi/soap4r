@@ -55,10 +55,10 @@ private
 
   def dumpTypeMap( type )
     typeDef = @complexTypes[ type ]
-    if typeDef.content
+    case typeDef.compoundType
+    when :TYPE_STRUCT
       dumpTypeMapStruct( typeDef )
-    elsif typeDef.complexContent and
-	typeDef.complexContent.base == XSD::QName.new( ::SOAP::EncodingNamespace, 'Array' )
+    when :TYPE_ARRAY
       dumpTypeMapArray( typeDef )
     else
       raise NotImplementedError.new( "Must not reach here." )
