@@ -15,11 +15,13 @@ class Echo_port_type
 
 
   Methods = [
-    ["echo", "echo", [
-      ["in", "echoitem",
-       [::SOAP::SOAPStruct, "urn:example.com:echo-type", "foo.bar"]],
-      ["retval", "echoitem",
-       [::SOAP::SOAPStruct, "urn:example.com:echo-type", "foo.bar"]]], "urn:example.com:echo", "urn:example.com:echo"]
+    ["echo", "echo",
+      [
+        ["in", "echoitem", [::SOAP::SOAPStruct, "urn:example.com:echo-type", "foo.bar"]],
+        ["retval", "echoitem", [::SOAP::SOAPStruct, "urn:example.com:echo-type", "foo.bar"]]
+      ],
+      "urn:example.com:echo", "urn:example.com:echo"
+    ]
   ]
 end
 
