@@ -30,24 +30,54 @@ class SOAPFault < SOAPStruct
 
 public
 
-  attr_accessor :faultcode
-  attr_accessor :faultstring
-  attr_accessor :faultactor
-  attr_accessor :detail
+  def faultcode
+    self[ 'faultcode' ]
+  end
+
+  def faultstring
+    self[ 'faultstring' ]
+  end
+
+  def faultactor
+    self[ 'faultactor' ]
+  end
+
+  def detail
+    self[ 'detail' ]
+  end
+
+  def faultcode=( rhs )
+    self[ 'faultcode' ] = rhs
+  end
+
+  def faultstring=( rhs )
+    self[ 'faultstring' ] = rhs
+  end
+
+  def faultactor=( rhs )
+    self[ 'faultactor' ] = rhs
+  end
+
+  def detail=( rhs )
+    self[ 'detail' ] = rhs
+  end
 
   def initialize( faultCode = nil, faultString = nil, faultActor = nil, detail = nil )
     super( self.type.to_s )
     @namespace = EnvelopeNamespace
     @name = 'Fault'
     @encodingStyle = EncodingNamespace
-    @faultcode = faultCode
-    @faultstring = faultString
-    @faultactor = faultActor
-    @detail = detail
-    @faultcode.name = 'faultcode' if @faultcode
-    @faultstring.name = 'faultstring' if @faultstring
-    @faultactor.name = 'faultactor' if @faultactor
-    @detail.name = 'detail' if @detail
+
+    if faultCode
+      self.faultcode = faultCode
+      self.faultstring = faultString
+      self.faultactor = faultActor
+      self.detail = detail
+      self.faultcode.name = 'faultcode' if self.faultcode
+      self.faultstring.name = 'faultstring' if self.faultstring
+      self.faultactor.name = 'faultactor' if self.faultactor
+      self.detail.name = 'detail' if self.detail
+    end
   end
 
   def encode( buf, ns )
@@ -64,50 +94,11 @@ public
       EncodingNamespace
     name = ns.name( @namespace, @name )
     SOAPGenerator.encodeTag( buf, name, attrs, true )
-    yield( @faultcode, false )
-    yield( @faultstring, false)
-    yield( @faultactor, false )
-    yield( @detail, false ) if @detail
+    yield( self.faultcode, false )
+    yield( self.faultstring, false)
+    yield( self.faultactor, false )
+    yield( self.detail, false ) if self.detail
     SOAPGenerator.encodeTagEnd( buf, name, true )
-  end
-
-  # Module function
-
-public
-
-  def self.decode( ns, elem )
-    faultCode = nil
-    faultString = nil
-    faultActor = nil
-    detail = nil
-    options = []
-    elem.childNodes.each do | child |
-      next if ( isEmptyText( child ))
-      childNS = ns.clone
-      parseNS( childNS, child )
-
-      if child.nodeName == 'faultcode'
-	raise SOAPParser::FormatDecodeError.new( 'Duplicated faultcode in Fault' ) if faultCode
-	faultCode = SOAPString.decode( childNS, child )
-
-      elsif child.nodeName == 'faultstring'
-	raise SOAPParser::FormatDecodeError.new( 'Duplicated faultstring in Fault' ) if faultString
-	faultString = SOAPString.decode( childNS, child )
-
-      elsif child.nodeName == 'faultactor'
-	raise SOAPParser::FormatDecodeError.new( 'Duplicated faultactor in Fault' ) if faultActor
-	faultActor = SOAPString.decode( childNS, child )
-
-      elsif child.nodeName == 'detail'
-	raise SOAPParser::FormatDecodeError.new( 'Duplicated detail in Fault' ) if detail
-	detail = decodeChild( childNS, child )
-
-      else
-	options.push( decodeChild( childNS, child ))
-      end
-    end
-
-    SOAPFault.new( faultCode, faultString, faultActor, detail, options )
   end
 end
 
@@ -170,8 +161,7 @@ public
     super( self.type.to_s )
     @content = content
     @mustUnderstand = mustUnderstand
-    @encodingStyle = encodingStyle ||
-      SOAP::EncodingStyleHandlerLiteral::Namespace
+    @encodingStyle = encodingStyle || LiteralNamespace
   end
 
   def encode( buf, ns )
@@ -183,29 +173,6 @@ public
     end
     @content.encodingStyle = @encodingStyle if !@content.encodingStyle
     yield( @content, true )
-  end
-
-  # Module function
-
-public
-
-  def self.decode( ns, elem )
-    mustUnderstand = nil
-    encodingStyle = nil
-    elem.attributes.each do | attr |
-      name = attr.nodeName
-      if ( ns.compare( EnvelopeNamespace, AttrMustUnderstand, name ))
-	raise SOAPParser::FormatDecodeError.new( 'Duplicated mustUnderstand in HeaderItem' ) if mustUnderstand
-	mustUnderstand = attr.nodeValue
-      elsif ( ns.compare( EnvelopeNamespace, AttrEncodingStyle, name ))
-	raise SOAPParser::FormatDecodeError.new( 'Duplicated encodingStyle in HeaderItem' ) if encodingStyle
-    	encodingStyle = attr.nodeValue
-      else
-    	# raise SOAPParser::FormatDecodeError.new( 'Unknown attribute: ' << name )
-      end
-    end
-
-    SOAPHeaderItem.new( elem, mustUnderstand, encodingStyle )
   end
 end
 
