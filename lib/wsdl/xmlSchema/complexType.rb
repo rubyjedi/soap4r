@@ -27,8 +27,8 @@ module WSDL
 
 class ComplexType < Info
   attr_reader :name
-  attr_reader :complexContent
-  attr_reader :content
+  attr_accessor :complexContent
+  attr_accessor :content
 
   def initialize
     super
