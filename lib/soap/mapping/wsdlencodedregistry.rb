@@ -1,4 +1,4 @@
-# SOAP4R - WSDL mapping registry.
+# SOAP4R - WSDL encoded mapping registry.
 # Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
@@ -15,7 +15,7 @@ module SOAP
 module Mapping
 
 
-class WSDLEncodeRegistry
+class WSDLEncodedRegistry
   include TraverseSupport
 
   attr_reader :definedtypes
