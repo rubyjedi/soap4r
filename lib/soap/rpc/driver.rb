@@ -112,7 +112,7 @@ public
       end
     qname = XSD::QName.new(@namespace, name_as)
     @proxy.add_method(qname, soapaction, name, param_def)
-    add_method_interface(name, param_def)
+    add_rpc_method_interface(name, param_def)
   end
 
 
@@ -161,7 +161,7 @@ public
 
 private
 
-  def add_method_interface(name, param_def)
+  def add_rpc_method_interface(name, param_def)
     param_names = []
     i = 0
     @proxy.method[name].each_param_name(RPC::SOAPMethod::IN,
@@ -169,14 +169,11 @@ private
       i += 1
       param_names << "arg#{ i }"
     end
-    call_param_str = if param_names.empty?
-        ""
-      else
-        ", " << param_names.join(", ")
-      end
+
+    callparam = (param_names.collect { |pname| ", " + pname }).join
     self.instance_eval <<-EOS
       def #{ name }(#{ param_names.join(", ") })
-        call("#{ name }"#{ call_param_str })
+        call("#{ name }"#{ callparam })
       end
     EOS
   end
