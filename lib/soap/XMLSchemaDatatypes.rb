@@ -159,7 +159,7 @@ public
   def set( newFloat )
     # "NaN".to_f => 0 in some environment.  libc?
     @data = if newFloat.is_a?( Float )
-	newFloat
+	narrowTo32bit( newFloat )
       elsif newFloat == 'NaN'
         0.0/0.0
       elsif newFloat == 'INF'
@@ -167,11 +167,8 @@ public
       elsif newFloat == '-INF'
         -1.0/0.0
       else
-        newFloat.to_f
+        narrowTo32bit( newFloat.to_f )
       end
-
-    # Convert to single-precision 32-bit floating point value.
-    @data = sprintf( "%f", @data ).to_f
   end
 
   # Do I have to convert 0.0 -> 0 and -0.0 -> -0 ?
@@ -184,6 +181,16 @@ public
       '-INF'
     else
       @data.to_s
+    end
+  end
+
+private
+  # Convert to single-precision 32-bit floating point value.
+  def narrowTo32bit( f )
+    if f.nan? || f.infinite?
+      f
+    else
+      sprintf( "%f", f ).to_f
     end
   end
 end
@@ -267,7 +274,7 @@ public
 	    raise ValueSpaceError.new( "TimeZone: #{ zone } is not acceptable." )
 	  end
 	  jd = @data.jd
-	  fr1 = @data.fr1 + diffDay
+	  fr1 = @data.fr1 - diffDay
 	  @data = Date.new0( Date.jd_to_rjd( jd, fr1 ))
 	end
       end
