@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: April 10, 2002<br />
+Last modified: April 11, 2002<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.4.2
+Target SOAP4R version: SOAP4R/1.4.3
 </p>
 
 <ol>
@@ -52,28 +52,81 @@ Target SOAP4R version: SOAP4R/1.4.2
 
 <h2 id="changes" name="changes">1. Changes</h2>
 
-<p>
-Stopped redistributing packages in RAA.
+<dl>
+<dt>Attention to 1.4.2 or earlier users;</dt>
+<dd>
+<ul>
+<li>Stopped redistributing packages in RAA from this release.
 Please get <a href="#dependencies">required</a> packages from
 <a href="http://www.ruby-lang.org/en/raa.html">RAA</a>
-and install it.
-</p>
-
-<p>
-Many changes around Ruby language mapping for SOAP.
-I replaced DRb's marshalling format with SOAP marshalling and it passed
-about all unit test packed in DRb package.
-Only test failed was regards to packet size.
-You might be able to use SOAP::Marshal.(un|)marshal for serializing objects
-instead of Marshal.(load|dump).
-</p>
-
-<ul>
-<li>Illegal decoding of a position-less element after position-ed element.  Fixed.</li>
-<li>Add Rubytype encoding/decoding support: Regexp, Class, Module and Symbol.</li>
-<li>Added an option of MappingRegistry to raise an exception when unknown Struct.
-The option is set 'false' by default so that same behaviour as before.</li>
+and install it.</li>
+<li>It still does NOT support WSDL!</li>
 </ul>
+</dd>
+
+<dt>New features</dt>
+<dd>
+<ul>
+<li>Added REXML parser support.</li>
+<li>Added uninstaller.</li>
+<li>Re: samples
+<ul>
+<li>Added 3 new samples, Calc, Exchange, and SampleStruct.</li>
+<li>Use environment variable HTTP_PROXY or http_proxy for http proxy.</li>
+<li>Removed unreachable services.</li>
+<li>RAA: Separate iRAA.rb into RAA.rb and iRAA.rb.</li>
+<li>Added description about <a href="#samples">samples</a> to RELEASE_en.html.</li>
+</ul>
+<li>Changed String encoding handling among
+Ruby object &lt;-&gt; SOAP Data Model &lt;-&gt; XML instance.
+<ul>
+<li>Ruby object: $KCODE.</li>
+<li>SOAP Data Model: utf-8 if uconv module is installed, $KCODE if not.</li>
+<li>XML instance: Client side use utf-8 if uconv module is installed,
+$KCODE if not.  Server side try to adjust the request encoding.</li>
+<li>Use regexp instead of NKF.guess to check if the given String is EUC/SJIS or not.</li>
+</ul>
+</li>
+<li>Added 'addServant' interface to server side.  See sample/Calc/server.rb.</li>
+<li>Added 'addMethodAs' interface to both server side and client side.
+See sample/Calc/server2.rb.</li>
+</ul>
+</dd>
+
+<dt>Changes</dt>
+<dd>
+<ul>
+<li>Removed Japanese document.
+I was tired of maintaining 2 separated documents.
+Though my English is poor as you see, numbers of readers of my English document
+should be more than one of my Japanese document.
+Would you please tell me bug of my English composition and of course in the code?</li>
+<li>Use
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Devel%3A%3ALogger">[RAA:Devel::Logger]</a>
+instead of
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Application">[RAA:Application]</a>.
+</li>
+<li>Avoided using exception in soap2obj and reduced warnings in runtime.</li>
+<li>XSDDateTime: Use date2 version 3 instead of date3.rb.
+Date2 version 3 will be included in standard distribution of Ruby/1.8.</li>
+<li>XSDDateTime: Added XSDDateTimeToTime module to extract a Time object from XSDDateTime, XSDDate and XSDTime.</li>
+</ul>
+</dd>
+
+<dt>Bug fixes</dt>
+<dd>
+<ul>
+<li>Set 'charset=' to content-type when sending back a SOAPFault.
+It was not set.</li>
+<li>XSDDateTime: Parsedate was not used.  Removed.</li>
+<li>Added constant Log as a canonical name of Devel::Logger for backward
+compatibility of devel-logger.</li>
+<li>Foo = Struct.new(:foo) and Foo = Struct.new("Foo", :foo) could not be
+  unmarshalled collectly.  All members were unmarshalled as nil.  Fixed.</li>
+<li>Rescue ArgumentError(Unrecognized signal) in standaloneServer.rb for mswin32 ruby.</li>
+</ul>
+</dd>
+</dl>
 
 <h2 id="install" name="install">2. Install</h2>
 
@@ -137,16 +190,16 @@ I would appriciate to authors of these programs.
 <h2 id="uninstall" name="uninstall">3. Uninstall</h2>
 
 <p>
-Delete created files at installation.
+To uninstall;
 </p>
 
 <pre class="path">
-ruby -rrbconfig -e 'include Config; puts CONFIG[&quot;sitedir&quot;] + &quot;/&quot; + CONFIG[&quot;MAJOR&quot;] + &quot;.&quot; + CONFIG[&quot;MINOR&quot;]'
+$ ruby uninstall.rb
 </pre>
 
 <p>
-should dump the installation root directory.
-Then, check &quot;soap&quot; directory and filename of files in &quot;redist&quot; directory.
+Of cource, modules listed at <a href="#dependencies">Dependencies</a>
+which you may install are not uninstalled.
 </p>
 
 <h2 id="whats" name="whats">4. What is SOAP4R?</h2>
@@ -513,6 +566,86 @@ Any comments are welcomed. (as always)</dd>
 <h2 id="history" name="history">9. History</h2>
 
 <dl>
+<dt>1.4.3 - April 11, 2002</dt>
+
+<dd>
+<dl>
+<dt>Attention to 1.4.2 or earlier users;</dt>
+<dd>
+<ul>
+<li>Stopped redistributing packages in RAA from this release.
+Please get <a href="#dependencies">required</a> packages from
+<a href="http://www.ruby-lang.org/en/raa.html">RAA</a>
+and install it.</li>
+<li>It still does NOT support WSDL!</li>
+</ul>
+</dd>
+
+<dt>New features</dt>
+<dd>
+<ul>
+<li>Added REXML parser support.</li>
+<li>Added uninstaller.</li>
+<li>Re: samples
+<ul>
+<li>Added 3 new samples, Calc, Exchange, and SampleStruct.</li>
+<li>Use environment variable HTTP_PROXY or http_proxy for http proxy.</li>
+<li>Removed unreachable services.</li>
+<li>RAA: Separate iRAA.rb into RAA.rb and iRAA.rb.</li>
+<li>Added description about <a href="#samples">samples</a> to RELEASE_en.html.</li>
+</ul>
+<li>Changed String encoding handling among
+Ruby object &lt;-&gt; SOAP Data Model &lt;-&gt; XML instance.
+<ul>
+<li>Ruby object: $KCODE.</li>
+<li>SOAP Data Model: utf-8 if uconv module is installed, $KCODE if not.</li>
+<li>XML instance: Client side use utf-8 if uconv module is installed,
+$KCODE if not.  Server side try to adjust the request encoding.</li>
+<li>Use regexp instead of NKF.guess to check if the given String is EUC/SJIS or not.</li>
+</ul>
+</li>
+<li>Added 'addServant' interface to server side.  See sample/Calc/server.rb.</li>
+<li>Added 'addMethodAs' interface to both server side and client side.
+See sample/Calc/server2.rb.</li>
+</ul>
+</dd>
+
+<dt>Changes</dt>
+<dd>
+<ul>
+<li>Removed Japanese document.
+I was tired of maintaining 2 separated documents.
+Though my English is poor as you see, numbers of readers of my English document
+should be more than one of my Japanese document.
+Would you please tell me bug of my English composition and of course in the code?</li>
+<li>Use
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Devel%3A%3ALogger">[RAA:Devel::Logger]</a>
+instead of
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Application">[RAA:Application]</a>.
+</li>
+<li>Avoided using exception in soap2obj and reduced warnings in runtime.</li>
+<li>XSDDateTime: Use date2 version 3 instead of date3.rb.
+Date2 version 3 will be included in standard distribution of Ruby/1.8.</li>
+<li>XSDDateTime: Added XSDDateTimeToTime module to extract a Time object from XSDDateTime, XSDDate and XSDTime.</li>
+</ul>
+</dd>
+
+<dt>Bug fixes</dt>
+<dd>
+<ul>
+<li>Set 'charset=' to content-type when sending back a SOAPFault.
+It was not set.</li>
+<li>XSDDateTime: Parsedate was not used.  Removed.</li>
+<li>Added constant Log as a canonical name of Devel::Logger for backward
+compatibility of devel-logger.</li>
+<li>Foo = Struct.new(:foo) and Foo = Struct.new("Foo", :foo) could not be
+  unmarshalled collectly.  All members were unmarshalled as nil.  Fixed.</li>
+<li>Rescue ArgumentError(Unrecognized signal) in standaloneServer.rb for mswin32 ruby.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+
 <dt>1.4.2 - December 28, 2001</dt>
 <dd>
 Many changes around Ruby language mapping for SOAP.
