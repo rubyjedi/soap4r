@@ -236,8 +236,8 @@ module SOAPBasetypeUtils
 
   def encode( ns, name )
     attrs = []
-    getExtraNSAttr( attrs, ns )
-    getDatatypeAttr( attrs, ns )
+    createNS( attrs, ns )
+    attrs.push( datatypeAttr( ns ))
 
     if ( self.to_s.empty? )
       Element.new( name, attrs )
@@ -252,11 +252,11 @@ module SOAPBasetypeUtils
 
   private
 
-  def getDatatypeAttr( attrs, ns )
-    attrs.push( Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @typeName )))
+  def datatypeAttr( ns )
+    Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @typeName ))
   end
 
-  def getExtraNSAttr( attrs, ns )
+  def createNS( attrs, ns )
     unless ns[ XSD::Namespace ]
       tag = ns.assign( XSD::Namespace )
       attrs.push( Attr.new( 'xmlns:' << tag, XSD::Namespace ))
@@ -275,7 +275,7 @@ class SOAPNull < XSDNull
   private
 
   # Override the definition in SOAPBasetypeUtils.
-  def getDatatypeAttr( ns )
+  def datatypeAttr( ns )
     Attr.new( ns.name( XSD::Namespace, 'null' ), '1' )
   end
 
@@ -372,8 +372,8 @@ class SOAPStruct < SOAPCompoundBase
 
   def encode( ns, name )
     attrs = []
-    getExtraNSAttr( attrs, ns )
-    getDatatypeAttr( attrs, ns )
+    createNS( attrs, ns )
+    attrs.push( datatypeAttr( ns ))
 
     children = @array.collect { | child |
       @data[ child ].encode( ns.clone, child )
@@ -399,11 +399,11 @@ class SOAPStruct < SOAPCompoundBase
 
   private
 
-  def getDatatypeAttr( attrs, ns )
-    attrs.push( Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @typeName )))
+  def datatypeAttr( ns )
+    Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @typeName ))
   end
 
-  def getExtraNSAttr( attrs, ns )
+  def createNS( attrs, ns )
     unless ns[ @namespace ]
       tag = ns.assign( @namespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
@@ -481,8 +481,8 @@ class SOAPArray < SOAPCompoundBase
 
   def encode( ns, name )
     attrs = []
-    getExtraNSAttr( attrs, ns )
-    getDatatypeAttr( attrs, ns )
+    createNS( attrs, ns )
+    attrs.push( datatypeAttr( ns ))
 
     children = @data[ 0 ].collect { | child |
       childTypeName = contentsTypeName().gsub( /\[,*\]/, 'Array' )
@@ -497,11 +497,11 @@ class SOAPArray < SOAPCompoundBase
 
   private
 
-  def getDatatypeAttr( attrs, ns )
-    attrs.push( Attr.new( ns.name( EncodingNamespace, 'arrayType' ), ns.name( @namespace, arrayTypeValue() )))
+  def datatypeAttr( ns )
+    Attr.new( ns.name( EncodingNamespace, 'arrayType' ), ns.name( @namespace, arrayTypeValue() ))
   end
 
-  def getExtraNSAttr( attrs, ns )
+  def createNS( attrs, ns )
     unless ns[ @namespace ]
       tag = ns.assign( @namespace )
       attrs.push( Attr.new( 'xmlns:' << tag, @namespace ))
