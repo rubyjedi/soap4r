@@ -22,76 +22,82 @@ require 'soap/element'
 
 
 module SOAP
-  class EncodingStyleHandler
-    @@handlerMap = {}
-    @@defaultHandler = nil
 
-    attr_reader :uri
 
-    def initialize( uri )
-      @uri = uri
-      @@handlerMap[ uri ] = self
-    end
+class EncodingStyleHandler
+  @@handlerMap = {}
+  @@defaultHandler = nil
 
-    ###
-    ## encode interface.
-    #
-    # Returns a XML instance as a string.
-    def encodeData( ns, data, name, parent )
-      raise NotImplementError.new( 'Method encodeData must be defined in derived class.' )
-    end
+  attr_reader :uri
 
-    def encodePrologue
-    end
+  class EncodingStyleError < Error; end
 
-    def encodeEpilogue
-    end
+  def initialize( uri )
+    @uri = uri
+    @@handlerMap[ uri ] = self
+  end
 
-    ###
-    ## decode interface.
-    #
-    # Returns SOAP/OM data.
-    def decodeTag( ns, name, attrs, parent )
-      raise NotImplementError.new( 'Method decodeTag must be defined in derived class.' )
-    end
+  ###
+  ## encode interface.
+  #
+  # Returns a XML instance as a string.
+  def encodeData( ns, data, name, parent )
+    raise NotImplementError.new( 'Method encodeData must be defined in derived class.' )
+  end
 
-    def decodeTagEnd( ns, name )
-      raise NotImplementError.new( 'Method decodeTagEnd must be defined in derived class.' )
-    end
+  def encodePrologue
+  end
 
-    def decodeText( ns, text )
-      raise NotImplementError.new( 'Method decodeText must be defined in derived class.' )
-    end
+  def encodeEpilogue
+  end
 
-    def decodePrologue
-    end
+  ###
+  ## decode interface.
+  #
+  # Returns SOAP/OM data.
+  def decodeTag( ns, name, attrs, parent )
+    raise NotImplementError.new( 'Method decodeTag must be defined in derived class.' )
+  end
 
-    def decodeEpilogue
-    end
+  def decodeTagEnd( ns, name )
+    raise NotImplementError.new( 'Method decodeTagEnd must be defined in derived class.' )
+  end
 
-    ###
-    ## Class interface
-    #
-    def EncodingStyleHandler.defaultHandler
+  def decodeText( ns, text )
+    raise NotImplementError.new( 'Method decodeText must be defined in derived class.' )
+  end
+
+  def decodePrologue
+  end
+
+  def decodeEpilogue
+  end
+
+  ###
+  ## Class interface
+  #
+  def EncodingStyleHandler.defaultHandler
+    @@defaultHandler
+  end
+
+  def EncodingStyleHandler.defaultHandler=( handler )
+    @@defaultHandler = handler
+  end
+
+  def EncodingStyleHandler.getHandler( uri )
+    if @@handlerMap.has_key?( uri )
+      @@handlerMap[ uri ]
+    else
       @@defaultHandler
     end
+  end
 
-    def EncodingStyleHandler.defaultHandler=( handler )
-      @@defaultHandler = handler
-    end
-
-    def EncodingStyleHandler.getHandler( uri )
-      if @@handlerMap.has_key?( uri )
-	@@handlerMap[ uri ]
-      else
-	@@defaultHandler
-      end
-    end
-
-    def EncodingStyleHandler.each
-      @@handlerMap.each do | key, value |
-	yield( value )
-      end
+  def EncodingStyleHandler.each
+    @@handlerMap.each do | key, value |
+      yield( value )
     end
   end
+end
+
+
 end
