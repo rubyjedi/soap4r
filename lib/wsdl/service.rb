@@ -31,7 +31,7 @@ class Service < Info
   def initialize
     super
     @name = nil
-    @ports = []
+    @ports = NamedElements.new
     @soapAddress = nil
   end
 
