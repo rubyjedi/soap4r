@@ -137,7 +137,7 @@ __EOX__
   def test_basic_auth
     str = ""
     @client.wiredump_dev = str
-    @client.options["client.protocol.http.basic_auth"] = [[@url, "foo", "bar"]]
+    @client.options["protocol.http.basic_auth"] = [[@url, "foo", "bar"]]
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
     assert_equal("Basic Zm9vOmJhcg==", h["authorization"])
@@ -151,7 +151,7 @@ __EOX__
     setup_proxyserver
     str = ""
     @client.wiredump_dev = str
-    @client.options["client.protocol.http.proxy"] = @proxyurl
+    @client.options["protocol.http.proxy"] = @proxyurl
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
     assert_match(%r"POST http://localhost:17171/ HTTP/1.", r)
@@ -164,13 +164,13 @@ __EOX__
   def test_charset
     str = ""
     @client.wiredump_dev = str
-    @client.options["client.protocol.http.charset"] = "iso-8859-8"
+    @client.options["protocol.http.charset"] = "iso-8859-8"
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
     assert_equal("text/xml; charset=iso-8859-8", h["content-type"])
     #
     str.replace("")
-    @client.options["client.protocol.http.charset"] = "iso-8859-3"
+    @client.options["protocol.http.charset"] = "iso-8859-3"
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
     assert_equal("text/xml; charset=iso-8859-3", h["content-type"])
