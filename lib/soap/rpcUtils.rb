@@ -79,6 +79,15 @@ end
 
 
 module RPCUtils
+  RubyTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/1.6'
+  RubyCustomTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/custom'
+
+  ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
+
+
+  ###
+  ## RPC specific elements
+  #
   class SOAPMethod < NSDBase
     include SOAPCompoundtype
 
@@ -106,7 +115,7 @@ module RPCUtils
       @params = {}
 
       @soapAction = soapAction
-  
+
       @retName = nil
       @retVal = nil
   
@@ -123,17 +132,28 @@ module RPCUtils
       attrs = []
       createNS( attrs, ns )
       if !retVal
-	attrs.push( datatypeAttr( ns ))
-        paramElem = @paramNames.collect { | param |
-          @params[ param ].encode( ns.clone, param )
-        }
-        # Element.new( ns.name( @namespace, @name ), attrs, paramElem )
-	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, paramElem )
+	# Should it be typed?
+	# attrs.push( datatypeAttr( ns ))
+
+	elems = []
+        @paramNames.each do | param |
+	  unless @params[ param ].is_a?( SOAPVoid )
+	    elems << @params[ param ].encode( ns.clone, param )
+	  end
+	end
+
+        # Element.new( ns.name( @namespace, @name ), attrs, elems )
+	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, elems )
       else
-	attrs.push( datatypeAttrResponse( ns ))
-        retElem = retVal.encode( ns.clone, 'return' )
+	# Should it be typed?
+	# attrs.push( datatypeAttrResponse( ns ))
+
+	elems = []
+	unless retVal.is_a?( SOAPVoid )
+	  elems << retVal.encode( ns.clone, 'return' )
+	end
         # Element.new( ns.name( @namespace, responseTypeName() ), attrs, retElem )
-        Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, retElem )
+        Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, elems )
       end
     end
   
@@ -183,17 +203,26 @@ module RPCUtils
   end
 
 
+  class SOAPVoid < XSDBase
+    include SOAPBasetype
+    extend SOAPModuleUtils
+
+  public
+    def initialize()
+      @namespace = RubyCustomTypeNamespace
+      @name = nil
+      @id = nil
+      @parent = nil
+    end
+  end
+
+
   ###
   ## Convert parameter
   #
-  RubyTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/1.6'
-  RubyCustomTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/custom'
-
-  ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
-
   def obj2soap( obj )
     case obj
-    when SOAPBasetype
+    when SOAPBasetype, SOAPCompoundtype
       obj
     when NilClass
       SOAPNil.new
