@@ -275,6 +275,9 @@ private
     elsif str == '-INF'
       @data = -1.0/0.0
     else
+      if /^[-+\.\deE]+$/ !~ str
+	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
+      end
       begin
   	@data = narrowTo32bit( Float( str ))
       rescue ArgumentError
@@ -760,6 +763,9 @@ public
   end
 
   def setEncoded( newHexString )
+    if /^[0-9a-fA-F]*$/ !~ newHexString
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newHexString }'." )
+    end
     @data = trim( String.new( newHexString ))
     @isNil = false
   end
@@ -784,6 +790,9 @@ public
   end
 
   def setEncoded( newBase64String )
+    if /^[A-Za-z0-9+\/=]*$/ !~ newBase64String
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newBase64String }'." )
+    end
     @data = trim( String.new( newBase64String ))
     @isNil = false
   end
