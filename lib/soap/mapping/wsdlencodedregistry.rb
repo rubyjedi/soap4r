@@ -50,8 +50,8 @@ class WSDLEncodedRegistry
       soap_obj = @excn_handler_obj2soap.call(obj) { |yield_obj|
         Mapping._obj2soap(yield_obj, self)
       }
+      return soap_obj if soap_obj
     end
-    return soap_obj if soap_obj
     raise MappingError.new("Cannot map #{ klass.name } to SOAP/OM.")
   end
 

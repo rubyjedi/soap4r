@@ -64,12 +64,12 @@ end
 # For anyType object: SOAP::Mapping::Object not ::Object
 class Object; include Marshallable
   def initialize
-    @__members = []
-    @__value_type = {}
+    @__soap_members = []
+    @__soap_value_type = {}
   end
 
   def [](name)
-    if @__members.include?(name)
+    if @__soap_members.include?(name)
       self.__send__(name)
     else
       self.__send__(Object.safe_name(name))
@@ -77,39 +77,35 @@ class Object; include Marshallable
   end
 
   def []=(name, value)
-    if @__members.include?(name)
+    if @__soap_members.include?(name)
       self.__send__(name + '=', value)
     else
       self.__send__(Object.safe_name(name) + '=', value)
     end
   end
 
-  def __set_property(name, value)
+  def __soap_set_property(name, value)
     var_name = name
-    unless @__members.include?(name)
+    unless @__soap_members.include?(name)
       var_name = __define_attr_accessor(var_name)
     end
-    __set_property_value(var_name, value)
+    __soap_set_property_value(var_name, value)
     var_name
-  end
-
-  def __members
-    @__members
   end
 
 private
 
-  def __set_property_value(name, value)
+  def __soap_set_property_value(name, value)
     org = self.__send__(name)
-    case @__value_type[name]
+    case @__soap_value_type[name]
     when :single
       self.__send__(name + '=', [org, value])
-      @__value_type[name] = :multi
+      @__soap_value_type[name] = :multi
     when :multi
       org << value
     else
       self.__send__(name + '=', value)
-      @__value_type[name] = :single
+      @__soap_value_type[name] = :single
     end
     value
   end
@@ -130,7 +126,7 @@ private
       var_name = Object.safe_name(var_name)
       retry
     end
-    @__members << var_name
+    @__soap_members << var_name
     var_name
   end
 
