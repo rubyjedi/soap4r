@@ -233,26 +233,36 @@ protected
 private
   
   def run
-    log( SEV_INFO, "Received a request from '#{ @remote_user }@#{ @remote_host }'." )
+    begin
+      log( SEV_INFO, "Received a request from '#{ @remote_user }@#{ @remote_host }'." )
     
-    # Method definition
-    methodDef
+      # Method definition
+      methodDef
   
-    # SOAP request parsing.
-    @request = CGIRequest.new.init
-    log( SEV_INFO, "CGI Request: #{@request}" )
+      # SOAP request parsing.
+      @request = CGIRequest.new.init
+      log( SEV_INFO, "CGI Request: #{@request}" )
 
-    requestString = @request.dump
-    log( SEV_DEBUG, "XML Request: #{requestString}" )
+      requestString = @request.dump
+      log( SEV_DEBUG, "XML Request: #{requestString}" )
 
-    responseString = @router.route( requestString )
-    log( SEV_DEBUG, "XML Response: #{responseString}" )
+      responseString = @router.route( requestString )
+      log( SEV_DEBUG, "XML Response: #{responseString}" )
 
-    @response = CGIResponse.new( responseString )
-    @response.body.type = 'text/xml'
-    str = @response.dump
-    log( SEV_DEBUG, "CGI Response:\n#{ str }" )
-    print str
+      @response = CGIResponse.new( responseString )
+      @response.body.type = 'text/xml'
+      str = @response.dump
+      log( SEV_DEBUG, "CGI Response:\n#{ str }" )
+      print str
+
+    rescue
+      @response = CGIResponse.new( $!.to_s )
+      @response.body.type = 'text/plain'
+      str = @response.dump
+      log( SEV_DEBUG, "CGI Response:\n#{ str }" )
+      print str
+      raise
+    end
   end
 
   def addMethod( receiver, methodName, namespace = nil )
