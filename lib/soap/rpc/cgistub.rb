@@ -10,7 +10,7 @@ require 'soap/streamHandler'
 require 'webrick/httpresponse'
 require 'webrick/httpstatus'
 require 'logger'
-require 'soap/rpc/router'
+require 'soap/rpc/soaplet'
 
 
 module SOAP
@@ -26,57 +26,24 @@ module RPC
 #
 class CGIStub < Logger::Application
   include SOAP
-
-  # There is a client which does not accept the media-type which is defined in
-  # SOAP spec.
-  attr_accessor :mediatype
-
-  class CGIError < Error; end
+  include WEBrick
 
   class SOAPRequest
-    ALLOWED_LENGTH = 1024 * 1024
+    attr_reader :body
 
-    def initialize(stream = $stdin)
-      @method = ENV['REQUEST_METHOD']
-      @size = ENV['CONTENT_LENGTH'].to_i || 0
-      @contenttype = ENV['CONTENT_TYPE']
-      @soapaction = ENV['HTTP_SOAPAction']
-      @source = stream
-      @body = nil
+    def initialize(stream)
+      size = ENV['CONTENT_LENGTH'].to_i || 0
+      @body = stream.read(size)
     end
 
-    def init
-      validate
-      @body = @source.read(@size)
-      self
+    def [](var)
+      ENV[var.upcase]
     end
 
-    def dump
-      @body.dup
-    end
-
-    def soapaction
-      @soapaction
-    end
-
-    def contenttype
-      @contenttype
-    end
-
-    def to_s
-      "method: #{ @method }, size: #{ @size }"
-    end
-
-  private
-
-    def validate # raise CGIError
-      if @method != 'POST'
-	raise CGIError.new("Method '#{ @method }' not allowed.")
-      end
-
-      if @size > ALLOWED_LENGTH
-        raise CGIError.new("Content-length too long.")
-      end
+    def meta_vars
+      {
+        'HTTP_SOAPACTION' => ENV['HTTP_SOAPAction']
+      }
     end
   end
 
@@ -86,32 +53,13 @@ class CGIStub < Logger::Application
     self.level = ERROR
     @default_namespace = default_namespace
     @router = SOAP::RPC::Router.new(appname)
-    @remote_user = ENV['REMOTE_USER'] || 'anonymous'
     @remote_host = ENV['REMOTE_HOST'] || ENV['REMOTE_ADDR'] || 'unknown'
-    @request = nil
-    @response = nil
-    @mediatype = MediaType
+    @soaplet = ::SOAP::RPC::SOAPlet.new
     on_init
   end
   
-  def add_rpc_servant(obj, namespace = @default_namespace, soapaction = nil)
-    RPC.defined_methods(obj).each do |name|
-      qname = XSD::QName.new(namespace, name)
-      param_size = obj.method(name).arity.abs
-      params = (1..param_size).collect { |i| "p#{i}" }
-      param_def = SOAP::RPC::SOAPMethod.create_param_def(params)
-      @router.add_method(obj, qname, soapaction, name, param_def)
-    end
-  end
-  alias add_servant add_rpc_servant
-
-  def add_rpc_headerhandler(obj)
-    @router.headerhandler << obj
-  end
-  alias add_headerhandler add_rpc_headerhandler
-
   def on_init
-    # Override this method in derived class to call 'add_method' to add methods.
+    # do extra initialization in a derived class if needed.
   end
 
   def mapping_registry
@@ -122,78 +70,88 @@ class CGIStub < Logger::Application
     @router.mapping_registry = value
   end
 
-  def add_method(receiver, name, *param)
-    add_method_with_namespace_as(@default_namespace, receiver,
-      name, name, *param)
+  # servant entry interface
+
+  def add_rpc_servant(obj, namespace = @default_namespace)
+    @soaplet.add_rpc_servant(obj, namespace)
+  end
+  alias add_servant add_rpc_servant
+
+  def add_rpc_headerhandler(obj)
+    @soaplet.add_rpc_headerhandler(obj)
   end
 
-  def add_method_as(receiver, name, name_as, *param)
-    add_method_with_namespace_as(@default_namespace, receiver,
-      name, name_as, *param)
-  end
+  # method entry interface
 
-  def add_method_with_namespace(namespace, receiver, name, *param)
-    add_method_with_namespace_as(namespace, receiver, name, name, *param)
+  def add_rpc_method(obj, name, *param)
+    add_rpc_method_as(obj, name, name, *param)
   end
+  alias add_method add_rpc_method
 
-  def add_method_with_namespace_as(namespace, receiver, name, name_as, *param)
-    param_def = if param.size == 1 and param[0].is_a?(Array)
-        param[0]
-      else
-        SOAP::RPC::SOAPMethod.create_param_def(param)
-      end
+  def add_rpc_method_as(obj, name, name_as, *param)
+    qname = XSD::QName.new(@default_namespace, name_as)
+    soapaction = nil
+    param_def = create_rpc_param_def(obj, name, param)
+    @soaplet.app_scope_router.add_rpc_operation(obj, qname, soapaction, name,
+      param_def)
+  end
+  alias add_method_as add_rpc_method_as
+
+  def add_rpc_method_with_namespace(namespace, obj, name, *param)
+    add_rpc_method_with_namespace_as(namespace, obj, name, name, *param)
+  end
+  alias add_method_with_namespace add_rpc_method_with_namespace
+
+  def add_rpc_method_with_namespace_as(namespace, obj, name, name_as, *param)
     qname = XSD::QName.new(namespace, name_as)
-    @router.add_method(receiver, qname, nil, name, param_def)
+    soapaction = nil
+    param_def = create_rpc_param_def(obj, name, param)
+    @soaplet.app_scope_router.add_rpc_operation(obj, qname, soapaction, name,
+      param_def)
   end
-
-  def route(conn_data)
-    @router.route(conn_data)
-  end
-
-  def create_fault_response(e)
-    @router.create_fault_response(e)
-  end
+  alias add_method_with_namespace_as add_rpc_method_with_namespace_as
 
 private
-  
+
+  def create_rpc_param_def(obj, name, param = nil)
+    if param.nil? or param.empty?
+      method = obj.method(name)
+      ::SOAP::RPC::SOAPMethod.create_param_def(
+        (1..method.arity.abs).collect { |i| "p#{i}" })
+    elsif param.size == 1 and param[0].is_a?(Array)
+      param[0]
+    else
+      ::SOAP::RPC::SOAPMethod.create_param_def(param)
+    end
+  end
+
   def run
     prologue
 
     httpversion = WEBrick::HTTPVersion.new('1.0')
-    @response = WEBrick::HTTPResponse.new({:HTTPVersion => httpversion})
+    res = WEBrick::HTTPResponse.new({:HTTPVersion => httpversion})
     conn_data = nil
     begin
-      @log.info { "Received a request from '#{ @remote_user }@#{ @remote_host }'." }
-      # SOAP request parsing.
-      @request = SOAPRequest.new.init
-      @response['Status'] = 200
-      conn_data = ::SOAP::StreamHandler::ConnectionData.new
-      conn_data.receive_string = @request.dump
-      conn_data.receive_contenttype = @request.contenttype
-      @log.debug { "XML Request: #{conn_data.receive_string}" }
-      conn_data = route(conn_data)
-      @log.debug { "XML Response: #{conn_data.send_string}" }
-      if conn_data.is_fault
-	@response['Status'] = 500
-      end
-      @response['Cache-Control'] = 'private'
-      @response.body = conn_data.send_string
-      @response['content-type'] = conn_data.send_contenttype
-    rescue Exception
-      conn_data = create_fault_response($!)
-      @response['Cache-Control'] = 'private'
-      @response['Status'] = 500
-      @response.body = conn_data.send_string
-      @response['content-type'] = conn_data.send_contenttype || @mediatype
+      @log.info { "Received a request from '#{ @remote_host }'." }
+      req = SOAPRequest.new($stdin)
+      @soaplet.do_POST(req, res)
+      epilogue
+    rescue HTTPStatus::EOFError, HTTPStatus::RequestTimeout => ex
+      res.set_error(ex)
+    rescue HTTPStatus::Error => ex
+      res.set_error(ex)
+    rescue HTTPStatus::Status => ex
+      res.status = ex.code
+    rescue StandardError, NameError => ex # for Ruby 1.6
+      res.set_error(ex, true)
     ensure
       buf = ''
-      @response.send_response(buf)
+      res.send_response(buf)
       buf.sub!(/^[^\r]+\r\n/, '')       # Trim status line.
       @log.debug { "SOAP CGI Response:\n#{ buf }" }
       print buf
       epilogue
     end
-
     0
   end
 
