@@ -389,7 +389,11 @@ module RPCUtils
   def RPCUtils.getClassFromName( name )
     klass = Object
     name.split( '::' ).each do | klassStr |
-      klass = klass.const_get( klassStr )
+      if klass.const_defined?( klassStr )
+	klass = klass.const_get( klassStr )
+      else
+	return nil
+      end
     end
     klass
   end

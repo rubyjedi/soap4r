@@ -143,6 +143,21 @@ public
   def Charset.isSJIS( str )
     SJISRegexp =~ str
   end
+
+  def Charset.isCES( str, code = $KCODE )
+    case code
+    when 'NONE'
+      true
+    when 'UTF8'
+      isUTF8( str )
+    when 'EUC'
+      isEUC( str )
+    when 'SJIS'
+      isSJIS( str )
+    else
+      raise RuntimeError.new( "Unknown encoding: #{ code }" )
+    end
+  end
 end
 
 

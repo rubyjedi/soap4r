@@ -115,6 +115,7 @@ public
 
   # Override the definition in SOAPBasetype.
   def initialize( refId = nil )
+    super( nil, nil )
     @encodingStyle = nil
     @namespace = nil
     @name = nil
