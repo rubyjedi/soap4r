@@ -19,29 +19,46 @@ class ModuleDef
   include GenSupport
   include CommentDef
 
-  attr_reader :methoddef
-
   def initialize(name)
     @name = name
     @comment = nil
     @const = []
+    @code = []
     @requirepath = []
     @methoddef = []
   end
 
-  def defrequire(path)
+  def def_require(path)
     @requirepath << path
   end
 
-  def defconst(const, value)
+  def def_const(const, value)
     unless safeconstname?(const)
       raise ArgumentError.new("#{const} seems to be unsafe")
     end
     @const << [const, value]
   end
 
-  def defmethod(name, *params)
-    @methoddef << MethodDef.new(name, *params) { yield if block_given? }
+  def def_code(code)
+    @code << code
+  end
+
+  def def_method(name, *params)
+    add_method(MethodDef.new(name, *params) { yield if block_given? }, :public)
+  end
+  alias def_publicmethod def_method
+
+  def def_protectedmethod(name, *params)
+    add_method(MethodDef.new(name, *params) { yield if block_given? },
+      :protected)
+  end
+
+  def def_privatemethod(name, *params)
+    add_method(MethodDef.new(name, *params) { yield if block_given? }, :private)
+  end
+
+  def add_method(m, visibility = :public)
+    @methoddef << [visibility, m]
   end
 
   def dump
@@ -55,10 +72,15 @@ class ModuleDef
     buf << dump_comment if @comment
     buf << dump_module_def
     spacer = false
-    if @const
+    unless @const.empty?
       buf << dump_emptyline if spacer
       spacer = true
       buf << dump_const
+    end
+    unless @code.empty?
+      buf << dump_emptyline if spacer
+      spacer = true
+      buf << dump_code
     end
     unless @methoddef.empty?
       buf << dump_emptyline if spacer
@@ -88,21 +110,33 @@ private
     )
   end
 
+  def dump_code
+    dump_static(@code.join("\n"))
+  end
+
   def dump_static(str)
     format(str, 2)
   end
 
   def dump_methods
-    @methoddef.collect { |m|
-      format(m.dump, 2)
-    }.join("\n")
+    methods = {}
+    @methoddef.each do |visibility, method|
+      (methods[visibility] ||= []) << method
+    end
+    str = ""
+    [:public, :protected, :private].each do |visibility|
+      if methods[visibility]
+        str << "\n" unless str.empty?
+        str << visibility.to_s << "\n\n" unless visibility == :public
+        str << methods[visibility].collect { |m| format(m.dump, 2) }.join("\n")
+      end
+    end
+    str
   end
 
   def dump_value(value)
     if value.respond_to?(:to_src)
       value.to_src
-    elsif value.is_a?(::String)
-      value.dump
     else
       value
     end
@@ -135,14 +169,14 @@ if __FILE__ == $0
   require 'xsd/codegen/moduledef'
   include XSD::CodeGen
   m = ModuleDef.new("Foo::Bar::HobbitName")
-  m.defrequire("foo/bar")
-  m.defrequire("baz")
+  m.def_require("foo/bar")
+  m.def_require("baz")
   m.comment = <<-EOD
     foo
     bar
     baz
   EOD
-  m.defmethod("foo") do
+  m.def_method("foo") do
     <<-EOD
       foo.bar = 1
       baz.each do |ele|
@@ -150,6 +184,8 @@ if __FILE__ == $0
       end
     EOD
   end
-  m.defmethod("baz", "qux")
+  m.def_method("baz", "qux")
+  #m.def_protectedmethod("aaa")
+  m.def_privatemethod("bbb")
   puts m.dump
 end

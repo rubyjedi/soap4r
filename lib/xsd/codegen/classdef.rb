@@ -25,7 +25,7 @@ class ClassDef < ModuleDef
     @attrdef = []
   end
 
-  def defclassvar(var, value)
+  def def_classvar(var, value)
     var = var.sub(/\A@@/, "")
     unless safevarname?(var)
       raise ArgumentError.new("#{var} seems to be unsafe")
@@ -33,7 +33,7 @@ class ClassDef < ModuleDef
     @classvar << [var, value]
   end
 
-  def defattr(attrname, writable = true, varname = nil)
+  def def_attr(attrname, writable = true, varname = nil)
     unless safevarname?(varname || attrname)
       raise ArgumentError.new("#{varname || attrname} seems to be unsafe")
     end
@@ -59,6 +59,11 @@ class ClassDef < ModuleDef
       buf << dump_emptyline if spacer
       spacer = true
       buf << dump_const
+    end
+    unless @code.empty?
+      buf << dump_emptyline if spacer
+      spacer = true
+      buf << dump_code
     end
     unless @attrdef.empty?
       buf << dump_emptyline if spacer
@@ -147,21 +152,21 @@ if __FILE__ == $0
   require 'xsd/codegen/classdef'
   include XSD::CodeGen
   c = ClassDef.new("Foo::Bar::HobbitName", String)
-  c.defrequire("foo/bar")
+  c.def_require("foo/bar")
   c.comment = <<-EOD
       foo
     bar
       baz
   EOD
-  c.defconst("FOO", 1)
-  c.defclassvar("@@foo", "var")
-  c.defclassvar("baz", "1")
-  c.defattr("Foo", true, "foo")
-  c.defattr("bar")
-  c.defattr("baz", true)
-  c.defattr("Foo2", true, "foo2")
-  c.defattr("foo3", false, "foo3")
-  c.defmethod("foo") do
+  c.def_const("FOO", 1)
+  c.def_classvar("@@foo", "var".dump)
+  c.def_classvar("baz", "1".dump)
+  c.def_attr("Foo", true, "foo")
+  c.def_attr("bar")
+  c.def_attr("baz", true)
+  c.def_attr("Foo2", true, "foo2")
+  c.def_attr("foo3", false, "foo3")
+  c.def_method("foo") do
     <<-EOD
         foo.bar = 1
 \tbaz.each do |ele|
@@ -169,7 +174,7 @@ if __FILE__ == $0
         end
     EOD
   end
-  c.defmethod("baz", "qux") do
+  c.def_method("baz", "qux") do
     <<-EOD
       [1, 2, 3].each do |i|
         p i
@@ -183,7 +188,15 @@ if __FILE__ == $0
     EOD
   end
   m.comment = "hello world\n123"
-  c.methoddef << m
+  c.add_method(m)
+  c.def_code <<-EOD
+    Foo.new
+    Bar.z
+  EOD
+  c.def_code <<-EOD
+    Foo.new
+    Bar.z
+  EOD
 
   puts c.dump
 end
