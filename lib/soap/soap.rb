@@ -19,7 +19,7 @@ Ave, Cambridge, MA 02139, USA.
 module SOAP
   public
 
-  Version = '1.3.4'
+  Version = '1.3.5'
 
   EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
   EncodingNamespace = 'http://schemas.xmlsoap.org/soap/encoding/'
