@@ -5,13 +5,7 @@ require 'soap/driver'
 server = ARGV.shift or raise ArgumentError.new( 'Target URL was not given.' )
 proxy = ARGV.shift || nil
 
-
-module XSD
-  Namespace = 'http://www.w3.org/1999/XMLSchema'
-  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  NilLiteral = 'null'
-end
-
+require 'soap/XMLSchemaDatatypes1999'
 
 def getWireDumpLogFile
   logFilename = File.basename( $0 ) + '.log'

@@ -2,12 +2,7 @@
 
 require 'soap/cgistub'
 
-
-module XSD
-  Namespace = 'http://www.w3.org/1999/XMLSchema'
-  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
-  NilLiteral = 'null'
-end
+require 'soap/XMLSchemaDatatypes1999'
 
 
 class Address
