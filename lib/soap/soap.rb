@@ -76,6 +76,8 @@ class ArrayStoreError < Error; end
 
 class RPCRoutingError < Error; end
 
+class UnhandledMustUnderstandHeaderError < Error; end
+
 class FaultError < Error
   attr_reader :faultcode
   attr_reader :faultstring

@@ -149,7 +149,7 @@ public
     @type = nil
     @element = element
     @mustunderstand = mustunderstand
-    @encodingstyle = encodingstyle || LiteralNamespace
+    @encodingstyle = encodingstyle
     element.parent = self if element
   end
 
@@ -187,7 +187,7 @@ class SOAPHeader < SOAPStruct
   end
 
   def add(name, value)
-    mu = value.extraattr[AttrMustUnderstand]
+    mu = (value.extraattr[AttrMustUnderstandName] == '1')
     encstyle = value.extraattr[AttrEncodingStyleName]
     item = SOAPHeaderItem.new(value, mu, encstyle)
     super(name, item)
