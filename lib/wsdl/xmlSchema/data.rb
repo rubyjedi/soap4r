@@ -1,5 +1,5 @@
 # WSDL4R - XMLSchema data definitions.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -7,6 +7,7 @@
 
 
 require 'xsd/datatypes'
+require 'wsdl/xmlSchema/annotation'
 require 'wsdl/xmlSchema/schema'
 require 'wsdl/xmlSchema/import'
 require 'wsdl/xmlSchema/simpleType'
@@ -28,6 +29,7 @@ module XMLSchema
 
 
 AllName = XSD::QName.new(XSD::Namespace, 'all')
+AnnotationName = XSD::QName.new(XSD::Namespace, 'annotation')
 AnyName = XSD::QName.new(XSD::Namespace, 'any')
 AttributeName = XSD::QName.new(XSD::Namespace, 'attribute')
 ChoiceName = XSD::QName.new(XSD::Namespace, 'choice')
