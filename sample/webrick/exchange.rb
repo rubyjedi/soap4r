@@ -1,4 +1,5 @@
 require 'soap/driver'
+require 'iExchange'
 
 class Exchange
   ForeignServer = "http://services.xmethods.net/soap"
