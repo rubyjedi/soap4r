@@ -8,10 +8,10 @@ $serverGroupB = 'http://63.142.188.184:1122/'
 require 'clientBase'
 #$soapAction = 'urn:soapinterop'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
 methodDef( drvBase )
 
-drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
 methodDefGroupB( drvGroupB )
 
 doTestBase( drvBase )

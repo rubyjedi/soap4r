@@ -3,7 +3,6 @@ $KCODE = 'EUC'
 require 'test/unit'
 require 'soap/rpc/driver'
 require 'soap/mapping'
-
 require 'base'
 require 'interopResultBase'
 

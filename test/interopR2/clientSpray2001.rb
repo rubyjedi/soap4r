@@ -6,12 +6,12 @@ $serverGroupB = 'http://www.dolphinharbor.org/services/interopB2001'
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
-methodDef( drvBase )
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
+methodDef(drvBase)
 
-drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+methodDefGroupB(drvGroupB)
 
-doTestBase( drvBase )
-doTestGroupB( drvGroupB )
+doTestBase(drvBase)
+doTestGroupB(drvGroupB)
 submitTestResult

@@ -5,12 +5,10 @@ $server = 'http://soap.4s4c.com/ilab2/soap.asp'
 
 require 'clientBase'
 
-logger = Devel::Logger.new( STDERR )
-logger.sevThreshold = Devel::Logger::SEV_INFO
+drv = SOAP::RPC::Driver.new($server, InterfaceNS)
 
-drv = SOAP::Driver.new( logger, 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
+methodDef(drv)
 
-methodDef( drv )
-
-doTest( drv )
+doTestBase(drv)
+doTestGroupB(drv)
 submitTestResult

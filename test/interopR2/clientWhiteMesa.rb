@@ -1,17 +1,28 @@
 #!/usr/bin/env ruby
 
-$serverName = 'White Mesa SOAP RPC'
+$serverName = 'White Mesa SOAP Server'
 $serverBase = 'http://www.whitemesa.net/interop/std'
 $serverGroupB = 'http://www.whitemesa.net/interop/std/groupB'
 
+$wsdlBase = 'http://www.whitemesa.net/wsdl/std/interop.wsdl'
+$wsdlGroupB = 'http://www.whitemesa.net/wsdl/std/interopB.wsdl'
+
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
-methodDefBase( drvBase )
+=begin
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
+methodDefBase(drvBase)
 
-drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+methodDefGroupB(drvGroupB)
+=end
 
-doTestBase( drvBase )
-doTestGroupB( drvGroupB )
+require 'soap/wsdlDriver'
+drvBase = SOAP::WSDLDriverFactory.new($wsdlBase).create_driver
+drvBase.endpoint_url = $serverBase
+drvGroupB = SOAP::WSDLDriverFactory.new($wsdlGroupB).create_driver
+drvGroupB.endpoint_url = $serverGroupB
+
+doTestBase(drvBase)
+doTestGroupB(drvGroupB)
 submitTestResult

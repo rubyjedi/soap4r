@@ -8,15 +8,12 @@ $noEchoMap = true
 
 require 'clientBase'
 
-log = Log.new( STDERR )
-log.sevThreshold = Log::SEV_INFO	# Log::SEV_WARN, Log::SEV_DEBUG
+drv = SOAP::RPC::Driver.new($server, InterfaceNS)
+methodDefBase(drv)
 
-drv = SOAP::Driver.new( log, 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
-methodDefBase( drv )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+methodDefGroupB(drvGroupB)
 
-drvGroupB = SOAP::Driver.new( log, 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
-
-doTestBase( drv )
-doTestGroupB( drvGroupB )
+doTestBase(drv)
+doTestGroupB(drvGroupB)
 submitTestResult

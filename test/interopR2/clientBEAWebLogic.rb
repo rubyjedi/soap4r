@@ -1,17 +1,17 @@
 #!/usr/bin/env ruby
 
-$serverName = 'BEA WebLogic 7.0'
-$serverBase = 'http://65.193.192.35:7001/InteropRound2Base/WeblogicEchoService'
-$serverGroupB = 'http://65.193.192.35:7001/InteropRound2GroupB/WeblogicEchoService'
+$serverName = 'BEA WebLogic 8.1'
+$serverBase = 'http://webservice.bea.com:7001/base/SoapInteropBaseService'
+$serverGroupB = 'http://webservice.bea.com:7001/groupb/SoapInteropGroupBService'
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
-methodDef( drvBase )
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
+methodDefBase(drvBase)
 
-drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+methodDefGroupB(drvGroupB)
 
-doTestBase( drvBase )
-doTestGroupB( drvGroupB )
+doTestBase(drvBase)
+doTestGroupB(drvGroupB)
 submitTestResult

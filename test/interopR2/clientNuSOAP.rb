@@ -7,15 +7,13 @@ $serverGroupB = 'http://dietrich.ganx4.com/nusoap/testbed/round2_groupb_server.p
 $noEchoMap = true
 
 require 'clientBase'
-log = Log.new( STDERR )
-log.sevThreshold = Log::SEV_INFO        # Log::SEV_WARN, Log::SEV_DEBUG
 
-drvBase = SOAP::Driver.new( log, 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
-methodDef( drvBase )
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
+methodDefBase(drvBase)
 
-drvGroupB = SOAP::Driver.new( log, 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+methodDefGroupB(drvGroupB)
 
-doTestBase( drvBase )
-doTestGroupB( drvGroupB )
+doTestBase(drvBase)
+doTestGroupB(drvGroupB)
 submitTestResult

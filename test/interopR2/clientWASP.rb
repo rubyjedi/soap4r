@@ -1,19 +1,19 @@
 #!/usr/bin/env ruby
 
-$serverName = 'WASP'
+$serverName = 'WASP for Java'
 
-$serverBase =   'http://soap.systinet.net:6060/InteropService/'
+$serverBase = 'http://soap.systinet.net:6060/InteropService/'
 $serverGroupB = 'http://soap.systinet.net:6060/InteropBService/'
 $noEchoMap = true
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
-methodDef( drvBase )
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
+methodDefBase(drvBase)
 
-drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+methodDefGroupB(drvGroupB)
 
-doTestBase( drvBase )
-doTestGroupB( drvGroupB )
+doTestBase(drvBase)
+doTestGroupB(drvGroupB)
 submitTestResult

@@ -1,18 +1,18 @@
 #!/usr/bin/env ruby
 
-$serverName = 'SIM ACE'
+$serverName = 'SIM'
 $serverBase = 'http://soapinterop.simdb.com/round2'
 $serverGroupB = 'http://soapinterop.simdb.com/round2B'
 $noEchoMap = true
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
-methodDefBase( drvBase )
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
+methodDefBase(drvBase)
 
-drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-methodDefGroupB( drvGroupB )
+drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+methodDefGroupB(drvGroupB)
 
-doTestBase( drvBase )
-doTestGroupB( drvGroupB )
+doTestBase(drvBase)
+doTestGroupB(drvGroupB)
 submitTestResult

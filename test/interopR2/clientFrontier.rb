@@ -2,17 +2,24 @@
 
 $serverName = 'Frontier'
 
-$serverBase = 'http://www.soapware.org:80/xmethodsInterop'
-#$serverGroupB = ''
+$serverBase = 'http://www.soapware.org/xmethodsInterop'
+
+$wsdlBase = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/SOAP4R_SOAPBuildersInteropTest_R2base.wsdl'
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
-methodDef( drvBase )
+=begin
+drvBase = SOAP::RPC::Driver.new($serverBase, InterfaceNS)
+methodDefBase(drvBase)
 
-#drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
-#methodDefGroupB( drvGroupB )
+#drvGroupB = SOAP::RPC::Driver.new($serverGroupB, InterfaceNS)
+#methodDefGroupB(drvGroupB)
+=end
 
-doTestBase( drvBase )
-#doTestGroupB( drvGroupB )
-submitTestResult
+require 'soap/wsdlDriver'
+drvBase = SOAP::WSDLDriverFactory.new($wsdlBase).create_driver
+drvBase.endpoint_url = $serverBase
+
+doTestBase(drvBase)
+#doTestGroupB(drvGroupB)
+#submitTestResult
