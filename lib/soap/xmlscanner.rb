@@ -24,8 +24,11 @@ module SOAP
 
 
 class SOAPXMLScanner < SOAPParser
+  attr_accessor :charsetStrBackup
+
   def initialize( *vars )
     super( *vars )
+    @charsetStrBackup = nil
   end
 
   def self.adjustKCode
@@ -58,7 +61,12 @@ class SOAPXMLScanner < SOAPParser
       @dest.characters( str )
     end
 
-    ENTITY_REF_MAP = { 'lt' => '<', 'gt' => '>', 'amp' => '&', 'quot' => '"', 'apos' => '\'' }
+    ENTITY_REF_MAP = {
+      'lt' => '<',
+      'gt' => '>',
+      'amp' => '&',
+      'quot' => '"',
+      'apos' => '\'' }
     def on_entityref( ref )
       @dest.characters( ENTITY_REF_MAP[ ref ] )
     end
@@ -71,7 +79,7 @@ class SOAPXMLScanner < SOAPParser
       encTag = decls.find { | decl | decl[ 0 ] == 'encoding' }
       if encTag
 	charsetStr = Charset.getCharsetStr( encTag[ 1 ] )
-     	@charsetStrBackup = $KCODE.to_s.dup
+     	@dest.charsetStrBackup = $KCODE.to_s.dup
   	$KCODE = charsetStr
 	Charset.setXMLInstanceEncoding( charsetStr )
       end
