@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<definitions
+    name="HashSample"
+    targetNamespace="urn:www.example.org:hashsample"
+    xmlns:tns="urn:www.example.org:hashsample"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:apachesoap="http://xml.apache.org/xml-soap">
+
+  <types>
+    <!-- type definition for ApacheSOAP's Map -->
+    <schema
+	xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://xml.apache.org/xml-soap">
+      <complexType name="Map">
+	<sequence>
+	  <element name="item" minOccurs="0" maxOccurs="unbounded">
+	    <complexType>
+	      <sequence>
+		<element name="key" type="anyType" />
+		<element name="value" type="anyType" />
+	      </sequence>
+	    </complexType>
+	  </element>
+	</sequence>
+      </complexType>
+    </schema>
+  </types>
+
+  <message name="hashRequest">
+    <part name="arg" type="apachesoap:Map"/>
+  </message>
+
+  <message name="hashResponse">
+    <part name="return" type="apachesoap:Map"/>
+  </message>
+
+  <portType name="HashBaseServicePortType">
+    <operation name="hash" parameterOrder="arg">
+      <input message="tns:hashRequest"/>
+      <output message="tns:hashResponse"/>
+    </operation>
+  </portType>
+
+  <binding name="HashBaseServicePortBinding" type="tns:HashBaseServicePortType">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <operation name="hash">
+      <soap:operation soapAction=""/>
+      <input>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="urn:www.example.org:hashsample"/>
+      </input>
+      <output>
+	<soap:body use="encoded"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+	    namespace="urn:www.example.org:hashsample"/>
+      </output>
+    </operation>
+  </binding>
+
+  <service name="HashService">
+    <port name="HashBaseServicePort" binding="tns:HashBaseServicePortBinding">
+      <soap:address location="http://localhost:7171"/>
+    </port>
+  </service>
+</definitions>
