@@ -120,7 +120,7 @@ module SOAP
 	  o = decodeTagAsSOAPENC( ns, typeNameString, entity )
 	  unless o
 	    # Not supported...
-	    raise FormatDecodeError.new( "Type xsd:#{ typeNameString } have not supported." )
+	    raise FormatDecodeError.new( "Type SOAP-ENC:#{ typeNameString } have not supported." )
 	  end
 
 	else
