@@ -4,7 +4,7 @@ require 'devel/logger'
 require 'iSampleStruct'
 
 #server = 'http://rrr.jin.gr.jp/soapsrv'
-server = 'http://localhost:2000/soapsrv'
+server = 'http://localhost:10080/soapsrv'
 
 logger = nil
 wireDumpDev = nil

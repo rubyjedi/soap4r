@@ -3,7 +3,7 @@
 require "soap/driver"
 require 'iExchange'
 
-server = "http://localhost:2000/soapsrv"
+server = "http://localhost:10080/soapsrv"
 
 logger = nil
 wireDumpDev = nil

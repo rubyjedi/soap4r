@@ -1,9 +1,6 @@
 #!/usr/local/bin/ruby
 
-require 'webrick'
-
-STDERR.puts "All WEBrick httpd functions are enabled such as ERuby and CGI."
-STDERR.puts "Take care before running this server in public network."
+require './webrick'
 
 require 'devel/logger'
 logDev = Devel::Logger.new( 'httpd.log' )
@@ -16,6 +13,13 @@ wwwsvr = WEBrick::HTTPServer.new(
 
 require 'soaplet'
 soapsrv = WEBrick::SOAPlet.new
+
+require 'exchange'
+#soapsrv.addRequestServant( ExchangeServiceNamespace, Exchange )
+soapsrv.addServant( ExchangeServiceNamespace, Exchange.new )
+
+require 'sampleStruct'
+soapsrv.addServant( SampleStructServiceNamespace, SampleStructService.new )
 
 $:.push( '../../test/sm11' )
 require 'servant'
