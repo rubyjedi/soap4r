@@ -188,11 +188,14 @@ private
   end
 
   def teardown_server
-    Process.kill('INT', @serverpid)
+    if @serverpid
+      Process.kill('KILL', @serverpid)
+      Process.waitpid(@serverpid)
+    end
   end
 
   def teardown_client
-    @client.reset_stream
+    @client.reset_stream if @client
   end
 
   def verify_callback(ok, cert)
