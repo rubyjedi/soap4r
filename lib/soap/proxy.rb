@@ -26,7 +26,6 @@ module SOAP
 
 class SOAPProxy
   include SOAP
-  include Processor
   include RPCUtils
 
   public
@@ -73,34 +72,46 @@ class SOAPProxy
     end
   end
 
-  # Method definition.
   def addMethod( methodName, paramDef, soapAction = nil )
-    @method[ methodName ] = SOAPMethodRequest.new( @namespace, methodName, paramDef, soapAction )
+    @method[ methodName ] = SOAPMethodRequest.new( @namespace, methodName,
+      paramDef, soapAction )
   end
 
-  # Create new request.
   def createRequest( methodName, *values )
     if ( @method.has_key?( methodName ))
       method = @method[ methodName ]
       method.encodingStyle = @defaultEncodingStyle if @defaultEncodingStyle
     else
-      raise SOAP::RPCUtils::MethodDefinitionError.new( 'Method: ' << methodName << ' not defined.' )
+      raise SOAP::RPCUtils::MethodDefinitionError.new( 'Method: ' <<
+	methodName << ' not defined.' )
     end
 
     Request.new( method, values )
   end
 
-  # Method calling.
-  def call( headers, methodName, *values )
-
-    # Create new request
-    req = createRequest( methodName, *values )
-
+  def invoke( headers, body, soapAction = nil )
     # Get sending string.
-    sendString = marshalRequest( headers, req )
+    sendString = marshal( headers, body )
 
     # Send request.
-    receiveString, receiveCharset = sendRequest( req, sendString )
+    data = @handler.send( sendString, soapAction )
+    return data
+  end
+
+  ReceiveMediaType = 'text/xml'
+  def call( headers, methodName, *values )
+    req = createRequest( methodName, *values )
+
+    data = invoke( headers, req.method, req.method.soapAction )
+
+    receiveString = data.receiveString
+    receiveString.gsub!( "\r\n", "\n" )
+    receiveString.gsub!( "\r", "\n" )
+
+    if /^#{ ReceiveMediaType }(?:;\s*charset=(.*))?/i !~ data.receiveContentType
+      raise StreamError.new( "Illegal content-type: #{ data.receiveContentType }" )
+    end
+    receiveCharset = $1
 
     # StreamHandler returns receiveCharset to use.
     if receiveCharset
@@ -115,13 +126,12 @@ class SOAPProxy
       end
     end
 
-    receiveString.gsub!( "\r\n", "\n" )
-    receiveString.gsub!( "\r", "\n" )
-
     # SOAP tree parsing.
     opt = {}
-    opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle if @defaultEncodingStyle
-    header, body = unmarshal( receiveString, opt )
+    if @defaultEncodingStyle
+      opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
+    end
+    header, body = Processor.unmarshal( receiveString, opt )
 
     if receiveCharset
       # For NQXML Parser.
@@ -134,34 +144,29 @@ class SOAPProxy
     return header, body
   end
 
-  # SOAP marshalling
-  def marshalRequest( headers, request )
+  def marshal( headers, body )
     # Preparing headers.
     header = SOAPHeader.new()
     if headers
-      headers.each do | namespace, elem, content, mustUnderstand, encodingStyle |
-        header.add( SOAPHeaderItem.new( namespace, elem, content, mustUnderstand, encodingStyle ))
+      headers.each do | content, mustUnderstand, encodingStyle |
+        header.add( SOAPHeaderItem.new( content, mustUnderstand,
+	  encodingStyle ))
       end
     end
 
     # Preparing body.
-    body = SOAPBody.new( request.method )
+    body = SOAPBody.new( body )
 
     # Marshal.
     opt = {}
-    opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle if @defaultEncodingStyle
-    marshalledString = marshal( header, body, opt )
+    if @defaultEncodingStyle
+      opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
+    end
+    marshalledString = Processor.marshal( header, body, opt )
 
     return marshalledString
   end
 
-  # Send the request.
-  def sendRequest( request, sendString )
-    # Send request.
-    @handler.send( sendString, request.method.soapAction || soapAction )
-  end
-
-  # SOAP Fault checking.
   def checkFault( body )
     if ( body.fault )
       raise SOAP::FaultError.new( body.fault )
