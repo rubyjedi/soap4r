@@ -6,7 +6,7 @@ class WSDLMarshaller
   include SOAP
 
   def initialize(wsdlfile)
-    wsdl = WSDL::WSDLParser.create_parser.parse(File.open(wsdlfile).read)
+    wsdl = WSDL::Parser.new.parse(File.open(wsdlfile).read)
     types = wsdl.collect_complextypes
     @opt = {
       :decode_typemap => types,
