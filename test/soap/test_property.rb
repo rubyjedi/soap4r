@@ -43,6 +43,32 @@ __EOP__
     assert_equal("1", prop['a b'])
   end
 
+  def test_load
+    prop = Property.new
+    hooked = false
+    prop.add_hook("foo.bar.baz") do |name, value|
+      assert_equal("foo.bar.baz", name)
+      assert_equal("123", value)
+      hooked = true
+    end
+    prop.lock
+    prop["foo.bar"].lock
+    prop.load("foo.bar.baz = 123")
+    assert(hooked)
+    assert_raises(TypeError) do
+      prop.load("foo.bar.qux = 123")
+    end
+    prop.load("foo.baz = 456")
+    assert_equal("456", prop["foo.baz"])
+  end
+
+  def test_initialize
+    prop = ::SOAP::Property.new
+    # store is empty
+    assert_nil(prop["a"])
+    # does hook work?
+    assert_equal(1, prop["a"] = 1)
+  end
   def test_initialize
     prop = ::SOAP::Property.new
     # store is empty
