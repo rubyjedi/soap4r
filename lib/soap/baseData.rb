@@ -273,12 +273,13 @@ end
 class SOAPBase64 < XSDBase64Binary
   include SOAPBasetype
   extend SOAPModuleUtils
+  Type = QName.new( EncodingNamespace, Base64Literal )
 
 public
   # Override the definition in SOAPBasetype.
   def initialize( initString = nil )
     super( initString )
-    @type = XSD::QName.new( EncodingNamespace, Base64Literal )
+    @type = Type
   end
 
   def asXSD
@@ -535,7 +536,7 @@ public
   attr_accessor :size, :sizeFixed
 
   def initialize( type = nil, rank = 1 )
-    super( type )
+    super( type || XSD::QName.new )
     @rank = rank
     @data = Array.new
     @sparse = false
@@ -755,6 +756,35 @@ private
     return $1, $2
   end
 end
+
+
+TypeMap = {
+  XSD::XSDAnyType::Type => SOAPAnyType,
+  XSD::XSDString::Type => SOAPString,
+  XSD::XSDBoolean::Type => SOAPBoolean,
+  XSD::XSDDecimal::Type => SOAPDecimal,
+  XSD::XSDFloat::Type => SOAPFloat,
+  XSD::XSDDouble::Type => SOAPDouble,
+  XSD::XSDDuration::Type => SOAPDuration,
+  XSD::XSDDateTime::Type => SOAPDateTime,
+  XSD::XSDTime::Type => SOAPTime,
+  XSD::XSDDate::Type => SOAPDate,
+  XSD::XSDGYearMonth::Type => SOAPGYearMonth,
+  XSD::XSDGYear::Type => SOAPGYear,
+  XSD::XSDGMonthDay::Type => SOAPGMonthDay,
+  XSD::XSDGDay::Type => SOAPGDay,
+  XSD::XSDGMonth::Type => SOAPGMonth,
+  XSD::XSDHexBinary::Type => SOAPHexBinary,
+  XSD::XSDBase64Binary::Type => SOAPBase64,
+  XSD::XSDAnyURI::Type => SOAPAnyURI,
+  XSD::XSDQName::Type => SOAPQName,
+  XSD::XSDInteger::Type => SOAPInteger,
+  XSD::XSDLong::Type => SOAPLong,
+  XSD::XSDInt::Type => SOAPInt,
+  XSD::XSDShort::Type => SOAPShort,
+
+  SOAP::SOAPBase64::Type => SOAPBase64,
+}
 
 
 end
