@@ -25,7 +25,7 @@ module SOAP
 
 
 module Marshallable
-  @@typeNamespace = RPCUtils::RubyCustomTypeNamespace
+  # @@typeNamespace = RPCUtils::RubyCustomTypeNamespace
 end
 
 
@@ -37,7 +37,7 @@ module RPCUtils
   class SOAPException; include Marshallable
     attr_reader :exceptionTypeName, :message, :backtrace, :cause
     def initialize( e )
-      @exceptionTypeName = RPCUtils.getElementNameFromName( e.type.to_s )
+      @exceptionTypeName = RPCUtils.getElementNameFromName( e.class.to_s )
       @message = e.message
       @backtrace = e.backtrace
       @cause = e
