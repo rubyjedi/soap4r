@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: March 23, 2001<br />
+Last modified: March 30, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 $BK\J8=q$,BP>]$H$7$F$$$k(BSOAP4R$B$N%P!<%8%g%s$O!$(B
-SOAP4R/1.1.0
+SOAP4R/1.2.0
 $B$G$9!%(B
 </p>
 
@@ -54,23 +54,39 @@ SOAP4R/1.1.0
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-$B7k9=$?$/$5$sJQ99$7$^$7$?!%$J$RMQES$G$7$+%F%9%H$G$-$F$J$$$N$G!$(B
-$B0BDjEY$ODc$$$H;W$$$^$9$N$G8fCm0U$/$@$5$$!%(B
-$BFC$KB>(BSOAP$B<BAu$H$N(Binteroperability$B$,IT0B$G$9!%(B
-$B!V!A$K$D$J$$$G$_$?$,>e<j$/$$$+$J$$!W$H$$$&%l%]!<%H$,$"$j$^$7$?$i!$(B
-$B@'Hs$J$R!J(B<a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>$B!K$^$G8fO"Mm$/$@$5$$!%2DG=$J8B$jBP1~$7$^$9!%(B
+<a href="http://www.sarion.co.jp/ml/soap/">SOAP-ml-JP</a>
+$B$N$_$J$5$s$K8f6(NO$rD:$$$F!$(B
+<a href="http://xml.apache.org/soap/">Apache-SOAP</a>$B!$(B
+<a href="http://www.pocketsoap.com">pocketSOAP/0.91</a>$B!$(B
+<a href="http://www.geocities.com/paulclinger/soap.html">SOAP::Lite for Perl</a>$B!$(B
+<a href="http://www.develop.com/soap/">SOAP/Perl/0.28</a>
+$B$H$N@\B3%F%9%H$r9T$J$C$?7k2L$rH?1G$5$;$^$7$?!%(B
+SOAP/Perl/0.28$B0J30$H$O=gD4$KDL?.$G$-$F$^$9!%(B
 </p>
+
 <ul>
-<li>RPC$B%5!<%P$H$7$F$N5!G=$rDI2C$7$^$7$?!%(B</li>
-<li>RPC$B%/%i%$%"%s%H(B/$B%5!<%P5!G=$N<BAu$r!$(BSOAP$BK\BN$+$iJ,N%$7$^$7$?!%(B</li>
-<li>RPC$B$G(BRuby$B@lMQ$K;H$($k7?$H$7$F!$(BDate$B!$(BHash$B$r%5%]!<%H$7$^$7$?!%(B
-$B!JCN$i$J$$7?$K$D$$$F$O!$=>MhDL$jC1$J$k(BStruct$B$K$J$j$^$9!K(B</li>
-<li>TimeInstant$B$H$7$F!$(BTime$B$G$O$J$/!$(B
-$B$U$J$P$5$s$N(Bdate3.rb$B$N(BDate$B$r;H$&$h$&$K$7$^$7$?!%(B
-$B$^$?!$(Bparsedate2$B"*(Bparsedate3$B$K0\9T$7$F$_$^$7$?!%(B</li>
-<li>RPC$B%5!<%P$H$7$F$N5!G=$rDI2C$7$F$$$k:GCf$K!$(B
-SOAPArray$B$*$h$S(BSOAPStruct$B$N(Bencoding/decoding$B$N%P%0!JFC$KL>A06u4V2s$j!K$r(B
-$B$?$/$5$s=$@5$7$^$7$?!%(B</li>
+<li>href/id$B$r;H$C$?(BXML$B$r(Bunmarshal$B$G$-$k$h$&$K$J$j$^$7$?(B
+$B!J$^$@;2>H$r(Bhref/id$B$K(Bmarshal$B$9$k$3$H$O$G$-$^$;$s!K(B</li>
+<li>base64$B7?$r%5%]!<%H$7$^$7$?!%(B</li>
+<li>SOAPTimeInstant$B$r(BSOAPDateTime$B$KL>>NJQ99$7$^$7$?!%(B
+XML Schema PR$B$X$NDI=>$G$9!%(B</li>
+<li>SOAPStruct$B$O!$F1$8%"%/%;%5$r;}$DJ#?t$NCM$r07$($k$h$&$K$J$j$^$7$?!%(B
+SOAPStruct$B$H$OJL%/%i%9$K$7$?$[$&$,$h$+$C$?$+$b!%(B</li>
+<li>$B%k!<%?$O0[$J$kL>A06u4V$KB0$9$k%a%=%C%I72$r07$($k$h$&$K$J$j$^$7$?!%(B</li>
+<li>&lt;Envelope&gt;$B$N$h$&$J!$Hs=$>~$JMWAG$r5v2D$9$k$?$a$N%U%i%0$,IU$-$^$7$?!%(B
+$BC1=c$K%F%-%9%H$rO"7k$7$FAw$k$@$1$N%/%i%$%"%s%H$X$NBP1~$,3Z$K$J$j$^$9!%(B</li>
+<li>Apache-SOAP$B$G:NMQ$5$l$F$$$k(BMap$B%?%$%W$r%5%]!<%H$7$^$7$?!%(B
+Ruby$B$N(BHash$B$b$3$N7?$K(Bbind$B$9$k$h$&$K$7$^$7$?!%(B
+$B!J(BSOAP4R/1.1$B$^$G$O!$(BHash$B$rFH<+7A<0$K(Bmarshal$B$7$F$^$7$?!%(B
+1.1$B$G(Bmarshal$B$5$l$?(BXML$B$O!$(B1.2$B$G$b(BHash$B$K(Bunmarshal$B$9$k$3$H$,$G$-$^$9$,!$(B
+1.2$B$G$O?77A<0$K(Bmarshal$B$5$l$k$?$a!$$=$l$r(B1.1$B$G(Bunmarshal$B$9$k$H!$(BHash$B$G$O$J$/(B
+Struct$B$K$J$C$F$7$^$$$^$9!%(B1.2$B$H(B1.1$B$NHs8_49$KCm0U$7$F$/$@$5$$!K(B</li>
+<li>$BK\Mh$J$i(BStruct$B$N%5%V%/%i%9$H$7$F(Bunmarshal$B$9$Y$-7?$N$&$A!$(B
+'unknown:SOAPStruct'$B$H$$$&L>A0$N7?$r!$FbIt%/%i%9$N(BSOAPStruct$B$H$7$F(B
+unmarshal$B$7$F$7$^$C$F$$$^$7$?!%=$@5$7$^$7$?!%(B</li>
+<li>SOAPArray$B$H(BSOAPStruct$B$K!$(Bmap!$B$*$h$S(Bmembers$B%a%=%C%I$rDI2C$7$^$7$?!%(B</li>
+<li>SOAPBody$B$K(Brequest$B!$(Bresponse$B$*$h$S(Bfault$B%a%=%C%I$rDI2C$7$^$7$?!%(B</li>
+<li>$BCN$i$J$$%X%C%@9`L\$r8+$k$HNc30$GMn$A$F$7$^$C$F$$$^$7$?!%L5;k$9$k$h$&$K$7$^$7$?!%(B</li>
 </ul>
 
 <h2 id="install" name="install">2. Install</h2>
@@ -111,7 +127,7 @@ SOAP4R$B$N%i%$%V%i%j%W%m%0%i%`$,F0:n$9$k$?$a$K$O!$(Bredist$B%G%#%l%/%H%j$K4^$
 <dt class="path">sample/</dt>
 <dd>SOAP4R$B$rMxMQ$9$k%5%s%W%k%W%m%0%i%`!%(B</dd>
 
-<dt class="path">sample/sampleClient.rb</dt>
+<dt class="path">sample/apacheClient.rb</dt>
 <dd>SOAP-RPC$B%/%i%$%"%s%H$N%5%s%W%k%W%m%0%i%`!%(B
 IBM$B$N(BSOAP for Java$B$b$7$/$O(BApache SOAP$B$N!$(Bstockquote$B$*$h$S(Baddressbook$B%G%b$K@\B3$9$k!%(B
 $B@h$K%5!<%PB&$N%$%s%9%H!<%k(B &amp; deploy$B$r:Q$^$;$F$*$/$3$H!%(B
@@ -120,19 +136,22 @@ IBM$B$N(BSOAP for Java$B$b$7$/$O(BApache SOAP$B$N!$(Bstockquote$B$*$h$S(
 </pre>
 $B$J$I$H$7$F5/F0$9$k!%(B</dd>
 
-<dt class="path">sample/sampleClientRAA.rb</dt>
-<dd>SOAP-RPC$B%/%i%$%"%s%H$N%5%s%W%k%W%m%0%i%`$=$N(B2$B!%(B
-www.ruby-lang.org$B$K$"$k(BRAA$B%5!<%P$K@\B3$7$^$9!%(B
-$B$3$N%5!<%P$O%F%9%H8x3+Cf$J$N$G!$0BDjF0:n$r4|BT$7$J$$$G$/$@$5$$!%(B
-</dd>
-
-<dt class="path">sample/sampleCGIServer.rb</dt>
+<dt class="path">sample/apacheServer.rb</dt>
 <dd>SOAP-RPC$B%5!<%P$N%5%s%W%k%W%m%0%i%`!%(B
 Apache-SOAP$B%i%$%/$J!$(BgetQuote$B$d(BgetAddressFromName$B%$%s%?%U%'%$%9$,Dj5A$5$l$F$$$^$9!%(B
 $B%$%s%?%U%'%$%9$@$1$G!$5!G=$O$"$j$^$;$s!%(B</dd>
 
-<dt class="path">sample/sampleDriver.rb</dt>
-<dd>MS SOAP TK for VS6.0$B$G$O(BROPE$B$K$"$?$k$N$,$3$N%U%!%$%k!%(B</dd>
+<dt class="path">sample/RAA/*</dt>
+<dd>SOAP-RPC$B%/%i%$%"%s%H$N%5%s%W%k%W%m%0%i%`$=$N(B2$B!%(B
+www.ruby-lang.org$B$K$"$k(BRAA$B%5!<%P$K@\B3$9$k%W%m%0%i%`72$G$9!%(B
+<ul>
+<li>soap4r.rb, soap4rApp.rb: SOAP4R$B$r;H$&(BRuby$B%9%/%j%W%H(B</li>
+<li>xmlrpc4r.rb: xmlrpc4r$B!J(BRAA$B$K$"$j$^$9!K$r;H$&(BRuby$B%9%/%j%W%H(B</li>
+<li>pocketSOAP.js: pocketSOAP$B$r;H$&(BJScript$B%9%/%j%W%H(B</li>
+<li>SOAP::Lite.pl: SOAP::Lite for Perl$B$r;H$&(BPerl$B%9%/%j%W%H(B</li>
+</ul>
+$B$3$N%5!<%P$O%F%9%H8x3+Cf$J$N$G!$0BDjF0:n$r4|BT$7$J$$$G$/$@$5$$!%(B
+</dd>
 
 <dt class="path">redist/</dt>
 <dd>$B3F<o:FG[I[%Q%C%1!<%8$+$i!$(BSOAP4R$B$GMxMQ$9$k%U%!%$%k72!%(B
@@ -166,6 +185,14 @@ SOAP$B$K$D$$$F$N>\:Y$O!$(B
 <p>
 <a href="#restrictions">Restrictions</a>
 $B$r8+$k$H$o$+$k$H;W$$$^$9$,!$:#$N$H$3$m(BRPC$B$KFC2=$7$?5!G=$N$_Ds6!$5$l$F$$$^$9!%(B
+</p>
+
+<p>
+$BB><BAu$H$N8_49@-$N>pJs$rJg=8$7$F$$$^$9!%(B
+$B!V!A$K$D$J$$$G$_$?$,>e<j$/$$$+$J$$!W!V>e<j$/$$$C$?!W$H$$$&>pJs$,$"$j$^$7$?$i!$(B
+$B$*5$7Z$K(B
+<a href="mailto:nakahiro@sarion.co.jp" class="path">nakahiro@sarion.co.jp</a>
+$B$^$G8fO"Mm$/$@$5$$!%2DG=$J8B$jBP1~$7$^$9!%(B
 </p>
 
 <h2 id="dependencies" name="dependencies">5. Dependencies</h2>
@@ -220,21 +247,54 @@ SOAP for Java$B$N$h$&$KAG$N(BXML$B$rKd$a$k(Bencoding$B!$$J$I$KBP1~$7$F$$$^$
 SOAP Encoding$BK\BN$KKd$a9~$^$l$?(Bxsi:type$B$N$_$rMxMQ$7$^$9!%(B</li>
 <li>$B<!85$,(B1$B0J30$NG[Ns!$(BPartially Transmitted Arrays$B!JItJ,G[Ns!K!$(BSparse Arrays$B!JAF$JG[Ns!K$KBP1~$7$F$$$^$;$s!%(B</li>
 <li>SOAP root$BB0@-$KBP1~$7$F$$$^$;$s!%(B</li>
-<li>$BB?=E;2>H;~$KMxMQ$5$l$kFHN)MWAG$KBP1~$7$F$$$^$;$s!J(Bencoding$B!$(Bdecoding$B6&!K!%(B</li>
+<li>$BB?=E;2>H$X$N(Bmarshalling$B!J(Bunmarshalling$B$O2DG=$G$9!K(B</li>
 </ul></li>
 <li style="margin-top: 2ex;">$B$=$NB>(B
 <ul>
 <li>$B%H%i%s%9%]!<%H$O(BHTTP$B$N%5!<%P!J(BCGI$B!K!$%/%i%$%"%s%HB&$N$_$G$9!%(B</li>
 <li>HTTP Extension Framework$B!J(BM-POST$B!K$KBP1~$7$F$$$^$;$s!%(B</li>
 <li>Content-Type$B$O(B'text/xml'$B$G$9!%(B
-charset$B;XDj$K$OBP1~$7$F$$$^$;$s!%(B
-$B$@$C$F!$(Bcharset$BIU$1$?$i!J8=;~E@$G$O!K(BSOAP for Java$B$,E\$k$s$@$b$s!%!%!%(B</li>
+charset$B;XDj$K$OBP1~$7$F$$$^$;$s!%(B</li>
 </ul></li>
 </ul>
 
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
+<dt>1.2.0 - March 30, 2001</dt>
+<dd><a href="http://www.sarion.co.jp/ml/soap/">SOAP-ml-JP</a>
+$B$N$_$J$5$s$K8f6(NO$rD:$$$F!$(B
+<a href="http://xml.apache.org/soap/">Apache-SOAP</a>$B!$(B
+<a href="http://www.pocketsoap.com">pocketSOAP/0.91</a>$B!$(B
+<a href="http://www.geocities.com/paulclinger/soap.html">SOAP::Lite for Perl</a>$B!$(B
+<a href="http://www.develop.com/soap/">SOAP/Perl/0.28</a>
+$B$H$N@\B3%F%9%H$r9T$J$C$?7k2L$rH?1G$5$;$^$7$?!%(B
+SOAP/Perl/0.28$B0J30$H$O=gD4$KDL?.$G$-$F$^$9!%(B
+<ul>
+<li>href/id$B$r;H$C$?(BXML$B$r(Bunmarshal$B$G$-$k$h$&$K$J$j$^$7$?(B
+$B!J$^$@;2>H$r(Bhref/id$B$K(Bmarshal$B$9$k$3$H$O$G$-$^$;$s!K(B</li>
+<li>base64$B7?$r%5%]!<%H$7$^$7$?!%(B</li>
+<li>SOAPTimeInstant$B$r(BSOAPDateTime$B$KL>>NJQ99$7$^$7$?!%(B
+XML Schema PR$B$X$NDI=>$G$9!%(B</li>
+<li>SOAPStruct$B$O!$F1$8%"%/%;%5$r;}$DJ#?t$NCM$r07$($k$h$&$K$J$j$^$7$?!%(B
+SOAPStruct$B$H$OJL%/%i%9$K$7$?$[$&$,$h$+$C$?$+$b!%(B</li>
+<li>$B%k!<%?$O0[$J$kL>A06u4V$KB0$9$k%a%=%C%I72$r07$($k$h$&$K$J$j$^$7$?!%(B</li>
+<li>&lt;Envelope&gt;$B$N$h$&$J!$Hs=$>~$JMWAG$r5v2D$9$k$?$a$N%U%i%0$,IU$-$^$7$?!%(B
+$BC1=c$K%F%-%9%H$rO"7k$7$FAw$k$@$1$N%/%i%$%"%s%H$X$NBP1~$,3Z$K$J$j$^$9!%(B</li>
+<li>Apache-SOAP$B$G:NMQ$5$l$F$$$k(BMap$B%?%$%W$r%5%]!<%H$7$^$7$?!%(B
+Ruby$B$N(BHash$B$b$3$N7?$K(Bbind$B$9$k$h$&$K$7$^$7$?!%(B
+$B!J(BSOAP4R/1.1$B$^$G$O!$(BHash$B$rFH<+7A<0$K(Bmarshal$B$7$F$^$7$?!%(B
+1.1$B$G(Bmarshal$B$5$l$?(BXML$B$O!$(B1.2$B$G$b(BHash$B$K(Bunmarshal$B$9$k$3$H$,$G$-$^$9$,!$(B
+1.2$B$G$O?77A<0$K(Bmarshal$B$5$l$k$?$a!$$=$l$r(B1.1$B$G(Bunmarshal$B$9$k$H!$(BHash$B$G$O$J$/(B
+Struct$B$K$J$C$F$7$^$$$^$9!%(B1.2$B$H(B1.1$B$NHs8_49$KCm0U$7$F$/$@$5$$!K(B</li>
+<li>$BK\Mh$J$i(BStruct$B$N%5%V%/%i%9$H$7$F(Bunmarshal$B$9$Y$-7?$N$&$A!$(B
+'unknown:SOAPStruct'$B$H$$$&L>A0$N7?$r!$FbIt%/%i%9$N(BSOAPStruct$B$H$7$F(B
+unmarshal$B$7$F$7$^$C$F$$$^$7$?!%=$@5$7$^$7$?!%(B</li>
+<li>SOAPArray$B$H(BSOAPStruct$B$K!$(Bmap!$B$*$h$S(Bmembers$B%a%=%C%I$rDI2C$7$^$7$?!%(B</li>
+<li>SOAPBody$B$K(Brequest$B!$(Bresponse$B$*$h$S(Bfault$B%a%=%C%I$rDI2C$7$^$7$?!%(B</li>
+<li>$BCN$i$J$$%X%C%@9`L\$r8+$k$HNc30$GMn$A$F$7$^$C$F$$$^$7$?!%L5;k$9$k$h$&$K$7$^$7$?!%(B</li>
+</ul></dd>
+
 <dt>1.1.0 - March 23, 2001</dt>
 <dd>
 $B7k9=$?$/$5$sJQ99$7$^$7$?!%$J$RMQES$G$7$+%F%9%H$G$-$F$J$$$N$G!$(B
@@ -300,7 +360,7 @@ SOAPArray$B$*$h$S(BSOAPStruct$B$N(Bencoding/decoding$B$N%P%0!JFC$KL>A06u4V2
 
 <p style="text-align: center;">
 SOAP4R<br />
-Copyright &copy; 2000 NAKAMURA, Hiroshi.
+Copyright &copy; 2000, 2001 NAKAMURA, Hiroshi.
 </p>
 
 <p>
@@ -323,7 +383,7 @@ You should have received a copy of the GNU General Public License along with thi
 <div class="footer">
 <address>
 <a href="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/">SOAP4R</a>.<br />
-Copyright &copy; 2000
+Copyright &copy; 2000, 2001
 <a href="http://www.jin.gr.jp/~nahi/">NAKAMURA, Hiroshi</a>.
 </address>
 </div>
