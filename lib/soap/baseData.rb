@@ -467,7 +467,8 @@ public
 
   ArrayEncodePostfix = 'Ary'
 
-  attr_accessor :sparse, :offset, :size, :sizeFixed
+  attr_reader :offset
+  attr_accessor :sparse, :size, :sizeFixed
 
   def initialize( typeName = nil, rank = 1 )
     super( typeName )
@@ -478,6 +479,11 @@ public
     @size = Array.new( rank, 0 )
     @sizeFixed = false
     @position = nil
+  end
+
+  def offset=( var )
+    @offset = var
+    @sparse = true
   end
 
   def set( newArray )
@@ -531,12 +537,21 @@ public
     end
   end
 
+  def include?( var )
+    traverseData( @data ) do | v, *rank |
+      if v.is_a?( SOAPBasetype ) && v.data == var
+	return true
+      end
+    end
+    false
+  end
+
   def traverse
     traverseData( @data ) do | v, *rank |
       unless @sparse
 	yield( v )
       else
-	yield( v, *rank )
+	yield( v, *rank ) unless v.is_a?( SOAPNil )
       end
     end
   end
