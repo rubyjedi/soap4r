@@ -52,7 +52,7 @@ module RPCUtils
       if klass.nil?
 	raise RuntimeError.new( @message )
       end
-      if !klass.ancestors.include?( Exception )
+      unless klass <= Exception
 	raise NameError.new
       end
       obj = klass.new( @message )
@@ -184,7 +184,7 @@ module RPCUtils
     def obj2soap( soapKlass, obj, info, map )
       soapObj = nil
       begin
-	if soapKlass.ancestors.include?( XSD::XSDString )
+	if soapKlass <= XSD::XSDString
 	  if Charset.isCES( obj, $KCODE )
 	    encoded = Charset.codeConv( obj, $KCODE, 'UTF8' )
 	    soapObj = soapKlass.new( encoded )
@@ -210,7 +210,7 @@ module RPCUtils
     end
 
     def soap2obj( objKlass, node, info, map )
-      obj = if objKlass.ancestors.include?( ::String )
+      obj = if objKlass <= ::String
 	  Charset.codeConv( node.data, 'UTF8', $KCODE )
 	else
 	  node.data
@@ -347,7 +347,7 @@ module RPCUtils
       param = SOAPStruct.new( typeName  )
       markMarshalledObj( obj, param )
       param.typeNamespace = typeNamespace
-      if obj.type.ancestors.member?( Marshallable )
+      if obj.type <= SOAP::Marshallable
 	setiv2soap( param, obj, map )
       else
 	setiv2soap( param, obj, map )
@@ -564,7 +564,7 @@ module RPCUtils
 	param = SOAPStruct.new( typeName  )
 	markMarshalledObj( obj, param )
 	param.typeNamespace = typeNamespace
-	if obj.type.ancestors.member?( Marshallable )
+	if obj.type <= Marshallable
 	  setiv2soap( param, obj, map )
 	else
 	  # Should not be marshalled?
@@ -631,7 +631,7 @@ module RPCUtils
 	if klass.nil?
 	  return false
 	end
-	if !klass.ancestors.include?( ::Struct )
+	unless klass <= ::Struct
 	  return false
 	end
 	obj = klass.new
@@ -659,7 +659,7 @@ module RPCUtils
       if klass.nil?
 	return false
       end
-      if !klass.ancestors.include?( Exception )
+      unless klass <= Exception
 	return false
       end
       message = RPCUtils._soap2obj( node[ 'message' ], map )
@@ -792,7 +792,7 @@ module RPCUtils
 
       def obj2soap( klass, obj )
 	@map.each do | objKlass, soapKlass, factory, info |
-	  if klass.ancestors.include?( objKlass )
+	  if klass <= objKlass
 	    ret = factory.obj2soap( soapKlass, obj, info, @registry )
 	    return ret if ret
 	  end
