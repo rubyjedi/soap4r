@@ -90,6 +90,7 @@ module RPCUtils
   class SOAPMethod < SOAPStruct
     attr_reader :namespace
     attr_reader :name
+    attr_accessor :encodingStyle
 
     attr_reader :paramDef
 
@@ -101,7 +102,7 @@ module RPCUtils
       @typeName = nil
       @namespace = namespace
       @name = name
-      @encodingStyle = EncodingNamespace
+      @encodingStyle = nil
   
       @paramDef = paramDef
 
@@ -208,8 +209,14 @@ module RPCUtils
       end
     end
 
+    def dup
+      req = self.type.new( @namespace, @name, @paramDef, @soapAction )
+      req.encodingStyle = @encodingStyle
+      req
+    end
+
     def createMethodResponse
-      response = SOAPMethodResponse.new( @namespace, @name + 'Response', @paramDef )
+      response = SOAPMethodResponse.new( @namespace.dup, @name + 'Response', @paramDef.dup )
       response
     end
   end

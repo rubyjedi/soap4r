@@ -51,6 +51,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       end
       attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
 	EncodingNamespace
+      data.encodingStyle = EncodingNamespace
     end
 
     if !ns.assigned?( XSD::InstanceNamespace )
