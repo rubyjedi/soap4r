@@ -65,7 +65,7 @@ class OperationBinding < Info
 
     operationName = operation.name.dup
     operationName.namespace = soapBody.namespace if soapBody.namespace
-    messageName = operation.input.message
+    messageName = operation.inputName
     paramNames = operation.getInputParts.collect { | part | part.name }
     soapAction = soapOperation.soapAction
     return operationName, messageName, paramNames, soapAction
@@ -85,7 +85,7 @@ class OperationBinding < Info
 
     operationName = operation.name.dup
     operationName.namespace = soapBody.namespace if soapBody.namespace
-    messageName = operation.output.message
+    messageName = operation.outputName
     paramNames = operation.getOutputParts.collect { | part | part.name }
     return operationName, messageName, paramNames
   end
