@@ -23,17 +23,17 @@ class GoogleSearchResult
       searchTips = nil,
       directoryCategories = nil,
       searchTime = nil )
-    @documentFiltering = nil
-    @searchComments = nil
-    @estimatedTotalResultsCount = nil
-    @estimateIsExact = nil
-    @resultElements = nil
-    @searchQuery = nil
-    @startIndex = nil
-    @endIndex = nil
-    @searchTips = nil
-    @directoryCategories = nil
-    @searchTime = nil
+    @documentFiltering = documentFiltering
+    @searchComments = searchComments
+    @estimatedTotalResultsCount = estimatedTotalResultsCount
+    @estimateIsExact = estimateIsExact
+    @resultElements = resultElements
+    @searchQuery = searchQuery
+    @startIndex = startIndex
+    @endIndex = endIndex
+    @searchTips = searchTips
+    @directoryCategories = directoryCategories
+    @searchTime = searchTime
   end
 end
 
@@ -58,15 +58,15 @@ class ResultElement
       hostName = nil,
       directoryCategory = nil,
       directoryTitle = nil )
-    @summary = nil
-    @url = nil
-    @snippet = nil
-    @title = nil
-    @cachedSize = nil
-    @relatedInformationPresent = nil
-    @hostName = nil
-    @directoryCategory = nil
-    @directoryTitle = nil
+    @summary = summary
+    @url = url
+    @snippet = snippet
+    @title = title
+    @cachedSize = cachedSize
+    @relatedInformationPresent = relatedInformationPresent
+    @hostName = hostName
+    @directoryCategory = directoryCategory
+    @directoryTitle = directoryTitle
   end
 end
 
@@ -83,8 +83,8 @@ class DirectoryCategory
 
   def initialize( fullViewableName = nil,
       specialEncoding = nil )
-    @fullViewableName = nil
-    @specialEncoding = nil
+    @fullViewableName = fullViewableName
+    @specialEncoding = specialEncoding
   end
 end
 

@@ -13,11 +13,72 @@ class GoogleSearchPort
     ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
     [ "urn:GoogleSearch", "GoogleSearchResult" ]
   )
+  MappingRegistry.set(
+    ResultElementArray,
+    ::SOAP::SOAPArray,
+    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+    [ "urn:GoogleSearch", "ResultElement" ]
+  )
+  MappingRegistry.set(
+    DirectoryCategoryArray,
+    ::SOAP::SOAPArray,
+    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+    [ "urn:GoogleSearch", "DirectoryCategory" ]
+  )
+  MappingRegistry.set(
+    ResultElement,
+    ::SOAP::SOAPStruct,
+    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+    [ "urn:GoogleSearch", "ResultElement" ]
+  )
+  MappingRegistry.set(
+    DirectoryCategory,
+    ::SOAP::SOAPStruct,
+    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+    [ "urn:GoogleSearch", "DirectoryCategory" ]
+  )
   
   Methods = [
-    [ "doGetCachedPage", "doGetCachedPage", [ [ "in", "key" ], [ "in", "url" ], [ "retval", "return" ] ], "urn:GoogleSearchAction", "urn:GoogleSearch" ],
-    [ "doSpellingSuggestion", "doSpellingSuggestion", [ [ "in", "key" ], [ "in", "phrase" ], [ "retval", "return" ] ], "urn:GoogleSearchAction", "urn:GoogleSearch" ],
-    [ "doGoogleSearch", "doGoogleSearch", [ [ "in", "key" ], [ "in", "q" ], [ "in", "start" ], [ "in", "maxResults" ], [ "in", "filter" ], [ "in", "restrict" ], [ "in", "safeSearch" ], [ "in", "lr" ], [ "in", "ie" ], [ "in", "oe" ], [ "retval", "return" ] ], "urn:GoogleSearchAction", "urn:GoogleSearch" ]
+    [ "doGetCachedPage", "doGetCachedPage", [
+      [ "in", "key",
+        [ SOAP::SOAPString ] ],
+      [ "in", "url",
+        [ SOAP::SOAPString ] ],
+      [ "retval", "return",
+        [ XSDBase64Binary ] ] ],
+      "urn:GoogleSearchAction", "urn:GoogleSearch" ],
+    [ "doSpellingSuggestion", "doSpellingSuggestion", [
+      [ "in", "key",
+        [ SOAP::SOAPString ] ],
+      [ "in", "phrase",
+        [ SOAP::SOAPString ] ],
+      [ "retval", "return",
+        [ SOAP::SOAPString ] ] ],
+      "urn:GoogleSearchAction", "urn:GoogleSearch" ],
+    [ "doGoogleSearch", "doGoogleSearch", [
+      [ "in", "key",
+        [ SOAP::SOAPString ] ],
+      [ "in", "q",
+        [ SOAP::SOAPString ] ],
+      [ "in", "start",
+        [ SOAP::SOAPInt ] ],
+      [ "in", "maxResults",
+        [ SOAP::SOAPInt ] ],
+      [ "in", "filter",
+        [ SOAP::SOAPBoolean ] ],
+      [ "in", "restrict",
+        [ SOAP::SOAPString ] ],
+      [ "in", "safeSearch",
+        [ SOAP::SOAPBoolean ] ],
+      [ "in", "lr",
+        [ SOAP::SOAPString ] ],
+      [ "in", "ie",
+        [ SOAP::SOAPString ] ],
+      [ "in", "oe",
+        [ SOAP::SOAPString ] ],
+      [ "retval", "return",
+        [ ::SOAP::SOAPStruct, "urn:GoogleSearch", "GoogleSearchResult" ] ] ],
+      "urn:GoogleSearchAction", "urn:GoogleSearch" ]
   ]
 
   DefaultEndpointUrl = "http://api.google.com/search/beta2"
