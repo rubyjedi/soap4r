@@ -32,7 +32,7 @@ class Schema < Info
     @elements = XSD::NamedElements.new
     @attributes = XSD::NamedElements.new
     @imports = []
-    @elementformdefault = nil
+    @elementformdefault = "qualified"
   end
 
   def parse_element(element)
