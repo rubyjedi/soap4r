@@ -63,7 +63,7 @@ class OperationBinding < Info
 	"EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
     end
 
-    name = operation.inputName
+    name = operation.name.dup
     name.namespace = soapBody.namespace if soapBody.namespace
     parts = operation.getInputParts     # sorted
     soapAction = soapOperation.soapAction
