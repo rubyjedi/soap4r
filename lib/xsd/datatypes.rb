@@ -599,7 +599,7 @@ private
       if @secfrac
   	s << ".#{ @secfrac }"
       else
-	s << ".#{ (@data.sec_fraction * SecInDay).to_f.to_s }"
+	s << sprintf("%.16f", (@data.sec_fraction * SecInDay).to_f).sub(/^0/, '').sub(/0*$/, '')
       end
     end
     add_tz(s)
@@ -650,7 +650,7 @@ private
       if @secfrac
   	s << ".#{ @secfrac }"
       else
-	s << ".#{ (@data.sec_fraction * SecInDay).to_f.to_s }"
+	s << sprintf("%.16f", (@data.sec_fraction * SecInDay).to_f).sub(/^0/, '').sub(/0*$/, '')
       end
     end
     add_tz(s)
