@@ -31,6 +31,7 @@ class TestSimpleType < Test::Unit::TestCase
   def setup_server
     @server = Server.new(
       :Port => Port,
+      :AccessLog => [],
       :SOAPDefaultNamespace => "urn:example.com:simpletype-rpc"
     )
     @server.level = Logger::Severity::ERROR
