@@ -1,5 +1,5 @@
 # SOAP4R - Ruby type mapping utility.
-# Copyright (C) 2000, 2001, 2003, 2004  NAKAMURA Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003-2005  NAKAMURA Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -107,7 +107,7 @@ module Mapping
     elsif registry
       registry.obj2soap(obj, type)
     else
-      raise MappingError.new("No mapping registry given.")
+      raise MappingError.new("no mapping registry given")
     end
   end
 
@@ -198,28 +198,33 @@ module Mapping
     }
   end
 
-  def self.class_from_name(name)
-    if /^[A-Z]/ !~ name
-      return nil
-    end
+  def self.class_from_name(name, lenient = false)
     klass = ::Object
     name.split('::').each do |klass_str|
-      if klass.const_defined?(klass_str)
-        klass = klass.const_get(klass_str)
-      else
-        return nil
+      if XSD::CodeGen::GenSupport.safeconstname?(klass_str)
+        if klass.const_defined?(klass_str)
+          klass = klass.const_get(klass_str)
+          next
+        end
+      elsif lenient
+        klass_str = XSD::CodeGen::GenSupport.safeconstname(klass_str)
+        if klass.const_defined?(klass_str)
+          klass = klass.const_get(klass_str)
+          next
+        end
       end
+      return nil
     end
     klass
   end
 
   def self.class2qname(klass)
-    name = if klass.class_variables.include?("@@schema_type")
+    name = if klass.class_variables.include?('@@schema_type')
         klass.class_eval('@@schema_type')
       else
         nil
       end
-    namespace = if klass.class_variables.include?("@@schema_ns")
+    namespace = if klass.class_variables.include?('@@schema_ns')
         klass.class_eval('@@schema_ns')
       else
         nil
@@ -254,7 +259,7 @@ module Mapping
     if obj.is_a?(::Hash)
       obj[attr_name] || obj[attr_name.intern]
     else
-      name = ::XSD::CodeGen::GenSupport.safevarname(attr_name)
+      name = XSD::CodeGen::GenSupport.safevarname(attr_name)
       if obj.respond_to?(name)
         obj.__send__(name)
       else
