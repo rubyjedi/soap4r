@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 require 'soap/charset'
+require 'uri'
 
 
 ###
@@ -41,6 +42,15 @@ module XSD
   HexBinaryLiteral = 'hexBinary'
   Base64BinaryLiteral = 'base64Binary'
   DecimalLiteral = 'decimal'
+  DurationLiteral = 'duration'
+  GYearMonthLiteral = 'gYearMonth'
+  GYearLiteral = 'gYear'
+  GMonthDayLiteral = 'gMonthDay'
+  GDayLiteral = 'gDay'
+  GMonthLiteral = 'gMonth'
+  AnyURILiteral = 'anyURI'
+  QNameLiteral = 'QName'
+
   IntegerLiteral = 'integer'
   LongLiteral = 'long'
   IntLiteral = 'int'
@@ -66,6 +76,10 @@ public
 
   def typeEqual( typeNamespace, typeName )
     ( @typeNamespace == typeNamespace and @typeName == typeName )
+  end
+
+  def typeUName
+    "{#{ @typeNamespace }}#{ @typeName }"
   end
 end
 
@@ -102,14 +116,6 @@ public
       ""
     else
       _to_s
-    end
-  end
-
-  def method_missing( msg_id, *params )
-    if @data
-      @data.send( msg_id, *params )
-    else
-      nil
     end
   end
 
@@ -161,7 +167,7 @@ private
       elsif str == 'false' || str == '0'
 	@data = false
       else
-	raise ValueSpaceError.new( "Boolean: #{ str } is not acceptable." )
+	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
       end
     else
       @data = newBoolean ? true : false
@@ -180,7 +186,7 @@ public
 private
   def _set( newString )
     unless SOAP::Charset.isUTF8( newString )
-      raise ValueSpaceError.new( "String: #{ newString } is not acceptable." )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newString }'." )
     end
     @data = newString
   end
@@ -205,14 +211,15 @@ private
   def _set( newDecimal )
     /^([+-]?)(\d*)(?:\.(\d*)?)?$/ =~ trim( newDecimal.to_s )
     unless Regexp.last_match
-      raise ValueSpaceError.new( "Decimal: #{ newDecimal } is not acceptable." )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDecimal }'." )
     end
 
     @sign = $1 || '+'
     integerPart = $2
     fractionPart = $3
 
-    integerPart = integerPart.empty? ? '0' : integerPart.sub( '^0+', '0' )
+    integerPart = integerPart.sub( '^0+', '' )
+    integerPart = '0' if integerPart.empty?
     fractionPart = fractionPart ? fractionPart.sub( '0+$', '' ) : ''
     @point = - fractionPart.size
     @number = integerPart + fractionPart
@@ -323,19 +330,18 @@ private
 end
 
 require 'rational'
-# This is a workaround untill date2.rb will be included in standard library as
-# date.rb.
-if Object.const_defined?( :Date )
-  Object.module_eval { remove_const( :Date ) }
+require 'date'
+unless Object.const_defined?( 'DateTime' )
+  raise LoadError.new( 'SOAP4R requires date2/3.2 or later to be installed.  You can download it from http://www.funaba.org/en/ruby.html#date2' )
 end
-$" << 'date.rb' << 'date2.rb'
-load 'date2.rb'
 
 module XSDDateTimeImpl
+  SecInDay = 86400	# 24 * 60 * 60
+
   def to_time
     begin
-      Time.gm( @data.year, @data.month, @data.mday, @data.hour, @data.min,
-       	@data.sec )
+      d = @data.newof
+      Time.gm( d.year, d.month, d.mday, d.hour, d.min, d.sec )
     rescue ArgumentError
       nil
     end
@@ -357,6 +363,34 @@ module XSDDateTimeImpl
       end
     of
   end
+
+  def tzFromOf( offset )
+    diffmin = offset * 24 * 60
+    if diffmin.zero?
+      'Z'
+    else
+      (( diffmin < 0 ) ? '-' : '+' ) << format( '%02d:%02d',
+    	( diffmin.abs / 60.0 ).to_i, ( diffmin.abs % 60.0 ).to_i )
+    end
+  end
+
+  def _set( t )
+    if ( t.is_a?( Date ))
+      @data = t
+    elsif ( t.is_a?( Time ))
+      @data = DateTime.civil( *( t.dup.gmtime.to_a[ 0..5 ].reverse ))
+      diffDay = t.utc_offset.to_r / SecInDay
+      @data = @data.newof( diffDay )
+    else
+      set_str( t )
+    end
+  end
+
+  def strftime( format )
+    s = @data.strftime( format )
+    s << tzFromOf( @data.offset )
+    s
+  end
 end
 
 class XSDDateTime < XSDBase
@@ -369,61 +403,48 @@ public
   end
 
 private
-  SecInDay = 86400	# 24 * 60 * 60
+  def set_str( t )
+    /^([+-]?\d\d\d\d\d*)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+    end
 
-  def _set( t )
-    if ( t.is_a?( DateTime ))
-      @data = t
-    elsif ( t.is_a?( Time ))
-      # Should TZ be saved?
-      gt = t.dup.gmtime
-      @data = DateTime.civil( gt.year, gt.mon, gt.mday, gt.hour, gt.min, gt.sec )
-    else
-      /^([+-]?\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
-      unless Regexp.last_match
-	raise ValueSpaceError.new( "DateTime: #{ t } is not acceptable." )
-      end
+    year = $1.to_i
+    mon = $2.to_i
+    mday = $3.to_i
+    hour = $4.to_i
+    min = $5.to_i
+    sec = $6.to_i
+    sec_frac = $7
+    zoneStr = $8
 
-      year = $1.to_i
-      mon = $2.to_i
-      mday = $3.to_i
-      hour = $4.to_i
-      min = $5.to_i
-      sec = $6.to_i
-      sec_frac = $7
-      zoneStr = $8
+    @data = DateTime.civil( year, mon, mday, hour, min, sec, ofFromTZ( zoneStr ))
 
-      @data = DateTime.civil( year, mon, mday, hour, min, sec,
-	ofFromTZ( zoneStr ))
-
-      if sec_frac
-	diffDay = sec_frac.to_i.to_r / ( 10 ** sec_frac.size ) / SecInDay
-	# jd = @data.jd
-	# day_fraction = @data.day_fraction + diffDay
-	# @data = DateTime.new0( DateTime.jd_to_rjd( jd, day_fraction,
-	#   @data.offset ), @data.offset )
-	#
-	# Thanks to Funaba-san, above code can be simply written as below.
-	@data += diffDay
-	# FYI: new0 and jd_to_rjd are not necessary to use if you don't have
-	# exceptional reason.
-      end
+    if sec_frac
+      diffDay = sec_frac.to_i.to_r / ( 10 ** sec_frac.size ) / SecInDay
+      # jd = @data.jd
+      # day_fraction = @data.day_fraction + diffDay
+      # @data = DateTime.new0( DateTime.jd_to_rjd( jd, day_fraction,
+      #   @data.offset ), @data.offset )
+      #
+      # Thanks to Funaba-san, above code can be simply written as below.
+      @data += diffDay
+      # FYI: new0 and jd_to_rjd are not necessary to use if you don't have
+      # exceptional reason.
     end
   end
 
   def _to_s
-    # Adjust to UTC.
-    d = @data.new_offset
-    # This format string is from date.rb of newdate-0.2.
-    s = format('%.4d-%02d-%02dT%02d:%02d:%02d',
-      d.year, d.mon, d.mday, d.hour, d.min, d.sec )
-    if d.sec_fraction.nonzero?
-      fr = d.sec_fraction * SecInDay
+    s = format( '%.4d-%02d-%02dT%02d:%02d:%02d',
+      @data.year, @data.mon, @data.mday, @data.hour, @data.min, @data.sec )
+    if @data.sec_fraction.nonzero?
+      fr = @data.sec_fraction * SecInDay
       shiftSize = fr.denominator.to_s.size
       fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
       s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
     end
-    s + 'Z'
+    s << tzFromOf( @data.offset )
+    s
   end
 end
 
@@ -437,59 +458,35 @@ public
   end
 
 private
-  def _set( t )
-    if ( t.is_a?( Time ))
-      @data = t
-    else
-      /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(?:Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
-      unless Regexp.last_match
-	raise ValueSpaceError.new( "Time: #{ t } is not acceptable." )
-      end
+  def set_str( t )
+    /^(\d\d):(\d\d):(\d\d(?:\.(\d*))?)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+    end
 
-      hour = $1.to_i
-      min = $2.to_i
-      sec = $3.to_i
-      sec_frac = $4
-      zoneSign = $5
-      zoneHour = $6.to_i
-      zoneMin = $7.to_i
+    hour = $1.to_i
+    min = $2.to_i
+    sec = $3.to_i
+    sec_frac = $4
+    zoneStr = $5
 
-      usec = 0
-      if sec_frac
-	# Truncate fraction part at usec.
-	# 0.9 [sec] => 0 [sec]
-	# 1.1 [sec] => 1 [sec]
-	usec = ( sec_frac + "00000" )[ 0, 6 ].to_i
-      end
+    @data = DateTime.civil( 0, 1, 1, hour, min, sec, ofFromTZ( zoneStr ))
 
-      @data = Time.mktime( 2000, 1, 1, hour, min, sec, usec )
-
-      if zoneSign
-	if !zoneHour.zero? || !zoneMin.zero?
-	  diffSec = 0
-	  case zoneSign
-	  when '+'
-	    diffSec = +( zoneHour * 3600 + zoneMin * 60 )
-	  when '-'
-	    diffSec = -( zoneHour * 3600 + zoneMin * 60 )
-	  when nil
-	    raise ValueSpaceError.new( "TimeZone: #{ zoneHour }:#{ zoneMin } is not acceptable." )
-	  else
-	    raise ValueSpaceError.new( "TimeZone: #{ zoneHour }:#{ zoneMin } is not acceptable." )
-	  end
-	  @data += diffSec
-	end
-      end
+    if sec_frac
+      @data += sec_frac.to_i.to_r / ( 10 ** sec_frac.size ) / SecInDay
     end
   end
 
   def _to_s
-    s = if @data.usec.zero?
-      format( '%02d:%02d:%02d', @data.hour, @data.min, @data.sec )
-    else
-      format( '%02d:%02d:%02d.%06d', @data.hour, @data.min, @data.sec, @data.usec )
+    s = format( '%02d:%02d:%02d', @data.hour, @data.min, @data.sec )
+    if @data.sec_fraction.nonzero?
+      fr = @data.sec_fraction * SecInDay
+      shiftSize = fr.denominator.to_s.size
+      fr_s = ( fr * ( 10 ** shiftSize )).to_i.to_s
+      s << '.' << '0' * ( shiftSize - fr_s.size ) << fr_s.sub( '0+$', '' )
     end
-    s + 'Z'
+    s << tzFromOf( @data.offset )
+    s
   end
 end
 
@@ -503,29 +500,159 @@ public
   end
 
 private
-  def _set( t )
-    if ( t.is_a?( Date ))
-      @data = t
-    elsif ( t.is_a?( Time ))
-      gt = t.dup.gmtime
-      @data = DateTime.civil( gt.year, gt.mon, gt.mday )
-    else
-      /^([+-]?\d\d\d\d)-(\d\d)-(\d\d)$/ =~ trim( t.to_s )
-      unless Regexp.last_match
-	raise ValueSpaceError.new( "Time: #{ t } is not acceptable." )
-      end
-
-      year = $1.to_i
-      mon = $2.to_i
-      mday = $3.to_i
-
-      @data = DateTime.civil( year, mon, mday )
+  def set_str( t )
+    /^([+-]?\d\d\d\d\d*)-(\d\d)-(\d\d)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
     end
+
+    year = $1.to_i
+    mon = $2.to_i
+    mday = $3.to_i
+    zoneStr = $4
+
+    @data = DateTime.civil( year, mon, mday, 0, 0, 0, ofFromTZ( zoneStr ))
   end
 
   def _to_s
-    s = @data.to_s.sub( /T.*$/, '' )
-    s + 'Z'
+    strftime( "%Y-%m-%d" )
+  end
+end
+
+class XSDgYearMonth < XSDBase
+  include XSDDateTimeImpl
+
+public
+  def initialize( initGYearMonth = nil )
+    super( GYearMonthLiteral )
+    set( initGYearMonth ) if initGYearMonth
+  end
+
+private
+  def set_str( t )
+    /^([+-]?\d\d\d\d\d*)-(\d\d)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+    end
+
+    year = $1.to_i
+    mon = $2.to_i
+    zoneStr = $3
+
+    @data = DateTime.civil( year, mon, 1, 0, 0, 0, ofFromTZ( zoneStr ))
+  end
+
+  def _to_s
+    strftime( "%Y-%m" )
+  end
+end
+
+class XSDgYear < XSDBase
+  include XSDDateTimeImpl
+
+public
+  def initialize( initGYear = nil )
+    super( GYearLiteral )
+    set( initGYear ) if initGYear
+  end
+
+private
+  def set_str( t )
+    /^([+-]?\d\d\d\d\d*)(Z|(?:([+-])(\d\d):(\d\d))?)?$/ =~ trim( t.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+    end
+
+    year = $1.to_i
+    zoneStr = $2
+
+    @data = DateTime.civil( year, 1, 1, 0, 0, 0, ofFromTZ( zoneStr ))
+  end
+
+  def _to_s
+    strftime( "%Y" )
+  end
+end
+
+class XSDgMonthDay < XSDBase
+  include XSDDateTimeImpl
+
+public
+  def initialize( initGMonthDay = nil )
+    super( GMonthDayLiteral )
+    set( initGMonthDay ) if initGMonthDay
+  end
+
+private
+  def set_str( t )
+    /^(\d\d)-(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+    end
+
+    mon = $1.to_i
+    mday = $2.to_i
+    zoneStr = $3
+
+    @data = DateTime.civil( 0, mon, mday, 0, 0, 0, ofFromTZ( zoneStr ))
+  end
+
+  def _to_s
+    strftime( "%m-%d" )
+  end
+end
+
+class XSDgDay < XSDBase
+  include XSDDateTimeImpl
+
+public
+  def initialize( initGDay = nil )
+    super( GDayLiteral )
+    set( initGDay ) if initGDay
+  end
+
+private
+  def set_str( t )
+    /^(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+    end
+
+    mday = $1.to_i
+    zoneStr = $2
+
+    @data = DateTime.civil( 0, 1, mday, 0, 0, 0, ofFromTZ( zoneStr ))
+  end
+
+  def _to_s
+    strftime( "%d" )
+  end
+end
+
+class XSDgMonth < XSDBase
+  include XSDDateTimeImpl
+
+public
+  def initialize( initGMonth = nil )
+    super( GMonthLiteral )
+    set( initGMonth ) if initGMonth
+  end
+
+private
+  def set_str( t )
+    /^(\d\d)(Z|(?:[+-]\d\d:\d\d)?)?$/ =~ trim( t.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ t }'." )
+    end
+
+    mon = $1.to_i
+    zoneStr = $2
+
+    @data = DateTime.civil( 0, mon, 1, 0, 0, 0, ofFromTZ( zoneStr ))
+  end
+
+  def _to_s
+    strftime( "%m" )
   end
 end
 
@@ -576,6 +703,118 @@ private
   end
 end
 
+class XSDDuration < XSDBase
+public
+  attr_accessor :sign
+  attr_accessor :year
+  attr_accessor :month
+  attr_accessor :day
+  attr_accessor :hour
+  attr_accessor :min
+  attr_accessor :sec
+
+  def initialize( initDuration = nil )
+    super( DurationLiteral )
+    @sign = nil
+    @year = nil
+    @month = nil
+    @day = nil
+    @hour = nil
+    @min = nil
+    @sec = nil
+    set( initDuration ) if initDuration
+  end
+
+private
+  def _set( newDuration )
+    /^([+-]?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/ =~ trim( newDuration.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDuration }'." )
+    end
+
+    if ( $5 and (( !$2 and !$3 and !$4 ) or ( !$6 and !$7 and !$8 )))
+      # Should we allow 'PT5S' here?
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newDuration }'." )
+    end
+
+    @sign = $1
+    @year = $2.to_i
+    @month = $3.to_i
+    @day = $4.to_i
+    @hour = $6.to_i
+    @min = $7.to_i
+    @sec = $8 ? XSDDecimal.new( $8 ) : nil
+    @data = _to_s
+  end
+
+  def _to_s
+    str = ''
+    str << @sign if @sign
+    str << 'P'
+    l = ''
+    l << "#{ @year }Y" if @year.nonzero?
+    l << "#{ @month }M" if @month.nonzero?
+    l << "#{ @day }D" if @day.nonzero?
+    r = ''
+    r << "#{ @hour }H" if @hour.nonzero?
+    r << "#{ @min }M" if @min.nonzero?
+    r << "#{ @sec }S" if @sec
+    str << l
+    unless r.empty?
+      if l.empty?
+	str << "0D"	# Is this really needed?  I mean, is "PT1M" correct?
+      end
+      str << "T" << r
+    end
+    str
+  end
+end
+
+class XSDanyURI < XSDBase
+public
+  def initialize( initAnyURI = nil )
+    super( AnyURILiteral )
+    set( initAnyURI ) if initAnyURI
+  end
+
+private
+  def _set( newAnyURI )
+    begin
+      @data = URI.parse( trim( newAnyURI.to_s ))
+    rescue URI::InvalidURIError
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newAnyURI }'." )
+    end
+  end
+end
+
+class XSDQName < XSDBase
+public
+  def initialize( initQName = nil )
+    super( QNameLiteral )
+    set( initQName ) if initQName
+  end
+
+private
+  def _set( newQName )
+    /^(?:([^:]+):)?([^:]+)$/ =~ trim( newQName.to_s )
+    unless Regexp.last_match
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ newQName }'." )
+    end
+
+    @prefix = $1
+    @localPart = $2
+    @data = _to_s
+  end
+
+  def _to_s
+    if @prefix
+      "#{ @prefix }:#{ @localPart }"
+    else
+      "#{ @localPart }"
+    end
+  end
+end
+
 
 ###
 ## Derived types
@@ -616,7 +855,7 @@ private
     @data = Integer(newLong)
 
     unless validate( @data )
-      raise ValueSpaceError.new( "Long: #{ @data } is not acceptable." )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ @data }'." )
     end
   end
 
@@ -641,7 +880,7 @@ private
     @data = Integer(newInt)
 
     unless validate( @data )
-      raise ValueSpaceError.new( "Int: #{ @data } is not acceptable." )
+      raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ @data }'." )
     end
   end
 
