@@ -52,28 +52,25 @@ public
       end
   end
 
-  def generate( obj )
+  def generate( obj, io = nil )
     prologue
     @handlers.each do | uri, handler |
       handler.encodePrologue
     end
 
-    serializedString = doGenerate( obj )
+    io = '' if io.nil?
+
+    NS.reset
+    ns = NS.new
+    io << xmlDecl
+    encodeData( io, ns, true, obj, nil )
 
     @handlers.each do | uri, handler |
       handler.encodeEpilogue
     end
     epilogue
 
-    xmlDecl << serializedString
-  end
-
-  def doGenerate( obj )
-    buf = ''
-    NS.reset
-    ns = NS.new
-    encodeData( buf, ns, true, obj, nil )
-    buf
+    io
   end
 
   def encodeData( buf, ns, qualified, obj, parent )
