@@ -214,6 +214,7 @@ class Registry
   DateTimeFactory = DateTimeFactory_.new
   ArrayFactory = ArrayFactory_.new
   Base64Factory = Base64Factory_.new
+  URIFactory = URIFactory_.new
   TypedArrayFactory = TypedArrayFactory_.new
   TypedStructFactory = TypedStructFactory_.new
 
@@ -241,7 +242,7 @@ class Registry
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPShort,      BasetypeFactory,
       {:derived_class => true}],
-    [::URI::Generic, ::SOAP::SOAPAnyURI,     BasetypeFactory,
+    [::URI::Generic, ::SOAP::SOAPAnyURI,     URIFactory,
       {:derived_class => true}],
     [::String,       ::SOAP::SOAPBase64,     Base64Factory],
     [::String,       ::SOAP::SOAPHexBinary,  Base64Factory],
@@ -287,7 +288,7 @@ class Registry
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPShort,      BasetypeFactory,
       {:derived_class => true}],
-    [::URI::Generic, ::SOAP::SOAPAnyURI,     BasetypeFactory,
+    [::URI::Generic, ::SOAP::SOAPAnyURI,     URIFactory,
       {:derived_class => true}],
     [::String,       ::SOAP::SOAPBase64,     Base64Factory],
     [::String,       ::SOAP::SOAPHexBinary,  Base64Factory],
