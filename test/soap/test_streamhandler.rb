@@ -141,6 +141,19 @@ __EOX__
     assert(/^text\/xml;/ =~ h["content-type"])
   end
 
+  def test_uri
+    # initialize client with URI object
+    @client = SOAP::RPC::Driver.new(URI.parse(@url), '')
+    @client.add_method("do_server_proc")
+    # same as test_normal
+    str = ""
+    @client.wiredump_dev = str
+    assert_nil(@client.do_server_proc)
+    r, h = parse_req_header(str)
+    assert_match(%r"POST / HTTP/1.", r)
+    assert(/^text\/xml;/ =~ h["content-type"])
+  end
+
   def test_basic_auth
     unless Object.const_defined?('HTTPAccess2')
       # soap4r + net/http + basic_auth is not supported.
