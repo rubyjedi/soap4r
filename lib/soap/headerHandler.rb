@@ -25,7 +25,6 @@ module SOAP
 
 class HeaderHandler
   @@handlerMap = {}
-  @@defaultHandler = nil
 
   attr_reader :uri
 
@@ -43,21 +42,9 @@ class HeaderHandler
   ###
   ## Class interface
   #
-  def EncodingStyleHandler.defaultHandler
-    @@defaultHandler
-  end
-
-  def EncodingStyleHandler.defaultHandler=( handler )
-    @@defaultHandler = handler
-  end
-
   def EncodingStyleHandler.getHandler( namespace, name )
     normalizedName = NS.normalizedName( namespace, name )
-    if @@handlerMap.has_key?( normalizedName )
-      @@handlerMap[ normalizedName ]
-    else
-      @@defaultHandler
-    end
+    @@handlerMap[ normalizedName ]
   end
 
   def EncodingStyleHandler.each
