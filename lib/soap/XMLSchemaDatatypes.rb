@@ -73,7 +73,7 @@ class NSDBase
   @@types = []
 
 public
-  attr_reader :type
+  attr_accessor :type
 
   def self.inherited( klass )
     @@types << klass
