@@ -109,6 +109,18 @@ class SOAPMethod < SOAPStruct
     end
   end
 
+  def each_in_param_name
+    each_param_name(IN, INOUT) do |name|
+      yield name
+    end
+  end
+
+  def each_out_param_name
+    each_param_name(OUT, INOUT) do |name|
+      yield name
+    end
+  end
+
   def set_param(params)
     params.each do |param, data|
       @inparam[param] = data
@@ -124,7 +136,30 @@ class SOAPMethod < SOAPStruct
     end
   end
 
-  def SOAPMethod.create_param_def(param_names)
+  def SOAPMethod.param_count(param_def, *type)
+    count = 0
+    param_def.each do |io_type, name, param_type|
+      if type.include?(io_type)
+        count += 1
+      end
+    end
+    count
+  end
+
+  def SOAPMethod.derive_rpc_param_def(obj, name, *param)
+    if param.size == 1 and param[0].is_a?(Array)
+      return param[0]
+    end
+    if param.empty?
+      method = obj.method(name)
+      param_names = (1..method.arity.abs).collect { |i| "p#{i}" }
+    else
+      param_names = param
+    end
+    create_rpc_param_def(param_names)
+  end
+
+  def SOAPMethod.create_rpc_param_def(param_names)
     param_def = []
     param_names.each do |param_name|
       param_def.push([IN, param_name, nil])
@@ -133,9 +168,17 @@ class SOAPMethod < SOAPStruct
     param_def
   end
 
-  def SOAPMethod.derive_param_def(obj, name)
-    method = obj.method(name)
-    create_param_def((1..method.arity.abs).collect { |i| "p#{i}" })
+  def SOAPMethod.create_doc_param_def(req_qnames, res_qnames)
+    req_qnames = [req_qnames] if req_qnames.is_a?(XSD::QName)
+    res_qnames = [res_qnames] if res_qnames.is_a?(XSD::QName)
+    param_def = []
+    req_qnames.each do |qname|
+      param_def << [IN, qname.name, [nil, qname.namespace, qname.name]]
+    end
+    res_qnames.each do |qname|
+      param_def << [OUT, qname.name, [nil, qname.namespace, qname.name]]
+    end
+    param_def
   end
 
 private

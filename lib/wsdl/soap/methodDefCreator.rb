@@ -1,5 +1,5 @@
 # WSDL4R - Creating driver code from WSDL.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -8,6 +8,7 @@
 
 require 'wsdl/info'
 require 'wsdl/soap/classDefCreatorSupport'
+require 'soap/rpc/element'
 
 
 module WSDL
@@ -61,9 +62,9 @@ private
       paramstr = "[\n" << paramstr.gsub(/^/, '    ') << "\n  ]"
     end
     return <<__EOD__
-[#{ dq(name_as) }, #{ dq(name) },
-  #{ paramstr },
-  #{ ndq(soapaction) }, #{ ndq(namespace) }, #{ sym(stylestr) }
+[#{dq(name_as)}, #{dq(name)},
+  #{paramstr},
+  #{ndq(soapaction)}, #{ndq(namespace)}, #{sym(stylestr)}
 ]
 __EOD__
   end
@@ -71,28 +72,34 @@ __EOD__
   def collect_rpcparameter(operation)
     result = operation.inputparts.collect { |part|
       collect_type(part.type)
-      param_set('in', rpcdefinedtype(part), part.name)
+      param_set(::SOAP::RPC::SOAPMethod::IN, rpcdefinedtype(part), part.name)
     }
     outparts = operation.outputparts
     if outparts.size > 0
       retval = outparts[0]
       collect_type(retval.type)
-      result << param_set('retval', rpcdefinedtype(retval), retval.name)
+      result << param_set(::SOAP::RPC::SOAPMethod::RETVAL,
+        rpcdefinedtype(retval), retval.name)
       cdr(outparts).each { |part|
 	collect_type(part.type)
-	result << param_set('out', rpcdefinedtype(part), part.name)
+	result << param_set(::SOAP::RPC::SOAPMethod::OUT, rpcdefinedtype(part),
+          part.name)
       }
     end
     result
   end
 
   def collect_documentparameter(operation)
-    input = operation.inputparts[0]
-    output = operation.outputparts[0]
-    [
-      param_set('input', documentdefinedtype(input), input.name),
-      param_set('output', documentdefinedtype(output), output.name)
-    ]
+    param = []
+    operation.inputparts.each do |input|
+      param << param_set(::SOAP::RPC::SOAPMethod::IN,
+        documentdefinedtype(input), input.name)
+    end
+    operation.outputparts.each do |output|
+      param << param_set(::SOAP::RPC::SOAPMethod::OUT,
+        documentdefinedtype(output), output.name)
+    end
+    param
   end
 
   def rpcdefinedtype(part)
@@ -112,10 +119,10 @@ __EOD__
 	name = arytype.name.sub(/\[(?:,)*\]$/, '')
 	['::SOAP::SOAPArray', ns, name]
       else
-	raise NotImplementedError.new("Must not reach here.")
+	raise NotImplementedError.new("must not reach here")
       end
     else
-      raise RuntimeError.new("Part: #{part.name} cannot be resolved.")
+      raise RuntimeError.new("part: #{part.name} cannot be resolved")
     end
   end
 
@@ -127,7 +134,7 @@ __EOD__
     elsif definedtype = @complextypes[part.type]
       ['::SOAP::SOAPElement', part.type.namespace, part.type.name]
     else
-      raise RuntimeError.new("Part: #{part.name} cannot be resolved.")
+      raise RuntimeError.new("part: #{part.name} cannot be resolved")
     end
   end
 
@@ -147,15 +154,15 @@ __EOD__
 
   def param2str(params)
     params.collect { |param|
-      "[#{ dq(param[0]) }, #{ dq(param[2]) }, #{ type2str(param[1]) }]"
+      "[#{dq(param[0])}, #{dq(param[2])}, #{type2str(param[1])}]"
     }.join(",\n")
   end
 
   def type2str(type)
     if type.size == 1
-      "[#{ type[0] }]" 
+      "[#{type[0]}]" 
     else
-      "[#{ type[0] }, #{ ndq(type[1]) }, #{ dq(type[2]) }]" 
+      "[#{type[0]}, #{ndq(type[1])}, #{dq(type[2])}]" 
     end
   end
 

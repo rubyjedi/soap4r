@@ -85,15 +85,12 @@ class CGIStub < Logger::Application
   # method entry interface
 
   def add_rpc_method(obj, name, *param)
-    add_rpc_method_as(obj, name, name, *param)
+    add_rpc_method_with_namespace_as(@default_namespace, obj, name, name, *param)
   end
   alias add_method add_rpc_method
 
   def add_rpc_method_as(obj, name, name_as, *param)
-    qname = XSD::QName.new(@default_namespace, name_as)
-    soapaction = nil
-    param_def = create_rpc_param_def(obj, name, param)
-    @router.add_rpc_operation(obj, qname, soapaction, name, param_def)
+    add_rpc_method_with_namespace_as(@default_namespace, obj, name, name_as, *param)
   end
   alias add_method_as add_rpc_method_as
 
@@ -105,24 +102,20 @@ class CGIStub < Logger::Application
   def add_rpc_method_with_namespace_as(namespace, obj, name, name_as, *param)
     qname = XSD::QName.new(namespace, name_as)
     soapaction = nil
-    param_def = create_rpc_param_def(obj, name, param)
+    param_def = SOAPMethod.derive_rpc_param_def(obj, name, *param)
     @router.add_rpc_operation(obj, qname, soapaction, name, param_def)
   end
   alias add_method_with_namespace_as add_rpc_method_with_namespace_as
 
-private
-
-  def create_rpc_param_def(obj, name, param = nil)
-    if param.nil? or param.empty?
-      method = obj.method(name)
-      ::SOAP::RPC::SOAPMethod.create_param_def(
-        (1..method.arity.abs).collect { |i| "p#{i}" })
-    elsif param.size == 1 and param[0].is_a?(Array)
-      param[0]
-    else
-      ::SOAP::RPC::SOAPMethod.create_param_def(param)
-    end
+  def add_rpc_operation(receiver, qname, soapaction, name, param_def, opt = {})
+    @router.add_rpc_operation(receiver, qname, soapaction, name, param_def, opt)
   end
+
+  def add_document_operation(receiver, soapaction, name, param_def, opt = {})
+    @router.add_document_operation(receiver, soapaction, name, param_def, opt)
+  end
+
+private
 
   def run
     prologue
