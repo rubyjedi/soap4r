@@ -1,20 +1,17 @@
 #!/usr/bin/env ruby
 
-$serverName = 'SOAP4R'
+$serverName = 'OpenLink'
 
-$server = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/'
-#$server = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/1999/'
-#require 'soap/XMLSchemaDatatypes1999'
+$server = 'http://demo.openlinksw.com:8890/interop'
 
 require 'clientBase'
+require 'soap/XMLSchemaDatatypes1999'
 
 log = Log.new( STDERR )
 log.sevThreshold = Log::SEV_INFO	# Log::SEV_WARN, Log::SEV_DEBUG
 
 drv = SOAP::Driver.new( log, 'InteropApp', InterfaceNS, $server, $proxy, $soapAction )
 methodDef( drv )
-
-$test_echoMap = true
 
 doTestBase( drv )
 doTestGroupB( drv )

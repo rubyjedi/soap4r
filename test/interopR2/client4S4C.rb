@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 $serverName = '4S4C'
-$server = 'http://soap.4s4c.com/ilab/soap.asp'
+$server = 'http://www.4s4c.com/services/4s4c.ashx'
 
 require 'clientBase'
 

@@ -83,7 +83,7 @@ class InteropApp < SOAP::StandaloneServer
     outputString = inputStruct.varString
     outputInteger = inputStruct.varInt
     outputFloat = inputStruct.varFloat
-    return outputString, outputInteger, outputFloat
+    return nil, outputString, outputInteger, outputFloat
   end
 
   def echoSimpleTypesAsStruct( inputString, inputInt, inputFloat )
@@ -91,8 +91,9 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echo2DStringArray( ary )
+    STDERR.puts ary.inspect
     # In Ruby, M-D Array is converted to Array of Array now.
-    mdary = SOAP::RPCUtils.ary2md( ary, 2 )
+    mdary = SOAP::RPCUtils.ary2md( ary, 2, XSD::Namespace, XSD::StringLiteral )
     if mdary.include?( nil )
       mdary.sparse = true
     end

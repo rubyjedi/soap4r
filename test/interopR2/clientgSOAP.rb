@@ -1,12 +1,11 @@
 #!/usr/bin/env ruby
 
-$serverName = 'ZSI'
+$serverName = 'gSOAP'
 
-$serverBase = 'http://63.142.188.184:1122/'
-$serverGroupB = 'http://63.142.188.184:1122/'
+$serverBase = 'http://websrv.cs.fsu.edu/~engelen/interop2.cgi'
+$serverGroupB = 'http://websrv.cs.fsu.edu/~engelen/interop2B.cgi'
 
 require 'clientBase'
-#$soapAction = 'urn:soapinterop'
 
 drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
 methodDef( drvBase )

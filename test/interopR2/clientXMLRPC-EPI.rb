@@ -6,12 +6,10 @@ $serverBase = 'http://xmlrpc-epi.sourceforge.net/xmlrpc_php/interop-server.php'
 
 require 'clientBase'
 
-drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serve
-rBase, $proxy, $soapAction )
+drvBase = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverBase, $proxy, $soapAction )
 methodDefBase( drvBase )
 
-#drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $se
-rverGroupB, $proxy, $soapAction )
+#drvGroupB = SOAP::Driver.new( Log.new( STDERR ), 'InteropApp', InterfaceNS, $serverGroupB, $proxy, $soapAction )
 #methodDefGroupB( drvGroupB )
 
 doTestBase( drvBase )
