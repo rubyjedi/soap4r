@@ -32,9 +32,9 @@ module SOAPModuleUtils
 
 public
 
-  def decode( ns, name )
+  def decode( elementName )
     d = self.new
-    d.elementName = ns.parse( name )
+    d.elementName = elementName
     d
   end
 end
@@ -84,6 +84,8 @@ module SOAPCompoundtype
   attr_accessor :parent
   attr_accessor :position
 
+  attr_accessor :typeDef
+
 public
 
   def initialize( type )
@@ -96,6 +98,7 @@ public
     @root = false
     @parent = nil
     @position = nil
+    @typeDef = nil
   end
 end
 
@@ -155,8 +158,8 @@ public
     end
   end
 
-  def self.decode( ns, name, refId )
-    d = super( ns, name )
+  def self.decode( elementName, refId )
+    d = super( elementName )
     d.refId = refId
     d
   end
@@ -190,7 +193,7 @@ end
 ###
 ## Basic datatypes.
 #
-class SOAPAnyType < XSDAnyType
+class SOAPAnySimpleType < XSDAnySimpleType
   include SOAPBasetype
   extend SOAPModuleUtils
 end
@@ -391,9 +394,9 @@ public
     end
   end
 
-  def self.decode( ns, name, type )
+  def self.decode( elementName, type )
     s = SOAPStruct.new( type )
-    s.elementName = ns.parse( name )
+    s.elementName = elementName
     s
   end
 
@@ -479,9 +482,9 @@ public
     end
   end
 
-  def self.decode( ns, name )
+  def self.decode( elementName )
     o = SOAPElement.new
-    o.elementName = ns.parse( name )
+    o.elementName = elementName
     o
   end
 
@@ -534,8 +537,9 @@ public
 
   attr_reader :offset, :rank
   attr_accessor :size, :sizeFixed
+  attr_reader :arrayType
 
-  def initialize( type = nil, rank = 1 )
+  def initialize( type = nil, rank = 1, arrayType = nil )
     super( type || XSD::QName.new )
     @rank = rank
     @data = Array.new
@@ -544,6 +548,7 @@ public
     @size = Array.new( rank, 0 )
     @sizeFixed = false
     @position = nil
+    @arrayType = arrayType
   end
 
   def offset=( var )
@@ -581,7 +586,7 @@ public
 
     if value.is_a?( SOAPBasetype ) || value.is_a?( SOAPCompoundtype )
       value.elementName.name = 'item'
-
+      
       # Sync type
       unless @type.name
 	@type = XSD::QName.new( value.type.namespace,
@@ -591,10 +596,6 @@ public
       unless value.type
 	value.type = @type
       end
-
-#      unless @type == XSD::AnyType
-#	value.type = @type
-#      end
     end
 
     @offset = idxAry
@@ -667,9 +668,9 @@ public
     end
   end
 
-  def baseTypeName()
-    @type.name ?  @type.name.sub( /(?:\[,*\])+$/, '' ) : ''
-  end
+#  def baseTypeName()
+#    @type.name ?  @type.name.sub( /(?:\[,*\])+$/, '' ) : ''
+#  end
 
   def position
     @position
@@ -730,10 +731,11 @@ private
 public
 
   # DEBT: Check if getArrayType returns non-nil before invoking this method.
-  def self.decode( ns, name, type )
-    typeStr, nofArray = parseType( type.name )
-    o = SOAPArray.new( XSD::QName.new( type.namespace, typeStr ),
-      nofArray.count( ',' ) + 1 )
+  def self.decode( elementName, type, arrayType )
+    typeStr, nofArray = parseType( arrayType.name )
+    rank = nofArray.count( ',' ) + 1
+    plainArrayType = XSD::QName.new( arrayType.namespace, typeStr )
+    o = SOAPArray.new( type, rank, plainArrayType )
     size = []
     nofArray.split( ',' ).each do | s |
       if s.empty?
@@ -747,7 +749,7 @@ public
       o.size = size
       o.sizeFixed = true
     end
-    o.elementName = ns.parse( name )
+    o.elementName = elementName
     o
   end
 
