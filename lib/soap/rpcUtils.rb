@@ -19,10 +19,25 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/baseData'
 
 
+module SOAPSerializable
+  @@typeName = nil
+  @@typeNamespace = nil
+
+  alias __instance_variables instance_variables
+  def instance_variables
+    if block_given?
+      self.__instance_variables.each do |key|
+	yield( key, eval( key ))
+      end
+    else
+      self.__instance_variables
+    end
+  end
+end
+
+
 module SOAPRPCUtils
   class SOAPMethod < SOAPCompoundBase
-    public
-
     attr_reader :namespace
     attr_reader :name
 
@@ -72,7 +87,7 @@ module SOAPRPCUtils
       end
     end
   
-    private
+  private
 
     def datatypeAttr( ns )
       Attr.new( ns.name( XSD::InstanceNamespace, 'type' ),
@@ -115,7 +130,7 @@ module SOAPRPCUtils
 
     # Module function
   
-    public
+  public
   
     # CAUTION: Not tested.
     def self.decode( ns, elem )
@@ -172,6 +187,18 @@ module SOAPRPCUtils
 	param.add( obj2soap( var ))
       end
       param
+    when Hash
+      param = SOAPStruct.new( "Hash" )
+      param.typeNamespace = getNamespace( obj ) || RubyTypeNamespace
+      paramKey = SOAPArray.new
+      paramValue = SOAPArray.new
+      obj.each do |key, value|
+        paramKey.add( obj2soap( key ))
+        paramValue.add( obj2soap( value ))
+      end
+      param.add( "key", paramKey )
+      param.add( "value", paramValue )
+      param
     when Struct
       param = SOAPStruct.new( obj.type.to_s )
       param.typeNamespace = getNamespace( obj ) || RubyTypeNamespace
@@ -183,32 +210,19 @@ module SOAPRPCUtils
       typeName = getTypeName( obj ) || obj.type.to_s
       param = SOAPStruct.new( typeName  )
       param.typeNamespace = getNamespace( obj ) || RubyCustomTypeNamespace
-      obj.instance_variables.each do | var |
-	name = var.dup.sub!( /^@/, '' )
-	param.add( name, obj2soap( obj.instance_eval( var )))
+      if obj.type.ancestors.member?( SOAPSerializable )
+	obj.instance_variables do |var, data|
+	  name = var.dup.sub!( /^@/, '' )
+	  param.add( name, obj2soap( data ))
+	end
+      else
+        obj.instance_variables.each do |var|
+	  name = var.dup.sub!( /^@/, '' )
+	  param.add( name, obj2soap( obj.instance_eval( var )))
+        end
       end
       param
     end
-  end
-
-  def getTypeName( obj )
-    ret = nil
-    begin
-      ret = obj.instance_eval( "@@typeName" )
-    rescue NameError
-      # Ignored.
-    end
-    ret
-  end
-
-  def getNamespace( obj )
-    ret = nil
-    begin
-      ret = obj.instance_eval( "@@namespace" )
-    rescue NameError
-      # Ignored.
-    end
-    ret
   end
 
   def soap2obj( node )
@@ -220,10 +234,40 @@ module SOAPRPCUtils
     when SOAPArray
       node.collect { |elem| soap2obj( elem ) }
     when SOAPStruct
-      struct2obj( node )
+      if node.typeName == "Hash"
+	obj = Hash.new
+	keyArray = soap2obj( node.key )
+	valueArray = soap2obj( node.value )
+	while !keyArray.empty?
+	  obj[ keyArray.shift ] = valueArray.shift
+	end
+	obj
+      else
+	struct2obj( node )
+      end
     else
       node
     end
+  end
+
+private
+
+  def getTypeName( obj )
+    ret = nil
+    begin
+      ret = obj.instance_eval( "@@typeName" )
+    rescue NameError
+    end
+    ret
+  end
+
+  def getNamespace( obj )
+    ret = nil
+    begin
+      ret = obj.instance_eval( "@@typeNamespace" )
+    rescue NameError
+    end
+    ret
   end
 
   def struct2obj( node )
@@ -235,23 +279,74 @@ module SOAPRPCUtils
       elsif getTypeName( klass ) and ( getTypeName( klass ) != node.typeName )
 	raise NameError.new()
       end
+
       Thread.critical = true
-      klass.module_eval( "alias __initialize initialize; def initialize; end" )
-      obj = klass.new
-      klass.module_eval( "undef initialize; alias initialize __initialize" )
-      Thread.critical = false
+      addWriter( klass, node )
+      obj = createEmptyObject( klass )
       node.each do |name, value|
-	begin
-	  obj.send( name + "=", soap2obj( value ))
-	rescue NameError
-	  # Cannot be set.  Ignored.
-	end
+	obj.send( name + "=", soap2obj( value ))
       end
+      restoreWriter( klass, node )
+      Thread.critical = false
+
     rescue NameError
       klass = Struct.new( structName(node.typeName), *node.array )
       obj = klass.new( *( node.collect { |name, value| soap2obj( value ) } ))
     end
 
+    obj
+  end
+
+  def createEmptyObject( klass )
+    klass.module_eval <<EOS
+      begin
+	alias __initialize initialize
+      rescue NameError
+      end
+      def initialize; end
+EOS
+
+    obj = klass.new
+
+    klass.module_eval <<EOS
+      undef initialize
+      begin
+	alias initialize __initialize
+      rescue NameError
+      end
+EOS
+    obj
+  end
+
+  def addWriter( klass, values )
+    values.each do |name, value|
+      klass.module_eval <<EOS
+	begin
+	  alias __#{ name }= #{ name }=
+	rescue NameError
+	end
+	def #{ name }=( var )
+	  @#{ name } = var
+	end
+EOS
+    end
+  end
+
+  def restoreWriter( klass, values )
+    values.each do |name, value|
+      klass.module_eval <<EOS
+	undef #{ name }=
+	begin
+	  alias #{ name }= __#{ name }=
+	rescue NameError
+	end
+EOS
+    end
+  end
+
+  def setInstanceVar( obj, var )
+    obj.instance_eval( "alias __initialize initialize; def initialize; end" )
+    obj.instance_eval( "undef initialize; alias initialize __initialize" )
     obj
   end
 
