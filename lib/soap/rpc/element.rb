@@ -180,10 +180,10 @@ class SOAPMethodRequest < SOAPMethod
     params.each do |param|
       param_name = "p#{ i }"
       i += 1
-      param_def << [IN, nil, param_name]
+      param_def << [IN, param_name, nil]
       param_value << [param_name, param]
     end
-    param_def << [RETVAL, nil, 'return']
+    param_def << [RETVAL, 'return', nil]
     o = new(qname, param_def)
     o.set_param(param_value)
     o
