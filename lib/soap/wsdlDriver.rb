@@ -132,6 +132,12 @@ class WSDLDriver
 
   def initialize(wsdl, port, logdev)
     @servant = Servant__.new(self, wsdl, port, logdev)
+    if env_httpproxy = ::SOAP::Env::HTTP_PROXY
+      @servant.options["client.protocol.http.proxy"] = env_httpproxy
+    end
+    if env_httpproxy = ::SOAP::Env::NO_PROXY
+      @servant.options["client.protocol.http.no_proxy"] = env_httpproxy
+    end
   end
 
   def inspect
