@@ -25,6 +25,7 @@ class WSDLLiteralRegistry
     @definedelements = definedelements
     @definedtypes = definedtypes
     @rubytype_factory = RubytypeFactory.new(:allow_original_mapping => false)
+    @schema_element_cache = {}
   end
 
   def obj2soap(obj, qname)
@@ -164,12 +165,24 @@ private
     soap_obj
   end
 
+  def anytype2obj(node)
+    if node.is_a?(::SOAP::SOAPBasetype)
+      return node.data
+    end
+    klass = ::SOAP::Mapping::Object
+    obj = klass.new
+    node.each do |name, value|
+      obj.__soap_set_property(name, Mapping._soap2obj(value, map))
+    end
+    obj
+  end
+
   def soapele2obj(node, obj_class = nil)
     unless obj_class
       typestr = Mapping.elename2name(node.elename.name)
       obj_class = Mapping.class_from_name(typestr)
     end
-    if obj_class
+    if obj_class and obj_class.class_variables.include?('@@schema_element')
       soapele2definedobj(node, obj_class)
     else
       @rubytype_factory.soap2obj(nil, node, nil, self)
@@ -178,42 +191,31 @@ private
 
   def soapele2definedobj(node, obj_class)
     obj = Mapping.create_empty_object(obj_class)
-    if obj_class.class_variables.include?('@@schema_element')
-      add_elements2obj(node, obj)
-      add_attributes2obj(node, obj)
-    else
-      vars = {}
-      node.each do |name, value|
-        vars[Mapping.elename2name(name)] = Mapping._soap2obj(value, self)
-      end
-      Mapping.set_instance_vars(obj, vars)
-    end
+    add_elements2obj(node, obj)
+    add_attributes2obj(node, obj)
     obj
   end
 
   def add_elements2obj(node, obj)
-    elements = {}
-    as_array = []
-    obj.class.class_eval('@@schema_element').each do |name, class_name|
-      if class_name and class_name.sub!(/\[\]$/, '')
-        as_array << class_name
-      end
-      elements[name] = class_name
-    end
+    elements, as_array = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
       if class_name = elements[name]
         if klass = Mapping.class_from_name(class_name)
           if klass.ancestors.include?(::SOAP::SOAPBasetype)
-            child = klass.new(value.data).data
+            if value.respond_to?(:data)
+              child = klass.new(value.data).data
+            else
+              child = klass.new(nil).data
+            end
           else
             child = soapele2obj(value, klass)
           end
         else
           raise MappingError.new("Unknown class: #{class_name}")
         end
-      else      # untyped element is treated as anyType [???]
-        child = soapele2obj(value)
+      else      # untyped element is treated as anyType.
+        child = anytype2obj(value)
       end
       if as_array.include?(class_name)
         (vars[name] ||= []) << child
@@ -227,7 +229,7 @@ private
   def add_attributes2obj(node, obj)
     Mapping.set_instance_vars(obj, {'__soap_attribute' => {}})
     vars = {}
-    attributes = obj.class.class_eval('@@schema_attribute')
+    attributes = schema_attribute_definition(obj.class)
     attributes.each do |attrname, class_name|
       attr = node.extraattr[::XSD::QName.new(nil, attrname)]
       next if attr.nil? or attr.empty?
@@ -240,6 +242,26 @@ private
       vars['attr_' + attrname] = child
     end
     Mapping.set_instance_vars(obj, vars)
+  end
+
+  def schema_element_definition(klass)
+    if @schema_element_cache.key?(klass)
+      return @schema_element_cache[klass]
+    end
+    elements = {}
+    as_array = []
+    klass.class_eval('@@schema_element').each do |name, class_name|
+      if class_name and class_name.sub!(/\[\]$/, '')
+        as_array << class_name
+      end
+      elements[name] = class_name
+    end
+    @schema_element_cache[klass] = [elements, as_array]
+    return @schema_element_cache[klass]
+  end
+
+  def schema_attribute_definition(klass)
+    attributes = klass.class_eval('@@schema_attribute')
   end
 end
 
