@@ -151,8 +151,8 @@ private
 
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
-      @response.header.bodyType = 'text/xml'
-      @response.header.bodyCharset = requestCharset || Charset.getXMLInstanceEncoding
+      @response.body.type = 'text/xml'
+      @response.body.charset = requestCharset || Charset.getXMLInstanceEncoding
       unless isFault
 	@response.status = 200
       else
@@ -168,8 +168,8 @@ private
       responseString = createFaultResponseString( $! )
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
-      @response.header.bodyType = 'text/xml'
-      @response.header.bodyCharset = Charset.getXMLInstanceEncoding
+      @response.body.type = 'text/xml'
+      @response.body.charset = Charset.getXMLInstanceEncoding
       @response.status = 500
       str = @response.dump
       log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
