@@ -66,6 +66,15 @@ MethodsGroupB = [
     ['in', 'inputStruct'], ['retval', 'return']],
 ]
 
+MethodsPolyMorph = [
+  ['echoPolyMorph',
+    ['in', 'inputPolyMorph'], ['retval', 'return']],
+  ['echoPolyMorphStruct',
+    ['in', 'inputPolyMorphStruct'], ['retval', 'return']],
+  ['echoPolyMorphArray',
+    ['in', 'inputPolyMorphArray'], ['retval', 'return']],
+]
+
 
 class SOAPStruct
   include SOAP::Marshallable

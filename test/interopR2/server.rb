@@ -139,6 +139,19 @@ class InteropApp < SOAP::StandaloneServer
   def echoXSDTime( inputXSDTime )
     SOAP::SOAPTime.new( inputXSDTime.clone )
   end
+
+  # for PolyMorph
+  def echoPolyMorph( inputPolyMorph )
+    clone( inputPolyMorph )
+  end
+
+  def echoPolyMorphStruct( inputPolyMorphStruct )
+    clone( inputPolyMorphStruct )
+  end
+
+  def echoPolyMorphArray( inputPolyMorphArray )
+    clone( inputPolyMorphArray )
+  end
 end
 
 InteropApp.new( 'InteropApp', InterfaceNS, '0.0.0.0', 10080 ).start
