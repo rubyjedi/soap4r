@@ -1,6 +1,6 @@
 =begin
 SOAP4R - Namespace library
-Copyright (C) 2000, 2001, 2002 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001, 2002, 2003 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -55,6 +55,10 @@ public
     @ns2tag.has_key?( namespace )
   end
 
+  def assignedTag?( tag )
+    @tag2ns.has_key?( tag )
+  end
+
   def clone
     cloned = NS.new( @tag2ns.dup )
     cloned.assign( @defaultNamespace, '' ) if @defaultNamespace
@@ -70,17 +74,6 @@ public
       raise FormatError.new( 'Namespace: ' << name.namespace << ' not defined yet.' )
     end
   end
-=begin
-  def name( namespace, name )
-    if ( namespace == @defaultNamespace )
-      name
-    elsif @ns2tag.has_key?( namespace )
-      @ns2tag[ namespace ] + ':' << name
-    else
-      raise FormatError.new( 'Namespace: ' << namespace << ' not defined yet.' )
-    end
-  end
-=end
 
   def compare( namespace, name, rhs )
     if ( namespace == @defaultNamespace )
