@@ -91,40 +91,29 @@ public
     Request.new(method, values)
   end
 
-  def invoke(headers, body, soapaction = nil)
-    send_str = marshal(headers, body)
-    @handler.send(send_str, soapaction)
+  def invoke(req_header, req_body, soapaction = nil)
+    if req_header and !req_header.is_a?(SOAPHeader)
+      req_header = create_header(req_header)
+    end
+    if !req_body.is_a?(SOAPBody)
+      req_body = SOAPBody.new(req_body)
+    end
+    opt = create_options
+    send_string = Processor.marshal(req_header, req_body, opt)
+    data = @handler.send(send_string, soapaction)
+    if data.receive_string.empty?
+      return nil, nil
+    end
+    res_charset = StreamHandler.parse_media_type(data.receive_contenttype)
+    opt = create_options
+    opt[:charset] = res_charset
+    res_header, res_body = Processor.unmarshal(data.receive_string, opt)
+    return res_header, res_body
   end
 
   def call(headers, name, *values)
     req = create_request(name, *values)
-    data = invoke(headers, req.method, req.method.soapaction || @soapaction)
-    if data.receive_string.empty?
-      return nil, nil
-    end
-
-    # Received charset might be different from request.
-    receive_charset = StreamHandler.parse_media_type(data.receive_contenttype)
-    opt = options
-    opt[:charset] = receive_charset
-    header, body = Processor.unmarshal(data.receive_string, opt)
-    return header, body
-  end
-
-  def marshal(headers, body)
-    # Preparing headers.
-    header = SOAPHeader.new()
-    if headers
-      headers.each do |content, mu, encodingstyle|
-        header.add(SOAPHeaderItem.new(content, mu, encodingstyle))
-      end
-    end
-
-    # Preparing body.
-    body = SOAPBody.new(body)
-
-    # Marshal.
-    Processor.marshal(header, body, options)
+    return invoke(headers, req.method, req.method.soapaction || @soapaction)
   end
 
   def check_fault(body)
@@ -133,7 +122,17 @@ public
     end
   end
 
-  def options
+private
+
+  def create_header(headers)
+    header = SOAPHeader.new()
+    headers.each do |content, must_understand, encodingstyle|
+      header.add(SOAPHeaderItem.new(content, must_understand, encodingstyle))
+    end
+    header
+  end
+
+  def create_options
     opt = {}
     opt[:default_encodingstyle] = @default_encodingstyle
     if @allow_unqualified_element
