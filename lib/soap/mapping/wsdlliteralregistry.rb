@@ -88,6 +88,7 @@ private
         o.add(_obj2soap(Mapping.get_attribute(obj, child_ele.name.name),
           child_ele))
       end
+      add_attributes2soap(obj, o)
     else
       raise MappingError.new('illegal schema?')
     end

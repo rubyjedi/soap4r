@@ -258,6 +258,7 @@ module Mapping
   end
 
   def self.schema_element_definition(klass)
+    return nil unless klass.class_variables.include?('@@schema_element')
     elements = {}
     as_array = []
     klass.class_eval('@@schema_element').each do |varname, definition|
@@ -272,6 +273,7 @@ module Mapping
   end
 
   def self.schema_attribute_definition(klass)
+    return nil unless klass.class_variables.include?('@@schema_attribute')
     klass.class_eval('@@schema_attribute')
   end
 

@@ -370,7 +370,7 @@ private
       if @request_use == :encoded
         request_rpc_enc(request, mapping_registry)
       else
-        request_rpc_lit(request)
+        request_rpc_lit(request, mapping_registry)
       end
     end
 
@@ -379,7 +379,7 @@ private
       if @request_use == :encoded
         request_doc_enc(body, mapping_registry)
       else
-        request_doc_lit(body)
+        request_doc_lit(body, mapping_registry)
       end
     end
 
@@ -390,7 +390,7 @@ private
       }
     end
 
-    def request_rpc_lit(request)
+    def request_rpc_lit(request, mapping_registry)
       request.collect { |key, value|
         value.respond_to?(:to_obj) ? value.to_obj : value.data
       }
@@ -402,7 +402,7 @@ private
       }
     end
 
-    def request_doc_lit(body)
+    def request_doc_lit(body, mapping_registry)
       body.collect { |key, value|
         value.respond_to?(:to_obj) ? value.to_obj : value.data
       }
@@ -412,7 +412,7 @@ private
       if @response_use == :encoded
         response_rpc_enc(result, mapping_registry)
       else
-        response_rpc_lit(result)
+        response_rpc_lit(result, mapping_registry)
       end
     end
     
@@ -427,7 +427,7 @@ private
       if @response_use == :encoded
         response_doc_enc(result, mapping_registry)
       else
-        response_doc_lit(result)
+        response_doc_lit(result, mapping_registry)
       end
     end
 
@@ -452,7 +452,7 @@ private
       soap_response
     end
 
-    def response_rpc_lit(result)
+    def response_rpc_lit(result, mapping_registry)
       soap_response =
         @rpc_method_factory.create_method_response(@rpc_response_qname)
       if soap_response.have_outparam?
@@ -481,12 +481,9 @@ private
       }
     end
 
-    def response_doc_lit(result)
+    def response_doc_lit(result, mapping_registry)
       (0...result.size).collect { |idx|
-        item = result[idx]
-        qname = @doc_response_qnames[idx]
-        ele = SOAPElement.from_obj(item, qname.namespace)
-        ele.elename = qname
+        ele = mapping_registry.obj2soap(result[idx], @doc_response_qnames[idx])
         ele.encodingstyle = LiteralNamespace
         ele
       }
