@@ -34,7 +34,7 @@ class StreamHandler
     end
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.28 2003/05/30 14:35:21 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.29 2003/06/01 05:29:42 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -102,9 +102,9 @@ public
     @dumpDev = nil	# Set an IO to get wiredump.
     @dumpFileBase = nil
     @client = Client.new(@proxy, "SOAP4R/#{ Version }")
-    @client.sessionManager.connectTimeout = ConnectTimeout
-    @client.sessionManager.sendTimeout = SendTimeout
-    @client.sessionManager.receiveTimeout = ReceiveTimeout
+    @client.session_manager.connect_timeout = ConnectTimeout
+    @client.session_manager.send_timeout = SendTimeout
+    @client.session_manager.receive_timeout = ReceiveTimeout
   end
 
   def proxy=(newProxy)
@@ -141,7 +141,7 @@ private
       else
 	nil
       end
-    @client.debugDev = dumpDev
+    @client.debug_dev = dumpDev
 
     if @dumpFileBase
       fileName = @dumpFileBase + '_request.xml'
@@ -182,7 +182,7 @@ private
     end
 
     data.receiveString = receiveString
-    data.receiveContentType = res.contentType
+    data.receiveContentType = res.content_type
 
     return data
   end

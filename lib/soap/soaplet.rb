@@ -39,9 +39,9 @@ public
   alias addRequestServant addRPCRequestServant
 
   # Add servant object which has application scope.
-  def addRPCServant(namespace, obj, singleton = true)
+  def addRPCServant(namespace, obj)
     router = @appScopeRouter
-    SOAPlet.addServantToRouter(router, namespace, obj, singleton)
+    SOAPlet.addServantToRouter(router, namespace, obj)
     addRouter(namespace, router)
   end
   alias addServant addRPCServant
@@ -131,13 +131,8 @@ private
 
   class << self
   public
-    def addServantToRouter(router, namespace, obj, singleton = true)
-      methodNames = if singleton
-          obj.methods - Kernel.instance_methods(true)
-        else
-          obj.class.instance_methods(false) - Kernel.instance_methods(true)
-        end
-      methodNames.each do |methodName|
+    def addServantToRouter(router, namespace, obj)
+      RPC.retrieveDefinedMethod(obj).each do |methodName|
 	addServantMethodToRouter(router, namespace, obj, methodName)
       end
     end

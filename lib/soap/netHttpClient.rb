@@ -25,25 +25,25 @@ module SOAP
 class NetHttpClient
 
   attr_accessor :proxy
-  attr_accessor :debugDev
-  attr_reader :sessionManager
+  attr_accessor :debug_dev
+  attr_reader :session_manager
 
   class SessionManager
-    attr_accessor :connectTimeout
-    attr_accessor :sendTimeout
-    attr_accessor :receiveTimeout
+    attr_accessor :connect_timeout
+    attr_accessor :send_timeout
+    attr_accessor :receive_timeout
   end
 
   class Response
     attr_reader :content
     attr_reader :status
     attr_reader :reason
-    attr_reader :contentType
+    attr_reader :content_type
 
     def initialize(res)
       @status = res.code.to_i
       @reason = res.message
-      @contentType = res['content-type']
+      @content_type = res['content-type']
       @content = res.body
     end
   end
@@ -51,7 +51,7 @@ class NetHttpClient
   def initialize(proxy = nil, agent = nil)
     @proxy = proxy
     @agent = agent
-    @sessionManager = SessionManager.new
+    @session_manager = SessionManager.new
   end
 
   def reset(url)
@@ -66,7 +66,7 @@ class NetHttpClient
     if @proxy
       Net::HTTP::Proxy(@proxy.host, @proxy.port).start(url.host, url.port) { |http|
 	if http.respond_to?(:set_debug_output)
-	  http.set_debug_output(@debugDev)
+	  http.set_debug_output(@debug_dev)
 	end
 	response, responseBody =
 	  http.post(url.instance_eval('path_query'), sendBody, extra)
@@ -74,7 +74,7 @@ class NetHttpClient
     else
       Net::HTTP.start(url.host, url.port) { |http|
 	if http.respond_to?(:set_debug_output)
-	  http.set_debug_output(@debugDev)
+	  http.set_debug_output(@debug_dev)
 	end
 	response, responseBody =
 	  http.post(url.instance_eval('path_query'), sendBody, extra)
