@@ -31,16 +31,17 @@ private
 
   def initialize
     super( 'app' )
-    @wsdlFile = nil
+    STDERR.sync = true
+    @wsdlLocation = nil
     @opt = {}
     @wsdl = nil
     @name = nil
   end
 
   def run
-    @wsdlFile, @opt = parseOpt( GetoptLong.new( *OptSet ))
-    usageExit unless @wsdlFile
-    @wsdl = WSDL::WSDLParser.createParser.parse( File.open( @wsdlFile ))
+    @wsdlLocation, @opt = parseOpt( GetoptLong.new( *OptSet ))
+    usageExit unless @wsdlLocation
+    @wsdl = import(@wsdlLocation)
     @name = @wsdl.name.name || 'default'
     createFile
     0
@@ -58,7 +59,8 @@ private
 
   def usageExit
     puts <<__EOU__
-Usage: #{ $0 } --wsdl wsdlFilename [options]
+Usage: #{ $0 } --wsdl wsdlLocation [options]
+  wsdlLocation: filename or URL
 
 Example:
   For server side:
@@ -67,7 +69,7 @@ Example:
     #{ $0 } --wsdl myApp.wsdl --type client
 
 Options:
-  --wsdl wsdlFilename
+  --wsdl wsdlLocation
   --type server|client
     --type server implies;
   	--classDef
@@ -97,12 +99,12 @@ __EOU__
 
   def parseOpt( getOpt )
     opt = {}
-    wsdlFile = nil
+    wsdl = nil
     begin
       getOpt.each do | name, arg |
        	case name
 	when "--wsdl"
-	  wsdlFile = arg
+	  wsdl = arg
 	when "--type"
   	  case arg
   	  when "server"
@@ -128,7 +130,7 @@ __EOU__
     rescue
       usageExit
     end
-    return wsdlFile, opt
+    return wsdl, opt
   end
 
   def createClassDef
@@ -239,6 +241,18 @@ __EOU__
 
   def createName( name )
     name ? XSD::QName.new( @wsdl.targetNamespace, name ) : nil
+  end
+
+  def import(location)
+    content = nil
+    if FileTest.exist?(location)
+      content = File.open(location).read
+    else
+      require 'http-access2'
+      c = HTTPAccess2::Client.new(ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ])
+      content = c.getContent(location)
+    end
+    WSDL::WSDLParser.createParser.parse(content)
   end
 end
 
