@@ -46,5 +46,9 @@ end
 
 if $0 == __FILE__
   # Change listen port.
-  Echo_version_port_typeApp.new('app', nil, '0.0.0.0', 10080).start
+  server = Echo_version_port_typeApp.new('app', nil, '0.0.0.0', 10080)
+  trap(:INT) do
+    server.shutdown
+  end
+  server.start
 end
