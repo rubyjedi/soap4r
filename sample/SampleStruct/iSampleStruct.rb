@@ -1,4 +1,4 @@
-require 'soap/rpcUtils'
+require 'soap/mapping'
 
 SampleStructServiceNamespace = 'http://tempuri.org/sampleStructService'
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-require 'soap/cgistub'
+require 'soap/rpc/cgistub'
 
-class CalcServer < SOAP::CGIStub
+class CalcServer < SOAP::RPC::CGIStub
   def initialize(*arg)
     super
 
