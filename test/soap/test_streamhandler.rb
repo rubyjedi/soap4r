@@ -137,7 +137,7 @@ __EOX__
   def test_basic_auth
     str = ""
     @client.wiredump_dev = str
-    @client.options["protocol.http.basic_auth"] = [[@url, "foo", "bar"]]
+    @client.options["protocol.http.basic_auth"] << [@url, "foo", "bar"]
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
     assert_equal("Basic Zm9vOmJhcg==", h["authorization"])

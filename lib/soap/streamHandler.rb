@@ -115,10 +115,6 @@ private
     @options.add_hook("no_proxy") do |key, value|
       @client.no_proxy = value
     end
-    set_basic_auth(@options["basic_auth"])
-    @options.add_hook("basic_auth") do |key, value|
-      set_basic_auth(value)
-    end
     @client.protocol_version = @options["protocol_version"]
     @options.add_hook("protocol_version") do |key, value|
       @client.protocol_version = value
@@ -140,12 +136,17 @@ private
       @wiredump_dev = value
       @client.debug_dev = @wiredump_dev
     end
-    @options.lock
+    basic_auth = @options["basic_auth"] ||= ::SOAP::Property.new
+    set_basic_auth(basic_auth)
+    basic_auth.add_hook do |key, value|
+      set_basic_auth(basic_auth)
+    end
+    @options.lock(true)
+    basic_auth.unlock
   end
 
-  def set_basic_auth(value)
-    return unless value
-    value.each do |url, userid, passwd|
+  def set_basic_auth(basic_auth)
+    basic_auth.values.each do |url, userid, passwd|
       @client.set_basic_auth(url, userid, passwd)
     end
   end

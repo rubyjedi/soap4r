@@ -196,7 +196,6 @@ class WSDLDriver
 	@operations[op_name.name] = op_info
 	add_method_interface(op_info)
       end
-      @options.lock
     end
 
     def endpoint_url
