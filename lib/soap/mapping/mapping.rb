@@ -1,9 +1,12 @@
 # SOAP4R - Ruby type mapping utility.
-# Copyright (C) 2000, 2001, 2003 NAKAMURA Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003, 2004  NAKAMURA Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
 # either the dual license version in 2003, or any later version.
+
+
+require 'xsd/codegen/gensupport'
 
 
 module SOAP
@@ -197,6 +200,19 @@ module Mapping
       class2qname(obj.class)
     else
       XSD::QName.new(namespace, name)
+    end
+  end
+
+  def self.find_attribute(obj, attr_name)
+    if obj.is_a?(::Hash)
+      obj[attr_name] || obj[attr_name.intern]
+    else
+      name = ::XSD::CodeGen::GenSupport.safevarname(attr_name)
+      if obj.respond_to?(name)
+        obj.__send__(name)
+      else
+        obj.instance_eval("@#{name}")
+      end
     end
   end
 
