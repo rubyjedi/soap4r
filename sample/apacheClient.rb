@@ -2,6 +2,14 @@
 
 require 'soap/driver'
 
+
+module XSD
+  Namespace = 'http://www.w3.org/1999/XMLSchema'
+  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
+  NilLiteral = 'null'
+end
+
+
 class SampleClient < Application
 
   private
@@ -28,16 +36,16 @@ class SampleClient < Application
 
     # Driver initialize and method definition
 
-    @drv1 = SOAPDriver.new( @log, @logId, NS1, @server, @proxy )
+    @drv1 = SOAP::Driver.new( @log, @logId, NS1, @server, @proxy )
     @drv1.addMethod( 'getQuote', 'symbol' )
 
-    @drv2 = SOAPDriver.new( @log, @logId, NS2, @server, @proxy )
+    @drv2 = SOAP::Driver.new( @log, @logId, NS2, @server, @proxy )
     @drv2.addMethod( 'getAddressFromName', 'nameToLookup' )
     @drv2.addMethod( 'addEntry', 'nameToRegister', 'address' )
 
     # Method invocation
 
-#    puts @drv1.getQuote( "IBM" )
+    puts @drv1.getQuote( "IBM" )
 
     address = @drv2.getAddressFromName( "John B. Good" )
     dumpAddress( address )

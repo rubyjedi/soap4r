@@ -5,12 +5,29 @@ require 'soap/driver'
 server = ARGV.shift or raise ArgumentError.new( 'Target URL was not given.' )
 proxy = ARGV.shift || nil
 
+
+module XSD
+  Namespace = 'http://www.w3.org/1999/XMLSchema'
+  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
+  NilLiteral = 'null'
+end
+
+
+def getWireDumpLogFile
+  logFilename = File.basename( $0 ) + '.log'
+  f = File.open( logFilename, 'w' )
+  f << "File: #{ logFilename } - Wiredumps for SOAP4R client / #{ $serverName } server.\n"
+  f << "Date: #{ Time.now }\n\n"
+end
+
+
 =begin
 # http://www.hippo2000.net/cgi-bin/soap.cgi
 
 NS = 'urn:Geometry2'
 
-drv = SOAPDriver.new( Log.new( STDERR ), 'hippoApp', NS, server, proxy )
+drv = SOAP::Driver.new( Log.new( STDERR ), 'hippoApp', NS, server, proxy )
+drv.setWireDumpDev( getWireDumpLogFile )
 drv.addMethod( 'calcArea', 'x1', 'y1', 'x2', 'y2' )
 
 puts drv.calcArea( 5, 1000, 10, 20 )
@@ -32,22 +49,38 @@ end
 origin = Point.new( 10, 10 )
 corner = Point.new( 110, 110 )
 
-drv = SOAPDriver.new( Log.new( STDERR ), 'hippoApp', NS, server, proxy )
+drv = SOAP::Driver.new( Log.new( STDERR ), 'hippoApp', NS, server, proxy )
+drv.setWireDumpDev( getWireDumpLogFile )
 drv.addMethod( 'calculateArea', 'origin', 'corner' )
 
 puts drv.calculateArea( origin, corner )
 =end
 
+=begin
 # http://www.hippo2000.net/cgi-bin/soapEx.cgi
 
 NS = 'urn:SoapEx'
 
-drv = SOAPDriver.new( Log.new( STDERR ), 'hippoApp', NS, server, proxy )
+drv = SOAP::Driver.new( Log.new( STDERR ), 'hippoApp', NS, server, proxy )
+drv.setWireDumpDev( getWireDumpLogFile )
+drv.addMethod( 'calcArea', 'x1', 'y1', 'x2', 'y2' )
+
+# calcArea sample
+p drv.calcArea( 5, 10, 10, 15 )
+=end
+
+
+=begin
+# http://www.hippo2000.net/cgi-bin/soapEx.cgi
+
+NS = 'urn:SoapEx'
+
+drv = SOAP::Driver.new( Log.new( STDERR ), 'hippoApp', NS, server, proxy )
+drv.setWireDumpDev( getWireDumpLogFile )
 drv.addMethod( 'parseChasen', 'target' )
-drv.addMethod( 'parseChasenA', 'target' )
+drv.addMethod( 'parseChasenArry', 'target' )
 
 require 'uconv'
-
 
 # ChaSen Sample 1
 def putLine( index, kanaName, pos )
@@ -73,6 +106,7 @@ end
 # ChaSen Sample 2
 targetString = Uconv.euctou8( '楽しい技術ですか?' )
 
-drv.parseChasenA( targetString ).each do | ele |
+drv.parseChasenArry( targetString ).each do | ele |
   puts Uconv.u8toeuc( ele )
 end
+=end

@@ -2,6 +2,14 @@
 
 require 'soap/cgistub'
 
+
+module XSD
+  Namespace = 'http://www.w3.org/1999/XMLSchema'
+  InstanceNamespace = 'http://www.w3.org/1999/XMLSchema-instance'
+  NilLiteral = 'null'
+end
+
+
 class Address
   @@typeName = 'address'
   @@typeNamespace = 'urn:ibm-soap-address-demo'
@@ -30,10 +38,14 @@ class PhoneNumber
 end
 
 
-class SampleApp < SOAPCGIStub
+class SampleApp < SOAP::CGIStub
+  NS1 = 'urn:i3solutions-delayed-quotes'
+  NS2 = 'urn:AddressFetcher'
+
   def methodDef
-    addMethod( self, "getAddressFromName" )
-    addMethod( self, "addEntry" )
+    addMethod( self, "getQuote", NS1 )
+    addMethod( self, "getAddressFromName", NS2 )
+    addMethod( self, "addEntry", NS2 )
   end
   
   def getQuote( symbol )
