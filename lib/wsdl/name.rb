@@ -36,6 +36,14 @@ class Name
   def ===( rhs )
     ( self == rhs )
   end
+
+  def eql?( rhs )
+    ( self == rhs )
+  end
+
+  def hash
+    @namespace.hash ^ @name.hash
+  end
   
   def to_s
     "{#{ namespace }}#{ name }"
