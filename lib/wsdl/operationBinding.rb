@@ -63,11 +63,12 @@ class OperationBinding < Info
 	"EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
     end
 
-    name = operation.name.dup
-    name.namespace = soapBody.namespace if soapBody.namespace
-    parts = operation.getInputParts     # sorted
+    operationName = operation.name.dup
+    operationName.namespace = soapBody.namespace if soapBody.namespace
+    messageName = operation.input.message
+    paramNames = operation.getInputParts.collect { | part | part.name }
     soapAction = soapOperation.soapAction
-    return name, parts, soapAction
+    return operationName, messageName, paramNames, soapAction
   end
 
   def outputOperationInfo
@@ -82,10 +83,11 @@ class OperationBinding < Info
 	"EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
     end
 
-    name = operation.outputName
-    name.namespace = soapBody.namespace if soapBody.namespace
-    parts = operation.getOutputParts     # sorted
-    return name, parts
+    operationName = operation.name.dup
+    operationName.namespace = soapBody.namespace if soapBody.namespace
+    messageName = operation.output.message
+    paramNames = operation.getOutputParts.collect { | part | part.name }
+    return operationName, messageName, paramNames
   end
 
   InputName = XSD::QName.new( Namespace, 'input' )
