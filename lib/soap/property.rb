@@ -95,10 +95,10 @@ class Property
   # name: a Symbol, String or an Array
   # value: an Object
   def []=(name, value)
-    hooks = assign(name_to_a(name), value)
-    normalized_name = normalize_name(name)
+    name_pair = name_to_a(name)
+    hooks = assign(name_pair, value)
     hooks.each do |hook|
-      hook.call(normalized_name, value)
+      hook.call(name_pair, value)
     end
     value
   end
@@ -265,10 +265,6 @@ private
     else
       raise ArgumentError.new("Unknown name #{name}(#{name.class})")
     end
-  end
-
-  def normalize_name(name)
-    name_to_a(name).collect { |key| to_key(key) }.join('.')
   end
 
   def to_key(name)
