@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.22 2002/09/17 16:50:26 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.23 2002/10/01 15:34:04 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -95,10 +95,15 @@ public
     @charset = charset
     @dumpDev = nil	# Set an IO to get wiredump.
     @dumpFileBase = nil
-    @client = HTTPAccess2::Client.new( proxy, "SOAP4R/#{ Version }" )
+    @client = HTTPAccess2::Client.new( @proxy, "SOAP4R/#{ Version }" )
     @client.sessionManager.connectTimeout = ConnectTimeout
     @client.sessionManager.sendTimeout = SendTimeout
     @client.sessionManager.receiveTimeout = ReceiveTimeout
+  end
+
+  def proxy=( newProxy )
+    @proxy = newProxy
+    @client.proxy = @proxy
   end
 
   def send( soapString, soapAction = nil, charset = @charset )
