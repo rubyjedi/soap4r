@@ -278,6 +278,8 @@ private
       if /^[-+\.\deE]+$/ !~ str
 	raise ValueSpaceError.new( "#{ typeUName }: cannot accept '#{ str }'." )
       end
+      # Float( "-1.4E" ) might fail on some system.
+      str << '0' if /e$/i =~ str
       begin
   	@data = narrowTo32bit( Float( str ))
       rescue ArgumentError
