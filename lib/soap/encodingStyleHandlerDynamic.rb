@@ -37,20 +37,18 @@ module SOAP
     end
 
     class SOAPUnknown < SOAPTemporalObject
-      attr_accessor :textBuf
-
-      def initialize( handler, ns, entity, typeNamespace, typeName )
+      def initialize( handler, ns, name, data, typeNamespace, typeName )
 	super()
-	@textBuf = ''
 	@handler = handler
 	@ns = ns
-	@entity = entity
+	@name = name
+	@data = data
 	@typeNamespace = typeNamespace
 	@typeName = typeName
       end
 
       def toStruct
-	o = SOAPStruct.decode( @ns, @entity, @typeNamespace, @typeName )
+	o = SOAPStruct.decode( @ns, @name, @typeNamespace, @typeName )
 	o.id = @id
 	o.root = @root
 	o.parent = @parent
@@ -60,7 +58,7 @@ module SOAP
       end
 
       def toString
-	o = SOAPString.decode( @ns, @entity )
+	o = SOAPString.decode( @ns, @name )
 	o.id = @id
 	o.root = @root
 	o.parent = @parent
@@ -70,7 +68,7 @@ module SOAP
       end
 
       def toNil
-	o = SOAPNil.decode( @ns, @entity )
+	o = SOAPNil.decode( @ns, @name )
 	o.id = @id
 	o.root = @root
 	o.parent = @parent
@@ -84,17 +82,20 @@ module SOAP
       super( EncodingNamespace )
       @referencePool = []
       @idPool = []
+      @textBuf = ''
     end
 
-    def decodeTag( ns, entity, parent )
-      isNil, type, arrayType, reference, id, root, offset, position = parseAttrs( ns, entity )
+    def decodeTag( ns, name, attrs, parent )
+      # ToDo: check if @textBuf is empty...
+      @textBuf = ''
+      isNil, type, arrayType, reference, id, root, offset, position = parseAttrs( ns, attrs )
       o = nil
       if isNil
-	o = SOAPNil.decode( ns, entity )
+	o = SOAPNil.decode( ns, name )
 
       elsif arrayType
 	typeNamespace, typeNameString = ns.parse( arrayType )
-	o = SOAPArray.decode( ns, entity, typeNamespace, typeNameString )
+	o = SOAPArray.decode( ns, name, typeNamespace, typeNameString )
 	if offset
 	  o.offset = parseArrayPosition( offset )
 	  o.sparse = true
@@ -104,7 +105,7 @@ module SOAP
 	# ToDo: xsi:type should be checked here...
 
       elsif reference
-	o = SOAPReference.decode( ns, entity, reference )
+	o = SOAPReference.decode( ns, name, reference )
 	@referencePool << o
 
       else
@@ -118,18 +119,18 @@ module SOAP
 	  # assumes entity as its type itself.
 	  #   <SOAP-ENC:Array ...> => type Array in SOAP-ENC.
 	  #   <Country xmlns="foo"> => type Country in foo.
-	  typeNamespace, typeNameString = ns.parse( entity.name )
+	  typeNamespace, typeNameString = ns.parse( name )
 	end
 
 	if typeNamespace == XSD::Namespace
-	  o = decodeTagAsXSD( ns, typeNameString, entity )
+	  o = decodeTagAsXSD( ns, typeNameString, name )
 	  unless o
 	    # Not supported...
 	    raise FormatDecodeError.new( "Type xsd:#{ typeNameString } have not supported." )
 	  end
 
 	elsif typeNamespace == EncodingNamespace
-	  o = decodeTagAsSOAPENC( ns, typeNameString, entity )
+	  o = decodeTagAsSOAPENC( ns, typeNameString, name )
 	  unless o
 	    # Not supported...
 	    raise FormatDecodeError.new( "Type SOAP-ENC:#{ typeNameString } have not supported." )
@@ -137,7 +138,7 @@ module SOAP
 
 	else
 	  # Unknown type... Struct or String
-	  o = SOAPUnknown.new( self, ns, entity, typeNamespace, typeNameString )
+	  o = SOAPUnknown.new( self, ns, name, attrs, typeNamespace, typeNameString )
 
 	end
       end
@@ -174,21 +175,21 @@ module SOAP
       SOAP::Base64Literal => SOAPBase64,
     }
 
-    def decodeTagAsXSD( ns, typeNameString, entity )
+    def decodeTagAsXSD( ns, typeNameString, name )
       if typeNameString == XSD::AnyTypeLiteral
-	SOAPUnknown.new( self, ns, entity, XSD::Namespace, typeNameString )
+	SOAPUnknown.new( self, ns, name, XSD::Namespace, typeNameString )
       elsif XSDBaseTypeMap.has_key?( typeNameString )
-	XSDBaseTypeMap[ typeNameString ].decode( ns, entity )
+	XSDBaseTypeMap[ typeNameString ].decode( ns, name )
       else
 	nil
       end
     end
 
-    def decodeTagAsSOAPENC( ns, typeNameString, entity )
+    def decodeTagAsSOAPENC( ns, typeNameString, name )
       if XSDBaseTypeMap.has_key?( typeNameString )
-	XSDBaseTypeMap[ typeNameString ].decode( ns, entity )
+	XSDBaseTypeMap[ typeNameString ].decode( ns, name )
       elsif SOAPBaseTypeMap.has_key?( typeNameString )
-	SOAPBaseTypeMap[ typeNameString ].decode( ns, entity )
+	SOAPBaseTypeMap[ typeNameString ].decode( ns, name )
       else
 	nil
       end
@@ -197,7 +198,7 @@ module SOAP
     def decodeTagEnd( ns, node )
       o = node.node
       if o.is_a?( SOAPUnknown )
-	if /\A\s*\z/ =~ o.textBuf
+	if /\A\s*\z/ =~ @textBuf
 	  o.toStruct
 	else
 	  newNode = o.toString
@@ -205,22 +206,17 @@ module SOAP
 	    @idPool << newNode
 	  end
 	  node.replaceNode( newNode )
-	  node.node.set( o.textBuf )
+	  o = node.node
 	end
       end
+
+      decodeTextBuf( o )
+      @textBuf = ''
     end
 
-    def decodeText( ns, entity, parent )
-      case parent.node
-      when SOAPUnknown
-	parent.node.textBuf << entity.text
-      when XSDBase64Binary
-        parent.node.setEncoded( entity.text )
-      when SOAPBasetype
-        parent.node.set( entity.text )
-      else
-	# Nothing to do...
-      end
+    def decodeText( ns, text )
+      # @textBuf is set at decodeTagEnd.
+      @textBuf << text
     end
 
     def decodePrologue
@@ -269,7 +265,31 @@ module SOAP
 
   private
 
-    def parseAttrs( ns, entity )
+    def decodeTextBuf( node )
+      unless @textBuf.empty?
+	case node
+	when XSDBase64Binary
+	  node.setEncoded( @textBuf )
+	when XSDString
+	  case SOAP::Processor.getEncoding
+	  when 'NONE'
+	    node.set( @textBuf )
+	  when 'EUC'
+	    node.set( Uconv.u8toeuc( @textBuf ))
+	  when 'SJIS'
+	    node.set( Uconv.u8tosjis( @textBuf ))
+	  else
+	    node.set( @textBuf )
+	  end
+	when SOAPBasetype
+	  node.set( @textBuf )
+	else
+	  # Nothing to do...
+	end
+      end
+    end
+
+    def parseAttrs( ns, attrs )
       isNil = false
       type = nil
       arrayType = nil
@@ -279,7 +299,7 @@ module SOAP
       offset = nil
       position = nil
 
-      entity.attrs.each do | key, value |
+      attrs.each do | key, value |
 	if ( ns.compare( XSD::Namespace, XSD::NilLiteral, key ))
 	  isNil = (( value == 'true' ) || ( value == '1' ))
 	  # isNil = ( value == XSD::NilValue )

@@ -89,47 +89,50 @@ public
     @lastNode
   end
 
-  def tag( entity )
-    unless entity.isTagEnd
-      lastFrame = @parseStack.last
-      ns = parent = parentEncodingStyle = nil
-      if lastFrame
-	ns = lastFrame.ns.clone
-	parent = lastFrame.node
-	parentEncodingStyle = lastFrame.encodingStyle
-      else
-	ns = NS.new
-	parent = ParseFrame::NodeContainer.new( nil )
-	parentEncodingStyle = nil
-      end
-
-      parseNS( ns, entity )
-      encodingStyle = getEncodingStyle( ns, entity )
-
-      # Children's encodingStyle is derived from its parent.
-      encodingStyle ||= parentEncodingStyle || EncodingStyleHandler.defaultHandler
-
-      node = decodeTag( ns, entity, parent, encodingStyle )
-
-      @parseStack << ParseFrame.new( ns, node, encodingStyle )
+  def startElement( name, attrs )
+    lastFrame = @parseStack.last
+    ns = parent = parentEncodingStyle = nil
+    if lastFrame
+      ns = lastFrame.ns.clone
+      parent = lastFrame.node
+      parentEncodingStyle = lastFrame.encodingStyle
     else
-      lastFrame = @parseStack.pop
-      decodeTagEnd( lastFrame.ns, lastFrame.node, lastFrame.encodingStyle )
-      @lastNode = lastFrame.node.node
+      ns = NS.new
+      parent = ParseFrame::NodeContainer.new( nil )
+      parentEncodingStyle = nil
     end
+
+    parseNS( ns, attrs )
+    encodingStyle = getEncodingStyle( ns, attrs )
+
+    # Children's encodingStyle is derived from its parent.
+    encodingStyle ||= parentEncodingStyle || EncodingStyleHandler.defaultHandler
+
+    node = decodeTag( ns, name, attrs, parent, encodingStyle )
+
+    @parseStack << ParseFrame.new( ns, node, encodingStyle )
   end
 
-  def text( entity )
+  def cdata( text )
     lastFrame = @parseStack.last
     if lastFrame
       ns = lastFrame.ns.clone
       parent = lastFrame.node
       encodingStyle = lastFrame.encodingStyle
-      decodeText( ns, entity, parent, encodingStyle )
+      decodeText( ns, text, encodingStyle )
     else
       # Ignore Text outside of SOAP Envelope.
-      p entity if $DEBUG
+      p text if $DEBUG
     end
+  end
+
+  def endElement( name )
+    lastFrame = @parseStack.pop
+#    if lastFrame.node.node.name != name
+#      raise FormatDecodeError.new( "Open element/close element mismatch: #{ lastFrame.node.node.name } and #{ name }." )
+#    end
+    decodeTagEnd( lastFrame.ns, lastFrame.node, lastFrame.encodingStyle )
+    @lastNode = lastFrame.node.node
   end
 
 private
@@ -137,9 +140,9 @@ private
   # $1 is necessary.
   NSParseRegexp = Regexp.new( '^xmlns:?(.*)$' )
 
-  def parseNS( ns, entity )
-    return unless entity.attrs
-    entity.attrs.each do | key, value |
+  def parseNS( ns, attrs )
+    return unless attrs
+    attrs.each do | key, value |
       next unless ( NSParseRegexp =~ key )
       # '' means 'default namespace'.
       tag = $1 || ''
@@ -147,8 +150,8 @@ private
     end
   end
 
-  def getEncodingStyle( ns, entity )
-    entity.attrs.each do | key, value |
+  def getEncodingStyle( ns, attrs )
+    attrs.each do | key, value |
       if ( ns.compare( EnvelopeNamespace, AttrEncodingStyle, key ))
 	return value
       end
@@ -156,29 +159,29 @@ private
     nil
   end
 
-  def decodeTag( ns, entity, parent, encodingStyle )
+  def decodeTag( ns, name, attrs, parent, encodingStyle )
     o = nil
     handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle )
 
     # SOAP Envelope parsing.
-    namespace, name = ns.parse( entity.name )
+    namespace, lname = ns.parse( name )
     if (( namespace == EnvelopeNamespace ) ||
 	( @option.has_key?( 'allowUnqualifiedElement' ) && namespace.nil? ))
-      if name == 'Envelope'
+      if lname == 'Envelope'
 	o = SOAPEnvelope.new
-      elsif name == 'Header'
+      elsif lname == 'Header'
 	unless parent.node.is_a?( SOAPEnvelope )
 	  raise FormatDecodeError.new( "Header should be a child of Envelope." )
 	end
 	o = SOAPHeader.new
 	parent.node.header = o
-      elsif name == 'Body'
+      elsif lname == 'Body'
 	unless parent.node.is_a?( SOAPEnvelope )
 	  raise FormatDecodeError.new( "Body should be a child of Envelope." )
 	end
 	o = SOAPBody.new
 	parent.node.body = o
-      elsif name == 'Fault'
+      elsif lname == 'Fault'
 	unless parent.node.is_a?( SOAPBody )
 	  raise FormatDecodeError.new( "Fault should be a child of Body." )
 	end
@@ -190,7 +193,7 @@ private
     # Encoding based parsing.
     unless o
       if handler
-	o = handler.decodeTag( ns, entity, parent )
+	o = handler.decodeTag( ns, name, attrs, parent )
       else
 	# SOAPAny?
 	raise FormatDecodeError.new( "Unknown encodingStyle: #{ encodingStyle }." )
@@ -213,14 +216,13 @@ private
     end
   end
 
-  def decodeText( ns, entity, parent, encodingStyle )
+  def decodeText( ns, text, encodingStyle )
     handler = SOAP::EncodingStyleHandler.getHandler( encodingStyle )
 
     if handler
-      handler.decodeText( ns, entity, parent )
+      handler.decodeText( ns, text )
     else
       # How should I do?
-      # parent.node.set( entity.text )
     end
   end
 
@@ -249,9 +251,13 @@ class SOAPNQXMLLightWeightParser < SOAPParser
     tokenizer.each do | entity |
       case entity
       when NQXML::Tag
-	tag( entity )
+	unless entity.isTagEnd
+	  startElement( entity.name, entity.attrs )
+	else
+	  endElement( entity.name )
+	end
       when NQXML::Text
-	text( entity )
+	cdata( entity.text )
       when NQXML::ProcessingInstruction
 	# ToDo...
       when NQXML::Comment
@@ -264,8 +270,8 @@ class SOAPNQXMLLightWeightParser < SOAPParser
 end
 
 class SOAPNQXMLStreamingParser < SOAPParser
-  def initialize
-    super
+  def initialize( *vars )
+    super( *vars )
     require 'nqxml/streamingparser'
   end
 
@@ -274,9 +280,13 @@ class SOAPNQXMLStreamingParser < SOAPParser
     parser.each do | entity |
       case entity
       when NQXML::Tag
-	tag( entity )
+	unless entity.isTagEnd?
+	  startElement( entity.name, entity.attrs )
+	else
+	  endElement( entity.name )
+	end
       when NQXML::Text
-	text( entity )
+	cdata( entity )
       when NQXML::ProcessingInstruction
 	# ToDo...
       when NQXML::Comment

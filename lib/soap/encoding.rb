@@ -33,15 +33,15 @@ module SOAP
       @@handlerMap[ uri ] = self
     end
 
-    def decodeTag( ns, entity, parent )
+    def decodeTag( ns, name, attrs, parent )
       raise NotImplementError.new( 'Method decodeTag must be defined in derived class.' )
     end
 
-    def decodeTagEnd( ns, node )
+    def decodeTagEnd( ns, name )
       raise NotImplementError.new( 'Method decodeTag must be defined in derived class.' )
     end
 
-    def decodeText( ns, entity, parent )
+    def decodeText( ns, text )
       raise NotImplementError.new( 'Method decodeText must be defined in derived class.' )
     end
 
