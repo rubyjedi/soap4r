@@ -151,8 +151,8 @@ public
   def initialize( initDecimal = nil )
     super( DecimalLiteral )
     @sign = ''
-    @integerP = 0
-    @fractionP = 0
+    @number = ''
+    @point = 0
     set( initDecimal ) if initDecimal
   end
 
@@ -163,8 +163,13 @@ public
     end
 
     @sign = $1 || '+'
-    @integerP = $2.to_i
-    @fractionP = $3.to_i
+    integerPart = $2
+    fractionPart = $3
+
+    integerPart = integerPart.empty? ? '0' : integerPart.sub( '^0+', '0' )
+    fractionPart = fractionPart ? fractionPart.sub( '0+$', '' ) : ''
+    @point = - fractionPart.size
+    @number = integerPart + fractionPart
 
     # normalize
     @sign = '' if @sign == '+'
@@ -176,11 +181,11 @@ public
 
   # 0.0 -> 0; right?
   def to_s
-    str = @sign + @integerP.to_s
-    if @fractionP.nonzero?
-      str << '.' << @fractionP.to_s
+    str = @number.dup
+    if @point.nonzero?
+      str[ @number.size + @point, 0 ] = '.'
     end
-    str
+    @sign + str
   end
 end
 
