@@ -63,6 +63,9 @@ class ComplexType < Info
 	ele = find_element_by_name(name.name)
       end
     end
+    unless ele
+      raise RuntimeError.new("Cannot find #{name} as a children of #{@name}.")
+    end
     ele.local_complextype
   end
 
