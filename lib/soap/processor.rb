@@ -57,10 +57,10 @@ module Processor
   class << self
   public
 
-    def marshal( header, body, opt = {} )
+    def marshal( header, body, opt = {}, io = nil )
       env = SOAPEnvelope.new( header, body )
       generator = createGenerator( opt )
-      return generator.generate( env )
+      generator.generate( env, io )
     end
 
     def unmarshal( stream, opt = {} )

@@ -38,21 +38,26 @@ module Marshal
 
   class << self
   public
-    def marshal( obj, mappingRegistry = MarshalMappingRegistry )
-      elementName = RPCUtils.getElementNameFromName( obj.type.to_s )
+    def dump( obj, io = nil )
+      marshal( obj, MarshalMappingRegistry, io )
+    end
+
+    def load( stream )
+      unmarshal( stream, MarshalMappingRegistry )
+    end
+
+    def marshal( obj, mappingRegistry = MarshalMappingRegistry, io = nil )
+      elementName = RPCUtils.getElementNameFromName( obj.class.to_s )
       soapObj = RPCUtils.obj2soap( obj, mappingRegistry )
       body = SOAPBody.new
       body.add( elementName, soapObj )
-      SOAP::Processor.marshal( nil, body )
+      SOAP::Processor.marshal( nil, body, {}, io )
     end
 
-    def unmarshal( str, mappingRegistry = MarshalMappingRegistry )
-      header, body = SOAP::Processor.unmarshal( str )
+    def unmarshal( stream, mappingRegistry = MarshalMappingRegistry )
+      header, body = SOAP::Processor.unmarshal( stream )
       RPCUtils.soap2obj( body.rootNode, mappingRegistry )
     end
-
-    alias_method :dump, :marshal
-    alias_method :load, :unmarshal
   end
 
 end
