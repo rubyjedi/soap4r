@@ -76,7 +76,7 @@ class SOAPProxy
     if ( @method.has_key?( methodName ))
       method = @method[ methodName ]
     else
-      raise MethodDefinitionError.new( 'Method: ' << methodName << ' not defined.' )
+      raise SOAP::MethodDefinitionError.new( 'Method: ' << methodName << ' not defined.' )
     end
 
     Request.new( method, values )
@@ -128,7 +128,7 @@ class SOAPProxy
     sendString = tree.to_s
 
     # Send request.
-    receiveString = @handler.send( request.namespace, request.name, sendString )
+    receiveString = @handler.send( sendString )
 
     receiveString
   end
@@ -136,7 +136,7 @@ class SOAPProxy
   # SOAP Fault checking.
   def checkFault( ns, body )
     if ( body.fault )
-      raise FaultError.new( body.fault )
+      raise SOAP::FaultError.new( body.fault )
     end
   end
 end
