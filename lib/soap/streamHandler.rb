@@ -28,7 +28,7 @@ class StreamHandler
 public
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
-  %q$Id: streamHandler.rb,v 1.23 2002/10/01 15:34:04 nahi Exp $ =~ /: (\S+),v (\S+)/
+  %q$Id: streamHandler.rb,v 1.24 2002/10/07 14:28:49 nahi Exp $ =~ /: (\S+),v (\S+)/
   RCS_FILE, RCS_REVISION = $1, $2
 
   class ConnectionData
@@ -54,10 +54,10 @@ public
     end
   end
 
-  attr_reader :endPoint
+  attr_accessor :endpointUrl
 
-  def initialize( endPoint )
-    @endPoint = endPoint
+  def initialize( endpointUrl )
+    @endpointUrl = endpointUrl
   end
 
   def self.parseMediaType( str )
@@ -88,9 +88,8 @@ public
   SendTimeout = 60	# [sec]
   ReceiveTimeout = 60   # [sec]
 
-  def initialize( endPointUri, proxy = nil, charset = nil )
-    super( endPointUri )
-    @server = endPointUri
+  def initialize( endpointUrl, proxy = nil, charset = nil )
+    super( endpointUrl )
     @proxy = proxy
     @charset = charset
     @dumpDev = nil	# Set an IO to get wiredump.
@@ -148,9 +147,9 @@ private
 
     dumpDev << "Wire dump:\n\n" if dumpDev
     begin
-      res = @client.post( @server, soapString, extra )
+      res = @client.post( @endpointUrl, soapString, extra )
     rescue
-      @client.reset( @server )
+      @client.reset( @endpointUrl )
       raise
     end
     dumpDev << "\n\n" if dumpDev
