@@ -113,7 +113,7 @@ def assert( expected, actual )
 end
 
 def setWireDumpLogFile( postfix = "" )
-  logFilename = File.basename( $0 ).sub( '\.rb$', '' ) << postfix << '.log'
+  logFilename = File.basename( $0 ).sub( /\.rb$/, '' ) << postfix << '.log'
   f = File.open( logFilename, 'w' )
   f << "File: #{ logFilename } - Wiredumps for SOAP4R client / #{ $serverName } server.\n"
   f << "Date: #{ Time.now }\n\n"
@@ -150,7 +150,7 @@ def dumpNormal( title, expected, actual )
 end
 
 def dumpException( title )
-  result = "Exception: #{ $! } (#{ $!.type})\n" << $@.join( "\n" )
+  result = "Exception: #{ $! } (#{ $!.class})\n" << $@.join( "\n" )
   dumpResult( title, false, result )
 end
 
@@ -543,8 +543,7 @@ def doTestBase( drv )
   title = 'echoIntegerArray (empty)'
   dumpTitle( title )
   begin
-    arg = SOAP::SOAPArray.new( XSD::IntLiteral )
-    arg.typeNamespace = XSD::Namespace
+    arg = SOAP::SOAPArray.new( SOAP::ValueArrayName, 1, XSD::XSDInt::Type )
     var = drv.echoIntegerArray( arg )
     dumpNormal( title, [], var )
   rescue Exception
@@ -555,7 +554,7 @@ def doTestBase( drv )
 #  dumpTitle( title )
 #  begin
 #    arg = [ nil, 1, nil, 2, nil, 3, nil ]
-#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::IntLiteral, SOAPBuildersInterop::MappingRegistry )
+#    soapAry = SOAP::RPCUtils.ary2soap( arg, XSD::Namespace, XSD::XSDInt::Type, SOAPBuildersInterop::MappingRegistry )
 #    soapAry.sparse = true
 #    var = drv.echoIntegerArray( soapAry )
 #    dumpNormal( title, arg, var )
@@ -1731,8 +1730,7 @@ def doTestGroupB( drv )
   dumpTitle( title )
   begin
 
-#    arg = SOAP::SOAPArray.new( XSD::StringLiteral, 2 )
-#    arg.typeNamespace = XSD::Namespace
+#    arg = SOAP::SOAPArray.new( SOAP::ValueArrayName, 2, XSD::XSDString::Type )
 #    arg[ 0, 0 ] = obj2soap( 'r0c0' )
 #    arg[ 1, 0 ] = obj2soap( 'r1c0' )
 #    arg[ 2, 0 ] = obj2soap( 'r2c0' )
@@ -1743,8 +1741,7 @@ def doTestGroupB( drv )
 #    arg[ 1, 2 ] = obj2soap( 'r1c2' )
 #    arg[ 2, 2 ] = obj2soap( 'r2c2' )
 
-    arg = SOAP::SOAPArray.new( XSD::StringLiteral, 2 )
-    arg.typeNamespace = XSD::Namespace
+    arg = SOAP::SOAPArray.new( XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' ), 2, XSD::XSDString::Type )
     arg.size = [ 3, 3 ]
     arg.sizeFixed = true
     arg.add( SOAP::RPCUtils.obj2soap( 'r0c0', SOAPBuildersInterop::MappingRegistry ))
@@ -1778,7 +1775,9 @@ def doTestGroupB( drv )
       [ 'r2c0', 'r0c1', 'r2c2' ],
     ]
 
-    var = drv.echo2DStringArray( SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry ))
+    paramArg = SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry )
+    paramArg.type = XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' )
+    var = drv.echo2DStringArray( paramArg )
     dumpNormal( title, arg, var )
   rescue Exception
     dumpException( title )
@@ -1821,8 +1820,7 @@ def doTestGroupB( drv )
   title = 'echo2DStringArray (multi-ref)'
   dumpTitle( title )
   begin
-    arg = SOAP::SOAPArray.new( XSD::StringLiteral, 2 )
-    arg.typeNamespace = XSD::Namespace
+    arg = SOAP::SOAPArray.new( XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' ), 2, XSD::XSDString::Type )
     arg.size = [ 3, 3 ]
     arg.sizeFixed = true
 
@@ -1851,8 +1849,7 @@ def doTestGroupB( drv )
   title = 'echo2DStringArray (multi-ref: ele[2, 0] == ele[0, 2])'
   dumpTitle( title )
   begin
-    arg = SOAP::SOAPArray.new( XSD::StringLiteral, 2 )
-    arg.typeNamespace = XSD::Namespace
+    arg = SOAP::SOAPArray.new( XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' ), 2, XSD::XSDString::Type )
     arg.size = [ 3, 3 ]
     arg.sizeFixed = true
 
