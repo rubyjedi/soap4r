@@ -470,8 +470,10 @@ public
 
   ArrayEncodePostfix = 'Ary'
 
+  attr_accessor :sparse
+
   attr_reader :offset, :rank
-  attr_accessor :sparse, :size, :sizeFixed
+  attr_accessor :size, :sizeFixed
 
   def initialize( typeName = nil, rank = 1 )
     super( typeName )
@@ -489,13 +491,8 @@ public
     @sparse = true
   end
 
-  def set( newArray )
-    raise NotImplementError.new( 'Partially transmittion does not supported' )
-  end
-
   def add( newMember )
     self[ *( @offset ) ] = newMember
-    offsetNext
   end
 
   def []( *idxAry )
@@ -536,6 +533,9 @@ public
 	value.typeNamespace = @typeNamespace
       end
     end
+
+    @offset = idxAry
+    offsetNext
   end
 
   def each
