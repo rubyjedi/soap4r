@@ -6,7 +6,7 @@ require 'soap/driver'
 
 require 'iSimonReg'
 
-server = 'http://soap.4s4c.com/registration/soap.asp'
+server = 'http://www.4s4c.com/services/4s4c.ashx'
 
 class SimonRegApp < Application
   include SimonReg
@@ -72,7 +72,7 @@ private
     #groupB = services.find { | service | service.name == 'SoapBuilders Interop Group B' }
 
     # SOAP4R information
-    version = '1.3.5'
+    version = '1.4.1'
     soap4rClientInfo = Clients::ClientInfo.new( 'SOAP4R', version,
       'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/wiki.cgi?cmd=view;name=InteropResults'
     )
@@ -97,10 +97,10 @@ private
     # p serverID
 
     # Update
-    #@drvClients.UpdateClient( soap4rGroupAClientID, soap4rClientInfo )
-    #@drvClients.UpdateClient( soap4rGroupBClientID, soap4rClientInfo )
-    #@drvServers.UpdateServer( soap4rGroupAServerID, soap4rServerInfo )
-    #@drvServers.UpdateServer( soap4rGroupBServerID, soap4rServerInfo )
+    @drvClients.UpdateClient( soap4rGroupAClientID, soap4rClientInfo )
+    @drvClients.UpdateClient( soap4rGroupBClientID, soap4rClientInfo )
+    @drvServers.UpdateServer( soap4rGroupAServerID, soap4rServerInfo )
+    @drvServers.UpdateServer( soap4rGroupBServerID, soap4rServerInfo )
   end
 
 
