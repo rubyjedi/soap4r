@@ -11,4 +11,6 @@ class SampleStructServer < SOAP::RPC::StandaloneServer
   end
 end
 
-status = SampleStructServer.new('SampleStructServer', SampleStructServiceNamespace, '0.0.0.0', 7000).start
+if $0 == __FILE__
+  status = SampleStructServer.new('SampleStructServer', SampleStructServiceNamespace, '0.0.0.0', 7000).start
+end
