@@ -50,7 +50,7 @@ class Port < Info
   def inputoperation_map
     result = {}
     find_binding.operations.each do |op_bind|
-      op_name, msg_name, parts, soapaction = op_bind.inputoperation_sig
+      op_name, msg_name, parts, soapaction = op_bind.input_op_sig
       result[op_name] = [msg_name, parts, soapaction]
     end
     result
@@ -59,7 +59,7 @@ class Port < Info
   def outputoperation_map
     result = {}
     find_binding.operations.each do |op_bind|
-      op_name, msg_name, parts = op_bind.outputoperation_sig
+      op_name, msg_name, parts = op_bind.output_op_sig
       result[op_name] = [msg_name, parts]
     end
     result

@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Content < Info
@@ -102,5 +102,6 @@ private
   end
 end
 
-  end
+
+end
 end

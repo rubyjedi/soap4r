@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Import < Info
@@ -51,5 +51,5 @@ class Import < Info
 end
 
 
-  end
+end
 end

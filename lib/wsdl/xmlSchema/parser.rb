@@ -16,6 +16,7 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'xsd/qname'
 require 'xsd/ns'
 require 'xsd/charset'
@@ -25,7 +26,7 @@ require 'wsdl/xmlSchema/data'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Parser
@@ -166,5 +167,5 @@ private
 end
 
 
-  end
+end
 end

@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Choice < Info
@@ -71,5 +71,6 @@ class Choice < Info
   end
 end
 
-  end
+
+end
 end

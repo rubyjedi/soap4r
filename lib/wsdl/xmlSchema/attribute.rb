@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Attribute < Info
@@ -80,5 +80,6 @@ class Attribute < Info
   end
 end
 
-  end
+
+end
 end

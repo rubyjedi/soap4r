@@ -21,7 +21,7 @@ require 'wsdl/info'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Sequence < Info
@@ -71,5 +71,6 @@ class Sequence < Info
   end
 end
 
-  end
+
+end
 end

@@ -21,13 +21,14 @@ require 'wsdl/info'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Element < Info
   attr_accessor :name	# required
   attr_accessor :type
   attr_accessor :local_complextype
+  attr_accessor :constraint
   attr_accessor :maxoccurs
   attr_accessor :minoccurs
   attr_accessor :nillable
@@ -37,6 +38,7 @@ class Element < Info
     @name = name
     @type = type
     @local_complextype = nil
+    @constraint = nil
     @maxoccurs = 1
     @minoccurs = 1
     @nillable = nil
@@ -52,6 +54,9 @@ class Element < Info
       @type = nil
       @local_complextype = ComplexType.new
       @local_complextype
+    when UniqueName
+      @constraint = Unique.new
+      @constraint
     else
       nil
     end
@@ -104,5 +109,6 @@ class Element < Info
   end
 end
 
-  end
+
+end
 end

@@ -22,7 +22,7 @@ require 'wsdl/xmlSchema/content'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class ComplexType < Info
@@ -121,5 +121,6 @@ class ComplexType < Info
   end
 end
 
-  end
+
+end
 end

@@ -22,7 +22,7 @@ require 'wsdl/namedElements'
 
 
 module WSDL
-  module XMLSchema
+module XMLSchema
 
 
 class Schema < Info
@@ -94,5 +94,5 @@ class Schema < Info
 end
 
 
-  end
+end
 end
