@@ -94,7 +94,7 @@ public
     @operation[name] = Operation.new(qname, soapaction, name, param_def, opt)
   end
 
-  # add_method is for shortcut of typical use="encoded" method definition.
+  # add_method is for shortcut of typical rpc/encoded method definition.
   alias add_method add_rpc_method
 
   def invoke(req_header, req_body, opt = create_options)

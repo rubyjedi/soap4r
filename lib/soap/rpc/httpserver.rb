@@ -66,15 +66,6 @@ class HTTPServer < Logger::Application
     @soaplet.add_rpc_servant(obj, namespace)
   end
   
-  def add_document_request_servant(factory, namespace = @default_namespace,
-      mapping_registry = nil)
-    @soaplet.add_document_request_servant(factory, namespace, mapping_registry)
-  end
-
-  def add_document_servant(obj, namespace = @default_namespace)
-    @soaplet.add_document_servant(obj, namespace)
-  end
-  
   def add_rpc_request_headerhandler(factory)
     @soaplet.add_rpc_request_headerhandler(factory)
   end
@@ -85,16 +76,30 @@ class HTTPServer < Logger::Application
 
   # method entry interface
 
-  def add_method(obj, name, *param)
-    add_method_as(obj, name, name, *param)
+  def add_rpc_method(obj, name, *param)
+    add_rpc_method_as(obj, name, name, *param)
+  end
+  alias add_method add_rpc_method
+
+  def add_document_method(obj, name, req_qname, res_qname)
+    opt = {}
+    opt[:request_style] = opt[:response_style] = :document
+    opt[:request_use] = opt[:response_use] = :literal
+    param_def = [
+      ['input', req_qname.name, [nil, req_qname.namespace, req_qname.name]],
+      ['output', req_qname.name, [nil, res_qname.namespace, res_qname.name]]
+    ]
+    @soaplet.app_scope_router.add_operation(req_qname, nil, obj, name,
+      param_def, opt)
   end
 
-  def add_method_as(obj, name, name_as, *param)
+  def add_rpc_method_as(obj, name, name_as, *param)
     qname = XSD::QName.new(@default_namespace, name_as)
     soapaction = nil
     param_def = create_param_def(obj, name, param)
     add_operation(qname, soapaction, obj, name, param_def)
   end
+  alias add_method_as add_rpc_method_as
 
   def add_operation(qname, soapaction, obj, name, param_def, opt = {})
     opt[:request_style] ||= :rpc
