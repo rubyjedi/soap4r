@@ -2,15 +2,13 @@ require 'test/unit/testsuite'
 require 'test/unit/testcase'
 require 'optparse'
 
-$KCODE = 'UTF8'
-
-rcsid = %w$Id: runner.rb,v 1.2 2003/09/13 10:39:42 nahi Exp $
+rcsid = %w$Id: runner.rb,v 1.3 2003/10/04 08:42:13 nahi Exp $
 Version = rcsid[2].scan(/\d+/).collect!(&method(:Integer)).freeze
 Release = rcsid[3].freeze
 
 class BulkTestSuite < Test::Unit::TestSuite
   def self.suite
-    suite = Test::Unit::TestSuite.new
+    suite = Test::Unit::TestSuite.new(self.name)
     ObjectSpace.each_object(Class) do |klass|
       suite << klass.suite if (Test::Unit::TestCase > klass)
     end
@@ -48,8 +46,15 @@ rescue OptionParser::ParseError
 end
 
 if argv.empty?
-  argv = Dir.glob(File.join(File.dirname(__FILE__), "**", "test_*.rb")).sort
+  argv = [File.dirname(__FILE__)]
 end
+argv.collect! do |arg|
+  if File.directory?(arg)
+    Dir.glob(File.join(arg, "**", "test_*.rb")).sort
+  else
+    arg
+  end
+end.flatten!
 
 argv.each do |tc_name|
   require tc_name
