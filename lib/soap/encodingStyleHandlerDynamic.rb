@@ -25,10 +25,12 @@ module SOAP
     class SOAPTemporalObject
       attr_accessor :parent
       attr_accessor :id
+      attr_accessor :root
 
       def initialize
 	@parent = nil
 	@id = nil
+	@root = nil
       end
     end
 
@@ -48,6 +50,7 @@ module SOAP
       def toStruct
 	o = SOAPStruct.decode( @ns, @entity, @typeNamespace, @typeName )
 	o.id = @id
+	o.root = @root
 	o.parent = @parent
 	@handler.decodeParent( @parent, o )
 	o
@@ -56,6 +59,7 @@ module SOAP
       def toString
 	o = SOAPString.decode( @ns, @entity )
 	o.id = @id
+	o.root = @root
 	o.parent = @parent
 	@handler.decodeParent( @parent, o )
 	o
@@ -64,6 +68,7 @@ module SOAP
       def toNil
 	o = SOAPNil.decode( @ns, @entity )
 	o.id = @id
+	o.root = @root
 	o.parent = @parent
 	@handler.decodeParent( @parent, o )
 	o
@@ -77,7 +82,7 @@ module SOAP
     end
 
     def decodeTag( ns, entity, parent )
-      isNil, type, arrayType, reference, id = parseAttrs( ns, entity )
+      isNil, type, arrayType, reference, id, root = parseAttrs( ns, entity )
       o = nil
       if isNil
 	o = SOAPNil.decode( ns, entity )
@@ -121,6 +126,7 @@ module SOAP
 
       o.parent = parent
       o.id = id 
+      o.root = root
 
       unless o.is_a?( SOAPTemporalObject )
 	@idPool << o if o.id
@@ -180,7 +186,7 @@ module SOAP
 	else
 	  newNode = o.toString
 	  if newNode.id
-	    @idPool << newParent
+	    @idPool << newNode
 	  end
 	  node.replaceNode( newNode )
 	  node.node.set( o.textBuf )
@@ -248,22 +254,25 @@ module SOAP
       arrayType = nil
       reference = nil
       id = nil
+      root = false
 
       entity.attrs.each do | key, value |
 	if ( ns.compare( XSD::Namespace, XSD::NilLiteral, key ))
 	  isNil = ( value == '1' )
-	elsif ( ns.compare( XSD::InstanceNamespace, 'type', key ))
+	elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	  type = value
-	elsif ( ns.compare( EncodingNamespace, 'arrayType', key ))
+	elsif ( ns.compare( EncodingNamespace, AttrArrayType, key ))
 	  arrayType = value
 	elsif ( key == 'href' )
 	  reference = value
 	elsif ( key == 'id' )
 	  id = value
+	elsif ( ns.compare( EncodingNamespace, AttrRoot, key ))
+	  root = ( value == '1' )
 	end
       end
 
-      return isNil, type, arrayType, reference, id
+      return isNil, type, arrayType, reference, id, root
     end
 
     def resolveId
