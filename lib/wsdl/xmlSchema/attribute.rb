@@ -26,11 +26,21 @@ module WSDL
 
 class Attribute < Info
   attr_accessor :ref
+  attr_accessor :use
+  attr_accessor :type
+  attr_accessor :default
+  attr_accessor :fixed
+
   attr_accessor :arrayType
 
   def initialize
     super
     @ref = nil
+    @use = nil
+    @type = nil
+    @default = nil
+    @fixed = nil
+
     @arrayType = nil
   end
 
