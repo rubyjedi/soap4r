@@ -40,6 +40,7 @@ class StreamHandler
     attr_accessor :receive_string
     attr_accessor :receive_contenttype
     attr_accessor :is_fault
+    attr_accessor :soapaction
 
     def initialize(send_string = nil)
       @send_string = send_string
@@ -47,6 +48,7 @@ class StreamHandler
       @receive_string = nil
       @receive_contenttype = nil
       @is_fault = false
+      @soapaction = nil
     end
   end
 
@@ -79,7 +81,7 @@ public
     super()
     @client = Client.new(nil, "SOAP4R/#{ Version }")
     @wiredump_file_base = nil
-    @charset = @wiredump_dev = @nil
+    @charset = @wiredump_dev = nil
     @options = options
     set_options
     @client.debug_dev = @wiredump_dev
@@ -100,7 +102,8 @@ public
   end
 
   def send(endpoint_url, conn_data, soapaction = nil, charset = @charset)
-    send_post(endpoint_url, conn_data, soapaction, charset)
+    conn_data.soapaction ||= soapaction # for backward conpatibility
+    send_post(endpoint_url, conn_data, charset)
   end
 
   def reset(endpoint_url = nil)
@@ -231,7 +234,7 @@ private
     OpenSSL::PKey::RSA.new(File.open(filename) { |f| f.read })
   end
 
-  def send_post(endpoint_url, conn_data, soapaction, charset)
+  def send_post(endpoint_url, conn_data, charset)
     conn_data.send_contenttype ||= StreamHandler.create_media_type(charset)
 
     if @wiredump_file_base
@@ -243,7 +246,7 @@ private
 
     extra = {}
     extra['Content-Type'] = conn_data.send_contenttype
-    extra['SOAPAction'] = "\"#{ soapaction }\""
+    extra['SOAPAction'] = "\"#{ conn_data.soapaction }\""
     extra['Accept-Encoding'] = 'gzip' if send_accept_encoding_gzip?
     send_string = conn_data.send_string
     @wiredump_dev << "Wire dump:\n\n" if @wiredump_dev
