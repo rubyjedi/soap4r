@@ -11,4 +11,4 @@ class TestXMLSchemaParser < Test::Unit::TestCase
   end
 end
 
-TestXMLSchemaParser.setup(ARGV.shift || 'xmlschema.xml')
+TestXMLSchemaParser.setup('xmlschema.xml')

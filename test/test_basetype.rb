@@ -1,5 +1,3 @@
-$KCODE = "UTF8"
-
 require 'test/unit'
 require 'soap/baseData'
 
@@ -677,7 +675,7 @@ class TestSOAP < Test::Unit::TestCase
 
     targets = [
       "abcdef",
-      "‚È‚Ð",
+      "\xe3\x81\xaa\xe3\x81\xb2",
       "\0",
       "",
     ]
@@ -714,7 +712,7 @@ class TestSOAP < Test::Unit::TestCase
 
     targets = [
       "abcdef",
-      "‚È‚Ð",
+      "\xe3\x81\xaa\xe3\x81\xb2",
       "\0",
       "",
     ]
