@@ -700,7 +700,7 @@ class TestXSD2 < Test::Unit::TestCase
 
     targets = [
       "abcdef",
-      "‚È‚Ð",
+      %q(‚È‚Ð),
       "\0",
       "",
     ]
