@@ -76,7 +76,7 @@ public
 	parentArray.baseTypeName == @typeName
       # No need to add.
     else
-      attrs.push( datatypeAttr( ns ))
+      attrs.push( datatypeAttr( ns )) if @typeName
     end
 
     if parentArray && parentArray.position
@@ -360,7 +360,7 @@ class SOAPStruct < NSDBase
 
 public
 
-  def initialize( typeName )
+  def initialize( typeName = nil )
     super( typeName )
     @array = []
     @data = []
@@ -427,7 +427,7 @@ public
 	parentArray.baseTypeName == @typeName
       # No need to add.
     else
-      attrs.push( datatypeAttr( ns ))
+      attrs.push( datatypeAttr( ns )) if @typeName
     end
 
     if parentArray && parentArray.position
@@ -627,7 +627,7 @@ public
     end
 
     attrs.push( arrayTypeAttr( ns ))
-    attrs.push( datatypeAttr( ns ))
+    attrs.push( datatypeAttr( ns )) if @typeName
 
     if parentArray && parentArray.position
       attrs.push( positionAttr( parentArray.position, ns ))
