@@ -157,9 +157,7 @@ private
     methodName = soapMethod.typeName || soapMethod.name
 
     requestStruct = RPCUtils.soap2obj( soapMethod, @mappingRegistry )
-    values = requestStruct.members.collect { |member|
-      requestStruct[ member ]
-    }
+    values = soapMethod.collect { | key, value | requestStruct[ key ] }
     method = lookup( namespace, methodName, values )
     unless method
       raise RPCRoutingError.new( "Method: #{methodName} not supported." )
