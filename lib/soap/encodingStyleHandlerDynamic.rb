@@ -421,8 +421,8 @@ private
 
   def decodeTagByType( ns, elementName, typeStr, parent, arrayTypeStr )
     if arrayTypeStr
-      return SOAPArray.decode( elementName, ns.parse( typeStr ),
-	ns.parse( arrayTypeStr ))
+      type = typeStr ? ns.parse( typeStr ) : ValueArrayName
+      return SOAPArray.decode( elementName, type, ns.parse( arrayTypeStr ))
     end
 
     type = nil
