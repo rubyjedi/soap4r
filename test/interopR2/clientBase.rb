@@ -1,7 +1,6 @@
 $KCODE = 'EUC'
 
 require 'soap/driver'
-require 'soap/xmlparser'
 
 require 'soap/rpcUtils'
 include SOAP::RPCUtils
