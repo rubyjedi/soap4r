@@ -16,13 +16,12 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
+require 'xsd/datatypes'
 require 'soap/soap'
 require 'soap/element'
-require 'soap/XMLSchemaDatatypes'
 require 'soap/parser'
 require 'soap/generator'
-require 'soap/charset'
-
 require 'soap/encodingStyleHandlerDynamic'
 require 'soap/encodingStyleHandlerLiteral'
 require 'soap/encodingStyleHandlerASPDotNet'

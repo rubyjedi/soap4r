@@ -1,6 +1,6 @@
 =begin
 SOAP4R - RPC Routing library
-Copyright (C) 2001, 2002, 2003  NAKAMURA, Hiroshi.
+Copyright (C) 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,9 +17,4 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'soap/rpc/router'
-
-
-module SOAP
-  RPCRouter = RPC::Router
-end
+require 'soap/compat'

@@ -19,7 +19,9 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/soap'
 require 'soap/processor'
-require 'soap/rpcUtils'
+require 'soap/mapping'
+require 'soap/rpc/rpc'
+require 'soap/rpc/element'
 
 
 module SOAP
@@ -109,13 +111,13 @@ private
       outparams = {}
       i = 1
       soap_response.each_param_name('out', 'inout') do |outparam|
-	outparams[outparam] = RPC.obj2soap(result[i], @mapping_registry)
+	outparams[outparam] = Mapping.obj2soap(result[i], @mapping_registry)
 	i += 1
       end
       soap_response.set_outparam(outparams)
-      soap_response.retval = RPC.obj2soap(result[0], @mapping_registry)
+      soap_response.retval = Mapping.obj2soap(result[0], @mapping_registry)
     else
-      soap_response.retval = RPC.obj2soap(result, @mapping_registry)
+      soap_response.retval = Mapping.obj2soap(result, @mapping_registry)
     end
     soap_response
   end
@@ -127,12 +129,12 @@ private
       SOAPString.new('Server'),
       SOAPString.new(e.to_s),
       SOAPString.new(@actor),
-      RPC.obj2soap(detail, @mapping_registry))
+      Mapping.obj2soap(detail, @mapping_registry))
   end
 
   # Dispatch to defined method.
   def dispatch(soap_method)
-    request_struct = RPC.soap2obj(soap_method, @mapping_registry)
+    request_struct = Mapping.soap2obj(soap_method, @mapping_registry)
     values = soap_method.collect { |key, value| request_struct[key] }
     method = lookup(soap_method.elename, values)
     unless method

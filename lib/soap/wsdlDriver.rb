@@ -18,12 +18,13 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/parser'
-require 'soap/qname'
+require 'xsd/qname'
 require 'soap/element'
 require 'soap/baseData'
 require 'soap/streamHandler'
-require 'soap/rpcUtils'
 require 'soap/mapping'
+require 'soap/rpc/rpc'
+require 'soap/rpc/element'
 require 'soap/processor'
 require 'devel/logger'
 

@@ -16,11 +16,11 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+require 'xsd/qname'
+require 'xsd/ns'
+require 'xsd/charset'
+require 'xsd/datatypes'
 require 'wsdl/wsdl'
-require 'soap/namespace'
-require 'soap/qname'
-require 'soap/charset'
-require 'soap/XMLSchemaDatatypes'
 require 'wsdl/data'
 require 'wsdl/xmlSchema/data'
 require 'wsdl/soap/data'

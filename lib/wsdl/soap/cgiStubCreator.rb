@@ -56,7 +56,7 @@ require 'soap/cgistub'
 
 class #{ class_name }
   require 'soap/rpcUtils'
-  MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
+  MappingRegistry = SOAP::Mapping::Registry.new
 
 #{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
   Methods = [

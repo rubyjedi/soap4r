@@ -16,7 +16,9 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'devel/logger'
+require 'soap/rpc/soaplet'
 require 'soap/streamHandler'
 
 # require 'webrick'
@@ -37,8 +39,6 @@ require 'webrick/httpresponse.rb'
 require 'webrick/httpserver.rb'
 # require 'webrick/httpservlet.rb'
 # require 'webrick/httpauth.rb'
-
-require 'soap/rpc/soaplet'
 
 
 module SOAP
@@ -93,7 +93,7 @@ class StandaloneServer < Devel::Application
     param_def = if param.size == 1 and param[0].is_a?(Array)
         param[0]
       elsif param.empty?
-	::SOAP::RPCUtils::SOAPMethod.create_param_def(
+	::SOAP::RPC::SOAPMethod.create_param_def(
 	  (1..method.arity.abs).collect { |i| "p#{ i }" })
       else
         SOAP::RPC::SOAPMethod.create_param_def(param)

@@ -1,6 +1,6 @@
 =begin
 SOAP4R - RPC utility.
-Copyright (C) 2000, 2001, 2003  NAKAMURA, Hiroshi.
+Copyright (C) 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,13 +17,4 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'soap/rpc/rpc'
-require 'soap/rpc/element'
-require 'soap/mapping'
-require 'soap/mappingRegistry'
-
-
-module SOAP
-  RPCServerException = RPC::ServerException
-  RPCUtils = RPC
-end
+require 'soap/compat'

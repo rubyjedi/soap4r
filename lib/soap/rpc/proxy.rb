@@ -19,7 +19,9 @@ Ave, Cambridge, MA 02139, USA.
 
 require 'soap/soap'
 require 'soap/processor'
-require 'soap/rpcUtils'
+require 'soap/mapping'
+require 'soap/rpc/rpc'
+require 'soap/rpc/element'
 require 'soap/streamHandler'
 
 

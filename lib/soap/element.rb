@@ -16,8 +16,9 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
+require 'xsd/qname'
 require 'soap/baseData'
-require 'soap/qname'
 
 
 module SOAP

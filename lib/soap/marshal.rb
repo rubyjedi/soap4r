@@ -16,12 +16,13 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 # The original version of the marshal.rb to marshal/unmarshal Ruby's object
 # using SOAP Encoding was written by Michael Neumann.  His valuable comments
 # and his program inspired me to write this.  Thanks.
 
 
-require "soap/mapping/registry"
+require "soap/mapping"
 require "soap/processor"
 
 

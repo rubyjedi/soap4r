@@ -16,6 +16,7 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'net/http'
 
 
@@ -62,24 +63,15 @@ class NetHttpClient
     url = URI.parse(url)
     extra = header.dup
     extra['User-Agent'] = @agent if @agent
-    response = res_body = nil
-    if @proxy
-      Net::HTTP::Proxy(@proxy.host, @proxy.port).start(url.host, url.port) { |http|
-	if http.respond_to?(:set_debug_output)
-	  http.set_debug_output(@debug_dev)
-	end
-	response, res_body =
-	  http.post(url.instance_eval('path_query'), req_body, extra)
-      }
-    else
-      Net::HTTP.start(url.host, url.port) { |http|
-	if http.respond_to?(:set_debug_output)
-	  http.set_debug_output(@debug_dev)
-	end
-	response, res_body =
-	  http.post(url.instance_eval('path_query'), req_body, extra)
-      }
-    end
+    response = nil
+    proxy_host = @proxy ? @proxy.host : nil
+    proxy_port = @proxy ? @proxy.port : nil
+    Net::HTTP::Proxy(proxy_host, proxy_port).start(url.host, url.port) { |http|
+      if http.respond_to?(:set_debug_output)
+	http.set_debug_output(@debug_dev)
+      end
+      response, = http.post(url.instance_eval('path_query'), req_body, extra)
+    }
     Response.new(response)
   end
 end

@@ -17,10 +17,12 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
+require 'soap/soap'
 require 'soap/proxy'
-require 'soap/rpcUtils'
+require 'soap/mapping'
+require 'soap/rpc/rpc'
+require 'soap/rpc/element'
 require 'soap/streamHandler'
-require 'soap/charset'
 
 
 module SOAP
@@ -127,7 +129,7 @@ public
 
   def call(name, *params)
     # Convert parameters: params array => SOAPArray => members array
-    params = RPC.obj2soap(params, @mapping_registry).to_a
+    params = Mapping.obj2soap(params, @mapping_registry).to_a
     if @wiredump_file_base
       @handler.wiredump_file_base = @wiredump_file_base + '_' << name
     end
@@ -141,12 +143,12 @@ public
     begin
       @proxy.check_fault(body)
     rescue SOAP::FaultError => e
-      RPC.fault2exception(e)
+      Mapping.fault2exception(e)
     end
 
-    ret = body.response ? RPC.soap2obj(body.response, @mapping_registry) : nil
+    ret = body.response ? Mapping.soap2obj(body.response, @mapping_registry) : nil
     if body.outparams
-      outparams = body.outparams.collect { |outparam| RPC.soap2obj(outparam) }
+      outparams = body.outparams.collect { |outparam| Mapping.soap2obj(outparam) }
       return [ret].concat(outparams)
     else
       return ret

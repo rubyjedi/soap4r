@@ -16,6 +16,7 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'webrick/httpservlet/abstract'
 require 'webrick/httpstatus'
 require 'soap/rpc/router'
@@ -154,7 +155,7 @@ private
       qname = XSD::QName.new(namespace, name)
       soapaction = nil
       method = obj.method(name)
-      param_def = ::SOAP::RPCUtils::SOAPMethod.create_param_def(
+      param_def = ::SOAP::RPC::SOAPMethod.create_param_def(
         (1..method.arity.abs).collect { |i| "p#{ i }" })
       router.add_method(obj, qname, soapaction, name, param_def)
     end
