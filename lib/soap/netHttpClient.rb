@@ -100,7 +100,7 @@ private
     http = create_connection(url)
     response = nil
     http.start { |worker|
-      response, = yield(worker)
+      response = yield(worker)
       worker.finish
     }
     @debug_dev << response.body if @debug_dev
