@@ -1,16 +1,93 @@
 # urn:GoogleSearch
 class GoogleSearchResult
-  attr_accessor :documentFiltering	# {http://www.w3.org/2001/XMLSchema}boolean
-  attr_accessor :searchComments	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :estimatedTotalResultsCount	# {http://www.w3.org/2001/XMLSchema}int
-  attr_accessor :estimateIsExact	# {http://www.w3.org/2001/XMLSchema}boolean
-  attr_accessor :resultElements	# {urn:GoogleSearch}ResultElementArray
-  attr_accessor :searchQuery	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :startIndex	# {http://www.w3.org/2001/XMLSchema}int
-  attr_accessor :endIndex	# {http://www.w3.org/2001/XMLSchema}int
-  attr_accessor :searchTips	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :directoryCategories	# {urn:GoogleSearch}DirectoryCategoryArray
-  attr_accessor :searchTime	# {http://www.w3.org/2001/XMLSchema}double
+  def documentFiltering
+    @documentFiltering
+  end
+
+  def documentFiltering=( newdocumentFiltering )
+    @documentFiltering = newdocumentFiltering
+  end
+
+  def searchComments
+    @searchComments
+  end
+
+  def searchComments=( newsearchComments )
+    @searchComments = newsearchComments
+  end
+
+  def estimatedTotalResultsCount
+    @estimatedTotalResultsCount
+  end
+
+  def estimatedTotalResultsCount=( newestimatedTotalResultsCount )
+    @estimatedTotalResultsCount = newestimatedTotalResultsCount
+  end
+
+  def estimateIsExact
+    @estimateIsExact
+  end
+
+  def estimateIsExact=( newestimateIsExact )
+    @estimateIsExact = newestimateIsExact
+  end
+
+  def resultElements
+    @resultElements
+  end
+
+  def resultElements=( newresultElements )
+    @resultElements = newresultElements
+  end
+
+  def searchQuery
+    @searchQuery
+  end
+
+  def searchQuery=( newsearchQuery )
+    @searchQuery = newsearchQuery
+  end
+
+  def startIndex
+    @startIndex
+  end
+
+  def startIndex=( newstartIndex )
+    @startIndex = newstartIndex
+  end
+
+  def endIndex
+    @endIndex
+  end
+
+  def endIndex=( newendIndex )
+    @endIndex = newendIndex
+  end
+
+  def searchTips
+    @searchTips
+  end
+
+  def searchTips=( newsearchTips )
+    @searchTips = newsearchTips
+  end
+
+  def directoryCategories
+    @directoryCategories
+  end
+
+  def directoryCategories=( newdirectoryCategories )
+    @directoryCategories = newdirectoryCategories
+  end
+
+  def searchTime
+    @searchTime
+  end
+
+  def searchTime=( newsearchTime )
+    @searchTime = newsearchTime
+  end
+
 
   def initialize( documentFiltering = nil,
       searchComments = nil,
@@ -39,18 +116,81 @@ end
 
 # urn:GoogleSearch
 class ResultElement
-  attr_accessor :summary	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :url	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :snippet	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :title	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :cachedSize	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :relatedInformationPresent	# {http://www.w3.org/2001/XMLSchema}boolean
-  attr_accessor :hostName	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :directoryCategory	# {urn:GoogleSearch}DirectoryCategory
-  attr_accessor :directoryTitle	# {http://www.w3.org/2001/XMLSchema}string
+  def summary
+    @summary
+  end
+
+  def summary=( newsummary )
+    @summary = newsummary
+  end
+
+  def URL
+    @uRL
+  end
+
+  def URL=( newURL )
+    @uRL = newURL
+  end
+
+  def snippet
+    @snippet
+  end
+
+  def snippet=( newsnippet )
+    @snippet = newsnippet
+  end
+
+  def title
+    @title
+  end
+
+  def title=( newtitle )
+    @title = newtitle
+  end
+
+  def cachedSize
+    @cachedSize
+  end
+
+  def cachedSize=( newcachedSize )
+    @cachedSize = newcachedSize
+  end
+
+  def relatedInformationPresent
+    @relatedInformationPresent
+  end
+
+  def relatedInformationPresent=( newrelatedInformationPresent )
+    @relatedInformationPresent = newrelatedInformationPresent
+  end
+
+  def hostName
+    @hostName
+  end
+
+  def hostName=( newhostName )
+    @hostName = newhostName
+  end
+
+  def directoryCategory
+    @directoryCategory
+  end
+
+  def directoryCategory=( newdirectoryCategory )
+    @directoryCategory = newdirectoryCategory
+  end
+
+  def directoryTitle
+    @directoryTitle
+  end
+
+  def directoryTitle=( newdirectoryTitle )
+    @directoryTitle = newdirectoryTitle
+  end
+
 
   def initialize( summary = nil,
-      url = nil,
+      uRL = nil,
       snippet = nil,
       title = nil,
       cachedSize = nil,
@@ -59,7 +199,7 @@ class ResultElement
       directoryCategory = nil,
       directoryTitle = nil )
     @summary = summary
-    @url = url
+    @uRL = uRL
     @snippet = snippet
     @title = title
     @cachedSize = cachedSize
@@ -78,8 +218,22 @@ class DirectoryCategoryArray < Array; end
 
 # urn:GoogleSearch
 class DirectoryCategory
-  attr_accessor :fullViewableName	# {http://www.w3.org/2001/XMLSchema}string
-  attr_accessor :specialEncoding	# {http://www.w3.org/2001/XMLSchema}string
+  def fullViewableName
+    @fullViewableName
+  end
+
+  def fullViewableName=( newfullViewableName )
+    @fullViewableName = newfullViewableName
+  end
+
+  def specialEncoding
+    @specialEncoding
+  end
+
+  def specialEncoding=( newspecialEncoding )
+    @specialEncoding = newspecialEncoding
+  end
+
 
   def initialize( fullViewableName = nil,
       specialEncoding = nil )

@@ -17,7 +17,7 @@ obj = GoogleSearchPort.new( endpointUrl, proxyUrl )
 #   url		String - {http://www.w3.org/2001/XMLSchema}string
 #
 # RETURNS
-#   return		 - {http://www.w3.org/2001/XMLSchema}base64Binary
+#   return		String - {http://www.w3.org/2001/XMLSchema}base64Binary
 #
 # RAISES
 #    N/A
