@@ -66,7 +66,6 @@ public
   ###
   ## handlers
   #
-  #Encoding = [ 'UTF8', ( $KCODE == 'NONE' ? 'UTF8' : $KCODE ) ]
   def Charset.getEncoding
     @dataModelEncoding
   end
