@@ -79,7 +79,6 @@ public
       raise SOAP::RPC::MethodDefinitionError.new(
 	"Method: #{ name } not defined.")
     end
-
     Request.new(method, values)
   end
 
@@ -91,21 +90,24 @@ public
       req_body = SOAPBody.new(req_body)
     end
     opt = create_options
-    send_string = Processor.marshal(req_header, req_body, opt)
-    data = @streamhandler.send(send_string, soapaction)
-    if data.receive_string.empty?
+    opt[:mimemessage] = nil
+    req_env = SOAPEnvelope.new(req_header, req_body)
+    send_string = Processor.marshal(req_env, opt)
+    conn_data = StreamHandler::ConnectionData.new(send_string)
+    if mime = opt[:mimemessage]
+      conn_data.send_string = mime.content_str
+      conn_data.send_contenttype = mime.headers['content-type'].str
+    end
+    conn_data = @streamhandler.send(conn_data, soapaction)
+    if conn_data.receive_string.empty?
       return nil, nil
     end
-    opt = create_options
-    opt[:charset] = @mandatorycharset ||
-      StreamHandler.parse_media_type(data.receive_contenttype)
-    res_header, res_body = Processor.unmarshal(data.receive_string, opt)
-    return res_header, res_body
+    unmarshal(conn_data, opt)
   end
 
   def call(headers, name, *values)
     req = create_request(name, *values)
-    return invoke(headers, req.method, req.method.soapaction || @soapaction)
+    invoke(headers, req.method, req.method.soapaction || @soapaction)
   end
 
   def check_fault(body)
@@ -115,6 +117,24 @@ public
   end
 
 private
+
+  def unmarshal(conn_data, opt)
+    contenttype = conn_data.receive_contenttype
+    # detect multipart MIME message and parse
+    if /#{MIMEMessage::MultipartContentType}/i =~ contenttype
+      mime = MIMEMessage.parse("Content-Type: " + contenttype,
+	conn_data.receive_string)
+      opt[:mimemessage] = mime
+      opt[:charset] = @mandatorycharset ||
+	StreamHandler.parse_media_type(mime.root.headers['content-type'].str)
+      env = Processor.unmarshal(mime.root.content, opt)
+    else
+      opt[:charset] = @mandatorycharset ||
+	::SOAP::StreamHandler.parse_media_type(contenttype)
+      env = Processor.unmarshal(conn_data.receive_string, opt)
+    end
+    env
+  end
 
   def create_header(headers)
     header = SOAPHeader.new()

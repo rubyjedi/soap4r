@@ -47,41 +47,77 @@ class Router
   end
 
   # Routing...
-  def route(soap_string, charset = nil)
-    opt = options
-    opt[:charset] = charset
-    is_fault = false
+  #def route(soap_string, charset = nil)
+  def route(conn_data)
+    soap_response = nil
     begin
-      header, body = Processor.unmarshal(soap_string, opt)
+      env = unmarshal(conn_data)
+      if env.nil?
+	raise ArgumentError.new("Illegal SOAP marshal format.")
+      end
       # So far, header is omitted...
-      soap_request = body.request
+      soap_request = env.body.request
       unless soap_request.is_a?(SOAPStruct)
 	raise RPCRoutingError.new("Not an RPC style.")
       end
       soap_response = dispatch(soap_request)
     rescue Exception
       soap_response = fault($!)
-      is_fault = true
+      conn_data.is_fault = true
     end
 
+    opt = options
+    opt[:mimemessage] = nil
     header = SOAPHeader.new
     body = SOAPBody.new(soap_response)
-    response_string = Processor.marshal(header, body, opt)
-
-    return response_string, is_fault
+    env = SOAPEnvelope.new(header, body)
+    response_string = Processor.marshal(env, opt)
+    conn_data.send_string = response_string
+    if mime = opt[:mimemessage]
+      conn_data.send_string = mime.content_str
+      conn_data.send_contenttype = mime.headers['content-type'].str
+    end
+    conn_data
   end
 
   # Create fault response string.
   def create_fault_response(e, charset = nil)
     header = SOAPHeader.new
-    soap_response = fault(e)
-    body = SOAPBody.new(soap_response)
+    body = SOAPBody.new(fault(e))
+    env = SOAPEnvelope.new(header, body)
     opt = options
+    opt[:mimemessage] = nil
     opt[:charset] = charset
-    Processor.marshal(header, body, opt)
+    response_string = Processor.marshal(env, opt)
+    conn_data = StreamHandler::ConnectionData.new(response_string)
+    conn_data.is_fault = true
+    if mime = opt[:mimemessage]
+      conn_data.send_string = mime.content_str
+      conn_data.send_contenttype = mime.headers['content-type'].str
+    end
+    conn_data
   end
 
 private
+
+  def unmarshal(conn_data)
+    opt = options
+    contenttype = conn_data.receive_contenttype
+    if /#{MIMEMessage::MultipartContentType}/i =~ contenttype
+      mime = MIMEMessage.parse("Content-Type: " + contenttype,
+	conn_data.receive_string)
+      opt[:mimemessage] = mime
+      opt[:charset] =
+	StreamHandler.parse_media_type(mime.root.headers['content-type'].str)
+      env = Processor.unmarshal(mime.root.content, opt)
+    else
+      opt[:charset] = ::SOAP::StreamHandler.parse_media_type(contenttype)
+      env = Processor.unmarshal(conn_data.receive_string, opt)
+    end
+    charset = opt[:charset]
+    conn_data.send_contenttype = "text/xml; charset=\"#{charset}\""
+    env
+  end
 
   # Create new response.
   def create_response(qname, result)
