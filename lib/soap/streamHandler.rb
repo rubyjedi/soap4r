@@ -49,12 +49,12 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
     @proxy = proxy
   end
 
-  def send( methodNamespace, methodName, soapString )
+  def send( soapString, soapAction = nil )
     begin
-      s = sendPOST( methodNamespace, methodName, soapString )
+      s = sendPOST( soapString, soapAction )
     rescue PostUnavailableError
       begin
-        s = sendMPOST( methodNamespace, methodName, soapString )
+        s = sendMPOST( soapString, soapAction )
       rescue MPostUnavailableError
         raise HTTPStreamError.new( $! )
       end
@@ -63,7 +63,7 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
 
   private
 
-  def sendPOST( methodNamespace, methodName, soapString )
+  def sendPOST( soapString, soapAction )
     retryNo = NofRetry
     drv = nil
     begin
@@ -76,7 +76,7 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
       end
       raise
     end
-    action = methodNamespace.dup << '#' << methodName
+    action = "\"#{ soapAction }\""
     requestHeaders = { 'SOAPAction' => action, 'Content-Type' => MediaType }
 
     puts soapString if $DEBUG
@@ -128,7 +128,7 @@ class SOAPHTTPPostStreamHandler < SOAPStreamHandler
     receiveString
   end
 
-  def sendMPOST( methodNamespace, methodName, soapString )
+  def sendMPOST( soapString, soapAction )
     raise NotImplementError.new()
 
     s = nil
