@@ -1,37 +1,37 @@
 require 'soap/rpc/driver'
-require 'soap/header/simpleHandler'
+require 'soap/header/simplehandler'
 
 server = ARGV.shift || 'http://localhost:7000/'
 
-class AuthHeaderHandler < SOAP::Header::SimpleHandler
+class ClientAuthHeaderHandler < SOAP::Header::SimpleHandler
   MyHeaderName = XSD::QName.new("http://tempuri.org/authHeader", "auth")
 
   def initialize(userid, passwd)
     super(MyHeaderName)
-    @session_id = nil
+    @sessionid = nil
     @userid = userid
     @passwd = passwd
   end
 
   def on_simple_outbound
-    if @session_id
-      { :session_id => @session_id }
+    if @sessionid
+      { "sessionid" => @sessionid }
     else
-      { :userid => @userid, :passwd => @passwd }
+      { "userid" => @userid, "passwd" => @passwd }
     end
   end
 
-  def on_simple_inbound(my_header)
-    @session_id = my_header[:session_id]
+  def on_simple_inbound(my_header, mustunderstand)
+    @sessionid = my_header["sessionid"]
   end
 end
 
-serv = SOAP::RPC::Driver.new(server, 'http://tempuri.org/authHeaderPort')
+ns = 'http://tempuri.org/authHeaderPort'
+serv = SOAP::RPC::Driver.new(server, ns)
 serv.add_method('deposit', 'amt')
 serv.add_method('withdrawal', 'amt')
 
-auth_headeritem = AuthHeaderHandler.new('NaHi', 'passwd')
-serv.headerhandler << auth_headeritem
+serv.headerhandler << ClientAuthHeaderHandler.new('NaHi', 'passwd')
 
 serv.wiredump_dev = STDOUT
 
