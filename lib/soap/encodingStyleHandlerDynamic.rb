@@ -151,51 +151,38 @@ module SOAP
       o
     end
 
+    XSDBaseTypeMap = {
+      XSD::DecimalLiteral => SOAPDecimal,
+      XSD::IntegerLiteral => SOAPInteger,
+      XSD::LongLiteral => SOAPLong,
+      XSD::IntLiteral => SOAPInt,
+      XSD::FloatLiteral => SOAPFloat,
+      XSD::DoubleLiteral => SOAPDouble,
+      XSD::BooleanLiteral => SOAPBoolean,
+      XSD::StringLiteral => SOAPString,
+      XSD::DateTimeLiteral => SOAPDateTime,
+      XSD::Base64BinaryLiteral => SOAPBase64,
+    }
+
+    SOAPBaseTypeMap = {
+      SOAP::Base64Literal => SOAPBase64,
+    }
+
     def decodeTagAsXSD( ns, typeNameString, entity )
       if typeNameString == XSD::AnyTypeLiteral
 	SOAPUnknown.new( self, ns, entity, XSD::Namespace, typeNameString )
-      elsif typeNameString == XSD::DecimalLiteral
-    	SOAPDecimal.decode( ns, entity )
-      elsif typeNameString == XSD::IntegerLiteral
-    	SOAPInteger.decode( ns, entity )
-      elsif typeNameString == XSD::LongLiteral
-    	SOAPLong.decode( ns, entity )
-      elsif typeNameString == XSD::IntLiteral
-    	SOAPInt.decode( ns, entity )
-      elsif typeNameString == XSD::FloatLiteral
-    	SOAPFloat.decode( ns, entity )
-      elsif typeNameString == XSD::BooleanLiteral
-    	SOAPBoolean.decode( ns, entity )
-      elsif typeNameString == XSD::StringLiteral
-    	SOAPString.decode( ns, entity )
-      elsif typeNameString == XSD::DateTimeLiteral
-   	SOAPDateTime.decode( ns, entity )
-      elsif typeNameString == XSD::Base64BinaryLiteral
-    	SOAPBase64.decode( ns, entity )
+      elsif XSDBaseTypeMap.has_key?( typeNameString )
+	XSDBaseTypeMap[ typeNameString ].decode( ns, entity )
       else
 	nil
       end
     end
 
     def decodeTagAsSOAPENC( ns, typeNameString, entity )
-      if typeNameString == XSD::DecimalLiteral
-    	SOAPDecimal.decode( ns, entity )
-      elsif typeNameString == XSD::IntegerLiteral
-    	SOAPInteger.decode( ns, entity )
-      elsif typeNameString == XSD::LongLiteral
-    	SOAPLong.decode( ns, entity )
-      elsif typeNameString == XSD::IntLiteral
-    	SOAPInt.decode( ns, entity )
-      elsif typeNameString == XSD::FloatLiteral
-        SOAPFloat.decode( ns, entity )
-      elsif typeNameString == XSD::BooleanLiteral
-        SOAPBoolean.decode( ns, entity )
-      elsif typeNameString == XSD::StringLiteral
-        SOAPString.decode( ns, entity )
-      elsif typeNameString == XSD::DateTimeLiteral
-        SOAPDateTime.decode( ns, entity )
-      elsif typeNameString == SOAP::Base64Literal
-        SOAPBase64.decode( ns, entity )
+      if XSDBaseTypeMap.has_key?( typeNameString )
+	XSDBaseTypeMap[ typeNameString ].decode( ns, entity )
+      elsif SOAPBaseTypeMap.has_key?( typeNameString )
+	SOAPBaseTypeMap[ typeNameString ].decode( ns, entity )
       else
 	nil
       end
