@@ -12,6 +12,7 @@ module SOAP
 class Property
   def initialize
     @store = Hash.new
+    @hook = Hash.new
   end
 
   # name: a Symbol, String or an Array
@@ -22,28 +23,56 @@ class Property
   # name: a Symbol, String or an Array
   # value: an Object
   def []=(name, value)
-    assign(name_to_a(name), value)
+    hooks = assign(name_to_a(name), value)
+    hooks.each do |hook|
+      hook.call(name, value)
+    end
+    value
   end
 
-private
+  def add_hook(name, &hook)
+    assign_hook(name_to_a(name), &hook)
+  end
+
+protected
 
   def referent(ary)
+    key = to_key(ary[0])
     if ary.size == 1
-      @store[to_key(ary[0])] ||= self.class.new
+      @store[key]
     else
-      name, rest = ary
-      ref = (@store[to_key(name)] ||= self.class.new)
-      ref[rest] ||= self.class.new
+      deref_key(key).referent(ary[1..-1])
     end
   end
 
   def assign(ary, value)
+    key = to_key(ary[0])
     if ary.size == 1
-      @store[to_key(ary[0])] = value
+      @store[key] = value
+      local_hook(key)
     else
-      name = ary.pop
-      referent(ary)[name.intern] = value
+      local_hook(key) + deref_key(key).assign(ary[1..-1], value)
     end
+  end
+
+  def assign_hook(ary, &hook)
+    key = to_key(ary[0])
+    if ary.size == 1
+      (@hook[key] ||= []) << hook
+    else
+      deref_key(key).assign_hook(ary[1..-1], &hook)
+    end
+  end
+
+private
+
+  def deref_key(key)
+    @store[key] ||= self.class.new
+  end
+
+  NO_HOOK = [].freeze
+  def local_hook(key)
+    @hook[key] || NO_HOOK
   end
 
   def name_to_a(name)
