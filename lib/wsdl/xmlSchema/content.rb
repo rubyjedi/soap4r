@@ -52,7 +52,7 @@ class Content < Info
       @contents << o
       o
     when AnyName
-      o = Element.new(XSD::QName.new(nil, 'any'), XSD::AnyTypeName)
+      o = Any.new
       @contents << o
       o
     when ElementName

@@ -533,9 +533,12 @@ class WSDLDriver
 	  o.elename = ele.name
 	elsif ele.local_complextype
 	  o = SOAPElement.new(ele.name)
-	  ele.local_complextype.each_element do |child_name, child_ele|
-	    o.add(_obj2ele(Mapper.find_attribute(obj, child_name.name),
-	      child_ele))
+	  ele.local_complextype.each_element do |child_ele|
+            if child_ele.respond_to?(:name)
+              o.add(_obj2ele(
+                Mapper.find_attribute(obj, child_ele.name.name),
+                child_ele))
+            end
 	  end
 	else
 	  raise RuntimeError.new("Illegal schema?")
@@ -559,9 +562,12 @@ class WSDLDriver
 
       def complex2soap(obj, type)
         o = SOAPElement.new(type.name)
-        type.each_element do |child_name, child_ele|
-          o.add(_obj2ele(Mapper.find_attribute(obj, child_name.name),
-            child_ele))
+        type.each_element do |child_ele|
+          if child_ele.respond_to?(:name)
+            o.add(_obj2ele(
+              Mapper.find_attribute(obj, child_ele.name.name),
+              child_ele))
+          end
         end
 	o
       end

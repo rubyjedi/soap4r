@@ -36,7 +36,7 @@ class All < Info
   def parse_element(element)
     case element
     when AnyName
-      o = Element.new(XSD::QName.new(nil, 'any'), XSD::AnyTypeName)
+      o = Any.new
       @elements << o
       o
     when ElementName
