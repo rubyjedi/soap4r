@@ -147,7 +147,7 @@ public
   attr_accessor :encodingstyle
 
   def initialize(content, mustunderstand = true, encodingstyle = nil)
-    super(nil)
+    super(XSD::QName.new)
     @content = content
     @mustunderstand = mustunderstand
     @encodingstyle = encodingstyle || LiteralNamespace
@@ -156,13 +156,12 @@ public
 
   def encode(generator, ns, attrs = {})
     attrs.each do |key, value|
-      @content.attr[key] = value
+      @content.extraattr[key] = value
     end
-    @content.attr[ns.name(EnvelopeNamespace, AttrMustUnderstand)] =
+    @content.extraattr[ns.name(AttrMustUnderstandName)] =
       (@mustunderstand ? '1' : '0')
     if @encodingstyle
-      @content.attr[ns.name(EnvelopeNamespace, AttrEncodingStyle)] =
-      	@encodingstyle
+      @content.extraattr[ns.name(AttrEncodingStyleName)] = @encodingstyle
     end
     @content.encodingstyle = @encodingstyle if !@content.encodingstyle
     yield(@content, true)
