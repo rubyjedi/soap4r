@@ -19,12 +19,19 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/element'
 require 'soap/XMLSchemaDatatypes'
+require 'soap/parser'
 
-module SOAPProcessor
+require 'nqxml/writer'
+
+
+module SOAP
+
+
+module Processor
   public
 
   ###
-  ## SOAP marshaling
+  ## SOAP marshalling
   #
   def marshal( ns, header, body )
 
@@ -37,26 +44,24 @@ module SOAPProcessor
     env = SOAPEnvelope.new( header, body )
 
     # XML tree construction.
-    XML::SimpleTree::Document.new( env.encode( ns ))
+    doc = NQXML::Document.new
+    doc.setRootNode( env.encode( ns ))
+    marshalledString = ""
+    NQXML::Writer.new( marshalledString ).writeDocument( doc )
+    marshalledString
   end
 
   ###
-  ## SOAP unmarshaling
+  ## SOAP unmarshalling
   #
   def unmarshal( stream, opt = {} )
+    # parser = SOAPNQXMLStreamingParser.new( opt )
+    parser = SOAPNQXMLLightWeightParser.new( opt )
+    require 'soap/encodingStyleHandlerDynamic'
 
-    # Namespace preparing.
-    ns = SOAPNS.new()
+    envelopeNode = parser.parse( stream )
 
-    # XML tree parsing.
-    builder = XML::SimpleTreeBuilder.new()
-    elem = builder.parse( stream ).documentElement
-    elem.normalize
-
-    # Parse SOAP envelope.
-    env = SOAPEnvelope.decode( ns, elem, opt.has_key?( 'allowUnqualifiedElement' ))
-
-    return ns, env.header, env.body
+    return envelopeNode.header, envelopeNode.body
   end
 
   private
@@ -64,4 +69,7 @@ module SOAPProcessor
   SOAPNamespaceTag = 'SOAP-ENV'
   XSDNamespaceTag = 'xsd'
   XSINamespaceTag = 'xsi'
+end
+
+
 end
