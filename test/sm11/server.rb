@@ -18,7 +18,7 @@ class App < SOAP::StandaloneServer
     addServant( Sm11PortType.new )
 
     self.mappingRegistry = Sm11PortType::MappingRegistry
-    setSevThreshold( Devel::Logger::ERROR )
+    self.level = Logger::Severity::ERROR
   end
 end
 

@@ -15,7 +15,7 @@ class InteropApp < SOAP::RPC::StandaloneServer
   def initialize(*arg)
     super(*arg)
     self.mapping_registry = SOAPBuildersInterop::MappingRegistry
-    self.sev_threshold = Devel::Logger::ERROR
+    self.level = Logger::Severity::ERROR
   end
 
   def on_init

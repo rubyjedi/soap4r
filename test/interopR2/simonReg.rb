@@ -3,12 +3,13 @@
 proxy = ARGV.shift || nil
 
 require 'soap/driver'
+require 'logger'
 
 require 'iSimonReg'
 
 server = 'http://www.4s4c.com/services/4s4c.ashx'
 
-class SimonRegApp < Application
+class SimonRegApp < Logger::Application
   include SimonReg
 
 private
@@ -27,7 +28,7 @@ private
   end
 
   def run()
-    @log.sevThreshold = SEV_WARN
+    @log.level = WARN
     wireDump = getWireDumpLogFile
 
     # Services portType

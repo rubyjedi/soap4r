@@ -2,7 +2,7 @@ require 'div'
 require 'singleton'
 require 'RAA'; include RAA
 require 'soap/driver'
-require 'devel/logger'
+require 'logger'
 require 'hotpage'
 require 'mutexm'
 
@@ -31,7 +31,7 @@ class RAADiv < Div::Div
     @proxy = nil
     @raa = RAA::Driver.new( @server, @proxy )
     @raa.setLogDev( '/var/tmp/raa-div.log' )
-    @raa.setLogLevel( Devel::Logger::INFO )
+    @raa.setLogLevel( Logger::Severity::INFO )
     @hotItemPool = HotPage.new( &self.method( :hotOrder ))
 
     @t = Thread.new { poll }

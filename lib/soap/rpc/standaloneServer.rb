@@ -17,7 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-require 'devel/logger'
+require 'logger'
 require 'soap/rpc/soaplet'
 require 'soap/streamHandler'
 
@@ -45,15 +45,15 @@ module SOAP
 module RPC
 
 
-class StandaloneServer < Devel::Application
+class StandaloneServer < Logger::Application
   attr_reader :server
 
   def initialize(app_name, namespace, host = "0.0.0.0", port = 8080)
     super(app_name)
-    @logdev = Devel::Logger.new(STDERR)
-    @logdev.sev_threshold = SEV_INFO
+    @logdev = Logger.new(STDERR)
+    @logdev.level = INFO
     def @logdev.<<(msg)
-      log(SEV_INFO, msg)
+      info(msg)
     end
     @namespace = namespace
     @server = WEBrick::HTTPServer.new(
