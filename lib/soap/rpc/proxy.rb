@@ -90,16 +90,15 @@ public
   end
 
   def call(name, *params)
-    unless @operation.key?(name)
+    unless op_info = @operation[name]
       raise MethodDefinitionError, "Method: #{name} not defined."
     end
-    op = @operation[name]
-    # Convert parameters: params array => SOAPArray => members array
     req_header = create_request_header
-    req_body = op.create_request_body(params, @mapping_registry, @literal_mapping_registry)
+    req_body = op_info.create_request_body(params, @mapping_registry,
+      @literal_mapping_registry)
     opt = create_options({
-      :soapaction => op.soapaction || @soapaction,
-      :default_encodingstyle => op.response_default_encodingstyle})
+      :soapaction => op_info.soapaction || @soapaction,
+      :default_encodingstyle => op_info.response_default_encodingstyle})
     env = invoke(req_header, req_body, opt)
     receive_headers(env.header)
     raise EmptyResponseError.new("Empty response.") unless env
@@ -108,7 +107,8 @@ public
     rescue ::SOAP::FaultError => e
       Mapping.fault2exception(e)
     end
-    op.create_response_obj(env, @mapping_registry, @literal_mapping_registry)
+    op_info.create_response_obj(env, @mapping_registry,
+      @literal_mapping_registry)
   end
 
   def check_fault(body)
