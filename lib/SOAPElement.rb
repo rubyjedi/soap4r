@@ -62,18 +62,18 @@ class SOAPMethod < SOAPCompoundBase
   def encode( ns, forResponse = false )
     if !forResponse
       paramElem = @paramNames.collect { | param |
-	@params[ param ].encode( ns.clone, @namespace, param )
+	@params[ param ].encode( ns.clone, param )
       }
       Element.new( ns.name( @namespace, @name ), nil, paramElem )
     else
       retElem = nil
       if retVal.is_a?( SOAPStruct )
 	children = retVal.collect { | param, data |
-	  data.encode( ns.clone, @namespace, param )
+	  data.encode( ns.clone, param )
 	}
 	retElem = Element.new( 'return', nil, children )
       else
-	retElem = retVal.encode( ns.clone, nil, 'return' )
+	retElem = retVal.encode( ns.clone, 'return' )
       end
       Element.new( ns.name( @namespace, @name ), nil, retElem )
     end
@@ -108,7 +108,7 @@ class SOAPMethod < SOAPCompoundBase
 
   public
 
-  def decode( ns, elem )
+  def self.decode( ns, elem )
     retVal = nil
     outParams = {}
     elem.childNodes.each do | child |
@@ -130,7 +130,6 @@ class SOAPMethod < SOAPCompoundBase
     #m.setParams( outParams )
     m
   end
-  module_function :decode
 end
 
 
@@ -154,10 +153,10 @@ class SOAPFault < SOAPCompoundBase
 
   def encode( ns )
     # Caution: never been executed!!
-    faultElems = [ @faultCode.encode( ns, EnvelopeNamespace, 'faultcode' ),
-      @faultString.encode( ns, EnvelopeNamespace, 'faultstring' ),
-      @faultActor.encode( ns, EnvelopeNamespace, 'faultactor' ) ]
-    faultElems.push( @detail.encode( ns, EnvelopeNamespace, 'detail' )) if @detail
+    faultElems = [ @faultCode.encode( ns, 'faultcode' ),
+      @faultString.encode( ns, 'faultstring' ),
+      @faultActor.encode( ns, 'faultactor' ) ]
+    faultElems.push( @detail.encode( ns, 'detail' )) if @detail
     @options.each do | opt |
       paramElem.push( opt.encode( ns ))
     end
@@ -168,7 +167,7 @@ class SOAPFault < SOAPCompoundBase
 
   public
 
-  def decode( ns, elem )
+  def self.decode( ns, elem )
     faultCode = nil
     faultString = nil
     faultActor = nil
@@ -202,7 +201,6 @@ class SOAPFault < SOAPCompoundBase
 
     SOAPFault.new( faultCode, faultString, faultActor, detail, options )
   end
-  module_function :decode
 end
 
 
@@ -235,7 +233,7 @@ class SOAPBody < SOAPCompoundBase
 
   public
 
-  def decode( ns, elem, method )
+  def self.decode( ns, elem, method )
     data = nil
     isFault = false
     result = []
@@ -261,7 +259,6 @@ class SOAPBody < SOAPCompoundBase
 
     SOAPBody.new( data, isFault )
   end
-  module_function :decode
 end
 
 
@@ -295,7 +292,7 @@ class SOAPHeaderItem < SOAPCompoundBase
 
   public
 
-  def decode( ns, elem )
+  def self.decode( ns, elem )
     mustUnderstand = nil
     encodingStyle = nil
     elem.attributes.each do | attr |
@@ -320,7 +317,6 @@ class SOAPHeaderItem < SOAPCompoundBase
 
     SOAPHeaderItem.new( elemNamespace, elemName, childArray, mustUnderstand, encodingStyle )
   end
-  module_function :decode
 end
 
 
@@ -342,7 +338,7 @@ class SOAPHeader < SOAPArray
 
   public
 
-  def decode( ns, elem )
+  def self.decode( ns, elem )
     s = SOAPHeader.new()
     elem.childNodes.each do | child |
       childNS = ns.clone
@@ -352,7 +348,6 @@ class SOAPHeader < SOAPArray
     end
     s
   end
-  module_function :decode
 end
 
 
@@ -391,7 +386,7 @@ class SOAPEnvelope < SOAPCompoundBase
 
   public
 
-  def decode( ns, doc, method )
+  def self.decode( ns, doc, method )
     if ( doc.childNodes.size != 1 )
       raise FormatDecodeError.new( 'Envelope must be a child.' )
     end
@@ -424,5 +419,4 @@ class SOAPEnvelope < SOAPCompoundBase
 
     SOAPEnvelope.new( header, body )
   end
-  module_function :decode
 end
