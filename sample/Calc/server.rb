@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 
 require 'soap/rpc/standaloneServer'
+require 'calc'
 
 class CalcServer < SOAP::RPC::StandaloneServer
   def initialize(*arg)
     super
 
-    require 'calc'
     servant = CalcService
     add_servant(servant, 'http://tempuri.org/calcService')
   end
