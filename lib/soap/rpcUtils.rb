@@ -174,7 +174,7 @@ module SOAPRPCUtils
       SOAPBoolean.new( obj )
     when String
       SOAPString.new( obj )
-    when Time
+    when Time, Date
       SOAPTimeInstant.new( obj )
     when Fixnum
       SOAPInt.new( obj )
