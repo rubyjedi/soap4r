@@ -66,7 +66,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       end
 
       if data.is_a?( SOAPArray )
-	attrs[ ns.name( EncodingNamespace, 'arrayType' ) ] =
+	attrs[ ns.name( EncodingNamespace, AttrArrayType ) ] =
 	  ns.name( data.typeNamespace, arrayTypeValue( ns, data ) ) 
 	if data.typeName
 	  attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
@@ -217,7 +217,6 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
     o = nil
     if isNil
       o = SOAPNil.decode( ns, name )
-
     elsif arrayType
       typeNamespace, typeNameString = ns.parse( arrayType )
       o = SOAPArray.decode( ns, name, typeNamespace, typeNameString )
@@ -228,45 +227,11 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 	o.sparse = false
       end
       # ToDo: xsi:type should be checked here...
-
     elsif reference
       o = SOAPReference.decode( ns, name, reference )
       @referencePool << o
-
     else
-      typeNamespace = typeNameString = nil
-      if type
-	typeNamespace, typeNameString = ns.parse( type )
-      elsif parent.node.is_a?( SOAPArray )
-	typeNamespace, typeNameString =
-	  parent.node.typeNamespace, parent.node.typeName
-      else
-	# Since it's in dynamic(without any type) encoding process,
-	# assumes entity as its type itself.
-	#   <SOAP-ENC:Array ...> => type Array in SOAP-ENC.
-	#   <Country xmlns="foo"> => type Country in foo.
-	typeNamespace, typeNameString = ns.parse( name )
-      end
-
-      if typeNamespace == XSD::Namespace
-	o = decodeTagAsXSD( ns, typeNameString, name )
-	unless o
-      	  # Not supported...
-	  raise EncodingStyleError.new( "Type xsd:#{ typeNameString } have not supported." )
-	end
-
-      elsif typeNamespace == EncodingNamespace
-	o = decodeTagAsSOAPENC( ns, typeNameString, name )
-	unless o
-	  # Not supported...
-	  raise EncodingStyleError.new( "Type SOAP-ENC:#{ typeNameString } have not supported." )
-	end
-
-      else
-	# Unknown type... Struct or String
-	o = SOAPUnknown.new( self, ns, name, typeNamespace, typeNameString )
-
-      end
+      o = decodeTagByType( ns, name, type, parent.node )
     end
 
     o.parent = parent
@@ -278,7 +243,6 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       @idPool << o if o.id
       decodeParent( parent, o )
     end
-
     o
   end
 
@@ -363,20 +327,63 @@ private
     contentTypeName( data ) << '[' << data.size.join( ',' ) << ']'
   end
 
+  def decodeTagByType( ns, name, type, parentNode )
+    typeNamespace = typeNameString = nil
+    if type
+      typeNamespace, typeNameString = ns.parse( type )
+    elsif parentNode.is_a?( SOAPArray )
+      typeNamespace, typeNameString =
+	parentNode.typeNamespace, parentNode.typeName
+    else
+      # Since it's in dynamic(without any type) encoding process,
+      # assumes entity as its type itself.
+      #   <SOAP-ENC:Array ...> => type Array in SOAP-ENC.
+      #   <Country xmlns="foo"> => type Country in foo.
+      typeNamespace, typeNameString = ns.parse( name )
+    end
+
+    o = nil
+    if typeNamespace == XSD::Namespace
+      o = decodeTagAsXSD( ns, typeNameString, name )
+      unless o
+	# Not supported...
+	raise EncodingStyleError.new( "Type xsd:#{ typeNameString } have not supported." )
+      end
+    elsif typeNamespace == EncodingNamespace
+      o = decodeTagAsSOAPENC( ns, typeNameString, name )
+      unless o
+	# Not supported...
+	raise EncodingStyleError.new( "Type SOAP-ENC:#{ typeNameString } have not supported." )
+      end
+    else
+      # Unknown type... Struct or String
+      o = SOAPUnknown.new( self, ns, name, typeNamespace, typeNameString )
+    end
+    o
+  end
+
   XSDBaseTypeMap = {
+    XSD::StringLiteral => SOAPString,
+    XSD::BooleanLiteral => SOAPBoolean,
     XSD::DecimalLiteral => SOAPDecimal,
+    XSD::FloatLiteral => SOAPFloat,
+    XSD::DoubleLiteral => SOAPDouble,
+    XSD::DurationLiteral => SOAPDuration,
+    XSD::DateTimeLiteral => SOAPDateTime,
+    XSD::TimeLiteral => SOAPTime,
+    XSD::DateLiteral => SOAPDate,
+    XSD::GYearMonthLiteral => SOAPGYearMonth,
+    XSD::GYearLiteral => SOAPGYear,
+    XSD::GMonthDayLiteral => SOAPGMonthDay,
+    XSD::GDayLiteral => SOAPGDay,
+    XSD::GMonthLiteral => SOAPGMonth,
+    XSD::HexBinaryLiteral => SOAPHexBinary,
+    XSD::Base64BinaryLiteral => SOAPBase64,
+    XSD::AnyURILiteral => SOAPAnyURI,
+    XSD::QNameLiteral => SOAPQName,
     XSD::IntegerLiteral => SOAPInteger,
     XSD::LongLiteral => SOAPLong,
     XSD::IntLiteral => SOAPInt,
-    XSD::FloatLiteral => SOAPFloat,
-    XSD::DoubleLiteral => SOAPDouble,
-    XSD::BooleanLiteral => SOAPBoolean,
-    XSD::StringLiteral => SOAPString,
-    XSD::DateTimeLiteral => SOAPDateTime,
-    XSD::DateLiteral => SOAPDate,
-    XSD::TimeLiteral => SOAPTime,
-    XSD::HexBinaryLiteral => SOAPHexBinary,
-    XSD::Base64BinaryLiteral => SOAPBase64,
   }
 
   SOAPBaseTypeMap = {
