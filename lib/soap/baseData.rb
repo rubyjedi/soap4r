@@ -229,16 +229,6 @@ class SOAPNil < XSDNil
   include SOAPBasetype
   extend SOAPModuleUtils
 
-public
-
-  # Override the definition in SOAPBasetype.
-  def initialize()
-    @namespace = EnvelopeNamespace
-    @name = nil
-    @id = nil
-    @parent = nil
-  end
-
 private
 
   # Override the definition in SOAPBasetype.
@@ -258,6 +248,11 @@ class SOAPString < XSDString
 end
 
 class SOAPFloat < XSDFloat
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
+class SOAPDouble < XSDDouble
   include SOAPBasetype
   extend SOAPModuleUtils
 end
