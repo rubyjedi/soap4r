@@ -1,41 +1,53 @@
 # soaplet.rb -- SOAP handler servlet
-# Copyright (C) 2001 NAKAMURA Hiroshi.
+# Copyright (C) 2001, 2002 NAKAMURA Hiroshi.
 
 require 'webrick/httpservlet/abstract'
 require 'webrick/httpstatus'
 require 'soap/rpcRouter'
 
-module SOAP
+module WEBrick
 
 
-class WEBrickSOAPlet < WEBrick::HTTPServlet::AbstractServlet
-  include WEBrick
+class SOAPlet < WEBrick::HTTPServlet::AbstractServlet
+public
 
+  def initialize
+    @routerMap = {}
+    @appScopeRouter = SOAP::RPCRouter.new( self.type.to_s )
+  end
+
+  # Add servant klass whose object has request scope.  A servant object is
+  # instanciated for each request.
+  #
+  # Bare in mind that servant klasses are distinguished by HTTP SOAPAction
+  # header in request.  Client which calls request-scoped servant must have a
+  # SOAPAction header which is a namespace of the servant klass.
+  # I mean, use Driver#addMethodWithSOAPAction instead of Driver#addMethod at
+  # client side.
+  #
+  def addRequestServant( namespace, klass, mappingRegistry = nil )
+    router = RequestRouter.new( namespace, klass, mappingRegistry )
+    addRouter( namespace, router )
+  end
+
+  # Add servant object which has application scope.
+  def addServant( namespace, obj )
+    router = @appScopeRouter
+    SOAPlet.addServantToRouter( router, namespace, obj )
+    addRouter( namespace, router )
+  end
+
+
+  ###
+  ## Servlet interfaces for WEBrick.
+  #
   def get_instance( config, *options )
     @config = config
-    @options = options[0]
-    if @options && @options.has_key?( 'mappingRegistry' )
-      @router.mappingRegistry = @options[ 'mappingRegistry' ]
-    end
     self
   end
 
   def require_path_info?
     false
-  end
-
-  def initialize
-    super( {} )
-    @router = SOAP::RPCRouter.new( self.type.to_s )
-  end
-
-  def addServant( namespace, obj, mappingRegistry = nil )
-   ( obj.methods - Kernel.instance_methods ).each do | methodName |
-      method = obj.method( methodName )
-      paramDef = RPCUtils::SOAPMethod.createParamDef(
-	( 1..method.arity.abs ).collect { |i| "p#{ i }" } )
-      @router.addMethod( namespace, obj, methodName, paramDef )
-    end
   end
 
   def do_GET( req, res )
@@ -44,12 +56,15 @@ class WEBrickSOAPlet < WEBrick::HTTPServlet::AbstractServlet
   end
 
   def do_POST( req, res )
+    namespace = getNSFromSOAPAction( req.meta_vars[ 'HTTP_SOAPACTION' ] )
+    router = lookupRouter( namespace )
+
     isFault = false
 
     begin
-      responseString, isFault = @router.route( req.body )
+      responseString, isFault = router.route( req.body )
     rescue Exception => e
-      responseString = @router.createFaultResponseString( e )
+      responseString = router.createFaultResponseString( e )
       isFault = true
     end
 
@@ -59,6 +74,63 @@ class WEBrickSOAPlet < WEBrick::HTTPServlet::AbstractServlet
 
     if isFault
       res.status = HTTPStatus::RC_INTERNAL_SERVER_ERROR
+    end
+  end
+
+private
+
+  class RequestRouter < SOAP::RPCRouter
+    def initialize( namespace, klass, mappingRegistry = nil )
+      super( namespace )
+      if mappingRegistry
+	self.mappingRegistry = mappingRegistry
+      end
+      @klass = klass
+    end
+
+    def route( soapString )
+      obj = @klass.new
+      namespace = self.actor
+      SOAPlet.addServantToRouter( self, namespace, obj )
+      super
+    end
+  end
+
+  def addRouter( namespace, router )
+    @routerMap[ namespace ] = router
+  end
+
+  def getNSFromSOAPAction( soapAction )
+    if /^"(.*)"$/ =~ soapAction
+      soapAction = $1
+    end
+    if soapAction.empty?
+      return nil
+    end
+    soapAction
+  end
+
+  def lookupRouter( namespace )
+    if namespace
+      @routerMap[ namespace ]
+    else
+      @appScopeRouter
+    end
+  end
+
+  class << self
+  public
+    def addServantToRouter( router, namespace, obj )
+      ( obj.methods - Kernel.instance_methods ).each do | methodName |
+	addServantMethodToRouter( router, namespace, obj, methodName )
+      end
+    end
+
+    def addServantMethodToRouter( router, namespace, obj, methodName )
+      method = obj.method( methodName )
+      paramDef = SOAP::RPCUtils::SOAPMethod.createParamDef(
+	( 1..method.arity.abs ).collect { |i| "p#{ i }" } )
+      router.addMethod( namespace, obj, methodName, paramDef )
     end
   end
 end
