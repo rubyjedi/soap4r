@@ -1,8 +1,12 @@
+require 'soap/soap'
+
+
 InterfaceNS = 'http://soapinterop.org/'
 TypeNS = 'http://soapinterop.org/xsd'
 
 
 module SOAPBuildersInterop
+extend SOAP
 
 
 MethodsBase = [
@@ -27,19 +31,8 @@ MethodsBase = [
     ['in', 'inputDate'], ['retval', 'return']],
   ['echoBase64',
     ['in', 'inputBase64'], ['retval', 'return']],
-]
-
-MethodsGroupB = [
-  ['echoStructAsSimpleTypes',
-    ['in', 'inputStruct'], ['retval', 'outputString'], ['out', 'outputInteger'], ['out', 'outputFloat']],
-  ['echoSimpleTypesAsStruct',
-    ['in', 'inputString'], ['in', 'inputInteger'], ['in', 'inputFloat'], ['retval', 'return']],
-  ['echo2DStringArray',
-    ['in', 'input2DStringArray'], ['retval', 'return']],
-  ['echoNestedStruct',
-    ['in', 'inputStruct'], ['retval', 'return']],
-  ['echoNestedArray',
-    ['in', 'inputStruct'], ['retval', 'return']],
+  ['echoHexBinary',
+    ['in', 'inputHexBinary'], ['retval', 'return']],
   ['echoBoolean',
     ['in', 'inputBoolean'], ['retval', 'return']],
   ['echoDecimal',
@@ -55,6 +48,18 @@ MethodsGroupB = [
     ['in', 'inputXSDTime'], ['retval', 'return']],
 ]
 
+MethodsGroupB = [
+  ['echoStructAsSimpleTypes',
+    ['in', 'inputStruct'], ['retval', 'outputString'], ['out', 'outputInteger'], ['out', 'outputFloat']],
+  ['echoSimpleTypesAsStruct',
+    ['in', 'inputString'], ['in', 'inputInteger'], ['in', 'inputFloat'], ['retval', 'return']],
+  ['echo2DStringArray',
+    ['in', 'input2DStringArray'], ['retval', 'return']],
+  ['echoNestedStruct',
+    ['in', 'inputStruct'], ['retval', 'return']],
+  ['echoNestedArray',
+    ['in', 'inputStruct'], ['retval', 'return']],
+]
 
 
 class SOAPStruct
