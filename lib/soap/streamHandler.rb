@@ -78,13 +78,15 @@ class HTTPPostStreamHandler < StreamHandler
 public
   
   attr_reader :client
+  attr_accessor :wiredump_file_base
   
   NofRetry = 10       	# [times]
 
   def initialize(endpoint_url, options)
     super(endpoint_url)
-    @proxy = @charset = @wiredump_dev = @wiredump_file_base = nil
     @client = Client.new(@proxy, "SOAP4R/#{ Version }")
+    @wiredump_file_base = nil
+    @proxy = @charset = @wiredump_dev = nil
     @options = options
     set_options
     @client.debug_dev = @wiredump_dev
@@ -117,10 +119,6 @@ private
     @options.add_hook("wiredump_dev") do |key, value|
       @wiredump_dev = value
       @client.debug_dev = @wiredump_dev
-    end
-    @wiredump_file_base = @options["wiredump_file_base"]
-    @options.add_hook("wiredump_file_base") do |key, value|
-      @wiredump_file_base = value
     end
     @options.lock
   end
