@@ -94,6 +94,7 @@ class CGIStub < Application
 	200 => 'OK',
 	302 => 'Object moved',
 	400 => 'Bad Request',
+	500 => 'Internal Server Error',
       }
 
       CharsetMap = {
@@ -262,6 +263,7 @@ private
     rescue
       responseString = @router.faultResponseString( $! )
       @response = CGIResponse.new( responseString )
+      @response.header.status = 500
       @response.body.type = 'text/xml'
       str = @response.dump
       log( SEV_DEBUG, "CGI Response:\n#{ str }" )
