@@ -167,8 +167,6 @@ private
   def initParser
     opt = {}
     opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
-    opt[ 'defaultEncodingStyleHandler' ] = EncodingStyleHandler.getHandler(
-      SOAPEncodingStyleHandlerLiteral::LiteralEncodingNamespace )
     Processor.setDefaultParser( opt )
   end
 end

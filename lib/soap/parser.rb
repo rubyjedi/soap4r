@@ -1,5 +1,5 @@
 =begin
-SOAP4R - SOAP Parser library.
+SOAP4R - SOAP XML Instance Parser library.
 Copyright (C) 2001 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -69,9 +69,12 @@ public
     @parseStack = nil
     @lastNode = nil
     @option = opt
-    if @option.has_key?( 'defaultEncodingStyleHandler' )
-      EncodingStyleHandler.defaultHandler = @option[ 'defaultEncodingStyleHandler' ]
-    end
+    EncodingStyleHandler.defaultHandler =
+      if @option.has_key?( 'defaultEncodingStyleHandler' )
+	@option[ 'defaultEncodingStyleHandler' ]
+      else
+	EncodingStyleHandler.getHandler( SOAPEncodingStyleHandlerLiteral::LiteralEncodingNamespace )
+      end
   end
 
   def parse( stringOrReadable )
@@ -95,6 +98,10 @@ public
     epilogue
 
     @lastNode
+  end
+
+  def doParse( stringOrReadable )
+    raise NotImplementError.new( 'Method doParse must be defined in derived class.' )
   end
 
   def startElement( name, attrs )
