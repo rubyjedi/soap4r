@@ -16,13 +16,10 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/rpcUtils'
-
-# Ruby bundled library
-
-# Redist library
 
 
 module SOAP
@@ -153,13 +150,14 @@ private
   # Dispatch to defined method.
   def dispatch( soapMethod )
     namespace = soapMethod.elementName.namespace
-    methodName = soapMethod.elementName.name || soapMethod.name
+    methodName = soapMethod.elementName.name
 
     requestStruct = RPCUtils.soap2obj( soapMethod, @mappingRegistry )
     values = soapMethod.collect { | key, value | requestStruct[ key ] }
     method = lookup( namespace, methodName, values )
     unless method
-      raise RPCRoutingError.new( "Method: #{methodName} not supported." )
+      raise RPCRoutingError.new(
+	"Method: #{ soapMethod.elementName } not supported." )
     end
 
     result = method.call( *values )

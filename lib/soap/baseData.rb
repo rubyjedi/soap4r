@@ -787,4 +787,7 @@ TypeMap = {
 }
 
 
+require 'soap/typeMap'
+
+
 end

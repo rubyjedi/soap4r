@@ -16,12 +16,10 @@ this program; if not, write to the Free Software Foundation, Inc., 675 Mass
 Ave, Cambridge, MA 02139, USA.
 =end
 
+
 require 'soap/rpcRouter'
-
-# Ruby bundled library
-
-# Redist library
 require 'devel/logger'
+
 
 module SOAP
 
