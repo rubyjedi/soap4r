@@ -28,6 +28,8 @@ module SOAP
   AttrEncodingStyle = 'encodingStyle'
   AttrActor = 'actor'
 
+  Base64Literal = 'base64'
+
   class Error < StandardError; end
 
   class MethodDefinitionError < Error; end
