@@ -65,7 +65,7 @@ protected
     key, rest = location_pair(ary)
     if rest.empty?
       check_lock(key)
-      @store[key]
+      local_referent(key)
     else
       deref_key(key).referent(rest)
     end
@@ -75,7 +75,7 @@ protected
     key, rest = location_pair(ary)
     if rest.empty?
       check_lock(key)
-      @store[key] = value
+      local_assign(key, value)
       local_hook(key)
     else
       local_hook(key) + deref_key(key).assign(rest, value)
@@ -97,7 +97,7 @@ private
 
   def each_key
     @store.each do |key, value|
-      if value.is_a?(::SOAP::Property)
+      if propkey?(value)
 	yield(value)
       end
     end
@@ -106,7 +106,7 @@ private
   def deref_key(key)
     check_lock(key)
     ref = @store[key] ||= self.class.new
-    unless ref.is_a?(::SOAP::Property)
+    unless propkey?(ref)
       raise ArgumentError.new("key `#{key}' already defined as a value")
     end
     ref
@@ -118,9 +118,27 @@ private
     end
   end
 
+  def local_referent(key)
+    if @locked and propkey?(@store[key])
+      raise TypeError.new("cannot split any key from locked property")
+    end
+    @store[key]
+  end
+
+  def local_assign(key, value)
+    if @locked and propkey?(value)
+      raise TypeError.new("cannot add any key to locked property")
+    end
+    @store[key] = value
+  end
+
   NO_HOOK = [].freeze
   def local_hook(key)
     @hook[key] || NO_HOOK
+  end
+
+  def propkey?(value)
+    value.is_a?(::SOAP::Property)
   end
 
   def name_to_a(name)
