@@ -1092,6 +1092,3 @@ end
 
 
 end
-
-
-include XSD	# Include XSD's constants to toplevel.

@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'xsd/namedelements'
 
 
 module WSDL
@@ -34,7 +35,7 @@ class PortType < Info
   def initialize
     super
     @name = nil
-    @operations = NamedElements.new
+    @operations = XSD::NamedElements.new
   end
 
   def find_binding

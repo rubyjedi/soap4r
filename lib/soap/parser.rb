@@ -118,7 +118,7 @@ public
       parent = lastframe.node
       parent_encodingstyle = lastframe.encodingstyle
     else
-      ns = NS.new
+      ns = XSD::NS.new
       parent = ParseFrame::NodeContainer.new(nil)
       parent_encodingstyle = nil
     end

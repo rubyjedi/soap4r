@@ -47,10 +47,10 @@ class RubytypeFactory < Factory
       unless @allow_original_mapping
         return nil
       end
-      unless Charset.is_ces(obj, $KCODE)
+      unless XSD::Charset.is_ces(obj, $KCODE)
         return nil
       end
-      encoded = Charset.encoding_conv(obj, $KCODE, Charset.encoding)
+      encoded = XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding)
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, TYPE_STRING))
       mark_marshalled_obj(obj, param)
       param.add('string', SOAPString.new(encoded))

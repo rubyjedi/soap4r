@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
+require 'xsd/namedelements'
 
 
 module WSDL
@@ -35,7 +36,7 @@ class ComplexContent < Info
     @base = nil
     @derivetype = nil
     @content = nil
-    @attributes = NamedElements.new
+    @attributes = XSD::NamedElements.new
   end
 
   def parse_element(element)

@@ -1,5 +1,5 @@
 =begin
-WSDL4R - WSDL named element collection for WSDL.
+XSD4R - WSDL named element collection.
 Copyright (C) 2002, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -17,7 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
-module WSDL
+module XSD
 
 
 class NamedElements

@@ -85,7 +85,7 @@ public
       ns = lastframe.ns.clone_ns
       parent = lastframe.node
     else
-      ns = NS.new
+      ns = XSD::NS.new
       parent = nil
     end
     attrs = XSD::XMLParser.filter_ns(ns, attrs)

@@ -18,7 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'wsdl/info'
-require 'wsdl/namedElements'
+require 'xsd/namedelements'
 
 
 module WSDL
@@ -37,9 +37,9 @@ class Schema < Info
   def initialize
     super
     @targetnamespace = nil
-    @complextypes = NamedElements.new
-    @elements = NamedElements.new
-    @attributes = NamedElements.new
+    @complextypes = XSD::NamedElements.new
+    @elements = XSD::NamedElements.new
+    @attributes = XSD::NamedElements.new
     @imports = []
     @elementformdefault = nil
   end
@@ -80,13 +80,13 @@ class Schema < Info
   end
 
   def collect_elements
-    result = NamedElements.new
+    result = XSD::NamedElements.new
     result.concat(@elements)
     result
   end
 
   def collect_complextypes
-    result = NamedElements.new
+    result = XSD::NamedElements.new
     result.concat(@complextypes)
     result
   end

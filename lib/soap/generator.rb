@@ -44,7 +44,7 @@ public
   def initialize(opt = {})
     @reftarget = nil
     @handlers = {}
-    @charset = opt[:charset] || Charset.encoding_label
+    @charset = opt[:charset] || XSD::Charset.encoding_label
     @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
     @generate_explicit_type =
       opt.key?(:generate_explicit_type) ? opt[:generate_explicit_type] : true
@@ -59,7 +59,7 @@ public
 
     io = '' if io.nil?
 
-    ns = NS.new
+    ns = XSD::NS.new
     io << xmldecl
     encode_data(io, ns, true, obj, nil, 0)
 
