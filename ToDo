@@ -1,0 +1,27 @@
+= ToDo
+
+* Add XSD tests to the interop test client.
+* Rewrite the interop test client with runit?
+* Support all derived built-in types in XML Schema Part2 Sec. 3.2.
+* Design and implement SOAPHeader handler API.
+  * Support actor and mustUnderstand.
+  * Implement message router: lib/soap/msgRouter.rb.
+    * Messaging sample.
+* Support untyped response.
+  does lib/soap/encodingStyleHandlerASPDotNet.rb is enough?
+* Follow SOAP/1.2.  I heard it is going to be Last Call soon without Candidate
+  Recommendation phase...
+* Support derived types in XML Schema Part2
+* WSDL4R.
+  * encoding/decoding based on type information.
+* Create unit tests.
+
+
+= Done
+
+* Support all primitive built-in types in XML Schema Part2 Sec. 3.2.
+* Performance check.
+* Remove dependency to delegate.rb of http-access2.  delegator.rb is rather
+  slow.
+* Create unit tests for XMLSchemaDatatypes.rb.
+* Create unit tests for baseData.rb.
