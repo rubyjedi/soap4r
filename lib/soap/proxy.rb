@@ -102,7 +102,7 @@ class SOAPProxy
   def call( headers, methodName, *values )
     req = createRequest( methodName, *values )
 
-    data = invoke( headers, req.method, req.method.soapAction )
+    data = invoke( headers, req.method, req.method.soapAction || @soapAction )
 
     receiveString = data.receiveString
     receiveString.gsub!( "\r\n", "\n" )
