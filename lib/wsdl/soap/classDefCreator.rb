@@ -78,6 +78,8 @@ private
         dump_arraydef(type)
       when :TYPE_SIMPLE
         dump_simpleclassdef(type)
+      when :TYPE_MAP
+        # mapped as a general Hash
       else
         raise RuntimeError.new(
           "unknown kind of complexContent: #{type.compoundtype}")
