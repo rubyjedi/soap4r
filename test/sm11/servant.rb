@@ -213,7 +213,7 @@ class Sm11PortType
   #
   def op15
     STDOUT.puts("op15\n")
-    _ret = -200000
+    _ret = SOAPInt.new( -200000 )
     return(_ret)
   end
   
@@ -231,7 +231,7 @@ class Sm11PortType
   #
   def op16
     STDOUT.puts("op16\n")
-    _ret = -20000000000
+    _ret = SOAPLong.new( -20000000000 )
     return(_ret)
   end
   
@@ -350,7 +350,7 @@ class Sm11PortType
     if (!(arg0 == -100000)); STDOUT.puts("arg0 value error in op25\n"); end
     if (!(arg1 == -10000000000)); STDOUT.puts("arg1 value error in op25\n"); end
     if (!(arg2 == 0.123)); STDOUT.puts("arg2 value error in op25\n"); end
-    _ret = -200000
+    _ret = SOAPInt.new( -200000 )
     return(_ret)
   end
   
@@ -373,7 +373,7 @@ class Sm11PortType
     if (!(arg0 == -10000000000)); STDOUT.puts("arg0 value error in op26\n"); end
     if (!(arg1 == 0.123)); STDOUT.puts("arg1 value error in op26\n"); end
     if (!(arg2 == 0.12e3)); STDOUT.puts("arg2 value error in op26\n"); end
-    _ret = -20000000000
+    _ret = SOAPLong.new( -20000000000 )
     return(_ret)
   end
   
@@ -857,95 +857,6 @@ class Sm11PortType
     [ "excop3", "excop3", [  ], "http://dopg.gr.jp/sm11", "http://dopg.gr.jp/sm11" ],
     [ "excop4", "excop4", [  ], "http://dopg.gr.jp/sm11", "http://dopg.gr.jp/sm11" ]
   ]
-=begin
-  require 'soap/rpcUtils'
-  MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
-  
-  MappingRegistry.set(
-    C_struct,
-    ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "http://dopg.gr.jp/sm11.xsd", "C_struct" ]
-  )
-  MappingRegistry.set(
-    ArrayOfboolean,
-    ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "http://www.w3.org/2001/XMLSchema", "boolean" ]
-  )
-  MappingRegistry.set(
-    ArrayOfshort,
-    ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "http://www.w3.org/2001/XMLSchema", "short" ]
-  )
-  MappingRegistry.set(
-    ArrayOfint,
-    ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "http://www.w3.org/2001/XMLSchema", "int" ]
-  )
-  MappingRegistry.set(
-    ArrayOflong,
-    ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "http://www.w3.org/2001/XMLSchema", "long" ]
-  )
-  MappingRegistry.set(
-    ArrayOffloat,
-    ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "http://www.w3.org/2001/XMLSchema", "float" ]
-  )
-  MappingRegistry.set(
-    ArrayOfdouble,
-    ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "http://www.w3.org/2001/XMLSchema", "double" ]
-  )
-  MappingRegistry.set(
-    ArrayOfstring,
-    ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "http://www.w3.org/2001/XMLSchema", "string" ]
-  )
-  MappingRegistry.set(
-    F_struct,
-    ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "http://dopg.gr.jp/sm11.xsd", "F_struct" ]
-  )
-  MappingRegistry.set(
-    ArrayOfC_struct,
-    ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
-    [ "http://dopg.gr.jp/sm11.xsd", "C_struct" ]
-  )
-  MappingRegistry.set(
-    A_except,
-    ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "http://dopg.gr.jp/sm11.xsd", "A_except" ]
-  )
-  MappingRegistry.set(
-    C_except,
-    ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "http://dopg.gr.jp/sm11.xsd", "C_except" ]
-  )
-  MappingRegistry.set(
-    F_except1,
-    ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "http://dopg.gr.jp/sm11.xsd", "F_except1" ]
-  )
-  MappingRegistry.set(
-    F_except2,
-    ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
-    [ "http://dopg.gr.jp/sm11.xsd", "F_except2" ]
-  )
-=end
 
 private
 
@@ -964,8 +875,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = true
     _v1.e_short = SOAPShort.new(-200)
-    _v1.e_int = -200000
-    _v1.e_long = -20000000000
+    _v1.e_int = SOAPInt.new(-200000)
+    _v1.e_long = SOAPLong.new(-20000000000)
     _v1.e_float = SOAPFloat.new(1.234)
     _v1.e_double = 1.23e4
     _v1.e_String = "def"
@@ -1009,8 +920,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = true
     _v1.e_short = SOAPShort.new(-200)
-    _v1.e_int = -200000
-    _v1.e_long = -20000000000
+    _v1.e_int = SOAPInt.new(-200000)
+    _v1.e_long = SOAPLong.new(-20000000000)
     _v1.e_float = SOAPFloat.new(1.234)
     _v1.e_double = 1.23e4
     _v1.e_String = "def"
@@ -1043,8 +954,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = true
     _v1.e_short = SOAPShort.new(-200)
-    _v1.e_int = -200000
-    _v1.e_long = -20000000000
+    _v1.e_int = SOAPInt.new(-200000)
+    _v1.e_long = SOAPLong.new(-20000000000)
     _v1.e_float = SOAPFloat.new(1.234)
     _v1.e_double = 1.23e4
     _v1.e_String = "def"
@@ -1077,8 +988,8 @@ private
     _v1 = A_except.new()
     _v1.v1 = true
     _v1.v4 = SOAPShort.new(-200)
-    _v1.v5 = -200000
-    _v1.v6 = -20000000000
+    _v1.v5 = SOAPInt.new(-200000)
+    _v1.v6 = SOAPLong.new(-20000000000)
     _v1.v7 = SOAPFloat.new(1.234)
     _v1.v8 = 1.23e4
     _v1.v9 = "def"
@@ -1088,8 +999,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = true
     _v1.e_short = SOAPShort.new(-200)
-    _v1.e_int = -200000
-    _v1.e_long = -20000000000
+    _v1.e_int = SOAPInt.new(-200000)
+    _v1.e_long = SOAPLong.new(-20000000000)
     _v1.e_float = SOAPFloat.new(1.234)
     _v1.e_double = 1.23e4
     _v1.e_String = "def"
@@ -1111,8 +1022,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = true
     _v1.e_short = SOAPShort.new(-200)
-    _v1.e_int = -200000
-    _v1.e_long = -20000000000
+    _v1.e_int = SOAPInt.new(-200000)
+    _v1.e_long = SOAPLong.new(-20000000000)
     _v1.e_float = SOAPFloat.new(1.234)
     _v1.e_double = 1.23e4
     _v1.e_String = "def"
@@ -1139,8 +1050,8 @@ private
     _v1 = C_struct.new()
     _v1.e_boolean = true
     _v1.e_short = SOAPShort.new(-200)
-    _v1.e_int = -200000
-    _v1.e_long = -20000000000
+    _v1.e_int = SOAPInt.new(-200000)
+    _v1.e_long = SOAPLong.new(-20000000000)
     _v1.e_float = SOAPFloat.new(1.234)
     _v1.e_double = 1.23e4
     _v1.e_String = "def"
