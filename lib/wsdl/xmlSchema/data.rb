@@ -21,6 +21,7 @@ require 'wsdl/xmlSchema/schema'
 require 'wsdl/xmlSchema/import'
 require 'wsdl/xmlSchema/complexType'
 require 'wsdl/xmlSchema/complexContent'
+require 'wsdl/xmlSchema/any'
 require 'wsdl/xmlSchema/element'
 require 'wsdl/xmlSchema/attribute'
 
@@ -30,6 +31,7 @@ module WSDL
 
 
 AllName = XSD::QName.new(XSD::Namespace, 'all')
+AnyName = XSD::QName.new(XSD::Namespace, 'any')
 ArrayTypeAttrName = XSD::QName.new(Namespace, 'arrayType')
 AttributeName = XSD::QName.new(XSD::Namespace, 'attribute')
 ChoiceName = XSD::QName.new(XSD::Namespace, 'choice')

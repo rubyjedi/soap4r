@@ -62,6 +62,10 @@ class Content < Info
       o.type = element.name
       @contents << o
       o
+    when AnyName
+      o = Any.new
+      @contents << o
+      o
     when ElementName
       o = Element.new
       @contents << o
