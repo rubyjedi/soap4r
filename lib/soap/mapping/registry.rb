@@ -44,14 +44,15 @@ class SOAPException; include Marshallable
     if @cause.is_a?(::Exception)
       @cause.extend(::SOAP::Mapping::MappedException)
       return @cause
+    elsif @cause.respond_to?(:message) and @cause.respond_to?(:backtrace)
+      e = RuntimeError.new(@cause.message)
+      e.set_backtrace(@cause.backtrace)
+      return e
     end
     klass = Mapping.class_from_name(
       Mapping.elename2name(@excn_type_name.to_s))
-    if klass.nil?
-      raise RuntimeError.new(@cause.message)
-    end
-    unless klass <= ::Exception
-      raise NameError.new
+    if klass.nil? or not klass <= ::Exception
+      return RuntimeError.new(@cause.inspect)
     end
     obj = klass.new(@cause.message)
     obj.extend(::SOAP::Mapping::MappedException)
