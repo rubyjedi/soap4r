@@ -73,7 +73,16 @@ class SOAPBody < SOAPStruct
 end
 
 
+module RPCUtils
+  RubyTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/1.6'
+  RubyCustomTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/custom'
+
+  ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
+end
+
+
 module Marshallable
+  @@typeNamespace = RPCUtils::RubyCustomTypeNamespace
   alias __instance_variables instance_variables
   def instance_variables
     if block_given?
@@ -87,13 +96,10 @@ module Marshallable
 end
 
 
+module RPCServerException; end
+
+
 module RPCUtils
-  RubyTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/1.6'
-  RubyCustomTypeNamespace = 'http://www.ruby-lang.org/xmlns/ruby/type/custom'
-
-  ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
-
-
   ###
   ## RPC specific elements
   #
@@ -201,6 +207,15 @@ module RPCUtils
       end
     end
   
+    def SOAPMethod.createParamDef( paramNames )
+      paramDef = []
+      paramNames.each do | paramName |
+	paramDef.push( [ 'in', paramName ] )
+      end
+      paramDef.push( [ 'retval', 'return' ] )
+      paramDef
+    end
+
   private
 
     def datatypeAttr( ns )
@@ -311,7 +326,9 @@ module RPCUtils
 	  klass = klass.const_get( klassStr )
 	end
 	raise NameError unless klass.ancestors.include?( Exception )
- 	klass.new( @message )
+ 	obj = klass.new( @message )
+	obj.extend( ::SOAP::RPCServerException )
+	obj
       rescue NameError
 	RuntimeError.new( @message )
       end
@@ -348,7 +365,7 @@ module RPCUtils
     def getTypeName( obj )
       ret = nil
       begin
-	ret = obj.instance_eval( "@typeName" ) || obj.instance_eval( "@@typeName" )
+	ret = obj.instance_eval( "@@typeName" )
       rescue NameError
       end
       ret
@@ -357,7 +374,7 @@ module RPCUtils
     def getNamespace( obj )
       ret = nil
       begin
-	ret = obj.instance_eval( "@typeNamespace" ) || obj.instance_eval( "@@typeNamespace" )
+	ret = obj.instance_eval( "@@typeNamespace" )
       rescue NameError
       end
       ret
@@ -495,7 +512,7 @@ module RPCUtils
        	obj = node.soap2array { | elem |
   	  RPCUtils.soap2obj( elem, map )
    	}
-    	obj.instance_eval( "@typeName = '#{ node.typeName }'; @typeNamespace = '#{ node.typeNamespace }'" )
+    	obj.instance_eval( "@@typeName = '#{ node.typeName }'; @@typeNamespace = '#{ node.typeNamespace }'" )
      	obj
       elsif node.is_a?( SOAPStruct )
 	if node.typeEqual( XSD::Namespace, XSD::AnyTypeLiteral )
@@ -618,6 +635,7 @@ module RPCUtils
 	  param.add( name, RPCUtils.obj2soap( data, map ))
 	end
       else
+	# Should not be marshalled?
         obj.instance_variables.each do |var|
 	  name = var.dup.sub!( /^@/, '' )
 	  param.add( name, RPCUtils.obj2soap( obj.instance_eval( var ), map ))
@@ -658,7 +676,7 @@ module RPCUtils
       node.soap2array.each do | elem |
 	obj << RPCUtils.soap2obj( elem, map )
       end
-      obj.instance_eval( "@typeName = '#{ typeName }'; @typeNamespace = '#{ typeNamespace }'" )
+      obj.instance_eval( "@@typeName = '#{ typeName }'; @@typeNamespace = '#{ typeNamespace }'" )
       obj
     end
   end
@@ -870,6 +888,8 @@ module RPCUtils
     end
   end
 end
+
+
 
 
 end
