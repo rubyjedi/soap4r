@@ -110,6 +110,7 @@ private
       log( SEV_DEBUG, "XML Response: #{responseString}" )
 
       @response = HTTP::Message.newResponse( responseString )
+      @response.header.set( 'Cache-Control', 'private' )
       @response.header.bodyType = 'text/xml'
       unless isFault
 	@response.status = 200
@@ -125,6 +126,7 @@ private
     rescue Exception
       responseString = createFaultResponseString( $! )
       @response = HTTP::Message.newResponse( responseString )
+      @response.header.set( 'Cache-Control', 'private' )
       @response.header.bodyType = 'text/xml'
       @response.status = 500
       @response.body.type = 'text/xml'
