@@ -12,6 +12,10 @@ wireDumpDev = nil
 
 drv = SOAP::Driver.new( logger, $0, ExchangeServiceNamespace, server )
 drv.setWireDumpDev( wireDumpDev )
-drv.addMethod( "getRate", "country1", "country2" )
+drv.addMethodWithSOAPAction( "getRate", ExchangeServiceNamespace, "country1", "country2" )
+drv.addMethodWithSOAPAction( "called", ExchangeServiceNamespace )
+drv.addMethodWithSOAPAction( "startTime", ExchangeServiceNamespace )
 
 p drv.getRate( "USA", "Japan" )
+p drv.called
+p drv.startTime.to_s

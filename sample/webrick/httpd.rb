@@ -16,13 +16,16 @@ wwwsvr = WEBrick::HTTPServer.new(
 )
 
 require 'soaplet'
-soapsrv = SOAP::WEBrickSOAPlet.new
+soapsrv = WEBrick::SOAPlet.new
+
 require 'exchange'
+#soapsrv.addRequestServant( ExchangeServiceNamespace, Exchange )
 soapsrv.addServant( ExchangeServiceNamespace, Exchange.new )
+
 require 'sampleStruct'
 soapsrv.addServant( SampleStructServiceNamespace, SampleStructService.new )
-wwwsvr.mount( '/soapsrv', soapsrv )
 
+wwwsvr.mount( '/soapsrv', soapsrv )
 wwwsvr.start
 
 exit( 0 )
