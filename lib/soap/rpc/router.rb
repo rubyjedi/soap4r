@@ -235,10 +235,11 @@ private
     end
 
     def call(request, mapping_registry, literal_mapping_registry)
-      param = Mapping.soap2obj(request, mapping_registry)
       if @request_style == :rpc
+        param = Mapping.soap2obj(request, mapping_registry)
         result = rpc_call(request, param)
       else
+        param = Mapping.soap2obj(request, literal_mapping_registry)
         result = document_call(request, param)
       end
       if @response_style == :rpc
