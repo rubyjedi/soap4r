@@ -635,7 +635,7 @@ public
 
   def initialize(type = nil, rank = 1, arytype = nil)
     super()
-    @type = type || XSD::QName.new
+    @type = type || ValueArrayName
     @rank = rank
     @data = Array.new
     @sparse = false
