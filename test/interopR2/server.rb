@@ -122,6 +122,10 @@ class InteropApp < SOAP::StandaloneServer
     SOAP::SOAPDecimal.new( inputDecimal.to_s )
   end
 
+  def echoMap( inputMap )
+    inputMap.dup
+  end
+
   def echoXSDDateTime( inputXSDDateTime )
     inputXSDDateTime.dup
   end
