@@ -249,7 +249,7 @@ def doTestBase( drv )
   dumpTitle( dumpDev, 'echoDate(With TZ)' )
   begin
     arg = SOAP::SOAPDateTime.new( '2001-06-16T18:13:40Z-07:00' )
-    argNormalized = Date.new3( 2001, 6, 16, 11, 13, 40 )
+    argNormalized = Date.new3( 2001, 6, 17, 1, 13, 40 )
     var = drv.echoDate( arg )
     dumpResult( dumpDev, argNormalized.to_s, var.to_s )
   rescue
