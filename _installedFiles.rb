@@ -69,7 +69,7 @@ private
   end
 
   def pack
-    newObj = type.new( false )
+    newObj = self.class.new( false )
     reverse_each do | package |
       newObj << package unless newObj.include?( package )
     end
@@ -82,7 +82,7 @@ private
   end
 
   def delete( target )
-    newObj = type.new( false )
+    newObj = self.class.new( false )
     each do | package |
       newObj << package unless package == target
     end
