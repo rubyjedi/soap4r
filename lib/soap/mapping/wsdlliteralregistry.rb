@@ -15,9 +15,11 @@ module SOAP
 module Mapping
 
 
-class WSDLLiteralRegistry
+class WSDLLiteralRegistry < Factory
   attr_reader :definedelements
   attr_reader :definedtypes
+  attr_accessor :excn_handler_obj2soap
+  attr_accessor :excn_handler_soap2obj
 
   def initialize(definedelements = nil, definedtypes = nil)
     @definedelements = definedelements
@@ -27,29 +29,44 @@ class WSDLLiteralRegistry
     )
   end
 
-  #def obj2ele(obj, name)
-  def obj2soap(klass, obj, qname)
+  def obj2soap(obj, qname)
+    ret = nil
     if !@definedelements.nil? && ele = @definedelements[qname]
-      _obj2soap(obj, ele)
+      ret = _obj2soap(obj, ele)
     elsif !@definedtypes.nil? && type = @definedtypes[qname]
-      obj2type(obj, type)
+      ret = obj2type(obj, type)
     else
-      unknownobj2soap(obj, qname)
+      ret = unknownobj2soap(obj, qname)
     end
+    return ret if ret
+    if @excn_handler_obj2soap
+      ret = @excn_handler_obj2soap.call(obj) { |yield_obj|
+        Mapping._obj2soap(yield_obj, self)
+      }
+      return ret if ret
+    end
+    raise MappingError.new("Cannot map #{ obj.class.name } to SOAP/OM.")
   end
 
-  def ele2obj(ele, *arg)
-    raise RuntimeError.new("#{ self } is for obj2soap only.")
-  end
-
-  def soap2obj(klass, node)
-    # assert(klass == ::SOAP::SOAPElement)
-    obj = _soap2obj(klass, node)
-    if @allow_original_mapping
-      addextend2obj(obj, node.extraattr[RubyExtendName])
-      addiv2obj(obj, node.extraattr[RubyIVarName])
+  def soap2obj(node)
+    typestr = Mapping.elename2name(node.type.name)
+    klass = Mapping.class_from_name(typestr)
+    unless klass
+      return @rubytype_factory.soap2obj(nil, node, nil, self)
     end
-    obj
+    begin
+      return unknownsoap2obj(node, klass)
+    rescue MappingError
+    end
+    if @excn_handler_soap2obj
+      begin
+        return @excn_handler_soap2obj.call(node) { |yield_node|
+	    Mapping._soap2obj(yield_node, self)
+	  }
+      rescue Exception
+      end
+    end
+    raise MappingError.new("Cannot map #{ node.type.name } to Ruby object.")
   end
 
 private
@@ -108,8 +125,8 @@ private
   def unknownobj2soap(obj, name)
     if obj.class.class_variables.include?("@@schema_element")
       ele = SOAPElement.new(name)
-      add_elements(obj, ele)
-      add_attributes(obj, ele)
+      add_elements2soap(obj, ele)
+      add_attributes2soap(obj, ele)
       ele
     else        # expected to be a basetype.
       o = Mapping.obj2soap(obj)
@@ -118,31 +135,27 @@ private
     end
   end
 
-  def add_elements(obj, ele)
+  def add_elements2soap(obj, ele)
     elements = obj.class.class_eval("@@schema_element")
-    elements.each do |elename|
+    elements.each do |elename, type|
       child = Mapping.find_attribute(obj, elename)
       name = ::XSD::QName.new(nil, elename)
       if child.is_a?(::Array)
         child.each do |item|
-          ele.add(obj2soap(nil, item, name))
+          ele.add(obj2soap(item, name))
         end
       else
-        ele.add(obj2soap(nil, child, name))
+        ele.add(obj2soap(child, name))
       end
     end
   end
   
-  def add_attributes(obj, ele)
+  def add_attributes2soap(obj, ele)
     attributes = obj.class.class_eval("@@schema_attribute")
     attributes.each do |attrname|
       attr = Mapping.find_attribute(obj, "attr_" + attrname)
       ele.extraattr[attrname] = attr
     end
-  end
-
-  def _ele2obj(ele)
-    raise NotImplementedError.new
   end
 
   def base2soap(obj, type)
@@ -155,6 +168,49 @@ private
       soap_obj = type.new(obj)
     end
     soap_obj
+  end
+
+  def unknownsoap2obj(node, obj_class)
+    obj = create_empty_object(obj_class)
+    mark_unmarshalled_obj(node, obj)
+    if obj_class.class_variables.include?("@@schema_element")
+      add_elements2obj(node, obj)
+      add_attributes2obj(node, obj)
+    else
+      vars = {}
+      node.each do |name, value|
+        vars[Mapping.elename2name(name)] = Mapping._soap2obj(value, self)
+      end
+      Mapping.set_instance_vars(obj, vars)
+    end
+    obj
+  end
+
+  def add_elements2obj(node, obj)
+    vars = {}
+    elements = obj.class.class_eval("@@schema_element")
+    elements.each do |elename, type|
+      if node[elename]
+        if type
+          child = unknownsoap2obj(node[elename], Mapping.class_from_name(type))
+        else
+          child = @rubytype_factory.soap2obj(nil, node[elename], nil, self)
+        end
+        vars[elename] = child
+      end
+    end
+    Mapping.set_instance_vars(obj, vars)
+  end
+
+  def add_attributes2obj(node, obj)
+    Mapping.set_instance_vars(obj, {'__soap_attribute' => {}})
+    vars = {}
+    attributes = obj.class.class_eval("@@schema_attribute")
+    attributes.each do |attrname|
+      attr = node.extraattr[::XSD::QName.new(nil, attrname)]
+      vars['attr_' + attrname] = attr if attr
+    end
+    Mapping.set_instance_vars(obj, vars)
   end
 end
 
