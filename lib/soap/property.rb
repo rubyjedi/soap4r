@@ -41,7 +41,7 @@ protected
   def referent(ary)
     name, *rest = *ary
     key = to_key(name)
-    if ary.empty?
+    if rest.empty?
       @store[key]
     else
       deref_key(key).referent(rest)
@@ -62,7 +62,7 @@ protected
   def assign_hook(ary, &hook)
     name, *rest = *ary
     key = to_key(name)
-    if ary.empty?
+    if rest.empty?
       (@hook[key] ||= []) << hook
     else
       deref_key(key).assign_hook(rest, &hook)
