@@ -65,8 +65,8 @@ private
     @#{ varName }
   end
 
-  def #{ name }=( new#{ name } )
-    @#{ varName } = new#{ name }
+  def #{ name }=(new_#{ name })
+    @#{ varName } = new_#{ name }
   end
 
 __EOD__
@@ -98,7 +98,7 @@ class #{ dumpClassName( className ) }
   @@typeNamespace = "#{ className.namespace }"
 
 #{ attr_lines }
-  def initialize( #{ var_lines } )
+  def initialize(#{ var_lines })
 #{ init_lines }
   end
 end
@@ -108,7 +108,10 @@ __EOD__
   def dumpArrayDef( arrayName )
     return <<__EOD__
 # #{ arrayName.namespace }
-class #{ arrayName.name } < Array; end
+class #{ arrayName.name } < Array
+  @@typeName = "#{ arrayName.name }"
+  @@typeNamespace = "#{ arrayName.namespace }"
+end
 __EOD__
   end
 
