@@ -50,23 +50,7 @@ class Port < Info
   def createInputOperationMap
     result = {}
     getBinding.operations.each do | operationBinding |
-      operation = operationBinding.getOperation
-      soapBody = operationBinding.input.soapBody
-
-      name = operation.inputName
-      name.namespace = soapBody.namespace if soapBody.namespace
-      parts = operation.getInputParts     # sorted
-      soapAction = operationBinding.soapOperation.soapAction
-
-      if soapBody.use != "encoded"
-	raise NotImplementedError.new(
-	  "Use '#{ soapBody.use }' not supported." )
-      end
-      if soapBody.encodingStyle != ::SOAP::EncodingNamespace
-	raise NotImplementedError.new(
-	  "EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
-      end
-
+      name, parts, soapAction = operationBinding.inputOperationInfo
       result[ name ] = [ name, parts, soapAction ]
     end
     result
@@ -75,22 +59,7 @@ class Port < Info
   def createOutputOperationMap
     result = {}
     getBinding.operations.each do | operationBinding |
-      operation = operationBinding.getOperation
-      soapBody = operationBinding.output.soapBody
-
-      name = operation.outputName
-      name.namespace = soapBody.namespace if soapBody.namespace
-      parts = operation.getOutputParts     # sorted
-
-      if soapBody.use != "encoded"
-	raise NotImplementedError.new(
-	  "Use '#{ soapBody.use }' not supported." )
-      end
-      if soapBody.encodingStyle != ::SOAP::EncodingNamespace
-	raise NotImplementedError.new(
-	  "EncodingStyle '#{ soapBody.encodingStyle }' not supported." )
-      end
-
+      name, parts = operationBinding.outputOperationInfo
       result[ name ] = [ name, parts ]
     end
     result
