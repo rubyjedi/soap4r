@@ -51,7 +51,7 @@ soap4r/1.4.8.1がリリースされた。
 * xmlscanのサポート。
 * XML processorの検出手順を変更。xmlscan、REXML、XMLParser、NQXMLの順に
   検索します。
-* 漢字コードハンドリングを修正。euc-jpもしくはshift-jisを使うためには、
+* 漢字コードハンドリングを修正。euc-jpもしくはshift_jisを使うためには、
   xmlscan-0.2を使えばuconvモジュールがなくてもかまいません。その他のXML
   processorを使う場合はuconvモジュールが必要です。
 * cgistub.rb: SOAPレスポンスのメディアタイプを変更できるようにした。
