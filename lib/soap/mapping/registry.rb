@@ -1,6 +1,6 @@
 =begin
 SOAP4R - Mapping registry.
-Copyright (C) 2000, 2001, 2002, 2003 NAKAMURA Hiroshi.
+Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -81,7 +81,7 @@ class SOAPException; include Marshallable
 end
 
 
-# For anyType object.
+# For anyType object: SOAP::Mapping::Object not ::Object
 class Object; include Marshallable
   def set_property(name, value)
     var_name = name

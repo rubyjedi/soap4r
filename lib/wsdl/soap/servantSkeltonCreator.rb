@@ -1,6 +1,6 @@
 =begin
 WSDL4R - Creating servant skelton code from WSDL.
-Copyright (C) 2002 NAKAMURA Hiroshi.
+Copyright (C) 2002, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

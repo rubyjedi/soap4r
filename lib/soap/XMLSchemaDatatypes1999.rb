@@ -1,6 +1,6 @@
 =begin
 SOAP4R - XML Schema Datatype 1999 support
-Copyright (C) 2001 NAKAMURA Hiroshi.
+Copyright (C) 2001, 2003  NAKAMURA, Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -21,13 +21,13 @@ require 'soap/XMLSchemaDatatypes'
 
 
 module XSD
-  Namespace.replace( 'http://www.w3.org/1999/XMLSchema' )
-  InstanceNamespace.replace( 'http://www.w3.org/1999/XMLSchema-instance' )
-  AnyTypeLiteral.replace( 'ur-type' )
-  AnySimpleTypeLiteral.replace( 'ur-type' )
-  NilLiteral.replace( 'null' )
-  NilValue.replace( '1' )
-  DateTimeLiteral.replace( 'timeInstant' )
+  Namespace.replace('http://www.w3.org/1999/XMLSchema')
+  InstanceNamespace.replace('http://www.w3.org/1999/XMLSchema-instance')
+  AnyTypeLiteral.replace('ur-type')
+  AnySimpleTypeLiteral.replace('ur-type')
+  NilLiteral.replace('null')
+  NilValue.replace('1')
+  DateTimeLiteral.replace('timeInstant')
 end
 
 
