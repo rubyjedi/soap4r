@@ -1,25 +1,17 @@
 #!/usr/bin/env ruby
 
-proxy = ARGV.shift || nil
+key = ARGV.shift
 
 require 'soap/driver'
 
 server = 'http://www.SoapClient.com/xml/SQLDataSoap.WSDL'
 interface = 'http://www.SoapClient.com/xml/SQLDataSoap.xsd'
+logger = nil		# Devel::Logger.new( STDERR )
+wireDumpDev = nil	# STDERR
+proxy = ENV[ 'HTTP_PROXY' ] || ENV[ 'http_proxy' ]
 
-
-###
-## Create Proxy
-#
-def getWireDumpLogFile
-  logFilename = File.basename( $0 ) + '.log'
-  f = File.open( logFilename, 'w' )
-  f << "File: #{ logFilename } - Wiredumps for SOAP4R client.\n"
-  f << "Date: #{ Time.now }\n\n"
-end
-
-whois = SOAP::Driver.new( Log.new( STDERR ), 'SampleApp', interface, server, proxy )
-whois.setWireDumpDev( getWireDumpLogFile )
+whois = SOAP::Driver.new( logger, $0, interface, server, proxy )
+whois.setWireDumpDev( wireDumpDev )
 whois.addMethod( 'ProcessSRL', 'SRLFile', 'RequestName', 'key' )
 
-whois.ProcessSRL( 'WHOIS.SRI', 'whois', 'sarion.com' )
+p whois.ProcessSRL( 'WHOIS.SRI', 'whois', key )
