@@ -180,7 +180,7 @@ public
 
 private
   def _set( newString )
-    unless SOAP::Charset.isUTF8( newString )
+    unless SOAP::Charset.isCES( newString, SOAP::Charset.getEncoding )
       raise ValueSpaceError.new( "#{ type }: cannot accept '#{ newString }'." )
     end
     @data = newString
