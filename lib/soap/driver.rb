@@ -18,6 +18,7 @@ Ave, Cambridge, MA 02139, USA.
 
 
 require 'soap/rpc/driver'
+require 'devel/logger'
 
 
 module SOAP
