@@ -3,27 +3,27 @@
 require 'webrick'
 require 'getopts'
 
-getopts nil, 'r:'
+getopts nil, 'p:'
 
-dir = File::dirname(File::expand_path(__FILE__))
+require 'devel/logger'
+logDev = Devel::Logger.new( 'httpd.log' )
 
-s=WEBrick::HTTPServer.new(
-  :Port           => 2000,
-  :BindAddress	  => nil,
-  :Logger         => WEBrick::Log::new($stderr, WEBrick::Log::DEBUG),
-  :DocumentRoot   => $OPT_r || dir + "/htdocs"
+port = $OPT_p || 2000
+
+wwwsvr = WEBrick::HTTPServer.new(
+  :ServerName     => "rrr.jin.gr.jp",
+  :Port           => port,
+  :Logger         => logDev
 )
 
-# Create SOAPlet instance.
 require 'soaplet'
-srv = SOAP::WEBrickSOAPlet.new
-
-# Load service class and create service object.
+soapsrv = SOAP::WEBrickSOAPlet.new
 require 'exchange'
-srv.addServant( 'urn:exchangeService', Exchange.new )
+soapsrv.addServant( ExchangeServiceNamespace, Exchange.new )
+require 'sampleStruct'
+soapsrv.addServant( SampleStructServiceNamespace, SampleStructService.new )
+wwwsvr.mount( '/soapsrv', soapsrv )
 
-# Mount it at somewhere.
-s.mount("/soap", srv)
+wwwsvr.start
 
-trap("INT"){ s.shutdown }
-s.start
+exit( 0 )
