@@ -52,7 +52,7 @@ private
     mr_creator = MappingRegistryCreator.new(@definitions)
 
     return <<__EOD__
-require 'soap/cgistub'
+require 'soap/rpc/cgistub'
 
 class #{ class_name }
   require 'soap/rpcUtils'
@@ -64,7 +64,7 @@ class #{ class_name }
   ]
 end
 
-class App < SOAP::CGIStub
+class App < SOAP::RPC::CGIStub
   def initialize(*arg)
     super(*arg)
     servant = #{ class_name }.new
