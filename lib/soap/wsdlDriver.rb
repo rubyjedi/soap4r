@@ -34,10 +34,9 @@ module SOAP
 class WSDLDriverFactory
   attr_reader :wsdl
 
-  def initialize( wsdlFile, logDev = nil )
-    @wsdlFile = wsdlFile
+  def initialize( wsdl, logDev = nil )
     @logDev = logDev
-    @wsdl = WSDL::WSDLParser.createParser.parse( File.open( @wsdlFile ))
+    @wsdl = parse( wsdl )
     @wsdlMappingRegistry = RPCUtils::WSDLMappingRegistry.new( @wsdl )
   end
 
@@ -61,6 +60,25 @@ class WSDLDriverFactory
     drv = WSDLDriver.new( @wsdl, port, @logDev, opt )
     drv.wsdlMappingRegistry = @wsdlMappingRegistry
     drv
+  end
+
+private
+  
+  def parse( wsdl )
+    str = nil
+    if /^http/i =~ wsdl
+      begin
+	c = HTTPAccess2::Client.new(
+	  ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ] )
+	str = c.getContent( wsdl )
+      rescue
+	str = nil
+      end
+    end
+    if str.nil?
+      str = File.open( wsdl )
+    end
+    WSDL::WSDLParser.createParser.parse( str )
   end
 end
 
