@@ -387,7 +387,7 @@ public
   end
 
   def each
-    0.upto( @array.length - 1 ) do | i |
+    for i in 0..( @array.length - 1 )
       yield( @array[ i ], @data[ i ] )
     end
   end
@@ -475,7 +475,7 @@ public
   end
 
   def each
-    0.upto( @array.length - 1 ) do | i |
+    for i in 0..( @array.length - 1 )
       yield( @array[ i ], @data[ i ] )
     end
   end
@@ -573,7 +573,7 @@ public
       raise ArgumentError.new( "Given #{ idxAry.size } params(#{ idxAry }) does not match rank: #{ @rank }" )
     end
 
-    0.upto( idxAry.size - 1 ) do | i |
+    for i in 0..( idxAry.size - 1 )
       if idxAry[ i ] + 1 > @size[ i ]
 	@size[ i ] = idxAry[ i ] + 1
       end
@@ -650,7 +650,7 @@ public
   def soap2array( ary )
     traverseData( @data ) do | v, *position |
       iteAry = ary
-      1.upto( position.size - 1 ) do | rank |
+      for rank in 1..( position.size - 1 )
 	idx = position[ rank - 1 ]
 	if iteAry[ idx ].nil?
 	  iteAry = iteAry[ idx ] = Array.new
@@ -678,7 +678,7 @@ private
 
   def retrieve( idxAry )
     data = @data
-    1.upto( idxAry.size ) do | rank |
+    for rank in 1..( idxAry.size )
       idx = idxAry[ rank - 1 ]
       if data[ idx ].nil?
 	data = data[ idx ] = Array.new
@@ -690,7 +690,7 @@ private
   end
 
   def traverseData( data, rank = 1 )
-    0.upto( rankSize( rank ) - 1 ) do | idx |
+    for idx in 0..( rankSize( rank ) - 1 )
       if rank < @rank
 	traverseData( data[ idx ], rank + 1 ) do | *v |
 	  v[ 1, 0 ] = idx
