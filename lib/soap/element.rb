@@ -110,8 +110,7 @@ public
     super(nil)
     @elename = Name
     @encodingstyle = nil
-    @data = []
-    @data << data if data
+    add(data.elename.name, data) if data
     @is_fault = is_fault
   end
 
@@ -153,13 +152,13 @@ class SOAPHeaderItem < NSDBase
 public
 
   attr_accessor :content
-  attr_accessor :must_understand
+  attr_accessor :mustunderstand
   attr_accessor :encodingstyle
 
-  def initialize(content, must_understand = true, encodingstyle = nil)
+  def initialize(content, mustunderstand = true, encodingstyle = nil)
     super(nil)
     @content = content
-    @must_understand = must_understand
+    @mustunderstand = mustunderstand
     @encodingstyle = encodingstyle || LiteralNamespace
   end
 
@@ -168,7 +167,7 @@ public
       @content.attr[key] = value
     end
     @content.attr[ns.name(EnvelopeNamespace, AttrMustUnderstand)] =
-      (@must_understand ? '1' : '0')
+      (@mustunderstand ? '1' : '0')
     if @encodingstyle
       @content.attr[ns.name(EnvelopeNamespace, AttrEncodingStyle)] =
       	@encodingstyle

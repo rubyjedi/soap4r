@@ -410,29 +410,26 @@ end
 
 # SOAPElement is not typed so it does not derive NSDBase.
 class SOAPElement
-  include SOAPCompoundtype
   include Enumerable
 
-public
+  attr_accessor :encodingstyle
+  attr_accessor :extraattr
+  attr_reader :precedents
 
   attr_accessor :qualified
   attr_accessor :elename
 
   def initialize(elename, text = nil)
-    super(nil)
     if !elename.is_a?(XSD::QName)
       elename = XSD::QName.new(nil, elename)
     end
     @encodingstyle = LiteralNamespace
-    @elename = elename
-
-    @id = nil
+    @extraattr = {}
     @precedents = []
-    @root = false
-    @parent = nil
-    @position = nil
 
     @qualified = false
+    @elename = elename
+
     @array = []
     @data = []
     @text = text
