@@ -48,8 +48,6 @@ class Attribute < Info
     nil
   end
 
-  RefAttrName = XSD::QName.new( nil, 'ref' )
-  ArrayTypeAttrName = XSD::QName.new( Namespace, 'arrayType' )
   def parseAttr( attr, value )
     case attr
     when RefAttrName
