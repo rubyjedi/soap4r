@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+$KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
+
 require 'soap/standaloneServer'
 require 'base'
 
@@ -11,11 +13,19 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def methodDef
-    ( SOAPBuildersInterop::MethodsBase + SOAPBuildersInterop::MethodsGroupB ).each do | methodName, *params |
+    ( SOAPBuildersInterop::MethodsBase + SOAPBuildersInterop::MethodsGroupB + SOAPBuildersInterop::MethodsPolyMorph ).each do | methodName, *params |
       addMethod( self, methodName, params )
     end
   end
 
+  def clone( obj )
+    begin
+      return Marshal.load( Marshal.dump( obj ))
+    rescue TypeError
+      return obj
+    end
+  end
+  
   # In echoVoid, 'retval' is not defined.  So nothing will be returned.
   def echoVoid
     # return SOAP::RPCUtils::SOAPVoid.new
@@ -23,19 +33,19 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echoString( inputString )
-    inputString.clone
+    clone( inputString )
   end
 
   def echoStringArray( inputStringArray )
-    inputStringArray.clone
+    clone( inputStringArray )
   end
 
   def echoInteger( inputInteger )
-    SOAP::SOAPInt.new( inputInteger.clone )
+    SOAP::SOAPInt.new( clone( inputInteger ))
   end
 
   def echoIntegerArray( inputIntegerArray )
-    inputIntegerArray.clone
+    clone( inputIntegerArray )
   end
 
   def echoFloat( inputFloat )
@@ -51,25 +61,25 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echoStruct( inputStruct )
-    inputStruct.clone
+    clone( inputStruct )
   end
 
   def echoStructArray( inputStructArray )
-    inputStructArray.clone
+    clone( inputStructArray )
   end
 
   def echoDate( inputDate )
-    inputDate.clone
+    clone( inputDate )
   end
 
   def echoBase64( inputBase64 )
-    o = SOAP::SOAPBase64.new( inputBase64.clone )
+    o = SOAP::SOAPBase64.new( clone( inputBase64 ))
     o.asXSD
     o
   end
 
   def echoHexBinary( inputHexBinary )
-    SOAP::SOAPHexBinary.new( inputHexBinary.clone )
+    SOAP::SOAPHexBinary.new( clone( inputHexBinary ))
   end
 
   def echoDouble( inputDouble )
@@ -81,6 +91,9 @@ class InteropApp < SOAP::StandaloneServer
     outputString = inputStruct.varString
     outputInteger = inputStruct.varInt
     outputFloat = inputStruct.varFloat
+    # retVal is not returned to SOAP client because retVal of this method is
+    #   not defined in method definition.
+    # retVal, out, out, out
     return nil, outputString, outputInteger, outputFloat
   end
 
@@ -89,9 +102,8 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echo2DStringArray( ary )
-    STDERR.puts ary.inspect
     # In Ruby, M-D Array is converted to Array of Array now.
-    mdary = SOAP::RPCUtils.ary2md( ary, 2, XSD::Namespace, XSD::StringLiteral )
+    mdary = SOAP::RPCUtils.ary2md( ary, 2 )
     if mdary.include?( nil )
       mdary.sparse = true
     end
@@ -99,11 +111,11 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echoNestedStruct( inputStruct )
-    inputStruct.clone
+    clone( inputStruct )
   end
 
   def echoNestedArray( inputStruct )
-    inputStruct.clone
+    clone( inputStruct )
   end
 
   def echoBoolean( inputBoolean )
@@ -112,7 +124,7 @@ class InteropApp < SOAP::StandaloneServer
 
   def echoDouble( inputDouble )
     # inputDouble.is_a? Float
-    inputDouble.clone
+    clone( inputDouble )
   end
 
   def echoDecimal( inputDecimal )
@@ -121,37 +133,31 @@ class InteropApp < SOAP::StandaloneServer
   end
 
   def echoMap( inputMap )
-    inputMap.clone
+    clone( inputMap )
   end
 
   def echoMapArray( inputMapArray )
-    inputMapArray.clone
+    clone( inputMapArray )
   end
 
   def echoXSDDateTime( inputXSDDateTime )
-    inputXSDDateTime.clone
+    clone( inputXSDDateTime )
   end
 
   def echoXSDDate( inputXSDDate )
-    SOAP::SOAPDate.new( inputXSDDate.clone )
+    SOAP::SOAPDate.new( clone( inputXSDDate ))
   end
 
   def echoXSDTime( inputXSDTime )
-    SOAP::SOAPTime.new( inputXSDTime.clone )
+    SOAP::SOAPTime.new( clone( inputXSDTime ))
   end
 
-  # for PolyMorph
-  def echoPolyMorph( inputPolyMorph )
-    clone( inputPolyMorph )
+  def echoPolyMorph( anObject )
+    clone( anObject )
   end
 
-  def echoPolyMorphStruct( inputPolyMorphStruct )
-    clone( inputPolyMorphStruct )
-  end
-
-  def echoPolyMorphArray( inputPolyMorphArray )
-    clone( inputPolyMorphArray )
-  end
+  alias echoPolyMorphStruct echoPolyMorph
+  alias echoPolyMorphArray echoPolyMorph
 end
 
 InteropApp.new( 'InteropApp', InterfaceNS, '0.0.0.0', 10080 ).start

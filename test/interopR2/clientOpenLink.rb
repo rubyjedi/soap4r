@@ -2,7 +2,7 @@
 
 $serverName = 'OpenLink'
 
-$server = 'http://demo.openlinksw.com:8890/interop'
+$server = 'http://demo.openlinksw.com:8890/Interop'
 
 require 'clientBase'
 require 'soap/XMLSchemaDatatypes1999'

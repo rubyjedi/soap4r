@@ -10,7 +10,6 @@ include SOAPBuildersInterop
 $soapAction = 'http://soapinterop.org/'
 $proxy = ARGV.shift || nil
 
-=begin
 require 'interopResultBase'
 $testResultServer = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/rwikiInteropServer.cgi'
 $testResultProxy = nil
@@ -35,7 +34,6 @@ server.uri = $server || "#{ $serverBase }, #{ $serverGroupB }"
 server.wsdl = 'Not used.'
 
 $testResults = SOAPBuildersInteropResult::InteropResults.new( client, server )
-=end
 
 $wireDumpDev = ''
 def $wireDumpDev.close; end
@@ -156,7 +154,6 @@ def dumpException( title )
 end
 
 def dumpResult( title, result, resultStr )
-=begin
   $testResults.add(
     SOAPBuildersInteropResult::TestResult.new(
       title,
@@ -165,7 +162,6 @@ def dumpResult( title, result, resultStr )
       $wireDumpDev.dup
     )
   )
-=end
   $wireDumpLogFile << "Result: #{ resultStr || 'OK' }\n\n"
   $wireDumpLogFile << $wireDumpDev
   $wireDumpLogFile << "\n"
@@ -199,7 +195,7 @@ def doTestBase( drv )
   begin
     var =  drv.echoVoid()
     dumpNormal( title, nil, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -209,7 +205,7 @@ def doTestBase( drv )
     arg = "SOAP4R Interoperability Test"
     var = drv.echoString( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -219,7 +215,7 @@ def doTestBase( drv )
     arg = "   SOAP4R\nInteroperability\nTest   "
     var = drv.echoString( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -229,7 +225,7 @@ def doTestBase( drv )
     arg = "Hello (日本語Japanese) こんにちは"
     var = drv.echoString( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -239,7 +235,7 @@ def doTestBase( drv )
     arg = "Hello (日本語Japanese) こんにちは"
     var = drv.echoString( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -249,7 +245,7 @@ def doTestBase( drv )
     arg = ''
     var = drv.echoString( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -259,7 +255,7 @@ def doTestBase( drv )
     arg = ' '
     var = drv.echoString( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -269,7 +265,7 @@ def doTestBase( drv )
     arg = "\r \n \t \r \n \t"
     var = drv.echoString( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -279,7 +275,7 @@ def doTestBase( drv )
     arg = StringArray[ "SOAP4R\n", " Interoperability ", "\tTest\t" ]
     var = drv.echoStringArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -291,7 +287,7 @@ def doTestBase( drv )
     soapAry.sparse = true
     var = drv.echoStringArray( soapAry )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -303,7 +299,7 @@ def doTestBase( drv )
     arg = StringArray[ str1, str2, str1 ]
     var = drv.echoStringArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -315,7 +311,7 @@ def doTestBase( drv )
     arg = StringArray[ str1, str2, str1 ]
     var = drv.echoStringArray( arg )
     dumpNormal( title, getIdObj( var[0] ), getIdObj( var[2] ))
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -327,7 +323,7 @@ def doTestBase( drv )
     arg = StringArray[ str1, str2, str1 ]
     var = drv.echoStringArray( arg )
     dumpNormal( title, getIdObj( var[0] ), getIdObj( var[2] ))
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -340,7 +336,7 @@ def doTestBase( drv )
     soapAry.sparse = true
     var = drv.echoStringArray( soapAry )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -350,7 +346,7 @@ def doTestBase( drv )
     arg = 123
     var = drv.echoInteger( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -360,7 +356,7 @@ def doTestBase( drv )
     arg = 2147483647
     var = drv.echoInteger( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -370,7 +366,7 @@ def doTestBase( drv )
     arg = -2147483648
     var = drv.echoInteger( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -380,7 +376,7 @@ def doTestBase( drv )
     arg = IntArray[ 1, 2, 3 ]
     var = drv.echoIntegerArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -390,7 +386,7 @@ def doTestBase( drv )
     arg = IntArray[ nil, nil, nil ]
     var = drv.echoIntegerArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -401,7 +397,7 @@ def doTestBase( drv )
     arg.typeNamespace = XSD::Namespace
     var = drv.echoIntegerArray( arg )
     dumpNormal( title, [], var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -413,7 +409,7 @@ def doTestBase( drv )
     soapAry.sparse = true
     var = drv.echoIntegerArray( soapAry )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -423,7 +419,7 @@ def doTestBase( drv )
     arg = 3.14159265358979
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -433,7 +429,7 @@ def doTestBase( drv )
     arg = 12.34e36
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -443,7 +439,7 @@ def doTestBase( drv )
     arg = 1.4e-45
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -453,7 +449,7 @@ def doTestBase( drv )
     arg = -1.4e-45
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -463,7 +459,7 @@ def doTestBase( drv )
     arg = 0.0/0.0
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -473,7 +469,7 @@ def doTestBase( drv )
     arg = 1.0/0.0
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -483,7 +479,7 @@ def doTestBase( drv )
     arg = -1.0/0.0
     var = drv.echoFloat( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -493,7 +489,7 @@ def doTestBase( drv )
     arg = FloatArray[ 0.0001, 1000.0, 0.0 ]
     var = drv.echoFloatArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -506,7 +502,7 @@ def doTestBase( drv )
     arg = FloatArray[ nan, inf, inf_ ]
     var = drv.echoFloatArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -518,7 +514,7 @@ def doTestBase( drv )
     soapAry.sparse = true
     var = drv.echoFloatArray( soapAry )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -528,7 +524,7 @@ def doTestBase( drv )
     arg = SOAPStruct.new( 1, 1.1, "a" )
     var = drv.echoStruct( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -538,7 +534,7 @@ def doTestBase( drv )
     arg = SOAPStruct.new( nil, nil, nil )
     var = drv.echoStruct( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -551,7 +547,7 @@ def doTestBase( drv )
     arg = SOAPStructArray[ s1, s2, s3 ]
     var = drv.echoStructArray( arg )
     dumpNormal( title, arg, var ) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -564,7 +560,7 @@ def doTestBase( drv )
     arg = [ s1, s2, s3 ]
     var = drv.echoStructArray( arg )
     dumpNormal( title, arg, var ) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -579,7 +575,7 @@ def doTestBase( drv )
     soapAry.sparse = true
     var = drv.echoStructArray( soapAry )
     dumpNormal( title, arg, var ) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -591,7 +587,7 @@ def doTestBase( drv )
     arg = SOAPStructArray[ s1, s1, s2 ]
     var = drv.echoStructArray( arg )
     dumpNormal( title, arg, var ) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -603,7 +599,7 @@ def doTestBase( drv )
     arg = SOAPStructArray[ s1, s1, s2 ]
     var = drv.echoStructArray( arg )
     dumpNormal( title, getIdObj( var[0] ), getIdObj( var[1] )) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -615,7 +611,7 @@ def doTestBase( drv )
     arg = [ s1, s2, s2 ]
     var = drv.echoStructArray( arg )
     dumpNormal( title, getIdObj( var[1] ), getIdObj( var[2] )) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -629,7 +625,7 @@ def doTestBase( drv )
     soapAry.sparse = true
     var = drv.echoStructArray( soapAry )
     dumpNormal( title, arg, var ) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -643,7 +639,7 @@ def doTestBase( drv )
     soapAry.sparse = true
     var = drv.echoStructArray( soapAry )
     dumpNormal( title, getIdObj( var[4] ), getIdObj( var[6] )) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -658,7 +654,7 @@ def doTestBase( drv )
     arg = SOAPStructArray[ s1, s2, s3 ]
     var = drv.echoStructArray( arg )
     dumpNormal( title, getIdObj( var[0].varString ), getIdObj( var[1].varString )) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -673,7 +669,7 @@ def doTestBase( drv )
     arg = [ s1, s2, s3 ]
     var = drv.echoStructArray( arg )
     dumpNormal( title, getIdObj( var[1].varString ), getIdObj( var[2].varString )) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -690,7 +686,7 @@ def doTestBase( drv )
     soapAry.sparse = true
     var = drv.echoStructArray( soapAry )
     dumpNormal( title, getIdObj( var[4].varString ), getIdObj( var[6].varString )) 
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -708,7 +704,7 @@ def doTestBase( drv )
 #
 #    var = drv.echoStructArray( md )
 #    dumpNormal( title, arg, var ) 
-#  rescue StandardError, NameError
+#  rescue Exception
 #    dumpException( title )
 #  end
 #
@@ -727,7 +723,7 @@ def doTestBase( drv )
 #
 #    var = drv.echoStructArray( md )
 #    dumpNormal( title, arg, var ) 
-#  rescue StandardError, NameError
+#  rescue Exception
 #    dumpException( title )
 #  end
 #
@@ -746,7 +742,7 @@ def doTestBase( drv )
 #
 #    var = drv.echoStructArray( md )
 #    dumpNormal( title, arg, var ) 
-#  rescue StandardError, NameError
+#  rescue Exception
 #    dumpException( title )
 #  end
 
@@ -757,7 +753,7 @@ def doTestBase( drv )
     arg = Date.new3( t.year, t.mon, t.mday, t.hour, t.min, t.sec )
     var = drv.echoDate( arg )
     dumpNormal( title, arg.to_s, var.to_s )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -768,7 +764,7 @@ def doTestBase( drv )
     arg = Date.new3( 1, 1, 1, 0, 0, 0 )
     var = drv.echoDate( arg )
     dumpNormal( title, arg.to_s, var.to_s )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -779,7 +775,7 @@ def doTestBase( drv )
     arg = Date.new3( 2038, 12, 31, 0, 0, 0 )
     var = drv.echoDate( arg )
     dumpNormal( title, arg.to_s, var.to_s )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -790,7 +786,7 @@ def doTestBase( drv )
     arg = Date.new3( -10, 1, 1, 0, 0, 0 )
     var = drv.echoDate( arg )
     dumpNormal( title, arg.to_s, var.to_s )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -801,7 +797,7 @@ def doTestBase( drv )
     argDate = arg.data
     var = drv.echoDate( arg )
     dumpNormal( title, argDate, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -812,7 +808,7 @@ def doTestBase( drv )
     argDate = arg.data
     var = drv.echoDate( arg )
     dumpNormal( title, argDate, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -823,7 +819,7 @@ def doTestBase( drv )
     argNormalized = Date.new3( 2001, 6, 17, 1, 13, 40 )
     var = drv.echoDate( arg )
     dumpNormal( title, argNormalized.to_s, var.to_s )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -835,7 +831,7 @@ def doTestBase( drv )
     arg.asXSD	# Force xsd:base64Binary instead of soap-enc:base64
     var = drv.echoBase64( arg )
     dumpNormal( title, str, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -847,7 +843,7 @@ def doTestBase( drv )
     arg.asXSD	# Force xsd:base64Binary instead of soap-enc:base64
     var = drv.echoBase64( arg )
     dumpNormal( title, str, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -858,7 +854,7 @@ def doTestBase( drv )
     arg = SOAP::SOAPBase64.new( str )
     var = drv.echoBase64( arg )
     dumpNormal( title, str, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -869,7 +865,7 @@ def doTestBase( drv )
     arg = SOAP::SOAPHexBinary.new( str )
     var = drv.echoHexBinary( arg )
     dumpNormal( title, str, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -880,7 +876,7 @@ def doTestBase( drv )
     arg = SOAP::SOAPHexBinary.new( str )
     var = drv.echoHexBinary( arg )
     dumpNormal( title, str, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -890,7 +886,7 @@ def doTestBase( drv )
     arg = true
     var = drv.echoBoolean( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -900,7 +896,7 @@ def doTestBase( drv )
     arg = false
     var = drv.echoBoolean( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -910,7 +906,7 @@ def doTestBase( drv )
 #    arg = 3.14159265358979
 #    var = drv.echoDouble( arg )
 #    dumpNormal( title, arg, var )
-#  rescue StandardError, NameError
+#  rescue Exception
 #    dumpException( title )
 #  end
 
@@ -921,7 +917,7 @@ def doTestBase( drv )
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     normalized = arg
     dumpNormal( title, normalized, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -932,7 +928,7 @@ def doTestBase( drv )
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     normalized = arg.sub( /0$/, '' ).sub( /^\+/, '' )
     dumpNormal( title, normalized, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -943,7 +939,7 @@ def doTestBase( drv )
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     normalized = '0' << arg.sub( /0$/, '' )
     dumpNormal( title, normalized, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -953,7 +949,7 @@ def doTestBase( drv )
     arg = "-12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123.45678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -964,7 +960,7 @@ def doTestBase( drv )
     normalized = arg.sub( /\.$/, '' )
     var = drv.echoDecimal( SOAP::SOAPDecimal.new( arg ))
     dumpNormal( title, normalized, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -977,7 +973,7 @@ if $test_echoMap
     arg = { "a" => 1, "b" => 2 }
     var = drv.echoMap( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -987,7 +983,7 @@ if $test_echoMap
     arg = { true => "\0", "\0" => nil, nil => 0.0001, 0.0001 => false }
     var = drv.echoMap( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -997,7 +993,7 @@ if $test_echoMap
     arg = { "Hello (日本語Japanese) こんにちは" => 1, 1 => "Hello (日本語Japanese) こんにちは" }
     var = drv.echoMap( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1008,7 +1004,7 @@ if $test_echoMap
     arg = { 1 => obj, 2 => obj }
     var = drv.echoMap( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1019,7 +1015,7 @@ if $test_echoMap
     arg = { "a" => value, "b" => value }
     var = drv.echoMap( arg )
     dumpNormal( title, getIdObj( var["a"] ), getIdObj( var["b"] ))
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1031,7 +1027,7 @@ if $test_echoMap
     arg = { obj => "1", "1" => obj }
     var = drv.echoMap( arg )
     dumpNormal( title, getIdObj( var.index("1").varString ), getIdObj( var.fetch("1").varString ))
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1044,7 +1040,7 @@ if $test_echoMap
     arg = [ map1, map2, map3 ]
     var = drv.echoMapArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1057,7 +1053,7 @@ if $test_echoMap
     arg = [ map1, map2, map3 ]
     var = drv.echoMapArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1072,7 +1068,7 @@ if $test_echoMap
     soapAry.sparse = true
     var = drv.echoMapArray( soapAry )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1085,7 +1081,7 @@ if $test_echoMap
     arg = [ map1, map2, map3 ]
     var = drv.echoMapArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1099,7 +1095,7 @@ if $test_echoMap
     soapAry.sparse = true
     var = drv.echoMapArray( soapAry )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1111,7 +1107,7 @@ if $test_echoMap
     arg = [ map1, map1, map2 ]
     var = drv.echoMapArray( arg )
     dumpNormal( title, getIdObj( var[0] ), getIdObj( var[1] ))
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 end
@@ -1136,7 +1132,7 @@ def doTestGroupB( drv )
     ret, out1, out2 = drv.echoStructAsSimpleTypes( arg )
     var = SOAPStruct.new( out1, out2, ret )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1147,7 +1143,7 @@ def doTestGroupB( drv )
     ret, out1, out2 = drv.echoStructAsSimpleTypes( arg )
     var = SOAPStruct.new( out1, out2, ret )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1157,7 +1153,7 @@ def doTestGroupB( drv )
     arg = SOAPStruct.new( 1, 1.1, "a" )
     var = drv.echoSimpleTypesAsStruct( arg.varString, arg.varInt, arg.varFloat )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1167,7 +1163,7 @@ def doTestGroupB( drv )
     arg = SOAPStruct.new( nil, nil, nil )
     var = drv.echoSimpleTypesAsStruct( arg.varString, arg.varInt, arg.varFloat )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1208,7 +1204,7 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( arg )
     dumpNormal( title, argNormalized, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1224,7 +1220,7 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( SOAP::RPCUtils.ary2md( arg, 2, XSD::Namespace, XSD::AnyTypeLiteral, SOAPBuildersInterop::MappingRegistry ))
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1241,7 +1237,7 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( md )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1258,7 +1254,7 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( md )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1288,7 +1284,7 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( arg )
     dumpNormal( title, argNormalized, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1313,7 +1309,7 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( arg )
     dumpNormal( title, getIdObj( var[ 2 ][ 0 ] ), getIdObj( var[ 0 ][ 2 ] ))
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1331,7 +1327,7 @@ def doTestGroupB( drv )
 
     var = drv.echo2DStringArray( md )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1343,7 +1339,7 @@ def doTestGroupB( drv )
     )
     var = drv.echoNestedStruct( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1355,7 +1351,7 @@ def doTestGroupB( drv )
     )
     var = drv.echoNestedStruct( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1368,7 +1364,7 @@ def doTestGroupB( drv )
     )
     var = drv.echoNestedStruct( arg )
     dumpNormal( title, getIdObj( var.varString ), getIdObj( var.varStruct.varString ))
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1378,7 +1374,7 @@ def doTestGroupB( drv )
     arg = SOAPArrayStruct.new( 1, 1.1, "a", StringArray[ "2", "2.2", "b" ] )
     var = drv.echoNestedArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1388,7 +1384,7 @@ def doTestGroupB( drv )
     arg = SOAPArrayStruct.new( 1, 1.1, "a", [ "2", "2.2", "b" ] )
     var = drv.echoNestedArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1399,7 +1395,7 @@ def doTestGroupB( drv )
     arg = SOAPArrayStruct.new( 1, 1.1, str, StringArray[ "2", str, "b" ] )
     var = drv.echoNestedArray( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1410,7 +1406,7 @@ def doTestGroupB( drv )
     arg = SOAPArrayStruct.new( 1, 1.1, str, StringArray[ "2", str, "b" ] )
     var = drv.echoNestedArray( arg )
     dumpNormal( title, getIdObj( var.varString ), getIdObj( var.varArray[1] ))
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1425,7 +1421,7 @@ def doTestGroupB( drv )
     argNormalized = SOAPArrayStruct.new( 1, 1.1, str, subAry )
     var = drv.echoNestedArray( arg )
     dumpNormal( title, argNormalized, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1436,7 +1432,7 @@ def doTestGroupB( drv )
     arg = Date.new3( 1000, 1, 1, 1, 1, 1 )
     var = drv.echoXSDDateTime( arg )
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1446,7 +1442,7 @@ def doTestGroupB( drv )
     arg = Date.new3( 1000, 1, 1 )
     var = drv.echoXSDDate( SOAP::SOAPDate.new( arg ))
     dumpNormal( title, arg, var )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 
@@ -1456,7 +1452,7 @@ def doTestGroupB( drv )
     arg = Time.now.gmtime
     var = drv.echoXSDTime( SOAP::SOAPTime.new( arg ))
     dumpNormal( title, SOAP::SOAPTime.new( arg ).to_s, SOAP::SOAPTime.new( var ).to_s )
-  rescue StandardError, NameError
+  rescue Exception
     dumpException( title )
   end
 =end
