@@ -204,8 +204,16 @@ class SOAPMethodRequest < SOAPMethod
   end
 
   def initialize(qname, paramDef = nil, soapAction = nil)
+    checkElementName(qname)
     super(qname, paramDef)
     @soapAction = soapAction
+  end
+
+  def checkElementName(qname)
+    # NCName & ruby's method name
+    unless /\A[\w_][\w\d_-]*\z/ =~ qname.name
+      raise MethodDefinitionError.new("Element name '#{qname.name}' not allowed")
+    end
   end
 
   def each
