@@ -21,7 +21,7 @@ require 'soap/rpc/element'
 require 'soap/rpc/proxy'
 require 'soap/processor'
 require 'soap/header/handlerset'
-require 'logger'
+require 'xsd/codegen/gensupport'
 
 
 module SOAP
@@ -152,7 +152,6 @@ class WSDLDriver
   alias generateEncodeType= generate_explicit_type=
 
   class Servant__
-    include Logger::Severity
     include SOAP
 
     attr_reader :options
@@ -160,6 +159,9 @@ class WSDLDriver
     attr_reader :port
 
     attr_accessor :soapaction
+    attr_accessor :default_encodingstyle
+    attr_accessor :allow_unqualified_element
+    attr_accessor :generate_explicit_type
     attr_accessor :mapping_registry
     attr_accessor :wsdl_mapping_registry
 
@@ -170,6 +172,9 @@ class WSDLDriver
       @logdev = logdev
       @options = setup_options
       @soapaction = nil
+      @default_encodingstyle = nil
+      @allow_unqualified_element = nil
+      @generate_explicit_type = false
       @mapping_registry = nil		# for rpc unmarshal
       @wsdl_mapping_registry = nil	# for rpc marshal
       @wiredump_file_base = nil
@@ -190,8 +195,6 @@ class WSDLDriver
 	add_method_interface(op_info)
       end
       @proxy = ::SOAP::RPC::Proxy.new(@streamhandler)
-      @proxy.default_encodingstyle = EncodingNamespace
-      @proxy.generate_explicit_type = false
     end
 
     def endpoint_url
@@ -203,30 +206,6 @@ class WSDLDriver
       @streamhandler.reset
     end
 
-    def default_encodingstyle
-      @proxy.default_encodingstyle
-    end
-
-    def default_encodingstyle=(default_encodingstyle)
-      @proxy.default_encodingstyle = default_encodingstyle
-    end
-
-    def generate_explicit_type
-      @proxy.generate_explicit_type
-    end
-
-    def generate_explicit_type=(generate_explicit_type)
-      @proxy.generate_explicit_type = generate_explicit_type
-    end
-
-    def allow_unqualified_element
-      @proxy.allow_unqualified_element
-    end
-
-    def allow_unqualified_element=(allow_unqualified_element)
-      @proxy.allow_unqualified_element = allow_unqualified_element
-    end
-
     def headerhandler
       @proxy.headerhandler
     end
@@ -235,12 +214,15 @@ class WSDLDriver
       @streamhandler.test_loopback_response
     end
 
-    def rpc_send(name, *values)
+    def rpc_call(name, *values)
       set_wiredump_file_base(name)
       op_info = @operation[name]
       req_header = create_request_header
       req_body = create_request_body(op_info, *values)
-      env = @proxy.invoke(req_header, req_body, op_info.soapaction || @soapaction, @rpc_decode_typemap)
+      opt = create_options({
+        :soapaction => op_info.soapaction || @soapaction,
+        :decode_typemap => @rpc_decode_typemap})
+      env = @proxy.invoke(req_header, req_body, opt)
       raise EmptyResponseError.new("Empty response.") unless env
       receive_headers(env.header)
       begin
@@ -260,9 +242,8 @@ class WSDLDriver
       end
     end
 
-    # req_header: [[element, mustunderstand, encodingstyle(QName/String)], ...]
-    # req_body: SOAPBasetype/SOAPCompoundtype
-    def document_send(name, header_obj, body_obj)
+    def document_call(name, param)
+      set_wiredump_file_base(name)
       op_info = @operation[name]
       req_header = header_from_obj(header_obj, op_info)
       req_body = body_from_obj(body_obj, op_info)
@@ -276,7 +257,36 @@ class WSDLDriver
       return env.header, res_body_obj
     end
 
+    # req_header: [[element, mustunderstand, encodingstyle(QName/String)], ...]
+    # req_body: SOAPBasetype/SOAPCompoundtype
+    def document_send(name, header_obj, body_obj)
+      set_wiredump_file_base(name)
+      op_info = @operation[name]
+      req_header = header_from_obj(header_obj, op_info)
+      req_body = body_from_obj(body_obj, op_info)
+      opt = create_options({
+        :soapaction => op_info.soapaction || @soapaction,
+        :decode_typemap => @wsdl_types})
+      env = @proxy.invoke(req_header, req_body, opt)
+      raise EmptyResponseError.new("Empty response.") unless env
+      if env.body.fault
+	raise ::SOAP::FaultError.new(env.body.fault)
+      end
+      res_body_obj = env.body.response ?
+	Mapping.soap2obj(env.body.response, @mapping_registry) : nil
+      return env.header, res_body_obj
+    end
+
   private
+
+    def create_options(hash = nil)
+      opt = {}
+      opt[:default_encodingstyle] = @default_encodingstyle
+      opt[:allow_unqualified_element] = @allow_unqualified_element
+      opt[:generate_explicit_type] = @generate_explicit_type
+      opt.update(hash) if hash
+      opt
+    end
 
     def set_wiredump_file_base(name)
       if @wiredump_file_base
@@ -402,23 +412,16 @@ class WSDLDriver
     end
 
     def add_method_interface(op_info)
+      name = ::XSD::CodeGen::GenSupport.safemethodname(op_info.op_name.name)
       case op_info.style
       when :document
-	add_document_method_interface(op_info.op_name.name)
+	add_document_method_interface(name)
       when :rpc
 	parts_names = op_info.bodyparts.collect { |part| part.name }
-	add_rpc_method_interface(op_info.op_name.name, parts_names)
+	add_rpc_method_interface(name, parts_names)
       else
 	raise RuntimeError.new("Unknown style: #{op_info.style}")
       end
-    end
-
-    def add_document_method_interface(name)
-      @host.instance_eval <<-EOS
-	def #{ name }(headers, body)
-	  @servant.document_send(#{ name.dump }, headers, body)
-	end
-      EOS
     end
 
     def add_rpc_method_interface(name, parts_names)
@@ -427,7 +430,15 @@ class WSDLDriver
       callparam = (param_names.collect { |pname| ", " + pname }).join
       @host.instance_eval <<-EOS
 	def #{ name }(#{ param_names.join(", ") })
-	  @servant.rpc_send(#{ name.dump }#{ callparam })
+	  @servant.rpc_call(#{ name.dump }#{ callparam })
+	end
+      EOS
+    end
+
+    def add_document_method_interface(name)
+      @host.instance_eval <<-EOS
+	def #{ name }(h, b)
+	  @servant.document_send(#{ name.dump }, h, b)
 	end
       EOS
     end
