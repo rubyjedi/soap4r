@@ -380,6 +380,7 @@ private
     XSD::IntegerLiteral => SOAPInteger,
     XSD::LongLiteral => SOAPLong,
     XSD::IntLiteral => SOAPInt,
+    XSD::ShortLiteral => SOAPShort,
   }
 
   SOAPBaseTypeMap = {

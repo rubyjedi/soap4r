@@ -311,6 +311,11 @@ class SOAPInt < XSDInt
   extend SOAPModuleUtils
 end
 
+class SOAPShort < XSDShort
+  include SOAPBasetype
+  extend SOAPModuleUtils
+end
+
 
 ###
 ## Compound datatypes.
@@ -581,7 +586,8 @@ public
 	@typeNamespace = value.typeNamespace
       end
 
-      unless value.typeName
+      unless @typeNamespace == XSD::Namespace and
+	  @typeName == XSD::AnyTypeLiteral
 	value.typeName = @typeName
 	value.typeNamespace = @typeNamespace
       end
