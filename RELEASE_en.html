@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: May 25, 2002<br />
+Last modified: September 20, 2002<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.4.5
+Target SOAP4R version: SOAP4R/1.4.7
 </p>
 
 <ol>
@@ -53,86 +53,36 @@ Target SOAP4R version: SOAP4R/1.4.5
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
-This version has these enhancements;
+This version has these enhancements and bug fixes;
 </p>
 <ul>
-<li>Supports all primitive datatypes of XML Schema Part2 Datatypes except NOTATION.
-Added types are Duration, gYearMonth, anyURI, QName and so on.</li>
-<li>Runs much faster than earlier versions.
-Some performance check and tuning has been done.</li>
-<li>Supports all Ruby objects marshalling/unmarshalling
-except some special objects.  See below for more detail.</li>
+<li>Includes WSDL4R initial release.
+<ul>
+<li>Bare in mind this is an alpha level code.
+I wrote it halfway at half and a year ago,
+and wrote the rest part in half and a day.
+No comprehensive test, no strict syntax check, unfriendly error message, etc.
+Try it if you want, and find bugs in it.</li>
+<li>WSDL4R can run under XMLParser for now.
+You might be able to let it run under NQXML/REXML if you know SAX
+programming well.  How XML processor is used under WSDL4R
+is as same as under SOAP4R.</li>
+</ul></li>
+<li>Added xsd:short support.</li>
+<li>::Float(double precision float in Ruby) is mapped to xsd:double now.
+It was mapped to xsd:float.</li>
+<li>Fixed a bug of year &lt; 0 handling.  B.C. 1 =&gt; -0001 in XMLSchema.</li>
+<li>Fixed a bug of exception serialization.  Custam mappingRegistry was not used.</li>
+<li>Fixed a bug of regex for MediaType parsing.</li>
 </ul>
 
 <p>
 CAUTION: This version requires
 <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=date2">[RAA:date2]</a> version 3.2 or later and
-<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
+<a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version G.
+http-access2/G is released in this week.
 Please make sure the versions you use.
 </p>
-
-<p>
-Here is detail of change.
-</p>
-
-<dl>
-<dt>Datatypes (XMLSchemaDatatypes.rb and baseData.rb)</dt>
-<dd>
-<ul>
-<li>Added duration, gYearMonth, gYear, gMonthDay, gDay, gMonth, anyURI and QName datetypes.
-All primitive datatypes in XML Schema Part 2 section 3.2 except NOTAION are supported now.</li>
-<li>Modified XSDDataTime, XSDDate and XSDTime implementation.  These use a DataTime as a data holder.</li>
-<li>Follow date/3.2: date2.rb -&gt; date.rb.</li>
-<li>Changed to_s representations of single float and double float.  Thanks to gotoken.</li>
-<li>XSDFloat: Add '0' if given str ends with 'E'.  Float( "-1.4E" ) might fail on some system.</li>
-<li>Added SOAPRawString class.  Given string is embedded into XML instance directly.
-You can use this class to embed (numeric) character references manually.</li>
-<li>Fixed UTF8 regexp bug.  XSDString uses this regexp to check a given string.</li>
-<li>Added UT for XMLSchemaDatatypes.rb.  See test/xsd_ut.rb and test/baseData_ut.rb.</li>
-</ul></dd>
-
-<dt>SOAP &lt;-&gt; Ruby object mapping (mappingRegistry.rb and rpcUtils.rb)</dt>
-<dd>
-<ul>
-<li>Exception raised from server side could not be mapped to specific exception.  Fixed.</li>
-<li>Refactoring to avoid *_eval.  Reduced warnings.</li>
-<li>Added Range marshalling support.</li>
-<li>Regexp#options support under ruby/1.6.</li>
-<li>Supports cyclic Range such as;
-<pre>
-  class Foo
-    attr_accessor :foo
-    def succ; end
-    def &lt;=&gt;( rhs ); end
-  end
-
-  o1 = Foo.new
-  o2 = Foo.new
-  r = o1..o2
-  o1.foo = r
-
-  p SOAPMarshal.load( SOAPMarshal.dump( r ))
-</pre></li>
-<li>Supports some instance variable of ruby standard class.
-But instance variable of Array, Hash, String, Float and Bignum are not supported because of restriction of SOAP encoding format...</li>
-<li>Alias ::SOAPMarshal to ::SOAP::Marshal.</li>
-<li>Added Marshal.load and Marshal.dump as aliases to Marshal.unmarshal and
-  Marshal.unmarshal.</li>
-</ul></dd>
-
-<dt>misc</dt>
-<dd>
-<ul>
-<li>Dumps what parser is used when $DEBUG.  Try 'ruby -d -rsoap/processor -e 0'</li>
-<li>Added CGI samples in sample/.</li>
-<li>Some performance check and tuning has been done on both client and server side.
-One bottle neck is Kernel.methods which SOAP4R use(d) while mapping SOAP Data Model &lt;-&gt; Ruby object.
-I replaced it with Object.respond_to? .
-Another bottle neck of client side is delegate.rb which is used by http-access2.
-Get <a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F.
-</ul>
-</dd>
-</dl>
 
 <h2 id="install" name="install">2. Install</h2>
 
@@ -255,7 +205,7 @@ Note: This module is scheduled to be included in standard distribution instead o
 <dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Devel%3A%3ALogger">[RAA:Devel::Logger]</a></dt>
 <dd>Logging utility by NaHi.</dd>
 
-<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version F or later</dt>
+<dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=http-access2">[RAA:http-access2]</a> version G or later</dt>
 <dd>Yet another HTTP client implementation by NaHi.</dd>
 
 <dt class="path"><a href="http://www.ruby-lang.org/en/raa-list.rhtml?name=Uconv">[RAA:Uconv]</a> (optional)</dt>
@@ -264,6 +214,12 @@ It is requred when you want automatic CES conversion between
 SJIS &lt;-&gt; UTF8 and EUC &lt;-&gt; UTF8.
 Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
 I will support Iconv for more conversion set.
+</dd>
+
+<dt class="path"><a href="http://www.ruby-lang.org/~knu/cgi-bin/cvsweb.cgi/rough/lib/uri/">uri module</a> (for Ruby/1.6.6 or earlier)</dt>
+<dd>by Yamada Akira.
+Uri module is bundled in Ruby/1.6.7, Ruby/1.7 or later.
+To use SOAP4R under Ruby/1.6.6, get uri module above and install it.
 </dd>
 
 </dl>
@@ -594,6 +550,31 @@ Any comments are welcomed. (as always)</dd>
 <h2 id="history" name="history">9. History</h2>
 
 <dl>
+<dt>1.4.7 - September 20, 2002</dt>
+<dd>
+This version has these enhancements and bug fixes;
+<ul>
+<li>Includes WSDL4R initial release.
+<ul>
+<li>Bare in mind this is an alpha level code.
+I wrote it halfway at half and a year ago,
+and wrote the rest part in half and a day.
+No comprehensive test, no strict syntax check, unfriendly error message, etc.
+Try it if you want, and find bugs in it.</li>
+<li>WSDL4R can run under XMLParser for now.
+You might be able to let it run under NQXML/REXML if you know SAX
+programming well.  How XML processor is used under WSDL4R
+is as same as under SOAP4R.</li>
+</ul></li>
+<li>Added xsd:short support.</li>
+<li>::Float(double precision float in Ruby) is mapped to xsd:double now.
+It was mapped to xsd:float.</li>
+<li>Fixed a bug of year &lt; 0 handling.  B.C. 1 =&gt; -0001 in XMLSchema.</li>
+<li>Fixed a bug of exception serialization.  Custam mappingRegistry was not used.</li>
+<li>Fixed a bug of regex for MediaType parsing.</li>
+</ul>
+</dd>
+
 <dt>1.4.5 - May 25, 2002</dt>
 <dd>
 This version has these enhancements;
