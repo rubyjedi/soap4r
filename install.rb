@@ -41,6 +41,9 @@ begin
     join(SRCPATH, 'lib', 'soap', 'mapping'),
     join(DSTPATH, 'soap', 'mapping'))
   installDir(
+    join(SRCPATH, 'lib', 'soap', 'encodingstyle'),
+    join(DSTPATH, 'soap', 'encodingstyle'))
+  installDir(
     join(SRCPATH, 'lib', 'wsdl'),
     join(DSTPATH, 'wsdl'))
   installDir(
