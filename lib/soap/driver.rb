@@ -106,10 +106,10 @@ class Driver
   ###
   ## Driving interface.
   #
-  def method_missing( msg_id, *params )
-    log( SEV_INFO ) { "method_missing: invoked '#{ msg_id.id2name }'." }
-    call( msg_id.id2name, *params )
-  end
+#  def method_missing( msg_id, *params )
+#    log( SEV_INFO ) { "method_missing: invoked '#{ msg_id.id2name }'." }
+#    call( msg_id.id2name, *params )
+#  end
 
   def invoke( reqHeaders, reqBody )
     log( SEV_INFO ) { "invoke: invoking message '#{ reqBody.type }'." }
