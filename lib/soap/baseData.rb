@@ -51,6 +51,7 @@ module SOAPBasetype
   attr_accessor :namespace
   attr_accessor :name
   attr_accessor :id
+  attr_accessor :root
   attr_accessor :parent
 
 public
@@ -107,6 +108,7 @@ module SOAPCompoundtype
   attr_accessor :namespace
   attr_accessor :name
   attr_accessor :id
+  attr_accessor :root
   attr_accessor :parent
 
   attr_reader :extraAttributes
