@@ -32,6 +32,8 @@ module SOAP
 #     aaa.hhh = iii
 #
 class Property
+  FrozenError = (RUBY_VERSION >= "1.9.0") ? RuntimeError : TypeError
+
   include Enumerable
 
   module Util
@@ -189,7 +191,7 @@ protected
   def local_referent(key)
     check_lock(key)
     if propkey?(@store[key]) and @store[key].locked?
-      raise TypeError.new("cannot split any key from locked property")
+      raise FrozenError.new("cannot split any key from locked property")
     end
     @store[key]
   end
@@ -198,9 +200,9 @@ protected
     check_lock(key)
     if @locked
       if propkey?(value)
-	raise TypeError.new("cannot add any key to locked property")
+	raise FrozenError.new("cannot add any key to locked property")
       elsif propkey?(@store[key])
-	raise TypeError.new("cannot override any key in locked property")
+	raise FrozenError.new("cannot override any key in locked property")
       end
     end
     @store[key] = value
@@ -264,7 +266,7 @@ private
 
   def check_lock(key)
     if @locked and (key.nil? or !@store.key?(key))
-      raise TypeError.new("cannot add any key to locked property")
+      raise FrozenError.new("cannot add any key to locked property")
     end
   end
 
