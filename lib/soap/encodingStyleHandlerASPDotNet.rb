@@ -54,7 +54,7 @@ class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
     when XSDString
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( Charset.encodingToXML( data.to_s ))
-    when XSDAnyType
+    when XSDAnySimpleType
       SOAPGenerator.encodeTag( buf, name, attrs, false )
       buf << SOAPGenerator.encodeStr( data.to_s )
     when SOAPStruct
@@ -98,15 +98,14 @@ yle." )
   end
 
   class SOAPUnknown < SOAPTemporalObject
-    def initialize( handler, ns, name )
+    def initialize( handler, elementName )
       super()
       @handler = handler
-      @ns = ns
-      @name = name
+      @elementName = elementName
     end
 
     def toStruct
-      o = SOAPStruct.decode( @ns, @name, XSD::AnyType )
+      o = SOAPStruct.decode( @elementName, XSD::AnyTypeName )
       o.parent = @parent
       o.type.name = @name
       @handler.decodeParent( @parent, o )
@@ -114,24 +113,24 @@ yle." )
     end
 
     def toString
-      o = SOAPString.decode( @ns, @name )
+      o = SOAPString.decode( @elementName )
       o.parent = @parent
       @handler.decodeParent( @parent, o )
       o
     end
 
     def toNil
-      o = SOAPNil.decode( @ns, @name )
+      o = SOAPNil.decode( @elementName )
       o.parent = @parent
       @handler.decodeParent( @parent, o )
       o
     end
   end
 
-  def decodeTag( ns, name, attrs, parent )
+  def decodeTag( ns, elementName, attrs, parent )
     # ToDo: check if @textBuf is empty...
     @textBuf = ''
-    o = SOAPUnknown.new( self, ns, name )
+    o = SOAPUnknown.new( self, elementName )
     o.parent = parent
     o
   end
