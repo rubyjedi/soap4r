@@ -61,7 +61,7 @@ class SOAPProxy
 
       params = {}
     
-      if (( values.size == 1 ) and ( values[0].is_a?( Hash )))
+      if (( values.size == 1 ) and ( values[ 0 ].is_a?( Hash )))
 	params = values[ 0 ]
       else
 	0.upto( values.size - 1 ) do | i |
