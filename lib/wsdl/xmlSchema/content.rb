@@ -41,7 +41,7 @@ class Content < Info
     @mixed = false
     @type = nil
     @attributes = []
-    @elements = []
+    @elements = {}
   end
 
   def targetNamespace
@@ -70,11 +70,14 @@ class Content < Info
 	  "Unexpected element #{ element }." )
       end
       o = Element.new
-      @elements << o
       o
     else
       nil
     end
+  end
+
+  def addElement( element )
+    @elements[ element.name ] = element
   end
 
   FinalAttrName = XSD::QName.new( nil, 'final' )
