@@ -1,4 +1,5 @@
-require 'SOAPProxy'
+require 'soap/proxy'
+require 'soap/rpcUtils'
 require 'xmltree'
 require 'application'
 
@@ -6,6 +7,7 @@ require 'application'
 class SampleDriver
   include XML::SimpleTree
   include Log::Severity
+  include SOAPRPCUtils
 
   public
 
@@ -44,7 +46,7 @@ class SampleDriver
     log( SEV_DEBUG, "call: parameters '#{ params.inspect }'." )
 
     # Convert parameters
-    params.collect! { |param| paramConv( param ) }
+    params.collect! { |param| obj2soap( param ) }
     log( SEV_DEBUG, "call: parameters '#{ params.inspect }'." )
 
     # Prepare SOAP header.
@@ -63,46 +65,15 @@ class SampleDriver
     begin
       @proxy.checkFault( ns, body )
     rescue SOAP::FaultError
-      p $!
+      $!.set_backtrace(
+	soap2obj( $!.detail ).map! { |s|
+	  s.sub( /^/, @handler.endPoint + ':' )
+	}
+      )
+      raise
     end
 
-    return body.data.retVal
-  end
-
-
-  ###
-  ## Convert parameter
-  #
-  def paramConv( obj )
-    case obj
-    when SOAPBasetypeUtils
-      obj
-    when TrueClass, FalseClass
-      SOAPBoolean.new( obj )
-    when String
-      SOAPString.new( obj )
-    when Time
-      SOAPTimeInstant.new( obj )
-    when Fixnum
-      SOAPInt.new( obj )
-    when Integer
-      SOAPInteger.new( obj )
-    when Array
-      param = SOAPArray.new()
-      param.namespace = obj.type.instance_eval( "@namespace" )
-      obj.each do | var |
-	param.add( paramConv( var ))
-      end
-      param
-    else
-      typeName = obj.type.instance_eval( "@typeName" ) || obj.type.to_s
-      param = SOAPStruct.new( typeName  )
-      param.namespace = obj.type.instance_eval( "@namespace" )
-      obj.instance_variables.each do | var |
-	name = var.dup.sub!( /^@/, '' )
-	param.add( name, paramConv( obj.instance_eval( var )))
-      end
-      param
-    end
+    obj = soap2obj( body.data.data[ "return" ] )
+    return obj
   end
 end
