@@ -87,6 +87,12 @@ class Driver
     @proxy = @servant.proxy
   end
 
+  def loadproperty(propertyname)
+    unless options.loadproperty(propertyname)
+      raise LoadError.new("No such property to load -- #{propertyname}")
+    end
+  end
+
   def inspect
     "#<#{self.class}:#{@servant.streamhandler.inspect}>"
   end
