@@ -8,7 +8,7 @@
     xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <xsd:schema targetNamespace="urn:example.com:echo-type">
-      <xsd:complexType name="OneAnyMemberStruct">
+      <xsd:complexType name="foo.bar">
         <xsd:sequence>
           <xsd:any />
         </xsd:sequence>
@@ -17,7 +17,7 @@
   </types>
 
   <message name="msg_echoitem">
-    <part name="echoitem" type="txd:OneAnyMemberStruct"/>
+    <part name="echoitem" type="txd:foo.bar"/>
   </message>
 
   <portType name="echo_port_type">

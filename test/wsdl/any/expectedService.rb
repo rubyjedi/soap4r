@@ -7,19 +7,19 @@ class Echo_port_type
   MappingRegistry = SOAP::Mapping::Registry.new
 
   MappingRegistry.set(
-    OneAnyMemberStruct,
+    Foo_bar,
     ::SOAP::SOAPStruct,
     ::SOAP::Mapping::Registry::TypedStructFactory,
-    { :type => XSD::QName.new("urn:example.com:echo-type", "OneAnyMemberStruct") }
+    { :type => XSD::QName.new("urn:example.com:echo-type", "foo.bar") }
   )
 
 
   Methods = [
     ["echo", "echo", [
       ["in", "echoitem",
-       [::SOAP::SOAPStruct, "urn:example.com:echo-type", "OneAnyMemberStruct"]],
+       [::SOAP::SOAPStruct, "urn:example.com:echo-type", "foo.bar"]],
       ["retval", "echoitem",
-       [::SOAP::SOAPStruct, "urn:example.com:echo-type", "OneAnyMemberStruct"]]], "urn:example.com:echo", "urn:example.com:echo"]
+       [::SOAP::SOAPStruct, "urn:example.com:echo-type", "foo.bar"]]], "urn:example.com:echo", "urn:example.com:echo"]
   ]
 end
 

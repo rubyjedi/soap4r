@@ -1,6 +1,6 @@
 # urn:example.com:echo-type
-class OneAnyMemberStruct
-  @@schema_type = "OneAnyMemberStruct"
+class Foo_bar
+  @@schema_type = "foo.bar"
   @@schema_ns = "urn:example.com:echo-type"
 
   def any
