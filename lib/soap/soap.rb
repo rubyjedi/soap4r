@@ -56,7 +56,7 @@ module SOAP
     attr_reader :faultCode
     attr_reader :faultString
     attr_reader :faultActor
-    attr_reader :detail
+    attr_accessor :detail
 
     def initialize( fault )
       @faultCode = fault.faultcode

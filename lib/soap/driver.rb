@@ -143,6 +143,7 @@ private
 	  raise
 	end
       else
+	e.detail = detail
 	e.set_backtrace(
 	  if detail.is_a?( Array )
 	    detail.map! { |s|
