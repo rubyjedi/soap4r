@@ -53,6 +53,9 @@ class Binding < Info
       o = WSDL::SOAP::Binding.new
       @soapBinding = o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end

@@ -36,7 +36,13 @@ class Part < Info
   end
 
   def parseElement( element )
-    nil
+    case element
+    when DocumentationName
+      o = Documentation.new
+      o
+    else
+      nil
+    end
   end
 
   NameAttrName = XSD::QName.new( nil, 'name' )

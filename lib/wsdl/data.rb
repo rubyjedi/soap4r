@@ -17,6 +17,7 @@ Ave, Cambridge, MA 02139, USA.
 =end
 
 
+require 'wsdl/documentation'
 require 'wsdl/definitions'
 require 'wsdl/types'
 require 'wsdl/message'

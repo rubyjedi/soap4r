@@ -51,6 +51,9 @@ class Service < Info
       o = WSDL::SOAP::Address.new
       @soapAddress = o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end

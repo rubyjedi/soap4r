@@ -190,6 +190,9 @@ class Definitions < Info
       o = Service.new
       @services << o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end

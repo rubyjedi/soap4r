@@ -61,6 +61,9 @@ class PortType < Info
       o = Operation.new
       @operations << o
       o
+    when DocumentationName
+      o = Documentation.new
+      o
     else
       nil
     end
