@@ -625,7 +625,7 @@ def doTestBase(drv)
   title = 'echoFloat (special values: -0)'
   dumpTitle(title)
   begin
-    arg = -0.0
+    arg = (-1.0 / (1.0 / 0.0))
     var = drv.echoFloat(SOAPFloat.new(arg))
     dumpNormal(title, arg, var)
   rescue Exception
