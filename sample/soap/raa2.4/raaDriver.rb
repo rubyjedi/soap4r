@@ -43,6 +43,12 @@ class RaaServicePortType < SOAP::RPC::Driver
     { :type => XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency") }
   )
   MappingRegistry.set(
+    StringArray,
+    ::SOAP::SOAPArray,
+    ::SOAP::Mapping::Registry::TypedArrayFactory,
+    { :type => XSD::QName.new("http://www.w3.org/2001/XMLSchema", "string") }
+  )
+  MappingRegistry.set(
     Map,
     ::SOAP::SOAPArray,
     ::SOAP::Mapping::Registry::TypedArrayFactory,
@@ -78,7 +84,7 @@ class RaaServicePortType < SOAP::RPC::Driver
     ],
     ["names", "names",
       [
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -92,7 +98,7 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "major", [SOAP::SOAPString]],
         ["in", "minor", [SOAP::SOAPString]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -105,14 +111,14 @@ class RaaServicePortType < SOAP::RPC::Driver
     ["list_recent_updated", "list_recent_updated",
       [
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_recent_created", "list_recent_created",
       [
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -120,7 +126,7 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "date", [SOAP::SOAPDateTime]],
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -128,14 +134,14 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "date", [SOAP::SOAPDateTime]],
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_by_owner", "list_by_owner",
       [
         ["in", "owner_id", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -143,7 +149,7 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "substring", [SOAP::SOAPString]],
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -151,7 +157,7 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "substring", [SOAP::SOAPString]],
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -159,7 +165,7 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "substring", [SOAP::SOAPString]],
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -167,7 +173,7 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "substring", [SOAP::SOAPString]],
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -175,7 +181,7 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "substring", [SOAP::SOAPString]],
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
@@ -183,7 +189,7 @@ class RaaServicePortType < SOAP::RPC::Driver
       [
         ["in", "substring", [SOAP::SOAPString]],
         ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],

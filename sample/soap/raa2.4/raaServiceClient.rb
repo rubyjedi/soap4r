@@ -45,7 +45,7 @@ puts obj.dependents(name, version)
 #   N/A
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -76,7 +76,7 @@ puts obj.size
 #   minor		 - {http://www.w3.org/2001/XMLSchema}string
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -106,7 +106,7 @@ puts obj.tree_by_category
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -121,7 +121,7 @@ puts obj.list_recent_updated(idx)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -137,7 +137,7 @@ puts obj.list_recent_created(idx)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -153,7 +153,7 @@ puts obj.list_updated_since(date, idx)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -168,7 +168,7 @@ puts obj.list_created_since(date, idx)
 #   owner_id		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -184,7 +184,7 @@ puts obj.list_by_owner(owner_id)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -200,7 +200,7 @@ puts obj.search_name(substring, idx)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -216,7 +216,7 @@ puts obj.search_short_description(substring, idx)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -232,7 +232,7 @@ puts obj.search_owner(substring, idx)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -248,7 +248,7 @@ puts obj.search_version(substring, idx)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
@@ -264,7 +264,7 @@ puts obj.search_status(substring, idx)
 #   idx		 - {http://www.w3.org/2001/XMLSchema}int
 #
 # RETURNS
-#   return		ProjectDependencyArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+#   return		StringArray - {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
 #
 # RAISES
 #   (undefined)
