@@ -49,7 +49,7 @@ module GenSupport
 
   def safevarname(name)
     safename = name.scan(/[a-zA-Z0-9_]+/).join('_')
-    uncapitalize(safename)
+    safename = uncapitalize(safename)
     unless /^[a-z]/ =~ safename
       safename = "m_#{safename}"
     end

@@ -135,8 +135,8 @@ private
     mr.definition = "@#{varname}"
     str = mr.dump
     if writable
-      mw = MethodDef.new(attrname + "=", varname)
-      mw.definition = "@#{varname} = #{varname}"
+      mw = MethodDef.new(attrname + "=", 'value')
+      mw.definition = "@#{varname} = value"
       str << "\n" + mw.dump
     end
     str
