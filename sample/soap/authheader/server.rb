@@ -2,6 +2,7 @@
 
 require 'soap/rpc/standaloneServer'
 require 'soap/header/simplehandler'
+require 'authmgr'
 
 class AuthHeaderPortServer < SOAP::RPC::StandaloneServer
   class AuthHeaderService
@@ -22,56 +23,20 @@ class AuthHeaderPortServer < SOAP::RPC::StandaloneServer
   def initialize(*arg)
     super
     add_rpc_servant(AuthHeaderService.new, Name)
-    ServerAuthHeaderHandler.init
     add_rpc_request_headerhandler(ServerAuthHeaderHandler)
   end
 
   class ServerAuthHeaderHandler < SOAP::Header::SimpleHandler
     MyHeaderName = XSD::QName.new("http://tempuri.org/authHeader", "auth")
 
-    class << self
-      def create
-	new
-      end
-
-      def init
-	@users = {
-	  'NaHi' => 'passwd',
-	  'HiNa' => 'wspass'
-	}
-	@sessions = {}
-      end
-
-      def login(userid, passwd)
-	userid and passwd and @users[userid] == passwd
-      end
-
-      def auth(sessionid)
-	@sessions[sessionid][0]
-      end
-
-      def create_session(userid)
-	while true
-	  key = create_sessionkey
-	  break unless @sessions[key]
-	end
-	@sessions[key] = [userid]
-	key
-      end
-
-      def destroy_session(sessionkey)
-	@sessions.delete(sessionkey)
-      end
-
-    private
-
-      def create_sessionkey
-	Time.now.usec.to_s
-      end
+    @authmgr = Authmgr.new
+    def self.create
+      new(@authmgr)
     end
 
-    def initialize
+    def initialize(authmgr)
       super(MyHeaderName)
+      @authmgr = authmgr
       @userid = @sessionid = nil
     end
 
@@ -83,17 +48,17 @@ class AuthHeaderPortServer < SOAP::RPC::StandaloneServer
       auth = false
       userid = my_header["userid"]
       passwd = my_header["passwd"]
-      if self.class.login(userid, passwd)
+      if @authmgr.login(userid, passwd)
 	auth = true
       elsif sessionid = my_header["sessionid"]
-	if userid = self.class.auth(sessionid)
-	  self.class.destroy_session(sessionid)
+	if userid = @authmgr.auth(sessionid)
+	  @authmgr.destroy_session(sessionid)
 	  auth = true
 	end
       end
       raise RuntimeError.new("authentication failed") unless auth
       @userid = userid
-      @sessionid = self.class.create_session(userid)
+      @sessionid = @authmgr.create_session(userid)
     end
   end
 end
