@@ -38,7 +38,7 @@ class Property
     assign_hook(name_to_a(name), &hook)
   end
 
-  # keys: downcase symbol
+  # returns: downcase symbol
   def keys
     @store.keys
   end
@@ -60,8 +60,7 @@ class Property
 protected
 
   def referent(ary)
-    name, *rest = *ary
-    key = to_key(name)
+    key, rest = location_pair(ary)
     if rest.empty?
       check_lock(key)
       @store[key]
@@ -71,8 +70,7 @@ protected
   end
 
   def assign(ary, value)
-    name, *rest = *ary
-    key = to_key(name)
+    key, rest = location_pair(ary)
     if rest.empty?
       check_lock(key)
       @store[key] = value
@@ -83,8 +81,7 @@ protected
   end
 
   def assign_hook(ary, &hook)
-    name, *rest = *ary
-    key = to_key(name)
+    key, rest = location_pair(ary)
     if rest.empty?
       check_lock(key)
       (@hook[key] ||= []) << hook
@@ -134,6 +131,12 @@ private
     else
       raise ArgumentError.new("Unknown name #{name}(#{name.class})")
     end
+  end
+
+  def location_pair(ary)
+    name, *rest = *ary
+    key = to_key(name)
+    return key, rest
   end
 
   def normalize_name(name)
