@@ -19,27 +19,34 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/streamHandler'
-#require 'soap/streamHandler_wo_http-access'
+#require 'soap/streamHandler_http-access'
 require 'soap/rpcUtils'
+require 'soap/encodingStyleHandlerDynamic'
+
+
+module SOAP
+
 
 class SOAPProxy
-  include SOAPProcessor
-  include SOAPRPCUtils
+  include SOAP
+  include Processor
+  include RPCUtils
 
   public
 
   attr_reader :namespace
-  attr_accessor :allowUnqualifiedElement
+  attr_accessor :soapAction, :allowUnqualifiedElement
 
-  def initialize( namespace, streamHandler )
+  def initialize( namespace, streamHandler, soapAction = nil )
     @namespace = namespace
     @handler = streamHandler
+    @soapAction = soapAction
     @method = {}
     @allowUnqualifiedElement = false
   end
 
   class Request
-    include SOAPRPCUtils
+    include RPCUtils
 
     public
 
@@ -48,8 +55,7 @@ class SOAPProxy
     attr_reader :name
 
     def initialize( modelMethod, values )
-      @method = SOAPMethod.new( modelMethod.namespace, modelMethod.name,
-	modelMethod.paramDef )
+      @method = SOAPMethod.new( modelMethod.namespace, modelMethod.name, modelMethod.paramDef, modelMethod.soapAction )
       @namespace = @method.namespace
       @name = @method.name
 
@@ -59,7 +65,7 @@ class SOAPProxy
 	params = values[ 0 ]
       else
 	0.upto( values.size - 1 ) do | i |
-	  params[ @method.paramNames[ i ]] = values[ i ] || SOAPNull.new()
+	  params[ @method.paramNames[ i ]] = values[ i ] || SOAPNil.new()
 	end
       end
       @method.setParams( params )
@@ -67,8 +73,8 @@ class SOAPProxy
   end
 
   # Method definition.
-  def addMethod( methodName, paramDef )
-    @method[ methodName ] = SOAPMethod.new( @namespace, methodName, paramDef )
+  def addMethod( methodName, paramDef, soapAction = nil )
+    @method[ methodName ] = SOAPMethod.new( @namespace, methodName, paramDef, soapAction )
   end
 
   # Create new request.
@@ -88,23 +94,23 @@ class SOAPProxy
     # Create new request
     req = createRequest( methodName, *values )
 
-    # SOAP tree construction.
-    tree = createTree( ns, headers, req )
+    # Get sending string.
+    sendString = marshalRequest( ns, headers, req )
 
     # Send request.
-    receiveString = sendRequest( req, tree )
+    receiveString = sendRequest( req, sendString )
 
     # SOAP tree parsing.
     opt = {}
     opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
-    ns, header, body = unmarshal( receiveString, opt )
+    opt[ 'defaultEncodingStyleHandler' ] = EncodingStyleHandler.getHandler( EncodingNamespace )
+    header, body = unmarshal( receiveString, opt )
 
-    # Used namespaces, header element, and body element.
-    return ns, header, body
+    return header, body
   end
 
-  # SOAP tree construction.
-  def createTree( ns, headers, request )
+  # SOAP marshalling
+  def marshalRequest( ns, headers, request )
     # Preparing headers.
     header = SOAPHeader.new()
     if headers
@@ -116,27 +122,27 @@ class SOAPProxy
     # Preparing body.
     body = SOAPBody.new( request.method )
 
-    # Tree construction.
-    soapTree = marshal( ns, header, body )
+    # Marshal.
+    marshalledString = marshal( ns, header, body )
 
-    return soapTree
+    return marshalledString
   end
 
   # Send the request.
-  def sendRequest( request, tree )
-    # Serialize.
-    sendString = tree.to_s
-
+  def sendRequest( request, sendString )
     # Send request.
-    receiveString = @handler.send( sendString )
+    receiveString = @handler.send( sendString, request.method.soapAction || soapAction )
 
     receiveString
   end
 
   # SOAP Fault checking.
-  def checkFault( ns, body )
+  def checkFault( body )
     if ( body.fault )
       raise SOAP::FaultError.new( body.fault )
     end
   end
+end
+
+
 end
