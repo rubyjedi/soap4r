@@ -32,10 +32,10 @@ class Element < Info
   attr_accessor :nillable
 
   AnyType = XSD::QName.new( XSD::Namespace, XSD::AnyTypeLiteral )
-  def initialize
+  def initialize( name = nil, type = AnyType )
     super()
-    @name = nil
-    @type = AnyType
+    @name = name
+    @type = type
     @maxOccurs = 1
     @minOccurs = 1
     @nillable = nil
@@ -72,7 +72,6 @@ class Element < Info
     case attr
     when NameAttrName
       @name = value
-      parent.addElement( self )
     when TypeAttrName
       @type = if value.is_a?( XSD::QName )
 	  value
