@@ -1,5 +1,5 @@
 # WSDL4R - WSDL XML Instance parser library.
-# Copyright (C) 2002 NAKAMURA Hiroshi.
+# Copyright (C) 2002, 2003 NAKAMURA Hiroshi.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -72,7 +72,7 @@ public
   def initialize( opt = {} )
     @parseStack = nil
     @lastNode = nil
-    @charset = opt[ :charset ] || 'us-ascii'
+    @charset = opt[ :charset ]
   end
 
   def parse( stringOrReadable )
