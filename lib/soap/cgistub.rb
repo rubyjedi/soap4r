@@ -131,7 +131,11 @@ private
       end
       @response.header.set( 'Cache-Control', 'private' )
       @response.body.type = @mediaType
-      @response.body.charset = requestCharset
+      @response.body.charset = if requestCharset
+	  ::SOAP::Charset.getCharsetStr( requestCharset )
+	else
+	  nil
+	end
       str = @response.dump
       log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
       print str
@@ -143,7 +147,7 @@ private
       @response = HTTP::Message.newResponse( responseString )
       @response.header.set( 'Cache-Control', 'private' )
       @response.body.type = @mediaType
-      @response.body.charset = @request ? @request.charset : nil
+      @response.body.charset = nil
       @response.status = 500
       str = @response.dump
       log( SEV_DEBUG ) { "SOAP CGI Response:\n#{ str }" }
