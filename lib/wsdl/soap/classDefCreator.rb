@@ -82,7 +82,7 @@ private
   def dump_simpletypedef(simpletype)
     qname = simpletype.name
     if simpletype.restriction.enumeration.empty?
-      STDERR.puts("#{qname}: simpleType which is not enum type not supported.")
+      STDERR.puts("#{qname}: simpleType which is not enum type not supported")
       return ''
     end
     c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
@@ -183,8 +183,9 @@ private
     qname = complextype.name
     c = XSD::CodeGen::ClassDef.new(create_class_name(qname), '::Array')
     c.comment = "#{ qname.namespace }"
-    c.def_classvar('schema_type', qname.name.dump)
-    c.def_classvar('schema_ns', qname.namespace.dump)
+    type = complextype.child_type
+    c.def_classvar('schema_type', type.name.dump)
+    c.def_classvar('schema_ns', type.namespace.dump)
     c.dump
   end
 end

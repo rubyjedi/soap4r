@@ -88,9 +88,9 @@ class HTTPServer < Logger::Application
   end
   alias add_method_as add_rpc_method_as
 
-  def add_document_method(obj, name, soapaction, req_qnames, res_qnames)
+  def add_document_method(obj, soapaction, name, req_qnames, res_qnames)
     param_def = create_doc_param_def(req_qnames, res_qnames)
-    @router.add_document_operation(obj, soapaction, name, param_def, opt)
+    @router.add_document_operation(obj, soapaction, name, param_def)
   end
 
 private
