@@ -361,7 +361,7 @@ private
     unless parenttype
       raise EncodingStyleError.new("Unknown type '#{ parent.type }'.")
     end
-    typename = parenttype.child_type(elename.name)
+    typename = parenttype.child_type(elename)
     if typename
       if (klass = TypeMap[typename])
 	return klass.decode(elename)
@@ -374,7 +374,7 @@ private
     type = if typename
 	@decode_typemap[typename]
       else
-	parenttype.child_defined_complextype(elename.name)
+	parenttype.child_defined_complextype(elename)
       end
     unless type
       raise EncodingStyleError.new("Unknown type '#{ typename }'.")
