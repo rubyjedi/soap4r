@@ -65,6 +65,11 @@ class RPCRouter
     begin
       opt = {}
       opt[ 'allowUnqualifiedElement' ] = true if @allowUnqualifiedElement
+
+      # Is this right?
+      soapString = soapString.dup
+      soapString.gsub!( "\r\n", "\n" )
+      soapString.gsub!( "\r", "\n" )
       header, body = unmarshal( soapString, opt )
 
       # So far, header is omitted...
