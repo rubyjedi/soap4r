@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: July 10, 2001<br />
+Last modified: July 11, 2001<br />
 Created: July 15, 2000
 </p>
 </div>
@@ -35,7 +35,7 @@ Created: July 15, 2000
 
 <p>
 本文書が対象としているSOAP4Rのバージョンは，
-SOAP4R/1.3.4
+SOAP4R/1.3.4.2
 です．
 </p>
 
@@ -54,11 +54,29 @@ SOAP4R/1.3.4
 <h2 id="changes" name="changes">1. Changes</h2>
 
 <p>
+SOAP4R/1.3.4は2001/7/10に一度パッケージ化されました．
+しかし，MNeumannさんとknuさんに教えていただいて，
+'redist'ディレクトリをパッケージに含めるのを忘れていたことに気付きました．
+そこで開発版からいくつかの修正を取り込むと同時に，
+1.3.4.2として再度パッケージ化しました．
+頻繁なリリースで申し訳ありません．．．
+</p>
+
+<p>
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
 で検出された非互換性をいくつか修正しました．
 </p>
 
 <ul>
+<li>1.3.4.2での変更:
+  <ul>
+    <li>Decimal型: 間抜けなバグを修正しました．0.0001が0.1に変換されてしまっていました．</li>
+    <li>CGIStubはSOAP Faultを返すときにHTTP status 500を返すようになりました．
+        おかしな仕様なのでずっと無視して200を返してきましたが，
+        SOAP/1.2 W3C WD 9 July 2001もこれを採用したようです．むー．．．</li>
+    <li>RPCクライアント実装（driver.rb）において，Exception#set_backtraceが正しく働いていませんでした．</li>
+  </ul>
+</li>
 <li>型関連の変更:
   <ul>
     <li>Array: 疎な配列のサポートが不完全でした．修正されました．</li>
@@ -284,13 +302,29 @@ charset指定には対応していません．</li>
 <h2 id="history" name="history">7. History</h2>
 
 <dl>
-<dt>1.3.4 - July 10, 2001</dt>
+<dt>1.3.4.2 - July 11, 2001</dt>
 <dd>
+SOAP4R/1.3.4は2001/7/10に一度パッケージ化されました．
+しかし，MNeumannさんとknuさんに教えていただいて，
+'redist'ディレクトリをパッケージに含めるのを忘れていたことに気付きました．
+そこで開発版からいくつかの修正を取り込むと同時に，
+1.3.4.2として再度パッケージ化しました．
+頻繁なリリースで申し訳ありません．．．
+<br/><br/>
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
 で検出された非互換性をいくつか修正しました．
 </p>
 
 <ul>
+<li>1.3.4.2での変更:
+  <ul>
+    <li>Decimal型: 間抜けなバグを修正しました．0.0001が0.1に変換されてしまっていました．</li>
+    <li>CGIStubはSOAP Faultを返すときにHTTP status 500を返すようになりました．
+        おかしな仕様なのでずっと無視して200を返してきましたが，
+        SOAP/1.2 W3C WD 9 July 2001もこれを採用したようです．むー．．．</li>
+    <li>RPCクライアント実装（driver.rb）において，Exception#set_backtraceが正しく働いていませんでした．</li>
+  </ul>
+</li>
 <li>型関連の変更:
   <ul>
     <li>Array: 疎な配列のサポートが不完全でした．修正されました．</li>
