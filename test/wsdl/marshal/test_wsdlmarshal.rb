@@ -21,7 +21,7 @@ class WSDLMarshaller
     type = Mapping.class2element(obj.class)
     ele =  Mapping.obj2soap(obj, @mapping_registry, type)
     ele.elename = ele.type
-    Processor.marshal(nil, SOAPBody.new(ele), @opt, io)
+    Processor.marshal(SOAPEnvelope.new(nil, SOAPBody.new(ele)), @opt, io)
   end
 
   def load(io)
