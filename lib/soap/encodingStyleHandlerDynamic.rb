@@ -168,6 +168,7 @@ module SOAP
       XSD::DateTimeLiteral => SOAPDateTime,
       XSD::DateLiteral => SOAPDate,
       XSD::TimeLiteral => SOAPTime,
+      XSD::HexBinaryLiteral => SOAPHexBinary,
       XSD::Base64BinaryLiteral => SOAPBase64,
     }
 
@@ -268,7 +269,7 @@ module SOAP
     def decodeTextBuf( node )
       unless @textBuf.empty?
 	case node
-	when XSDBase64Binary
+	when XSDHexBinary, XSDBase64Binary
 	  node.setEncoded( @textBuf )
 	when XSDString
 	  encoded = Charset.encodingFromXML( @textBuf )
@@ -292,9 +293,13 @@ module SOAP
       position = nil
 
       attrs.each do | key, value |
-	if ( ns.compare( XSD::Namespace, XSD::NilLiteral, key ))
+	if ( ns.compare( XSD::InstanceNamespace, XSD::NilLiteral, key ))
 	  # isNil = (( value == 'true' ) || ( value == '1' ))
-	  isNil = ( value == XSD::NilValue )
+	  if value == XSD::NilValue
+	    isNil = true
+	  else
+	    raise FormatDecodeError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true')." )
+	  end
 	elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	  type = value
 	elsif ( ns.compare( EncodingNamespace, AttrArrayType, key ))
