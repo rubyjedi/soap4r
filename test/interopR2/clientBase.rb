@@ -233,7 +233,7 @@ end
 
 def doTestBase( drv )
   setWireDumpLogFile( '_Base' )
-  drv.setWireDumpDev( $wireDumpDev )
+  #drv.setWireDumpDev( $wireDumpDev )
 
 #  drv.setWireDumpFileBase( getWireDumpLogFileBase( '_Base' ))
   drv.mappingRegistry = SOAPBuildersInterop::MappingRegistry
@@ -1234,7 +1234,7 @@ def doTestBase( drv )
   begin
     str = "Hello (日本語Japanese) こんにちは"
     arg = SOAP::SOAPBase64.new( str )
-    arg.asXSD	# Force xsd:base64Binary instead of soap-enc:base64
+    arg.as_xsd	# Force xsd:base64Binary instead of soap-enc:base64
     var = drv.echoBase64( arg )
     dumpNormal( title, str, var )
   rescue Exception
@@ -1246,7 +1246,7 @@ def doTestBase( drv )
   begin
     str = ""
     arg = SOAP::SOAPBase64.new( str )
-    arg.asXSD	# Force xsd:base64Binary instead of soap-enc:base64
+    arg.as_xsd	# Force xsd:base64Binary instead of soap-enc:base64
     var = drv.echoBase64( arg )
     dumpNormal( title, str, var )
   rescue Exception
@@ -1350,7 +1350,7 @@ def doTestBase( drv )
   begin
     str = "lower case"
     arg = SOAP::SOAPHexBinary.new
-    arg.setEncoded(( str.unpack( "H*" )[ 0 ] ).tr( 'A-F', 'a-f' ))
+    arg.set_encoded(( str.unpack( "H*" )[ 0 ] ).tr( 'A-F', 'a-f' ))
     var = drv.echoHexBinary( arg )
     dumpNormal( title, str, var )
   rescue Exception
@@ -1683,7 +1683,7 @@ end
 #
 def doTestGroupB( drv )
   setWireDumpLogFile( '_GroupB' )
-  drv.setWireDumpDev( $wireDumpDev )
+  #drv.setWireDumpDev( $wireDumpDev )
 
 #  drv.setWireDumpFileBase( getWireDumpLogFileBase( '_GroupB' ))
   drv.mappingRegistry = SOAPBuildersInterop::MappingRegistry
@@ -1747,7 +1747,7 @@ def doTestGroupB( drv )
 
     arg = SOAP::SOAPArray.new( XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' ), 2, XSD::XSDString::Type )
     arg.size = [ 3, 3 ]
-    arg.sizeFixed = true
+    arg.size_fixed = true
     arg.add( SOAP::RPCUtils.obj2soap( 'r0c0', SOAPBuildersInterop::MappingRegistry ))
     arg.add( SOAP::RPCUtils.obj2soap( 'r1c0', SOAPBuildersInterop::MappingRegistry ))
     arg.add( SOAP::RPCUtils.obj2soap( 'r2c0', SOAPBuildersInterop::MappingRegistry ))
@@ -1826,7 +1826,7 @@ def doTestGroupB( drv )
   begin
     arg = SOAP::SOAPArray.new( XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' ), 2, XSD::XSDString::Type )
     arg.size = [ 3, 3 ]
-    arg.sizeFixed = true
+    arg.size_fixed = true
 
     item = 'item'
     arg.add( 'r0c0' )
@@ -1855,7 +1855,7 @@ def doTestGroupB( drv )
   begin
     arg = SOAP::SOAPArray.new( XSD::QName.new( 'http://soapinterop.org/xsd', 'ArrayOfString2D' ), 2, XSD::XSDString::Type )
     arg.size = [ 3, 3 ]
-    arg.sizeFixed = true
+    arg.size_fixed = true
 
     item = 'item'
     arg.add( 'r0c0' )
@@ -1985,37 +1985,5 @@ def doTestGroupB( drv )
 #  rescue Exception
 #    dumpException( title )
 #  end
-
-=begin
-  title = 'echoXSDDateTime'
-  dumpTitle( title )
-  begin
-    arg = DateTime.new( 1000, 1, 1, 1, 1, 1 )
-    var = drv.echoXSDDateTime( arg )
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
-
-  title = 'echoXSDDate'
-  dumpTitle( title )
-  begin
-    arg = DateTime.new( 1000, 1, 1 )
-    var = drv.echoXSDDate( SOAP::SOAPDate.new( arg ))
-    dumpNormal( title, arg, var )
-  rescue Exception
-    dumpException( title )
-  end
-
-  title = 'echoXSDTime'
-  dumpTitle( title )
-  begin
-    arg = Time.now.gmtime
-    var = drv.echoXSDTime( SOAP::SOAPTime.new( arg ))
-    dumpNormal( title, SOAP::SOAPTime.new( arg ).to_s, SOAP::SOAPTime.new( var ).to_s )
-  rescue Exception
-    dumpException( title )
-  end
-=end
 
 end

@@ -35,7 +35,7 @@ class Part < Info
     @type = nil
   end
 
-  def parseElement( element )
+  def parse_element(element)
     case element
     when DocumentationName
       o = Documentation.new
@@ -45,10 +45,7 @@ class Part < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  ElementAttrName = XSD::QName.new( nil, 'element' )
-  TypeAttrName = XSD::QName.new( nil, 'type' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
       @name = value
@@ -57,7 +54,7 @@ class Part < Info
     when TypeAttrName
       @type = value
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

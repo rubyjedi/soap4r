@@ -30,120 +30,119 @@ class MethodDefCreator
 
   attr_reader :definitions
 
-  def initialize( definitions )
+  def initialize(definitions)
     @definitions = definitions
-    @complexTypes = @definitions.collectComplexTypes
+    @complextypes = @definitions.collect_complextypes
     @types = nil
   end
 
-  def dump( portType )
+  def dump(porttype)
     @types = []
     result = ""
-    operations = @definitions.getPortType( portType ).operations
-    binding = @definitions.getPortTypeBinding( portType )
-    operations.each do | operation |
-      opBinding = binding.operations[ operation.name ]
+    operations = @definitions.porttype(porttype).operations
+    binding = @definitions.porttype_binding(porttype)
+    operations.each do |operation|
+      op_bind = binding.operations[operation.name]
       result << ",\n" unless result.empty?
-      result << dumpMethod( operation, opBinding ).chomp
+      result << dump_method(operation, op_bind).chomp
     end
     return result, @types
   end
 
 private
 
-  # methodNameAs, methodName, params, soapAction, namespace
-  def dumpMethod( operation, binding )
-    methodName = createMethodName( operation.name.name )
-    methodNameAs = operation.name.name
-    params = collectParams( operation )
-    soapAction = binding.soapOperation.soapAction
-    namespace = binding.input.soapBody.namespace
-    paramsStr = param2str( params )
-    if paramsStr.empty?
-      paramsStr = '[]'
+  def dump_method(operation, binding)
+    name = create_method_name(operation.name.name)
+    name_as = operation.name.name
+    params = collect_parameter(operation)
+    soapaction = binding.soap_operation.soapaction
+    namespace = binding.input.soap_body.namespace
+    paramstr = param2str(params)
+    if paramstr.empty?
+      paramstr = '[]'
     else
-      paramsStr = "[\n" << paramsStr << " ]"
+      paramstr = "[\n" << paramstr << "]"
     end
     return <<__EOD__
-[ #{ dq( methodNameAs ) }, #{ dq( methodName ) }, #{ paramsStr },
-  #{ dq( soapAction ) }, #{ dq( namespace ) } ]
+[#{ dq(name_as) }, #{ dq(name) }, #{ paramstr },
+ #{ dq(soapaction) }, #{ dq(namespace) }]
 __EOD__
   end
 
-  def collectParams( operation )
-    result = operation.getInputParts.collect { | part |
-      collectTypes( part.type )
-      paramSet( 'in', typeDef( part.type ), part.name )
+  def collect_parameter(operation)
+    result = operation.inputparts.collect { |part|
+      collect_type(part.type)
+      param_set('in', definedtype(part.type), part.name)
     }
-    outParts = operation.getOutputParts
-    if outParts.size > 0
-      retval = outParts[ 0 ]
-      collectTypes( retval.type )
-      result << paramSet( 'retval', typeDef( retval.type ), retval.name )
-      cdr( outParts ).each { | part |
-	collectTypes( part.type )
-	result << paramSet( 'out', typeDef( part.type ), part.name )
+    outparts = operation.outputparts
+    if outparts.size > 0
+      retval = outparts[0]
+      collect_type(retval.type)
+      result << param_set('retval', definedtype(retval.type), retval.name)
+      cdr(outparts).each { |part|
+	collect_type(part.type)
+	result << param_set('out', definedtype(part.type), part.name)
       }
     end
     result
   end
 
-  def typeDef( type )
-    if mappedType = getBaseTypeMappedClass( type )
-      [ mappedType ]
+  def definedtype(type)
+    if mapped = basetype_mapped_class(type)
+      [mapped]
     else
-      typeDef = @complexTypes[ type ]
-      if typeDef.nil?
+      definedtype = @complextypes[type]
+      if definedtype.nil?
 	raise RuntimeError.new("Type: #{type} not found.")
       end
-      case typeDef.compoundType
+      case definedtype.compoundtype
       when :TYPE_STRUCT
-	[ '::SOAP::SOAPStruct', type.namespace, type.name ]
+	['::SOAP::SOAPStruct', type.namespace, type.name]
       when :TYPE_ARRAY
-	arrayType = typeDef.getArrayType
-	contentTypeNamespace = arrayType.namespace
-	contentTypeName = arrayType.name.sub( /\[(?:,)*\]$/, '' )
-	[ '::SOAP::SOAPArray', contentTypeNamespace, contentTypeName ]
+	arytype = definedtype.find_arytype
+	ns = arytype.namespace
+	name = arytype.name.sub(/\[(?:,)*\]$/, '')
+	['::SOAP::SOAPArray', ns, name]
       else
-	raise NotImplementedError.new( "Must not reach here." )
+	raise NotImplementedError.new("Must not reach here.")
       end
     end
   end
 
-  def paramSet( ioType, type, name )
-    [ ioType, type, name ]
+  def param_set(io_type, type, name)
+    [io_type, type, name]
   end
 
-  def collectTypes( type )
+  def collect_type(type)
     # ignore inline type definition.
     return if type.nil?
     @types << type
-    return unless @complexTypes[ type ]
-    @complexTypes[ type ].eachElement do | elementName, element |
-      collectTypes( element.type )
+    return unless @complextypes[type]
+    @complextypes[type].each_element do |name, element|
+      collect_type(element.type)
     end
   end
 
-  def param2str( params )
-    params.collect { | param |
-      "  [ #{ dq( param[0] ) }, #{ dq( param[2] ) },\n" <<
-      "    #{ type2str( param[1] ) } ]"
-    }.join( ",\n" )
+  def param2str(params)
+    params.collect { |param|
+      "  [#{ dq(param[0]) }, #{ dq(param[2]) },\n" <<
+      "   #{ type2str(param[1]) }]"
+    }.join(",\n")
   end
 
-  def type2str( type )
+  def type2str(type)
     if type.size == 1
-      "[ #{ type[0] } ]" 
+      "[#{ type[0] }]" 
     else
-      "[ #{ type[0] }, #{ dq( type[1] ) }, #{ dq( type[2] ) } ]" 
+      "[#{ type[0] }, #{ dq(type[1]) }, #{ dq(type[2]) }]" 
     end
   end
 
-  def dq( ele )
+  def dq(ele)
     "\"" << ele << "\""
   end
 
-  def cdr( ary )
+  def cdr(ary)
     result = ary.dup
     result.shift
     result

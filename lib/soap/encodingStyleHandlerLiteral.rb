@@ -24,69 +24,69 @@ module SOAP
 
 class EncodingStyleHandlerLiteral < EncodingStyleHandler
   Namespace = SOAP::LiteralNamespace
-  addHandler
+  add_handler
 
-  def initialize( charset = nil )
-    super( charset )
-    @textBuf = ''
+  def initialize(charset = nil)
+    super(charset)
+    @textbuf = ''
   end
 
 
   ###
   ## encode interface.
   #
-  def encodeData( buf, ns, qualified, data, parent, indent = '' )
+  def encode_data(buf, ns, qualified, data, parent, indent = '')
     attrs = {}
-    name = if qualified and data.elementName.namespace
-        SOAPGenerator.assignNamespace( attrs, ns, data.elementName.namespace )
-        ns.name( data.elementName )
+    name = if qualified and data.elename.namespace
+        SOAPGenerator.assign_ns(attrs, ns, data.elename.namespace)
+        ns.name(data.elename)
       else
-        data.elementName.name
+        data.elename.name
       end
 
     case data
     when SOAPRawString
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
       buf << data.to_s
     when XSDString
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
-      buf << SOAPGenerator.encodeStr( @charset ?
-	Charset.encodingToXML( data.to_s, @charset ) : data.to_s )
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
+      buf << SOAPGenerator.encode_str(@charset ?
+	Charset.encoding_to_xml(data.to_s, @charset) : data.to_s)
     when XSDAnySimpleType
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
-      buf << SOAPGenerator.encodeStr( data.to_s )
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
+      buf << SOAPGenerator.encode_str(data.to_s)
     when SOAPStruct
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
-      data.each do | key, value |
-	value.elementName.namespace = data.elementName.namespace if !value.elementName.namespace
-        yield( value, true )
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
+      data.each do |key, value|
+	value.elename.namespace = data.elename.namespace if !value.elename.namespace
+        yield(value, true)
       end
     when SOAPArray
-      SOAPGenerator.encodeTag( buf, name, attrs, indent )
-      data.traverse do | child, *rank |
+      SOAPGenerator.encode_tag(buf, name, attrs, indent)
+      data.traverse do |child, *rank|
 	data.position = nil
-        yield( child, true )
+        yield(child, true)
       end
     when SOAPElement
-      SOAPGenerator.encodeTag( buf, name, attrs.update( data.extraAttrs ),
-        indent )
+      SOAPGenerator.encode_tag(buf, name, attrs.update(data.extraattr),
+        indent)
       buf << data.text if data.text
-      data.each do | key, value |
-	value.elementName.namespace = data.elementName.namespace if !value.elementName.namespace
-        yield( value, data.qualified )
+      data.each do |key, value|
+	value.elename.namespace = data.elename.namespace if !value.elename.namespace
+        yield(value, data.qualified)
       end
     else
-      raise EncodingStyleError.new( "Unknown object:#{ data } in this encodingStyle." )
+      raise EncodingStyleError.new("Unknown object:#{ data } in this encodingStyle.")
     end
   end
 
-  def encodeDataEnd( buf, ns, qualified, data, parent )
-    name = if qualified and data.elementName.namespace
-        ns.name( data.elementName )
+  def encode_data_end(buf, ns, qualified, data, parent)
+    name = if qualified and data.elename.namespace
+        ns.name(data.elename)
       else
-        data.elementName.name
+        data.elename.name
       end
-    SOAPGenerator.encodeTagEnd( buf, name, indent )
+    SOAPGenerator.encode_tag_end(buf, name, indent)
   end
 
 
@@ -102,105 +102,105 @@ class EncodingStyleHandlerLiteral < EncodingStyleHandler
   end
 
   class SOAPUnknown < SOAPTemporalObject
-    def initialize( handler, elementName )
+    def initialize(handler, elename)
       super()
       @handler = handler
-      @elementName = elementName
+      @elename = elename
     end
 
-    def toStruct
-      o = SOAPStruct.decode( @elementName, XSD::AnyTypeName )
+    def as_struct
+      o = SOAPStruct.decode(@elename, XSD::AnyTypeName)
       o.parent = @parent
-      @handler.decodeParent( @parent, o )
+      @handler.decode_parent(@parent, o)
       o
     end
 
-    def toString
-      o = SOAPString.decode( @elementName )
+    def as_string
+      o = SOAPString.decode(@elename)
       o.parent = @parent
-      @handler.decodeParent( @parent, o )
+      @handler.decode_parent(@parent, o)
       o
     end
 
-    def toNil
-      o = SOAPNil.decode( @elementName )
+    def as_nil
+      o = SOAPNil.decode(@elename)
       o.parent = @parent
-      @handler.decodeParent( @parent, o )
+      @handler.decode_parent(@parent, o)
       o
     end
   end
 
-  def decodeTag( ns, elementName, attrs, parent )
-    # ToDo: check if @textBuf is empty...
-    @textBuf = ''
-    o = SOAPUnknown.new( self, elementName )
+  def decode_tag(ns, elename, attrs, parent)
+    # ToDo: check if @textbuf is empty...
+    @textbuf = ''
+    o = SOAPUnknown.new(self, elename)
     o.parent = parent
     o
   end
 
-  def decodeTagEnd( ns, node )
+  def decode_tag_end(ns, node)
     o = node.node
-    if o.is_a?( SOAPUnknown )
-      newNode = if /\A\s*\z/ =~ @textBuf
-	  o.toStruct
+    if o.is_a?(SOAPUnknown)
+      newnode = if /\A\s*\z/ =~ @textbuf
+	  o.as_struct
 	else
-	  o.toString
+	  o.as_string
 	end
-      node.replaceNode( newNode )
+      node.replace_node(newnode)
       o = node.node
     end
 
-    decodeTextBuf( o )
-    @textBuf = ''
+    decode_textbuf(o)
+    @textbuf = ''
   end
 
-  def decodeText( ns, text )
-    # @textBuf is set at decodeTagEnd.
-    @textBuf << text
+  def decode_text(ns, text)
+    # @textbuf is set at decode_tag_end.
+    @textbuf << text
   end
 
-  def decodePrologue
+  def decode_prologue
   end
 
-  def decodeEpilogue
+  def decode_epilogue
   end
 
-  def decodeParent( parent, node )
+  def decode_parent(parent, node)
     case parent.node
     when SOAPUnknown
-      newParent = parent.node.toStruct
-      node.parent = newParent
-      parent.replaceNode( newParent )
-      decodeParent( parent, node )
+      newparent = parent.node.as_struct
+      node.parent = newparent
+      parent.replace_node(newparent)
+      decode_parent(parent, node)
 
     when SOAPStruct
-      parent.node.add( node.name, node )
+      parent.node.add(node.name, node)
 
     when SOAPArray
       if node.position
-	parent.node[ *( decodeArrayPosition( node.position )) ] = node
+	parent.node[*(decode_arypos(node.position))] = node
 	parent.node.sparse = true
       else
-	parent.node.add( node )
+	parent.node.add(node)
       end
 
     when SOAPBasetype
-      raise EncodingStyleError.new( "SOAP base type must not have a child." )
+      raise EncodingStyleError.new("SOAP base type must not have a child.")
 
     else
       # SOAPUnknown does not have parent.
-      # raise EncodingStyleError.new( "Illegal parent: #{ parent }." )
+      # raise EncodingStyleError.new("Illegal parent: #{ parent }.")
     end
   end
 
 private
 
-  def decodeTextBuf( node )
-    if node.is_a?( XSDString )
+  def decode_textbuf(node)
+    if node.is_a?(XSDString)
       if @charset
-	node.set( Charset.encodingFromXML( @textBuf, @charset ))
+	node.set(Charset.encoding_from_xml(@textbuf, @charset))
       else
-	node.set( @textBuf )
+	node.set(@textbuf)
       end
     else
       # Nothing to do...

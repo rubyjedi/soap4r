@@ -1,29 +1,29 @@
 class CalcService2
-  def initialize( initValue = 0 )
-    @value = initValue
+  def initialize(value = 0)
+    @value = value
   end
 
-  def set( newValue )
-    @value = newValue
+  def set(value)
+    @value = value
   end
 
   def get
     @value
   end
 
-  def +( rhs )
+  def +(rhs)
     @value + rhs
   end
 
-  def -( rhs )
+  def -(rhs)
     @value - rhs
   end
 
-  def *( rhs )
+  def *(rhs)
     @value * rhs
   end
 
-  def /( rhs )
+  def /(rhs)
     @value / rhs
   end
 end

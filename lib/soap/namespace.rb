@@ -24,64 +24,63 @@ module SOAP
 
 
 class NS
-  attr_reader :defaultNamespace
+  attr_reader :default_namespace
 
   class FormatError < Error; end
 
 public
 
-  def initialize( initTag2NS = {} )
-    @tag2ns = initTag2NS
+  def initialize(tag2ns = {})
+    @tag2ns = tag2ns
     @ns2tag = {}
-    @tag2ns.each do | tag, namespace |
-      @ns2tag[ namespace ] = tag
+    @tag2ns.each do |tag, ns|
+      @ns2tag[ns] = tag
     end
-    @defaultNamespace = nil
+    @default_namespace = nil
   end
 
-  def assign( namespace, tag = nil )
-    if ( tag == '' )
-      @defaultNamespace = namespace
+  def assign(ns, tag = nil)
+    if (tag == '')
+      @default_namespace = ns
       tag
     else
-      tag ||= NS.assign( namespace )
-      @ns2tag[ namespace ] = tag
-      @tag2ns[ tag ] = namespace
+      tag ||= NS.assign(ns)
+      @ns2tag[ns] = tag
+      @tag2ns[tag] = ns
       tag
     end
   end
 
-  def assigned?( namespace )
-    @ns2tag.has_key?( namespace )
+  def assigned?(ns)
+    @ns2tag.key?(ns)
   end
 
-  def assignedTag?( tag )
-    @tag2ns.has_key?( tag )
+  def assigned_tag?(tag)
+    @tag2ns.key?(tag)
   end
 
   def clone
-    cloned = NS.new( @tag2ns.dup )
-    cloned.assign( @defaultNamespace, '' ) if @defaultNamespace
+    cloned = NS.new(@tag2ns.dup)
+    cloned.assign(@default_namespace, '') if @default_namespace
     cloned
   end
 
-  def name( name )
-    if ( name.namespace == @defaultNamespace )
+  def name(name)
+    if (name.namespace == @default_namespace)
       name.name
-    elsif @ns2tag.has_key?( name.namespace )
-      @ns2tag[ name.namespace ] + ':' << name.name
+    elsif @ns2tag.key?(name.namespace)
+      @ns2tag[name.namespace] + ':' << name.name
     else
-      raise FormatError.new( 'Namespace: ' << name.namespace << ' not defined yet.' )
+      raise FormatError.new('Namespace: ' << name.namespace << ' not defined yet.')
     end
   end
 
-  def compare( namespace, name, rhs )
-    if ( namespace == @defaultNamespace )
-      return true if ( name == rhs )
+  def compare(ns, name, rhs)
+    if (ns == @default_namespace)
+      return true if (name == rhs)
     end
-    @tag2ns.each do | assignedTag, assignedNS |
-      if assignedNS == namespace &&
-	  "#{ assignedTag }:#{ name }" == rhs
+    @tag2ns.each do |assigned_tag, assigned_ns|
+      if assigned_ns == ns && "#{ assigned_tag }:#{ name }" == rhs
 	return true
       end
     end
@@ -89,43 +88,43 @@ public
   end
 
   # $1 and $2 are necessary.
-  ParseRegexp = Regexp.new( '^([^:]+)(?::(.+))?$' )
+  ParseRegexp = Regexp.new('^([^:]+)(?::(.+))?$')
 
-  def parse( elem )
-    namespace = nil
+  def parse(elem)
+    ns = nil
     name = nil
     ParseRegexp =~ elem
     if $2
-      namespace = @tag2ns[ $1 ]
+      ns = @tag2ns[$1]
       name = $2
-      if !namespace
-	raise FormatError.new( 'Unknown namespace qualifier: ' << $1 )
+      if !ns
+	raise FormatError.new('Unknown namespace qualifier: ' << $1)
       end
     elsif $1
-      namespace = @defaultNamespace
+      ns = @default_namespace
       name = $1
     end
     if !name
-      raise FormatError.new( "Illegal element format: #{ elem }" )
+      raise FormatError.new("Illegal element format: #{ elem }")
     end
-    XSD::QName.new( namespace, name )
+    XSD::QName.new(ns, name)
   end
 
-  def eachNamespace
-    @ns2tag.each do | namespace, tag |
-      yield( namespace, tag )
+  def each_ns
+    @ns2tag.each do |ns, tag|
+      yield(ns, tag)
     end
   end
 
-  AssigningName = [ 0 ]
+  AssigningName = [0]
 
-  def NS.assign( namespace )
-    AssigningName[ 0 ] += 1
-    'n' << AssigningName[ 0 ].to_s
+  def NS.assign(ns)
+    AssigningName[0] += 1
+    'n' << AssigningName[0].to_s
   end
 
   def NS.reset()
-    AssigningName[ 0 ] = 0
+    AssigningName[0] = 0
   end
 end
 

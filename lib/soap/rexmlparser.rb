@@ -27,40 +27,40 @@ module SOAP
 class SOAPREXMLParser < SOAPParser
   include REXML::StreamListener
 
-  def initialize( *vars )
-    super( *vars )
+  def initialize(*vars)
+    super(*vars)
   end
 
   def prologue
   end
 
-  def doParse( stringOrReadable )
-    source = REXML::SourceFactory.create_from( stringOrReadable )
+  def do_parse(string_or_readable)
+    source = REXML::SourceFactory.create_from(string_or_readable)
     source.encoding = charset if charset
     @charset = 'utf-8'
-    REXML::Document.parse_stream( source, self )
+    REXML::Document.parse_stream(source, self)
   end
 
   def epilogue
   end
 
-  def tag_start( name, attrs )
-    startElement( name, attrs )
+  def tag_start(name, attrs)
+    start_element(name, attrs)
   end
 
-  def tag_end( name )
-    endElement( name )
+  def tag_end(name)
+    end_element(name)
   end
 
-  def text( text )
-    characters( text )
+  def text(text)
+    characters(text)
   end
 
-  def xmldecl( version, encoding, standalone )
+  def xmldecl(version, encoding, standalone)
     # Version should be checked.
   end
 
-  setFactory( self )
+  add_factory(self)
 end
 
 

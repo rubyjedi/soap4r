@@ -28,58 +28,58 @@ module WSDL
 
 
 module MethodDefCreatorSupport
-  def getBaseTypeMappedClass( name )
-    ::SOAP::TypeMap[ name ]
+  def basetype_mapped_class(name)
+    ::SOAP::TypeMap[name]
   end
 
-  def createClassName( name )
-    if klass = getBaseTypeMappedClass( name )
-      ::SOAP::RPCUtils::DefaultMappingRegistry.searchMappedRubyClass(
-	klass.name )
+  def create_class_name(name)
+    if klass = basetype_mapped_class(name)
+      ::SOAP::RPCUtils::DefaultMappingRegistry.find_mapped_obj_class(
+	klass.name)
     else
-      result = capitalize( name.name )
+      result = capitalize(name.name)
       unless /^[A-Z]/ =~ result
 	result = "C_#{ name }"
       end
       result
     end
   end
-  module_function :createClassName
+  module_function :create_class_name
 
-  def createMethodName( name )
-    uncapitalize( name )
+  def create_method_name(name)
+    uncapitalize(name)
   end
-  module_function :createMethodName
+  module_function :create_method_name
 
-  def dumpSignature( operation )
+  def dump_signature(operation)
     name = operation.name.name
     input = operation.input
     output = operation.output
     fault = operation.fault
-    signature = "#{ name }#{ dumpInputParam( input ) }"
+    signature = "#{ name }#{ dump_inputparam(input) }"
     return <<__EOD__
 # SYNOPSIS
 #   #{ signature}
 #
 # ARGS
-#{ dumpInOutType( input ).chomp }
+#{ dump_inout_type(input).chomp }
 #
 # RETURNS
-#{ dumpInOutType( output ).chomp }
+#{ dump_inout_type(output).chomp }
 #
 # RAISES
-#{ dumpInOutType( fault ).chomp }
+#{ dump_inout_type(fault).chomp }
 #
 __EOD__
   end
-  module_function :dumpSignature
+  module_function :dump_signature
 
-  def dumpInOutType( param )
+  def dump_inout_type(param)
     if param
-      message = param.getMessage
+      message = param.find_message
       params = ""
-      message.parts.each do | part |
-        params << "#   #{ uncapitalize( part.name ) }\t\t#{ createClassName( part.type ) } - #{ part.type }\n"
+      message.parts.each do |part|
+        params << "#   #{ uncapitalize(part.name) }\t\t#{ create_class_name(part.type) } - #{ part.type }\n"
       end
       unless params.empty?
         return params
@@ -87,30 +87,30 @@ __EOD__
     end
     "#    N/A\n"
   end
-  module_function :dumpInOutType
+  module_function :dump_inout_type
 
-  def dumpInputParam( input )
-    message = input.getMessage
+  def dump_inputparam(input)
+    message = input.find_message
     params = ""
-    message.parts.each do | part |
+    message.parts.each do |part|
       params << ", " unless params.empty?
-      params << uncapitalize( part.name )
+      params << uncapitalize(part.name)
     end
     if params.empty?
       ""
     else
-      "( #{ params } )"
+      "(#{ params })"
     end
   end
-  module_function :dumpInputParam
+  module_function :dump_inputparam
 
-  def capitalize( target )
-    target.sub( /^([a-z])/ ) { $1.tr!( '[a-z]', '[A-Z]' ) }
+  def capitalize(target)
+    target.sub(/^([a-z])/) { $1.tr!('[a-z]', '[A-Z]') }
   end
   module_function :capitalize
 
-  def uncapitalize( target )
-    target.sub( /^([A-Z])/ ) { $1.tr!( '[A-Z]', '[a-z]' ) }
+  def uncapitalize(target)
+    target.sub(/^([A-Z])/) { $1.tr!('[A-Z]', '[a-z]') }
   end
   module_function :uncapitalize
 end

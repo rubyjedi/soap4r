@@ -30,48 +30,48 @@ class ServantSkeltonCreator
 
   attr_reader :definitions
 
-  def initialize( definitions )
+  def initialize(definitions)
     @definitions = definitions
   end
 
-  def dump( portTypeName = nil )
-    if portTypeName.nil?
+  def dump(porttype = nil)
+    if porttype.nil?
       result = ""
-      @definitions.portTypes.each do | portType |
-	result << dumpPortType( portType.name )
+      @definitions.porttypes.each do |type|
+	result << dump_porttype(type.name)
 	result << "\n"
       end
     else
-      result = dumpPortType( portTypeName )
+      result = dump_porttype(porttype)
     end
     result
   end
 
 private
 
-  def dumpPortType( portType )
-    operations = @definitions.getPortType( portType ).operations
-    dumpOperations = ""
-    operations.each do | operation |
-      dumpOperations << dumpOperation( operation )
+  def dump_porttype(porttype)
+    operations = @definitions.porttype(porttype).operations
+    dump_op = ""
+    operations.each do |operation|
+      dump_op << dump_operation(operation)
     end
     return <<__EOD__
-class #{ createClassName( portType ) }
-#{ dumpOperations.gsub( /^/, "  " ).chomp }
+class #{ create_class_name(porttype) }
+#{ dump_op.gsub(/^/, "  ").chomp }
 end
 __EOD__
   end
 
-  def dumpOperation( operation )
+  def dump_operation(operation)
     name = operation.name.name
     input = operation.input
     output = operation.output
     fault = operation.fault
-    signature = "#{ name }#{ dumpInputParam( input ) }"
+    signature = "#{ name }#{ dump_inputparam(input) }"
     result = ""
-    result << dumpSignature( operation )
+    result << dump_signature(operation)
     result << <<__EOD__
-def #{ name }#{ dumpInputParam( input ) }
+def #{ name }#{ dump_inputparam(input) }
   raise NotImplementedError.new
 end
 

@@ -26,28 +26,24 @@ module WSDL
 
 
 class Schema < Info
-  attr_reader :targetNamespace	# required
-  attr_reader :complexTypes
+  attr_reader :targetnamespace	# required
+  attr_reader :complextypes
   attr_reader :elements
   attr_reader :attributes
   attr_reader :imports
-  attr_accessor :elementFormDefault
+  attr_accessor :elementformdefault
 
   def initialize
     super
-    @targetNamespace = nil
-    @complexTypes = NamedElements.new
+    @targetnamespace = nil
+    @complextypes = NamedElements.new
     @elements = NamedElements.new
     @attributes = NamedElements.new
     @imports = []
-    @elementFormDefault = nil
+    @elementformdefault = nil
   end
 
-  def addAttribute( attribute )
-    @attributes << attribute
-  end
-
-  def parseElement( element )
+  def parse_element(element)
     case element
     when ImportName
       o = Import.new
@@ -55,7 +51,7 @@ class Schema < Info
       o
     when ComplexTypeName
       o = ComplexType.new
-      @complexTypes << o
+      @complextypes << o
       o
     when ElementName
       o = Element.new
@@ -68,19 +64,19 @@ class Schema < Info
     end
   end
 
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when TargetNamespaceAttrName
-      @targetNamespace = value
+      @targetnamespace = value
     when ElementFormDefaultAttrName
-      @elementFormDefault = value
+      @elementformdefault = value
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 
-  SchemaName = XSD::QName.new( XSD::Namespace, 'schema' )
-  def self.parseElement( element )
+  SchemaName = XSD::QName.new(XSD::Namespace, 'schema')
+  def self.parse_element(element)
     if element == SchemaName
       Schema.new
     else

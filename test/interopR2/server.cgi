@@ -119,7 +119,7 @@ class InteropApp < SOAP::CGIStub
 
   def echoBase64( inputBase64 )
     o = SOAP::SOAPBase64.new( clone( inputBase64 ))
-    o.asXSD
+    o.as_xsd
     o
   end
 
@@ -241,7 +241,7 @@ class InteropApp < SOAP::CGIStub
 
   def echoXSDBase64( inputBase64 )
     o = SOAP::SOAPBase64.new( clone( inputBase64 ))
-    o.asXSD
+    o.as_xsd
     o
   end
 

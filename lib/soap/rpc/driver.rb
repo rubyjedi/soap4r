@@ -31,154 +31,150 @@ class Driver
 public
   class EmptyResponseError < Error; end
 
-  attr_accessor :mappingRegistry
-  attr_reader :endPointUrl
-  attr_reader :wireDumpDev
-  attr_reader :wireDumpFileBase
-  attr_reader :httpProxy
-  attr_reader :defaultEncodingStyle
+  attr_accessor :mapping_registry
+  attr_reader :endpoint_url
+  attr_reader :wiredump_dev
+  attr_reader :wiredump_file_base
+  attr_reader :httpproxy
+  attr_reader :default_encodingstyle
 
-  def initialize(endpointUrl, namespace, soapAction = nil)
-    @endpointUrl = endpointUrl
+  def initialize(endpoint_url, namespace, soapaction = nil)
+    @endpoint_url = endpoint_url
     @namespace = namespace
-    @mappingRegistry = nil      # for unmarshal
-    @wireDumpDev = nil
-    @dumpFileBase = nil
-    @httpProxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
-    @handler = HTTPPostStreamHandler.new(@endpointUrl, @httpProxy,
-      Charset.getEncodingLabel)
-    @proxy = Proxy.new(@handler, soapAction)
-    @proxy.allowUnqualifiedElement = true
+    @mapping_registry = nil      # for unmarshal
+    @wiredump_dev = nil
+    @wiredump_file_base = nil
+    @httpproxy = ENV['httpproxy'] || ENV['HTTP_PROXY']
+    @handler = HTTPPostStreamHandler.new(@endpoint_url, @httpproxy,
+      Charset.encoding_label)
+    @proxy = Proxy.new(@handler, soapaction)
+    @proxy.allow_unqualified_element = true
   end
 
-  def setEndpointUrl(endpointUrl)
-    @endpointUrl = endpointUrl
+  def endpoint_url=(endpoint_url)
+    @endpoint_url = endpoint_url
     if @handler
-      @handler.endpointUrl = @endpointUrl
+      @handler.endpoint_url = @endpoint_url
       @handler.reset
     end
   end
 
-  def setWireDumpDev(dumpDev)
-    @wireDumpDev = dumpDev
+  def wiredump_dev=(dev)
+    @wiredump_dev = dev
     if @handler
-      @handler.dumpDev = @wireDumpDev
+      @handler.wiredump_dev = @wiredump_dev
       @handler.reset
     end
   end
 
-  def setWireDumpFileBase(base)
-    @dumpFileBase = base
+  def wiredump_file_base=(base)
+    @wiredump_file_base = base
   end
 
-  def setHttpProxy(httpProxy)
-    @httpProxy = httpProxy
+  def httpproxy=(httpproxy)
+    @httpproxy = httpproxy
     if @handler
-      @handler.proxy = @httpProxy
+      @handler.proxy = @httpproxy
       @handler.reset
     end
   end
 
-  def setDefaultEncodingStyle(encodingStyle)
-    @proxy.defaultEncodingStyle = encodingStyle
+  def default_encodingstyle=(encodingstyle)
+    @proxy.default_encodingstyle = encodingstyle
   end
 
 
   ###
   ## Method definition interfaces.
   #
-  # paramArg: [[paramDef...]] or [paramName, paramName, ...]
-  # paramDef: See proxy.rb.  Sorry.
+  # params: [[param_def...]] or [paramname, paramname, ...]
+  # param_def: See proxy.rb.  Sorry.
 
-  def addMethod(name, *paramArg)
-    addMethodWithSOAPActionAs(name, name, nil, *paramArg)
+  def add_method(name, *params)
+    add_method_with_soapaction_as(name, name, nil, *params)
   end
 
-  def addMethodAs(methodName, elementName, *paramArg)
-    addMethodWithSOAPActionAs(methodName, elementName, nil, *paramArg)
+  def add_method_as(name, name_as, *params)
+    add_method_with_soapaction_as(name, name_as, nil, *params)
   end
 
-  def addMethodWithSOAPAction(name, soapAction, *paramArg)
-    addMethodWithSOAPActionAs(name, name, soapAction, *paramArg)
+  def add_method_with_soapaction(name, soapaction, *params)
+    add_method_with_soapaction_as(name, name, soapaction, *params)
   end
 
-  def addMethodWithSOAPActionAs(methodName, elementName, soapAction, *paramArg)
-    paramDef = if paramArg.size == 1 and paramArg[0].is_a?(Array)
-        paramArg[0]
+  def add_method_with_soapaction_as(name, name_as, soapaction, *params)
+    param_def = if params.size == 1 and params[0].is_a?(Array)
+        params[0]
       else
-        SOAPMethod.createParamDef(paramArg)
+        SOAPMethod.create_param_def(params)
       end
-    qname = XSD::QName.new(@namespace, elementName)
-    @proxy.addMethod(qname, soapAction, methodName, paramDef)
-    addMethodInterface(methodName, paramDef)
+    qname = XSD::QName.new(@namespace, name_as)
+    @proxy.add_method(qname, soapaction, name, param_def)
+    add_method_interface(name, param_def)
   end
 
 
   ###
   ## Driving interface.
   #
-  def invoke(reqHeaders, reqBody)
-    if @dumpFileBase
-      @handler.dumpFileBase = @dumpFileBase + '_' << reqBody.elementName.name
+  def invoke(headers, body)
+    if @wiredump_file_base
+      @handler.wiredump_file_base =
+	@wiredump_file_base + '_' << body.elename.name
     end
-
-    data = @proxy.invoke(reqHeaders, reqBody)
-    return data
+    @proxy.invoke(headers, body)
   end
 
-  def call(methodName, *params)
+  def call(name, *params)
     # Convert parameters: params array => SOAPArray => members array
-    params = RPC.obj2soap(params, @mappingRegistry).to_a
-    # Set dumpDev if needed.
-    if @dumpFileBase
-      @handler.dumpFileBase = @dumpFileBase + '_' << methodName
+    params = RPC.obj2soap(params, @mapping_registry).to_a
+    if @wiredump_file_base
+      @handler.wiredump_file_base = @wiredump_file_base + '_' << name
     end
 
     # Then, call @proxy.call like the following.
-    header, body = @proxy.call(nil, methodName, *params)
+    header, body = @proxy.call(nil, name, *params)
     unless body
       raise EmptyResponseError.new("Empty response.")
     end
 
     begin
-      @proxy.checkFault(body)
+      @proxy.check_fault(body)
     rescue SOAP::FaultError => e
       RPC.fault2exception(e)
     end
 
-    ret = body.response ?
-      RPC.soap2obj(body.response, @mappingRegistry) : nil
-    if body.outParams
-      outParams = body.outParams.collect { |outParam|
-        RPC.soap2obj(outParam)
-      }
-      return [ret].concat(outParams)
+    ret = body.response ? RPC.soap2obj(body.response, @mapping_registry) : nil
+    if body.outparams
+      outparams = body.outparams.collect { |outparam| RPC.soap2obj(outparam) }
+      return [ret].concat(outparams)
     else
       return ret
     end
   end
 
-  def resetStream
+  def reset_stream
     @handler.reset
   end
 
 private
 
-  def addMethodInterface(name, paramDef)
-    paramNames = []
+  def add_method_interface(name, param_def)
+    param_names = []
     i = 0
-    @proxy.method[name].eachParamName(RPC::SOAPMethod::IN, RPC::SOAPMethod::INOUT) do |paramName|
+    @proxy.method[name].each_param_name(RPC::SOAPMethod::IN,
+	RPC::SOAPMethod::INOUT) do |param_name|
       i += 1
-      paramNames << "arg#{ i }"
+      param_names << "arg#{ i }"
     end
-    callParamStr = if paramNames.empty?
+    call_param_str = if param_names.empty?
         ""
       else
-        ", " << paramNames.join(", ")
+        ", " << param_names.join(", ")
       end
     self.instance_eval <<-EOS
-      def #{ name }(#{ paramNames.join(", ") })
-        call("#{ name }"#{ callParamStr })
+      def #{ name }(#{ param_names.join(", ") })
+        call("#{ name }"#{ call_param_str })
       end
     EOS
   end

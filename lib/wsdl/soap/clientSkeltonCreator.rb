@@ -30,14 +30,14 @@ class ClientSkeltonCreator
 
   attr_reader :definitions
 
-  def initialize( definitions )
+  def initialize(definitions)
     @definitions = definitions
   end
 
-  def dump( serviceName )
+  def dump(service_name)
     result = ""
-    @definitions.getService( serviceName ).ports.each do | port |
-      result << dumpPortType( port.getPortType.name )
+    @definitions.service(service_name).ports.each do |port|
+      result << dump_porttype(port.porttype.name)
       result << "\n"
     end
     result
@@ -45,38 +45,38 @@ class ClientSkeltonCreator
 
 private
 
-  def dumpPortType( portTypeName )
-    driverName = createClassName( portTypeName )
+  def dump_porttype(name)
+    drv_name = create_class_name(name)
 
     result = ""
     result << <<__EOD__
-endpointUrl = ARGV.shift || #{ driverName }::DefaultEndpointUrl
-proxyUrl = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
-obj = #{ driverName }.new( endpointUrl, proxyUrl )
+endpoint_url = ARGV.shift || #{ drv_name }::DefaultEndpointUrl
+proxyUrl = ENV['http_proxy'] || ENV['HTTP_PROXY']
+obj = #{ drv_name }.new(endpoint_url, proxy_uri)
 
 # Uncomment the below line to see SOAP wiredumps.
-# obj.setWireDumpDev( STDERR )
+# obj.wiredump_dev = STDERR
 
 
 __EOD__
-    @definitions.getPortType( portTypeName ).operations.each do | operation |
-      result << dumpSignature( operation )
-      result << dumpInputInitialize( operation.input ) << "\n"
-      result << dumpOperation( operation ) << "\n\n"
+    @definitions.porttype(name).operations.each do |operation|
+      result << dump_signature(operation)
+      result << dump_input_init(operation.input) << "\n"
+      result << dump_operation(operation) << "\n\n"
     end
     result
   end
 
-  def dumpOperation( operation )
+  def dump_operation(operation)
     name = operation.name.name
     input = operation.input
-    "puts obj.#{ createMethodName( name ) }#{ dumpInputParam( input ) }"
+    "puts obj.#{ create_method_name(name) }#{ dump_input_param(input) }"
   end
 
-  def dumpInputInitialize( input )
-    result = input.getMessage.parts.collect { | part |
-      "#{ uncapitalize( part.name ) }"
-    }.join( " = " )
+  def dump_input_init(input)
+    result = input.find_message.parts.collect { |part|
+      "#{ uncapitalize(part.name) }"
+    }.join(" = ")
     if result.empty?
       ""
     else

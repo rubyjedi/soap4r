@@ -31,7 +31,7 @@ class Attribute < Info
   attr_accessor :default
   attr_accessor :fixed
 
-  attr_accessor :arrayType
+  attr_accessor :arytype
 
   def initialize
     super
@@ -41,25 +41,25 @@ class Attribute < Info
     @default = nil
     @fixed = nil
 
-    @arrayType = nil
+    @arytype = nil
   end
 
-  def parseElement( element )
+  def parse_element(element)
     nil
   end
 
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when RefAttrName
       @ref = value
     when ArrayTypeAttrName
-      @arrayType = if value.is_a?( XSD::QName )
+      @arytype = if value.is_a?(XSD::QName)
 	  value
 	else
-	  XSD::QName.new( XSD::Namespace, value )
+	  XSD::QName.new(XSD::Namespace, value)
 	end
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

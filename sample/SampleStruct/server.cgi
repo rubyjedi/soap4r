@@ -4,12 +4,11 @@ require 'soap/cgistub'
 require 'sampleStruct'
 
 class SampleStructServer < SOAP::CGIStub
-  def initialize( *arg )
+  def initialize(*arg)
     super
-    aServant = SampleStructService.new
-    addServant( aServant )
+    servant = SampleStructService.new
+    add_servant(servant)
   end
 end
 
-status = SampleStructServer.new( 'SampleStructServer',
-  SampleStructServiceNamespace ).start
+status = SampleStructServer.new('SampleStructServer', SampleStructServiceNamespace).start

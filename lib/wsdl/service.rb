@@ -26,22 +26,20 @@ module WSDL
 class Service < Info
   attr_reader :name		# required
   attr_reader :ports
-  attr_reader :soapAddress
+  attr_reader :soap_address
 
   def initialize
     super
     @name = nil
     @ports = NamedElements.new
-    @soapAddress = nil
+    @soap_address = nil
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  PortName = XSD::QName.new( Namespace, 'port' )
-  SOAPAddressName = XSD::QName.new( SOAPBindingNamespace, 'address' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when PortName
       o = Port.new
@@ -49,7 +47,7 @@ class Service < Info
       o
     when SOAPAddressName
       o = WSDL::SOAP::Address.new
-      @soapAddress = o
+      @soap_address = o
       o
     when DocumentationName
       o = Documentation.new
@@ -59,13 +57,12 @@ class Service < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( targetNamespace, value )
+      @name = XSD::QName.new(targetnamespace, value)
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

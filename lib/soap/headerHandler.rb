@@ -24,32 +24,32 @@ module SOAP
 
 
 class HeaderHandler
-  @@handlerMap = {}
+  @@handlers = {}
 
   attr_reader :uri
 
-  def initialize( namespace, name )
-    @name = NS.normalizedName( namespace, name )
-    @@handlerMap[ @name ] = self
+  def initialize(namespace, name)
+    @name = NS.normalizedName(namespace, name)
+    @@handlers[@name] = self
   end
 
 
-  def process( soapObj )
-    raise NotImplementError.new( 'Method process must be defined in derived class.' )
+  def process(soap_obj)
+    raise NotImplementError.new('Method process must be defined in derived class.')
   end
 
 
   ###
   ## Class interface
   #
-  def EncodingStyleHandler.getHandler( namespace, name )
-    normalizedName = NS.normalizedName( namespace, name )
-    @@handlerMap[ normalizedName ]
+  def EncodingStyleHandler.handler(namespace, name)
+    normalizedName = NS.normalizedName(namespace, name)
+    @@handlers[normalizedName]
   end
 
   def EncodingStyleHandler.each
-    @@handlerMap.each do | key, value |
-      yield( value )
+    @@handlers.each do |key, value|
+      yield(value)
     end
   end
 end

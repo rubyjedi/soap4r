@@ -1,18 +1,19 @@
 #!/usr/bin/env ruby
 
-require "soap/driver"
-require 'iExchange'
+require "soap/rpc/driver"
+
+ExchangeServiceNamespace = 'http://tempuri.org/exchangeService'
 
 server = "http://localhost:7000/"
-# server = "http://localhost/cgi-bin/server.cgi"
+# server = "http://localhost:8808/server.cgi"
 
 logger = nil
-wireDumpDev = nil
-# logger = Devel::Logger.new( STDERR )
-# wireDumpDev = STDERR
+wiredump_dev = nil
+# logger = Devel::Logger.new(STDERR)
+# wiredump_dev = STDERR
 
-drv = SOAP::Driver.new( logger, $0, ExchangeServiceNamespace, server )
-drv.setWireDumpDev( wireDumpDev )
-drv.addMethod( "getRate", "country1", "country2" )
+drv = SOAP::RPC::Driver.new(server, ExchangeServiceNamespace)
+drv.wiredump_dev = wiredump_dev
+drv.add_method("rate", "country1", "country2")
 
-p drv.getRate( "USA", "Japan" )
+p drv.rate("USA", "Japan")

@@ -5,25 +5,26 @@ class WSDLMarshaller
   include SOAP
 
   def initialize(wsdlFile)
-    wsdl = WSDL::WSDLParser.createParser.parse(File.open(wsdlFile).read)
-    types = wsdl.collectComplexTypes
+    wsdl = WSDL::WSDLParser.create_parser.parse(File.open(wsdlFile).read)
+    types = wsdl.collect_complextypes
     @opt = {
-      :decodeComplexTypes => types,
-      :generateEncodeType => false
+      :decode_typemap => types,
+      :generate_explicit_type => false,
+      :pretty => true
     }
-    @mappingRegistry = Mapping::WSDLMappingRegistry.new(types)
+    @mapping_registry = Mapping::WSDLMappingRegistry.new(types)
   end
 
   def dump(obj, io = nil)
-    type = Mapping.createClassType(obj.class)
-    ele =  Mapping.obj2soap(obj, @mappingRegistry, type)
-    ele.elementName = ele.type
+    type = Mapping.class2element(obj.class)
+    ele =  Mapping.obj2soap(obj, @mapping_registry, type)
+    ele.elename = ele.type
     Processor.marshal(nil, SOAPBody.new(ele), @opt, io)
   end
 
   def load(io)
     header, body = Processor.unmarshal(io, @opt)
-    Mapping.soap2obj(body.rootNode)
+    Mapping.soap2obj(body.root_node)
   end
 end
 

@@ -25,24 +25,23 @@ module WSDL
 
 
 class Operation < Info
-  attr_reader :soapAction
+  attr_reader :soapaction
 
   def initialize
     super
-    @soapAction = nil
+    @soapaction = nil
   end
 
-  def parseElement( element )
-    raise WSDLParser::UnknownElementError.new( "Unknown element #{ element }." )
+  def parse_element(element)
+    raise WSDLParser::UnknownElementError.new("Unknown element #{ element }.")
   end
 
-  SOAPActionAttrName = XSD::QName.new( nil, 'soapAction' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when SOAPActionAttrName
-      @soapAction = value
+      @soapaction = value
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

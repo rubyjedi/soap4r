@@ -27,8 +27,8 @@ class PortType < Info
   attr_reader :name		# required
   attr_reader :operations
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
   def initialize
@@ -37,25 +37,24 @@ class PortType < Info
     @operations = NamedElements.new
   end
 
-  def getBinding
-    root.bindings.find { | item | item.type == @name }
+  def find_binding
+    root.bindings.find { |item| item.type == @name }
   end
 
-  def getLocations
-    bindingName = getBinding.name
+  def locations
+    bind_name = find_binding.name
     result = []
-    root.services.each do | service |
-      service.ports.each do | port |
-        if port.binding == bindingName
-          result << port.soapAddress.location if port.soapAddress
+    root.services.each do |service|
+      service.ports.each do |port|
+        if port.binding == bind_name
+          result << port.soap_address.location if port.soap_address
         end
       end
     end
     result
   end
 
-  OperationName = XSD::QName.new( Namespace, 'operation' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when OperationName
       o = Operation.new
@@ -69,13 +68,12 @@ class PortType < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( targetNamespace, value )
+      @name = XSD::QName.new(targetnamespace, value)
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

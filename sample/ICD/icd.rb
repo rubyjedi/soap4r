@@ -2,24 +2,22 @@
 
 $KCODE = 'SJIS'
 
-require 'soap/driver'
+require 'soap/rpc/driver'
 require 'IICD'; include IICD
 
 server = 'http://www.iwebmethod.net/icd1.0/icd.asmx'
-logger = nil            # Devel::Logger.new( STDERR )
-wireDumpDev = nil       # STDERR
-proxy = ENV[ 'HTTP_PROXY' ] || ENV[ 'http_proxy' ]
+wiredump_dev = nil # STDERR
 
-icd = SOAP::Driver.new( logger, $0, IICD::InterfaceNS, server, proxy )
-icd.setWireDumpDev( wireDumpDev )
-icd.setDefaultEncodingStyle( SOAP::EncodingStyleHandlerASPDotNet::Namespace )
-IICD::addMethod( icd )
+icd = SOAP::RPC::Driver.new(server, IICD::InterfaceNS)
+icd.wiredump_dev = wiredump_dev
+icd.default_encodingstyle = SOAP::EncodingStyleHandlerASPDotNet::Namespace
+IICD::add_method(icd)
 
 puts "キーワード: 'microsoft'で見出し検索"
-result = icd.SearchWord( 'microsoft', true )
+result = icd.SearchWord('microsoft', true)
 
 id = nil
-result.WORD.each do | word |
+result.WORD.each do |word|
   puts "Title: " << word.title
   puts "Id: " << word.id
   puts "English: " << word.english
@@ -28,7 +26,7 @@ result.WORD.each do | word |
   id = word.id
 end
 
-item = icd.GetItemById( id )
+item = icd.GetItemById(id)
 puts
 puts
 puts "Title: " << item.word.title
@@ -39,7 +37,7 @@ puts "意味: " << item.meaning
 puts
 puts
 puts "キーワード: 'IBM'で全文検索"
-icd.FullTextSearch( "IBM" ).WORD.each do | word |
+icd.FullTextSearch("IBM").WORD.each do |word|
   puts "Title: " << word.title
   puts "Id: " << word.id
   puts "English: " << word.english

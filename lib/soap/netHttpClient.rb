@@ -38,12 +38,12 @@ class NetHttpClient
     attr_reader :content
     attr_reader :status
     attr_reader :reason
-    attr_reader :content_type
+    attr_reader :contenttype
 
     def initialize(res)
       @status = res.code.to_i
       @reason = res.message
-      @content_type = res['content-type']
+      @contenttype = res['content-type']
       @content = res.body
     end
   end
@@ -58,26 +58,26 @@ class NetHttpClient
     # ignored.
   end
 
-  def post(url, sendBody, header)
+  def post(url, req_body, header)
     url = URI.parse(url)
     extra = header.dup
     extra['User-Agent'] = @agent if @agent
-    response = responseBody = nil
+    response = res_body = nil
     if @proxy
       Net::HTTP::Proxy(@proxy.host, @proxy.port).start(url.host, url.port) { |http|
 	if http.respond_to?(:set_debug_output)
 	  http.set_debug_output(@debug_dev)
 	end
-	response, responseBody =
-	  http.post(url.instance_eval('path_query'), sendBody, extra)
+	response, res_body =
+	  http.post(url.instance_eval('path_query'), req_body, extra)
       }
     else
       Net::HTTP.start(url.host, url.port) { |http|
 	if http.respond_to?(:set_debug_output)
 	  http.set_debug_output(@debug_dev)
 	end
-	response, responseBody =
-	  http.post(url.instance_eval('path_query'), sendBody, extra)
+	response, res_body =
+	  http.post(url.instance_eval('path_query'), req_body, extra)
       }
     end
     Response.new(response)

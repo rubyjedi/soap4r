@@ -1,6 +1,6 @@
 require 'soap/wsdlDriver'
 
-searchBook = ARGV.shift || "Ruby"
+book = ARGV.shift || "Ruby"
 
 # AmazonSearch.rb is generated from WSDL.
 # Run "wsdl2ruby.rb --wsdl http://soap.amazon.com/schemas2/AmazonWebServices.wsdl --classDef --force"
@@ -10,13 +10,13 @@ require 'AmazonSearch.rb'
 Or, define the class by yourself like this.
 
 class KeywordRequest
-  def initialize( keyword = nil,
+  def initialize(keyword = nil,
       page = nil,
       mode = nil,
       tag = nil,
       type = nil,
       devtag = nil,
-      sort = nil )
+      sort = nil)
     @keyword = keyword
     @page = page
     @mode = mode
@@ -32,13 +32,13 @@ end
 devtag = File.open(File.expand_path("~/.amazon_key")).read.chomp
 
 AMAZON_WSDL = 'http://soap.amazon.com/schemas2/AmazonWebServices.wsdl'
-amazon = SOAP::WSDLDriverFactory.new(AMAZON_WSDL).createDriver
+amazon = SOAP::WSDLDriverFactory.new(AMAZON_WSDL).create_driver
 p "WSDL loaded"
-amazon.generateEncodeType = true
-#amazon.setWireDumpDev(STDERR)
+amazon.generate_explicit_type = true
+#amazon.wiredump_dev = STDERR
 
 # Show sales rank.
-req = KeywordRequest.new(searchBook, "1", "books", "webservices-20", "lite", devtag, "+salesrank")
+req = KeywordRequest.new(book, "1", "books", "webservices-20", "lite", devtag, "+salesrank")
 amazon.KeywordSearchRequest(req).Details.each do |detail|
   puts "== #{detail.ProductName}"
   puts "Author: #{detail.Authors.join(", ")}"

@@ -32,56 +32,55 @@ class StandaloneServerStubCreator
 
   attr_reader :definitions
 
-  def initialize( definitions )
+  def initialize(definitions)
     @definitions = definitions
   end
 
-  def dump( serviceName )
+  def dump(service_name)
     STDERR.puts "!!! IMPORTANT !!!"
     STDERR.puts "- Standalone stub can have only 1 port for now.  So creating stub for the first port and rests are ignored."
     STDERR.puts "- Standalone server stub ignores port location defined in WSDL.  Location is http://localhost:10080/ by default.  Generated client from WSDL must be configured to point this endpoint by hand."
     STDERR.puts "!!! IMPORTANT !!!"
-    port = @definitions.getService( serviceName ).ports[ 0 ]
-    dumpPortType( port.getPortType.name )
+    port = @definitions.service(service_name).ports[0]
+    dump_porttype(port.porttype.name)
   end
 
 private
 
-  def dumpPortType( portTypeName )
-    className = createClassName( portTypeName )
-    methodDefCreator = MethodDefCreator.new( @definitions )
-    methodDef, types = methodDefCreator.dump( portTypeName )
-    mrCreator = MappingRegistryCreator.new( @definitions )
+  def dump_porttype(porttype)
+    name = create_class_name(porttype)
+    methoddef, types = MethodDefCreator.new(@definitions).dump(porttype)
+    mr_creator = MappingRegistryCreator.new(@definitions)
 
     return <<__EOD__
 require 'soap/standaloneServer'
 
-class #{ className }
+class #{ name }
   require 'soap/rpcUtils'
   MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
 
-#{ mrCreator.dump( types ).gsub( /^/, "  " ).chomp }
+#{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
   Methods = [
-#{ methodDef.gsub( /^/, "    " ).chomp }
+#{ methoddef.gsub(/^/, "    ").chomp }
   ]
 end
 
 class App < SOAP::StandaloneServer
-  def initialize( *arg )
-    super( *arg )
+  def initialize(*arg)
+    super(*arg)
 
-    servant = #{ className }.new
-    #{ className }::Methods.each do | methodNameAs, methodName, params, soapAction, namespace |
-      addMethodWithNSAs( namespace, servant, methodName, methodNameAs, params, soapAction )
+    servant = #{ name }.new
+    #{ name }::Methods.each do |name_as, name, params, soapaction, namespace|
+      add_method_with_namespace_as(namespace, servant, name, name_as, params, soapaction)
     end
 
-    self.mappingRegistry = #{ className }::MappingRegistry
-    setSevThreshold( Devel::Logger::ERROR )
+    self.mapping_registry = #{ name }::MappingRegistry
+    self.sev_threshold = Devel::Logger::ERROR
   end
 end
 
 # Change listen port.
-App.new( 'app', nil, '0.0.0.0', 10080 ).start
+App.new('app', nil, '0.0.0.0', 10080).start
 __EOD__
   end
 end

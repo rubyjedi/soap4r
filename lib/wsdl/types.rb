@@ -31,8 +31,7 @@ class Types < Info
     @schemas = []
   end
 
-  SchemaName = XSD::QName.new( XSD::Namespace, 'schema' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when SchemaName
       o = XMLSchema::Schema.new
@@ -46,8 +45,8 @@ class Types < Info
     end
   end
 
-  def parseAttr( attr, value )
-    raise UnknownAttributeError.new( "Unknown attr #{ attr }." )
+  def parse_attr(attr, value)
+    raise UnknownAttributeError.new("Unknown attr #{ attr }.")
   end
 end
 

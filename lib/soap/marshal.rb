@@ -30,34 +30,34 @@ module SOAP
 
 module Marshal
   # Trying xsd:dateTime data to be recovered as aTime.  aDateTime if it fails.
-  MarshalMappingRegistry = Mapping::Registry.new(:allowOriginalMapping => true)
+  MarshalMappingRegistry = Mapping::Registry.new(:allow_original_mapping => true)
   MarshalMappingRegistry.add(
     Time,
     ::SOAP::SOAPDateTime,
     ::SOAP::Mapping::Registry::DateTimeFactory
-  )
+)
 
   class << self
   public
-    def dump( obj, io = nil )
-      marshal( obj, MarshalMappingRegistry, io )
+    def dump(obj, io = nil)
+      marshal(obj, MarshalMappingRegistry, io)
     end
 
-    def load( stream )
-      unmarshal( stream, MarshalMappingRegistry )
+    def load(stream)
+      unmarshal(stream, MarshalMappingRegistry)
     end
 
-    def marshal( obj, mappingRegistry = MarshalMappingRegistry, io = nil )
-      elementName = Mapping.getElementNameFromName( obj.class.to_s )
-      soapObj = Mapping.obj2soap( obj, mappingRegistry )
+    def marshal(obj, mapping_registry = MarshalMappingRegistry, io = nil)
+      elename = Mapping.name2elename(obj.class.to_s)
+      soap_obj = Mapping.obj2soap(obj, mapping_registry)
       body = SOAPBody.new
-      body.add( elementName, soapObj )
-      SOAP::Processor.marshal( nil, body, {}, io )
+      body.add(elename, soap_obj)
+      SOAP::Processor.marshal(nil, body, {}, io)
     end
 
-    def unmarshal( stream, mappingRegistry = MarshalMappingRegistry )
-      header, body = SOAP::Processor.unmarshal( stream )
-      Mapping.soap2obj( body.rootNode, mappingRegistry )
+    def unmarshal(stream, mapping_registry = MarshalMappingRegistry)
+      header, body = SOAP::Processor.unmarshal(stream)
+      Mapping.soap2obj(body.root_node, mapping_registry)
     end
   end
 

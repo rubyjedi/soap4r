@@ -25,82 +25,82 @@ module SOAP
 
 
 class EncodingStyleHandler
-  @@handlerMap = {}
+  @@handlers = {}
 
   class EncodingStyleError < Error; end
 
   class << self
-  public
     def uri
       self::Namespace
     end
 
-    def getHandler( uri )
-      @@handlerMap[ uri ]
+    def handler(uri)
+      @@handlers[uri]
     end
 
     def each
-      @@handlerMap.each do | key, value |
-	yield( value )
+      @@handlers.each do |key, value|
+	yield(value)
       end
     end
 
   private
-    def addHandler
-      @@handlerMap[ self.uri ] = self
+
+    def add_handler
+      @@handlers[self.uri] = self
     end
   end
 
   attr_reader :charset
-  attr_accessor :generateEncodeType
-  def decodeComplexTypes=( complexTypes )
-    @decodeComplexTypes = complexTypes
+  attr_accessor :generate_explicit_type
+  def decode_typemap=(complextypes)
+    @decode_typemap = complextypes
   end
 
-  def initialize( charset )
+  def initialize(charset)
     @charset = charset
-    @generateEncodeType = true
-    @decodeComplexTypes = nil
+    @generate_explicit_type = true
+    @decode_typemap = nil
   end
 
   ###
   ## encode interface.
   #
   # Returns a XML instance as a string.
-  def encodeData( buf, ns, qualified, data, parent, indent )
-    raise NotImplementError.new( 'Method encodeData must be defined in derived class.' )
+  def encode_data(buf, ns, qualified, data, parent, indent)
+    raise NotImplementError.new('Method encode_data must be defined in derived class.')
   end
 
-  def encodeDataEnd( buf, ns, qualified, data, parent, indent )
-    raise NotImplementError.new( 'Method encodeData must be defined in derived class.' )
+  def encode_data_end(buf, ns, qualified, data, parent, indent)
+    raise NotImplementError.new('Method encode_data must be defined in derived class.')
   end
 
-  def encodePrologue
+  def encode_prologue
   end
 
-  def encodeEpilogue
+  def encode_epilogue
   end
 
   ###
   ## decode interface.
   #
   # Returns SOAP/OM data.
-  def decodeTag( ns, name, attrs, parent )
-    raise NotImplementError.new( 'Method decodeTag must be defined in derived class.' )
+  def decode_tag(ns, name, attrs, parent)
+    raise NotImplementError.new('Method decode_tag must be defined in derived class.')
   end
 
-  def decodeTagEnd( ns, name )
-    raise NotImplementError.new( 'Method decodeTagEnd must be defined in derived class.' )
+  def decode_tag_end(ns, name)
+    raise NotImplementError.new('Method decode_tag_end must be defined in derived class.')
   end
 
-  def decodeText( ns, text )
-    raise NotImplementError.new( 'Method decodeText must be defined in derived class.' )
+  def decode_text(ns, text)
+    raise NotImplementError.new('Method decode_text must be defined in derived class.')
   end
 
-  def decodePrologue
+  def decode_prologue
   end
 
-  def decodeEpilogue
+  def decode_epilogue
   end
 end
 

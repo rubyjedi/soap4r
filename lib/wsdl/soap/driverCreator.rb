@@ -32,117 +32,116 @@ class DriverCreator
 
   attr_reader :definitions
 
-  def initialize( definitions )
+  def initialize(definitions)
     @definitions = definitions
   end
 
-  def dump( portType = nil )
-    if portType.nil?
+  def dump(porttype = nil)
+    if porttype.nil?
       result = ""
-      @definitions.portTypes.each do | portType |
-	result << dumpPortType( portType.name )
+      @definitions.porttypes.each do |type|
+	result << dump_porttype(type.name)
 	result << "\n"
       end
     else
-      result = dumpPortType( portType )
+      result = dump_porttype(porttype)
     end
     result
   end
 
 private
 
-  def dumpPortType( portTypeName )
-    methodDefCreator = MethodDefCreator.new( @definitions )
-    methodDef, types = methodDefCreator.dump( portTypeName )
-    mrCreator = MappingRegistryCreator.new( @definitions )
-    binding = @definitions.bindings.find { | item | item.type == portTypeName }
-    addresses = @definitions.getPortType( portTypeName ).getLocations
+  def dump_porttype(name)
+    methoddef, types = MethodDefCreator.new(@definitions).dump(name)
+    mr_creator = MappingRegistryCreator.new(@definitions)
+    binding = @definitions.bindings.find { |item| item.type == name }
+    addresses = @definitions.porttype(name).locations
 
     return <<__EOD__
 require 'soap/proxy'
 require 'soap/rpcUtils'
 require 'soap/streamHandler'
 
-class #{ createClassName( portTypeName ) }
+class #{ create_class_name(name) }
   class EmptyResponseError < ::SOAP::Error; end
 
   MappingRegistry = ::SOAP::RPCUtils::MappingRegistry.new
 
-#{ mrCreator.dump( types ).gsub( /^/, "  " ).chomp }
+#{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
   Methods = [
-#{ methodDef.gsub( /^/, "    " ) }
+#{ methoddef.gsub(/^/, "    ") }
   ]
 
-  DefaultEndpointUrl = "#{ addresses[ 0 ] }"
+  DefaultEndpointUrl = "#{ addresses[0] }"
 
-  attr_accessor :mappingRegistry
-  attr_reader :endPointUrl
-  attr_reader :wireDumpDev
-  attr_reader :wireDumpFileBase
-  attr_reader :httpProxy
+  attr_accessor :mapping_registry
+  attr_reader :endpoint_url
+  attr_reader :wiredump_dev
+  attr_reader :wiredump_file_base
+  attr_reader :httpproxy
 
-  def initialize( endpointUrl = DefaultEndpointUrl, httpProxy = nil )
-    @endpointUrl = endpointUrl
-    @mappingRegistry = MappingRegistry
-    @wireDumpDev = nil
-    @dumpFileBase = nil
-    @httpProxy = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
-    @handler = ::SOAP::HTTPPostStreamHandler.new( @endpointUrl, @httpProxy,
-      ::SOAP::Charset.getEncodingLabel )
-    @proxy = ::SOAP::SOAPProxy.new( @namespace, @handler )
-    @proxy.allowUnqualifiedElement = true
-    addMethod
+  def initialize(endpoint_url = DefaultEndpointUrl, httpproxy = nil)
+    @endpoint_url = endpoint_url
+    @mapping_registry = MappingRegistry
+    @wiredump_dev = nil
+    @wiredump_file_base = nil
+    @httpproxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
+    @handler = ::SOAP::HTTPPostStreamHandler.new(@endpoint_url, @httpproxy,
+      ::SOAP::Charset.encoding_label)
+    @proxy = ::SOAP::SOAPProxy.new(@handler, @namespace)
+    @proxy.allow_unqualified_element = true
+    add_method
   end
 
-  def setEndpointUrl( endpointUrl )
-    @endpointUrl = endpointUrl
-    @handler.endpointUrl = @endpointUrl if @handler
+  def endpoint_url=(endpoint_url)
+    @endpoint_url = endpoint_url
+    @handler.endpoint_url = @endpoint_url if @handler
   end
 
-  def setWireDumpDev( dumpDev )
-    @wireDumpDev = dumpDev
-    @handler.dumpDev = @wireDumpDev if @handler
+  def wiredump_dev=(dev)
+    @wiredump_dev = dev
+    @handler.wiredump_dev = @wiredump_dev if @handler
   end
 
-  def setWireDumpFileBase( base )
-    @dumpFileBase = base
+  def wiredump_file_base=(base)
+    @wiredump_file_base = base
   end
 
-  def setHttpProxy( httpProxy )
-    @httpProxy = httpProxy
-    @handler.proxy = @httpProxy if @handler
+  def httpproxy=(httpproxy)
+    @httpproxy = httpproxy
+    @handler.proxy = @httpproxy if @handler
   end
 
-  def setDefaultEncodingStyle( encodingStyle )
-    @proxy.defaultEncodingStyle = encodingStyle
+  def default_encodingstyle=(encodingstyle)
+    @proxy.default_encodingstyle = encodingstyle
   end
 
-  def getDefaultEncodingStyle
-    @proxy.defaultEncodingStyle
+  def default_encodingstyle
+    @proxy.default_encodingstyle
   end
 
-  def call( methodName, *params )
+  def call(name, *params)
     # Convert parameters: params array => SOAPArray => members array
-    params = ::SOAP::RPCUtils.obj2soap( params, @mappingRegistry ).to_a
-    header, body = @proxy.call( nil, methodName, *params )
+    params = ::SOAP::RPCUtils.obj2soap(params, @mapping_registry).to_a
+    header, body = @proxy.call(nil, name, *params)
     unless body
-      raise EmptyResponseError.new( "Empty response." )
+      raise EmptyResponseError.new("Empty response.")
     end
 
     # Check Fault.
     begin
-      @proxy.checkFault( body )
+      @proxy.check_fault(body)
     rescue ::SOAP::FaultError => e
-      ::SOAP::RPCUtils.fault2exception( e )
+      ::SOAP::RPCUtils.fault2exception(e)
     end
 
     ret = body.response ?
-      ::SOAP::RPCUtils.soap2obj( body.response, @mappingRegistry ) : nil
-    if body.outParams
-      outParams = body.outParams.collect { | outParam |
-	::SOAP::RPCUtils.soap2obj( outParam )
+      ::SOAP::RPCUtils.soap2obj(body.response, @mapping_registry) : nil
+    if body.outparams
+      outparams = body.outparams.collect { |outparam|
+	::SOAP::RPCUtils.soap2obj(outparam)
       }
-      return [ ret ].concat( outParams )
+      return [ret].concat(outparams)
     else
       return ret
     end
@@ -150,18 +149,17 @@ class #{ createClassName( portTypeName ) }
 
 private 
 
-  def addMethod
-    Methods.each do | methodNameAs, methodName, params, soapAction, namespace |
-      @proxy.addMethodAs( methodNameAs, methodName, params, soapAction,
-	namespace )
-      addMethodInterface( methodName, params )
+  def add_method
+    Methods.each do |name_as, name, params, soapaction, namespace|
+      @proxy.add_method(XSD::QName.new(namespace, name), soapaction, name_as, params)
+      add_method_interface(name, params)
     end
   end
 
-  def addMethodInterface( name, params )
+  def add_method_interface(name, params)
     self.instance_eval <<-EOD
-      def \#{ name }( *params )
-	call( "\#{ name }", *params )
+      def \#{ name }(*params)
+	call("\#{ name }", *params)
       end
     EOD
   end

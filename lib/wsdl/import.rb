@@ -35,7 +35,7 @@ class Import < Info
     @content = nil
   end
 
-  def parseElement( element )
+  def parse_element(element)
     case element
     when DocumentationName
       o = Documentation.new
@@ -45,39 +45,37 @@ class Import < Info
     end
   end
 
-  NamespaceAttrName = XSD::QName.new( nil, 'namespace' )
-  LocationAttrName = XSD::QName.new( nil, 'location' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NamespaceAttrName
       @namespace = value
       if @content
-	@content.setTargetNamespace( @namespace )
+	@content.targetnamespace = @namespace
       end
     when LocationAttrName
       @location = value
-      @content = import( @location )
+      @content = import(@location)
       @content.root = root
       if @namespace
-	@content.setTargetNamespace( @namespace )
+	@content.targetnamespace = @namespace
       end
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 
 private
 
-  def import( location )
+  def import(location)
     content = nil
-    if FileTest.exist?( location )
-      content = File.open( location ).read
+    if FileTest.exist?(location)
+      content = File.open(location).read
     else
       require 'http-access2'
-      c = HTTPAccess2::Client.new( ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ] )
-      content = c.getContent( location )
+      c = HTTPAccess2::Client.new(ENV['http_proxy'] || ENV['HTTP_PROXY'])
+      content = c.get_content(location)
     end
-    WSDL::WSDLParser.createParser.parse( content )
+    WSDL::WSDLParser.create_parser.parse(content)
   end
 end
 

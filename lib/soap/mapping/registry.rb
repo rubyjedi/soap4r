@@ -28,7 +28,7 @@ module SOAP
 
 
 module Marshallable
-  # @@typeNamespace = Mapping::RubyCustomTypeNamespace
+  # @@type_ns = Mapping::RubyCustomTypeNamespace
 end
 
 
@@ -43,9 +43,9 @@ RubyTypeName = XSD::QName.new(RubyTypeInstanceNamespace, 'rubyType')
 
 # Inner class to pass an exception.
 class SOAPException; include Marshallable
-  attr_reader :exceptionTypeName, :message, :backtrace, :cause
+  attr_reader :excn_type_name, :message, :backtrace, :cause
   def initialize(e)
-    @exceptionTypeName = Mapping.getElementNameFromName(e.class.to_s)
+    @excn_type_name = Mapping.name2elename(e.class.to_s)
     @message = e.message
     @backtrace = e.backtrace
     @cause = e
@@ -56,8 +56,8 @@ class SOAPException; include Marshallable
       @cause.extend(::SOAP::Mapping::MappedException)
       return @cause
     end
-    klass = Mapping.getClassFromName(
-      Mapping.getNameFromElementName(@exceptionTypeName.to_s))
+    klass = Mapping.class_from_name(
+      Mapping.elename2name(@excn_type_name.to_s))
     if klass.nil?
       raise RuntimeError.new(@message)
     end
@@ -76,32 +76,32 @@ class SOAPException; include Marshallable
       else
         [@backtrace.inspect]
       end
-   )
+  )
   end
 end
 
 
 # For anyType object.
 class Object; include Marshallable
-  def setProperty(name, value)
-    varName = name
+  def set_property(name, value)
+    var_name = name
     begin
       instance_eval <<-EOS
-        def #{ varName }
-          @#{ varName }
+        def #{ var_name }
+          @#{ var_name }
         end
 
-        def #{ varName }=(newMember)
-          @#{ varName } = newMember
+        def #{ var_name }=(value)
+          @#{ var_name } = value
         end
       EOS
-      self.send(varName + '=', value)
+      self.send(var_name + '=', value)
     rescue SyntaxError
-      varName = safeName(varName)
+      var_name = safe_name(var_name)
       retry
     end
 
-    varName
+    var_name
   end
 
   def members
@@ -112,7 +112,7 @@ class Object; include Marshallable
     if self.respond_to?(name)
       self.send(name)
     else
-      self.send(safeName(name))
+      self.send(safe_name(name))
     end
   end
 
@@ -120,13 +120,13 @@ class Object; include Marshallable
     if self.respond_to?(name)
       self.send(name + '=', value)
     else
-      self.send(safeName(name) + '=', value)
+      self.send(safe_name(name) + '=', value)
     end
   end
 
 private
 
-  def safeName(name)
+  def safe_name(name)
     require 'md5'
     "var_" << MD5.new(name).hexdigest
   end
@@ -138,16 +138,16 @@ class MappingError < Error; end
 
 class Registry
   class Map
-    def initialize(mappingRegistry)
+    def initialize(registry)
       @map = []
-      @registry = mappingRegistry
+      @registry = registry
     end
 
     def obj2soap(klass, obj)
-      @map.each do |objKlass, soapKlass, factory, info|
-        if klass == objKlass or
-            (info[:derivedClass] and klass <= objKlass)
-          ret = factory.obj2soap(soapKlass, obj, info, @registry)
+      @map.each do |obj_class, soap_class, factory, info|
+        if klass == obj_class or
+            (info[:derived_class] and klass <= obj_class)
+          ret = factory.obj2soap(soap_class, obj, info, @registry)
           return ret if ret
         end
       end
@@ -155,10 +155,10 @@ class Registry
     end
 
     def soap2obj(klass, node)
-      @map.each do |objKlass, soapKlass, factory, info|
-        if klass == soapKlass or
-            (info[:derivedClass] and klass <= soapKlass)
-          conv, obj = factory.soap2obj(objKlass, node, info, @registry)
+      @map.each do |obj_class, soap_class, factory, info|
+        if klass == soap_class or
+            (info[:derived_class] and klass <= soap_class)
+          conv, obj = factory.soap2obj(obj_class, node, info, @registry)
           return true, obj if conv
         end
       end
@@ -166,36 +166,36 @@ class Registry
     end
 
     # Give priority to former entry.
-    def init(initMap = [])
+    def init(init_map = [])
       clear
-      initMap.reverse_each do |objKlass, soapKlass, factory, info|
-        add(objKlass, soapKlass, factory, info)
+      init_map.reverse_each do |obj_class, soap_class, factory, info|
+        add(obj_class, soap_class, factory, info)
       end
     end
 
     # Give priority to latter entry.
-    def add(objKlass, soapKlass, factory, info)
+    def add(obj_class, soap_class, factory, info)
       info ||= {}
-      @map.unshift([objKlass, soapKlass, factory, info])
+      @map.unshift([obj_class, soap_class, factory, info])
     end
 
     def clear
       @map.clear
     end
 
-    def searchMappedSOAPClass(targetRubyClass)
-      @map.each do |objKlass, soapKlass, factory, info|
-        if objKlass == targetRubyClass
-          return soapKlass
+    def find_mapped_soap_class(target_obj_class)
+      @map.each do |obj_class, soap_class, factory, info|
+        if obj_class == target_obj_class
+          return soap_class
         end
       end
       nil
     end
 
-    def searchMappedRubyClass(targetSOAPClass)
-      @map.each do |objKlass, soapKlass, factory, info|
-        if soapKlass == targetSOAPClass
-          return objKlass
+    def find_mapped_obj_class(target_soap_class)
+      @map.each do |obj_class, soap_class, factory, info|
+        if soap_class == target_soap_class
+          return obj_class
         end
       end
       nil
@@ -223,19 +223,19 @@ class Registry
     [::Time,         ::SOAP::SOAPDateTime,   BasetypeFactory],
     [::Time,         ::SOAP::SOAPTime,       BasetypeFactory],
     [::Float,        ::SOAP::SOAPDouble,     BasetypeFactory,
-      { :derivedClass => true }],
+      {:derived_class => true}],
     [::Float,        ::SOAP::SOAPFloat,      BasetypeFactory,
-      { :derivedClass => true }],
+      {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPInt,        BasetypeFactory,
-      { :derivedClass => true }],
+      {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPLong,       BasetypeFactory,
-      { :derivedClass => true }],
+      {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPInteger,    BasetypeFactory,
-      { :derivedClass => true }],
+      {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPShort,      BasetypeFactory,
-      { :derivedClass => true }],
+      {:derived_class => true}],
     [::URI::Generic, ::SOAP::SOAPAnyURI,     BasetypeFactory,
-      { :derivedClass => true }],
+      {:derived_class => true}],
     [::String,       ::SOAP::SOAPBase64,     Base64Factory],
     [::String,       ::SOAP::SOAPHexBinary,  Base64Factory],
     [::String,       ::SOAP::SOAPDecimal,    BasetypeFactory],
@@ -247,34 +247,83 @@ class Registry
     [::String,       ::SOAP::SOAPGMonth,     BasetypeFactory],
     [::String,       ::SOAP::SOAPQName,      BasetypeFactory],
 
+    [::Array,        ::SOAP::SOAPArray,      ArrayFactory,
+      {:derived_class => true}],
+
+    [::Hash,         ::SOAP::SOAPStruct,     HashFactory],
+    [::SOAP::Mapping::SOAPException,
+		     ::SOAP::SOAPStruct,     TypedStructFactory,
+      {:type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException")}],
+ ]
+
+  RubyOriginalMap = [
+    [::NilClass,     ::SOAP::SOAPNil,        BasetypeFactory],
+    [::TrueClass,    ::SOAP::SOAPBoolean,    BasetypeFactory],
+    [::FalseClass,   ::SOAP::SOAPBoolean,    BasetypeFactory],
+    [::String,       ::SOAP::SOAPString,     StringFactory],
+    [::DateTime,     ::SOAP::SOAPDateTime,   BasetypeFactory],
+    [::Date,         ::SOAP::SOAPDateTime,   BasetypeFactory],
+    [::Date,         ::SOAP::SOAPDate,       BasetypeFactory],
+    [::Time,         ::SOAP::SOAPDateTime,   BasetypeFactory],
+    [::Time,         ::SOAP::SOAPTime,       BasetypeFactory],
+    [::Float,        ::SOAP::SOAPDouble,     BasetypeFactory,
+      {:derived_class => true}],
+    [::Float,        ::SOAP::SOAPFloat,      BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPInt,        BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPLong,       BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPInteger,    BasetypeFactory,
+      {:derived_class => true}],
+    [::Integer,      ::SOAP::SOAPShort,      BasetypeFactory,
+      {:derived_class => true}],
+    [::URI::Generic, ::SOAP::SOAPAnyURI,     BasetypeFactory,
+      {:derived_class => true}],
+    [::String,       ::SOAP::SOAPBase64,     Base64Factory],
+    [::String,       ::SOAP::SOAPHexBinary,  Base64Factory],
+    [::String,       ::SOAP::SOAPDecimal,    BasetypeFactory],
+    [::String,       ::SOAP::SOAPDuration,   BasetypeFactory],
+    [::String,       ::SOAP::SOAPGYearMonth, BasetypeFactory],
+    [::String,       ::SOAP::SOAPGYear,      BasetypeFactory],
+    [::String,       ::SOAP::SOAPGMonthDay,  BasetypeFactory],
+    [::String,       ::SOAP::SOAPGDay,       BasetypeFactory],
+    [::String,       ::SOAP::SOAPGMonth,     BasetypeFactory],
+    [::String,       ::SOAP::SOAPQName,      BasetypeFactory],
+
+    # Does not allow Array's subclass here.
     [::Array,        ::SOAP::SOAPArray,      ArrayFactory],
 
     [::Hash,         ::SOAP::SOAPStruct,     HashFactory],
     [::SOAP::Mapping::SOAPException,
-                      ::SOAP::SOAPStruct,     TypedStructFactory,
-      { :type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException") }
-   ],
+                     ::SOAP::SOAPStruct,     TypedStructFactory,
+      {:type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException")}],
  ]
 
   def initialize(config = {})
     @config = config
     @map = Map.new(self)
-    @map.init(SOAPBaseMap)
-    allowUntypedStruct = @config.has_key?(:allowUntypedStruct) ?
-      @config[:allowUntypedStruct] : true
-    allowOriginalMapping = @config.has_key?(:allowOriginalMapping) ?
-      @config[:allowOriginalMapping] : false
-    @rubytypeFactory = RubytypeFactory.new(
-      :allowUntypedStruct => allowUntypedStruct,
-      :allowOriginalMapping => allowOriginalMapping
+    if @config[:allow_original_mapping]
+      allow_original_mapping = true
+      @map.init(RubyOriginalMap)
+    else
+      allow_original_mapping = false
+      @map.init(SOAPBaseMap)
+    end
+
+    allow_untyped_struct = @config.key?(:allow_untyped_struct) ?
+      @config[:allow_untyped_struct] : true
+    @rubytype_factory = RubytypeFactory.new(
+      :allow_untyped_struct => allow_untyped_struct,
+      :allow_original_mapping => allow_original_mapping
    )
-    @defaultFactory = @rubytypeFactory
-    @obj2soapExceptionHandler = nil
-    @soap2objExceptionHandler = nil
+    @default_factory = @rubytype_factory
+    @excn_handler_obj2soap = nil
+    @excn_handler_soap2obj = nil
   end
 
-  def add(objKlass, soapKlass, factory, info = nil)
-    @map.add(objKlass, soapKlass, factory, info)
+  def add(obj_class, soap_class, factory, info = nil)
+    @map.add(obj_class, soap_class, factory, info)
   end
   alias :set :add
 
@@ -291,14 +340,14 @@ class Registry
     end
     begin 
       ret = @map.obj2soap(klass, obj) ||
-        @defaultFactory.obj2soap(klass, obj, nil, self)
+        @default_factory.obj2soap(klass, obj, nil, self)
     rescue MappingError
     end
     return ret if ret
 
-    if @obj2soapExceptionHandler
-      ret = @obj2soapExceptionHandler.call(obj) { |yieldObj|
-        Mapping._obj2soap(yieldObj, self)
+    if @excn_handler_obj2soap
+      ret = @excn_handler_obj2soap.call(obj) { |yield_obj|
+        Mapping._obj2soap(yield_obj, self)
       }
     end
     return ret if ret
@@ -307,20 +356,20 @@ class Registry
   end
 
   def soap2obj(klass, node)
-    if node.extraAttrs.has_key?(RubyTypeName)
-      conv, obj = @rubytypeFactory.soap2obj(klass, node, nil, self)
+    if node.extraattr.key?(RubyTypeName)
+      conv, obj = @rubytype_factory.soap2obj(klass, node, nil, self)
       return obj if conv
     else
       conv, obj = @map.soap2obj(klass, node)
       return obj if conv
-      conv, obj = @defaultFactory.soap2obj(klass, node, nil, self)
+      conv, obj = @default_factory.soap2obj(klass, node, nil, self)
       return obj if conv
     end
 
-    if @soap2objExceptionHandler
+    if @excn_handler_soap2obj
       begin
-        return @soap2objExceptionHandler.call(node) { |yieldNode|
-          Mapping._soap2obj(yieldNode, self)
+        return @excn_handler_soap2obj.call(node) { |yield_node|
+          Mapping._soap2obj(yield_node, self)
         }
       rescue Exception
       end
@@ -329,24 +378,24 @@ class Registry
     raise MappingError.new("Cannot map #{ node.type.name } to Ruby object.")
   end
 
-  def defaultFactory=(newFactory)
-    @defaultFactory = newFactory
+  def default_factory=(factory)
+    @default_factory = factory
   end
 
-  def obj2soapExceptionHandler=(newHandler)
-    @obj2soapExceptionHandler = newHandler
+  def excn_handler_obj2soap=(handler)
+    @excn_handler_obj2soap = handler
   end
 
-  def soap2objExceptionHandler=(newHandler)
-    @soap2objExceptionHandler = newHandler
+  def excn_handler_soap2obj=(handler)
+    @excn_handler_soap2obj = handler
   end
 
-  def searchMappedSOAPClass(rubyClass)
-    @map.searchMappedSOAPClass(rubyClass)
+  def find_mapped_soap_class(obj_class)
+    @map.find_mapped_soap_class(obj_class)
   end
 
-  def searchMappedRubyClass(soapClass)
-    @map.searchMappedRubyClass(soapClass)
+  def find_mapped_obj_class(soap_class)
+    @map.find_mapped_obj_class(soap_class)
   end
 end
 
@@ -354,49 +403,49 @@ end
 class WSDLMappingRegistry
   include TraverseSupport
 
-  attr_reader :complexTypes
+  attr_reader :complextypes
 
-  def initialize(complexTypes, config = {})
-    @complexTypes = complexTypes
+  def initialize(complextypes, config = {})
+    @complextypes = complextypes
     @config = config
-    @obj2soapExceptionHandler = nil
+    @excn_handler_obj2soap = nil
   end
 
-  def obj2soap(klass, obj, typeQName)
-    soapObj = nil
+  def obj2soap(klass, obj, type_qname)
+    soap_obj = nil
     if obj.nil?
-      soapObj = SOAPNil.new
+      soap_obj = SOAPNil.new
     elsif obj.is_a?(SOAPBasetype)
-      soapObj = obj
-    elsif obj.is_a?(SOAPStruct) && (type = @complexTypes[obj.type])
-      soapObj = obj
-      markMarshalledObj(obj, soapObj)
-      elements2soap(obj, soapObj, type.content.elements)
-    elsif obj.is_a?(SOAPArray) && (type = @complexTypes[obj.type])
-      contentType = type.getChildType
-      soapObj = obj
-      markMarshalledObj(obj, soapObj)
+      soap_obj = obj
+    elsif obj.is_a?(SOAPStruct) && (type = @complextypes[obj.type])
+      soap_obj = obj
+      mark_marshalled_obj(obj, soap_obj)
+      elements2soap(obj, soap_obj, type.content.elements)
+    elsif obj.is_a?(SOAPArray) && (type = @complextypes[obj.type])
+      contenttype = type.child_type
+      soap_obj = obj
+      mark_marshalled_obj(obj, soap_obj)
       obj.replace do |ele|
-        Mapping._obj2soap(ele, self, contentType)
+        Mapping._obj2soap(ele, self, contenttype)
       end
-    elsif (type = @complexTypes[typeQName])
-      case type.compoundType
+    elsif (type = @complextypes[type_qname])
+      case type.compoundtype
       when :TYPE_STRUCT
-        soapObj = struct2soap(obj, typeQName, type)
+        soap_obj = struct2soap(obj, type_qname, type)
       when :TYPE_ARRAY
-        soapObj = array2soap(obj, typeQName, type)
+        soap_obj = array2soap(obj, type_qname, type)
       end
-    elsif (type = TypeMap[typeQName])
-      soapObj = base2soap(obj, type)
+    elsif (type = TypeMap[type_qname])
+      soap_obj = base2soap(obj, type)
     end
-    return soapObj if soapObj
+    return soap_obj if soap_obj
 
-    if @obj2soapExceptionHandler
-      soapObj = @obj2soapExceptionHandler.call(obj) { |yieldObj|
-        Mapping._obj2soap(yieldObj, self)
+    if @excn_handler_obj2soap
+      soap_obj = @excn_handler_obj2soap.call(obj) { |yield_obj|
+        Mapping._obj2soap(yield_obj, self)
       }
     end
-    return soapObj if soapObj
+    return soap_obj if soap_obj
 
     raise MappingError.new("Cannot map #{ klass.name } to SOAP/OM.")
   end
@@ -405,52 +454,53 @@ class WSDLMappingRegistry
     raise RuntimeError.new("#{ self } is for obj2soap only.")
   end
 
-  def obj2soapExceptionHandler=(newHandler)
-    @obj2soapExceptionHandler = newHandler
+  def excn_handler_obj2soap=(handler)
+    @excn_handler_obj2soap = handler
   end
 
 private
 
   def base2soap(obj, type)
-    soapObj = nil
+    soap_obj = nil
     if type <= XSD::XSDString
-      soapObj = type.new(Charset.isCES(obj, $KCODE) ?
-        Charset.codeConv(obj, $KCODE, Charset.getEncoding) : obj)
-      markMarshalledObj(obj, soapObj)
+      soap_obj = type.new(Charset.is_ces(obj, $KCODE) ?
+        Charset.encoding_conv(obj, $KCODE, Charset.encoding) : obj)
+      mark_marshalled_obj(obj, soap_obj)
     else
-      soapObj = type.new(obj)
+      soap_obj = type.new(obj)
     end
-    soapObj
+    soap_obj
   end
 
-  def struct2soap(obj, typeQName, type)
-    soapObj = SOAPStruct.new(typeQName)
-    markMarshalledObj(obj, soapObj)
-    elements2soap(obj, soapObj, type.content.elements)
-    soapObj
+  def struct2soap(obj, type_qname, type)
+    soap_obj = SOAPStruct.new(type_qname)
+    mark_marshalled_obj(obj, soap_obj)
+    elements2soap(obj, soap_obj, type.content.elements)
+    soap_obj
   end
 
-  def array2soap(obj, soapObj, type)
-    contentType = type.getChildType
-    soapObj = SOAPArray.new(ValueArrayName, 1, contentType)
-    markMarshalledObj(obj, soapObj)
+  def array2soap(obj, soap_obj, type)
+    contenttype = type.child_type
+    soap_obj = SOAPArray.new(ValueArrayName, 1, contenttype)
+    mark_marshalled_obj(obj, soap_obj)
     obj.each do |item|
-      soapObj.add(Mapping._obj2soap(item, self, contentType))
+      soap_obj.add(Mapping._obj2soap(item, self, contenttype))
     end
-    soapObj
+    soap_obj
   end
 
-  def elements2soap(obj, soapObj, elements)
-    elements.each do |elementName, element|
-      childObj = obj.instance_eval('@' << elementName)
-      soapObj.add(elementName,
-        Mapping._obj2soap(childObj, self, element.type))
+  def elements2soap(obj, soap_obj, elements)
+    elements.each do |elename, element|
+      child_obj = obj.instance_eval('@' << elename)
+      soap_obj.add(elename,
+        Mapping._obj2soap(child_obj, self, element.type))
     end
   end
 end
 
 
 DefaultRegistry = Registry.new
+RubyOriginalRegistry = Registry.new(:allow_original_mapping => true)
 
 
 end

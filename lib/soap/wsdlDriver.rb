@@ -34,51 +34,51 @@ module SOAP
 class WSDLDriverFactory
   attr_reader :wsdl
 
-  def initialize( wsdl, logDev = nil )
-    @logDev = logDev
-    @wsdl = parse( wsdl )
+  def initialize(wsdl, logdev = nil)
+    @logdev = logdev
+    @wsdl = parse(wsdl)
   end
 
-  def createDriver( serviceName = nil, portName = nil, opt = {} )
-    service = if serviceName
-	@wsdl.getService( XSD::QName.new( @wsdl.targetNamespace, serviceName ))
+  def create_driver(servicename = nil, portname = nil, opt = {})
+    service = if servicename
+	@wsdl.service(XSD::QName.new(@wsdl.targetnamespace, servicename))
       else
-	@wsdl.services[ 0 ]
+	@wsdl.services[0]
       end
     if service.nil?
-      raise RuntimeError.new( "Service #{ serviceName } not found in WSDL." )
+      raise RuntimeError.new("Service #{ servicename } not found in WSDL.")
     end
-    port = if portName
-	service.ports[ XSD::QName.new( @wsdl.targetNamespace, portName ) ]
+    port = if portname
+	service.ports[XSD::QName.new(@wsdl.targetnamespace, portname)]
       else
-	service.ports[ 0 ]
+	service.ports[0]
       end
     if port.nil?
-      raise RuntimeError.new( "Port #{ portName } not found in WSDL." )
+      raise RuntimeError.new("Port #{ portname } not found in WSDL.")
     end
-    drv = WSDLDriver.new( @wsdl, port, @logDev, opt )
-    complexTypes = @wsdl.getComplexTypesWithMessages( port.getPortType )
-    drv.wsdlMappingRegistry = Mapping::WSDLMappingRegistry.new( complexTypes )
+    drv = WSDLDriver.new(@wsdl, port, @logdev, opt)
+    complextypes = @wsdl.soap_complextypes(port.porttype)
+    drv.wsdl_mapping_registry = Mapping::WSDLMappingRegistry.new(complextypes)
     drv
   end
 
 private
   
-  def parse( wsdl )
+  def parse(wsdl)
     str = nil
     if /^http/i =~ wsdl
       begin
 	c = HTTPAccess2::Client.new(
-	  ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ] )
-	str = c.getContent( wsdl )
+	  ENV['http_proxy'] || ENV['HTTP_PROXY'])
+	str = c.get_content(wsdl)
       rescue
 	str = nil
       end
     end
     if str.nil?
-      str = File.open( wsdl )
+      str = File.open(wsdl)
     end
-    WSDL::WSDLParser.createParser.parse( str )
+    WSDL::WSDLParser.create_parser.parse(str)
   end
 end
 
@@ -88,204 +88,201 @@ class WSDLDriver
   include SOAP
 
 public
-  attr_accessor :logDev
-  attr_accessor :mappingRegistry
-  attr_accessor :wsdlMappingRegistry
+  attr_accessor :logdev
+  attr_accessor :mapping_registry
+  attr_accessor :wsdl_mapping_registry
   attr_reader :opt
-  attr_reader :endpointUrl
-  attr_reader :wireDumpDev
-  attr_reader :wireDumpFileBase
-  attr_reader :httpProxy
+  attr_reader :endpoint_url
+  attr_reader :wiredump_dev
+  attr_reader :wiredump_file_base
+  attr_reader :httpproxy
 
-  attr_accessor :defaultEncodingStyle
-  attr_accessor :allowUnqualifiedElement
-  attr_accessor :generateEncodeType
+  attr_accessor :default_encodingstyle
+  attr_accessor :allow_unqualified_element
+  attr_accessor :generate_explicit_type
 
-  def initialize( wsdl, port, logDev, opt )
+  def initialize(wsdl, port, logdev, opt)
     @wsdl = wsdl
     @port = port
-    @logDev = logDev
-    @mappingRegistry = nil	# for unmarshal
-    @wsdlMappingRegistry = nil	# for marshal
-    @endpointUrl = nil
-    @wireDumpDev = nil
-    @dumpFileBase = nil
-    @httpProxy = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
+    @logdev = logdev
+    @mapping_registry = nil	# for unmarshal
+    @wsdl_mapping_registry = nil	# for marshal
+    @endpoint_url = nil
+    @wiredump_dev = nil
+    @wiredump_file_base = nil
+    @httpproxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
 
     @opt = opt.dup
-    @decodeComplexTypes = @wsdl.getComplexTypesWithMessages( port.getPortType )
-    @defaultEncodingStyle = EncodingNamespace
-    @allowUnqualifiedElement = true
-    @generateEncodeType = false
+    @decode_typemap = @wsdl.soap_complextypes(port.porttype)
+    @default_encodingstyle = EncodingNamespace
+    @allow_unqualified_element = true
+    @generate_explicit_type = false
 
-    createHandler
-    @operationMap = {}
-    # Convert Map which key is QName, to aHash which key is String.
-    @port.createInputOperationMap.each do | operationName, value |
-      @operationMap[ operationName.name ] = value.dup.unshift( operationName )
-      operation, paramNames, = value
-      addMethodInterface( operationName.name, paramNames )
+    create_handler
+    @operations = {}
+    # Convert Map which key is QName, to a Hash which key is String.
+    @port.inputoperation_map.each do |op_name, value|
+      @operations[op_name.name] = value.dup.unshift(op_name)
+      operation, param_names, = value
+      add_method_interface(op_name.name, param_names)
     end
   end
 
-  def setEndpointUrl( endpointUrl )
-    @endpointUrl = endpointUrl
+  def endpoint_url=(endpoint_url)
+    @endpoint_url = endpoint_url
     if @handler
-      @handler.endpointUrl = @endpointUrl
+      @handler.endpoint_url = @endpoint_url
       @handler.reset
     end
   end
 
-  def setWireDumpDev( dumpDev )
-    @wireDumpDev = dumpDev
+  def wiredump_dev=(dev)
+    @wiredump_dev = dev
     if @handler
-      @handler.dumpDev = @wireDumpDev
+      @handler.wiredump_dev = @wiredump_dev
       @handler.reset
     end
   end
 
-  def setWireDumpFileBase( base )
-    @dumpFileBase = base
+  def wiredump_file_base=(base)
+    @wiredump_file_base = base
   end
 
-  def setHttpProxy( httpProxy )
-    @httpProxy = httpProxy
+  def httpproxy=(httpproxy)
+    @httpproxy = httpproxy
     if @handler
-      @handler.proxy = @httpProxy
-      @handler.resetStream
+      @handler.proxy = @httpproxy
+      @handler.reset
     end
   end
 
-  def resetStream
+  def reset_stream
     @handler.reset
   end
 
 private
 
-  def createHandler
-    unless @port.soapAddress
-      raise RuntimeError.new( "soap:address element not found in WSDL." )
+  def create_handler
+    unless @port.soap_address
+      raise RuntimeError.new("soap:address element not found in WSDL.")
     end
-    endpointUrl = @endpointUrl || @port.soapAddress.location
-    @handler = HTTPPostStreamHandler.new( endpointUrl, @httpProxy,
-      Charset.getEncodingLabel )
-    @handler.dumpDev = @wireDumpDev
+    endpoint_url = @endpoint_url || @port.soap_address.location
+    @handler = HTTPPostStreamHandler.new(endpoint_url, @httpproxy,
+      Charset.encoding_label)
+    @handler.wiredump_dev = @wiredump_dev
   end
 
-  def createMethodObject( names, params )
+  def create_method_obj(names, params)
     o = Object.new
     for idx in 0 ... params.length
-      o.instance_eval( "@#{ names[ idx ] } = params[ idx ]" )
+      o.instance_eval("@#{ names[idx] } = params[idx]")
     end
     o
   end
 
-  def call( methodName, *params )
-    log( SEV_INFO ) { "call: calling method '#{ methodName }'." }
-    log( SEV_DEBUG ) { "call: parameters '#{ params.inspect }'." }
+  def call(method_name, *params)
+    log(SEV_INFO) { "call: calling method '#{ method_name }'." }
+    log(SEV_DEBUG) { "call: parameters '#{ params.inspect }'." }
 
-    operationName, messageName, paramNames, soapAction =
-      @operationMap[ methodName ]
-    obj = createMethodObject( paramNames, params )
-    method = Mapping.obj2soap( obj, @wsdlMappingRegistry, messageName )
-    method.elementName = operationName
+    op_name, msg_name, param_names, soapaction = @operations[method_name]
+    obj = create_method_obj(param_names, params)
+    method = Mapping.obj2soap(obj, @wsdl_mapping_registry, msg_name)
+    method.elename = op_name
     method.type = XSD::QName.new	# Request should not be typed.
 
-    if @dumpFileBase
-      @handler.dumpFileBase = @dumpFileBase + '_' << methodName
+    if @wiredump_file_base
+      @handler.wiredump_file_base = @wiredump_file_base + '_' << method_name
     end
 
     begin
-      header, body = invoke( nil, method, soapAction )
+      header, body = invoke(nil, method, soapaction)
       unless body
-	raise EmptyResponseError.new( "Empty response." )
+	raise EmptyResponseError.new("Empty response.")
       end
     rescue SOAP::FaultError => e
-      Mapping.fault2exception( e )
+      Mapping.fault2exception(e)
     end
 
     ret = body.response ?
-      Mapping.soap2obj( body.response, @mappingRegistry ) : nil
+      Mapping.soap2obj(body.response, @mapping_registry) : nil
 
-    if body.outParams
-      outParams = body.outParams.collect { | outParam |
-	Mapping.soap2obj( outParam )
+    if body.outparams
+      outparams = body.outparams.collect { |outparam|
+	Mapping.soap2obj(outparam)
       }
-      return [ ret ].concat( outParams )
+      return [ret].concat(outparams)
     else
       return ret
     end
   end
 
-  def invoke( headers, body, soapAction )
-    sendString = marshal( headers, body )
-    data = @handler.send( sendString, soapAction )
-    return nil, nil if data.receiveString.empty?
+  def invoke(headers, body, soapaction)
+    send_string = marshal(headers, body)
+    data = @handler.send(send_string, soapaction)
+    return nil, nil if data.receive_string.empty?
 
     # Received charset might be different from request.
-    receiveCharset = StreamHandler.parseMediaType( data.receiveContentType )
-    opt = getOpt
-    opt[ :charset ] = receiveCharset
+    res_charset = StreamHandler.parse_media_type(data.receive_contenttype)
+    opt = options
+    opt[:charset] = res_charset
 
-    header, body = Processor.unmarshal( data.receiveString, opt )
+    header, body = Processor.unmarshal(data.receive_string, opt)
     if body.fault
-      raise SOAP::FaultError.new( body.fault )
+      raise SOAP::FaultError.new(body.fault)
     end
 
     return header, body
   end
 
-  def marshal( headers, body )
+  def marshal(headers, body)
     header = SOAPHeader.new()
     if headers
-      headers.each do | content, mustUnderstand, encodingStyle |
-        header.add( SOAPHeaderItem.new( content, mustUnderstand,
-          encodingStyle ))
+      headers.each do |content, must_understand, encodingstyle|
+        header.add(SOAPHeaderItem.new(content, must_understand, encodingstyle))
       end
     end
-    body = SOAPBody.new( body )
-    marshalledString = Processor.marshal( header, body, getOpt )
-    return marshalledString
+    body = SOAPBody.new(body)
+    Processor.marshal(header, body, options)
   end
 
-  def addMethodInterface( name, paramNames )
+  def add_method_interface(name, param_names)
     i = 0
-    paramNames = paramNames.collect { | paramName |
+    param_names = param_names.collect { |param_name|
       i += 1
       "arg#{ i }"
     }
-    callParamStr = if paramNames.empty?
+    callparam_str = if param_names.empty?
 	""
       else
-	", " << paramNames.join( ", " )
+	", " << param_names.join(", ")
       end
     self.instance_eval <<-EOS
-      def #{ name }( #{ paramNames.join( ", " ) } )
-	call( "#{ name }"#{ callParamStr } )
+      def #{ name }(#{ param_names.join(", ") })
+	call("#{ name }"#{ callparam_str })
       end
     EOS
 =begin
     To use default argument value.
 
     self.instance_eval <<-EOS
-      def #{ name }( *arg )
-	call( "#{ name }", *arg )
+      def #{ name }(*arg)
+	call("#{ name }", *arg)
       end
     EOS
 =end
   end
 
-  def getOpt
+  def options
     opt = @opt.dup
-    opt[ :decodeComplexTypes ] = @decodeComplexTypes
-    opt[ :defaultEncodingStyle ] = @defaultEncodingStyle
-    opt[ :allowUnqualifiedElement ] = @allowUnqualifiedElement
-    opt[ :generateEncodeType ] = @generateEncodeType
+    opt[:decode_typemap] = @decode_typemap
+    opt[:default_encodingstyle] = @default_encodingstyle
+    opt[:allow_unqualified_element] = @allow_unqualified_element
+    opt[:generate_explicit_type] = @generate_explicit_type
     opt
   end
 
-  def log( sev )
-    @logDev.add( sev, nil, self.type ) { yield } if @logDev
+  def log(sev)
+    @logdev.add(sev, nil, self.type) { yield } if @logdev
   end
 end
 

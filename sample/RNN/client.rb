@@ -9,10 +9,11 @@
 
 
 require 'soap/wsdlDriver'
-wsdl = 'http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/*checkout*/rnn/rnn/app/rnn-hash.wsdl'
-rnn = SOAP::WSDLDriverFactory.new(wsdl).createDriver
-rnn.generateEncodeType = true
-#rnn.setWireDumpDev(STDERR)
+#wsdl = 'http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/*checkout*/rnn/rnn/app/rnn-hash.wsdl'
+wsdl = 'rnn-hash.wsdl'
+rnn = SOAP::WSDLDriverFactory.new(wsdl).create_driver
+rnn.generate_explicit_type = true
+rnn.wiredump_dev = STDOUT
 
 test_article_id = 1
 POST_COMMENT_DIRECT = 0
@@ -23,6 +24,7 @@ pos = 0
 n = 5
 topicid = nil
 puts rnn.list(pos, n, topicid)
+exit
 
 # IDが id の記事を取得します
 rnn.article(test_article_id).each do |k, v|

@@ -30,61 +30,59 @@ module Mapping
 
   # TraverseSupport breaks Thread.current[:SOAPMarshalDataKey].
   module TraverseSupport
-    def markMarshalledObj(obj, soapObj)
-      Thread.current[:SOAPMarshalDataKey][obj.__id__] = soapObj
+    def mark_marshalled_obj(obj, soap_obj)
+      Thread.current[:SOAPMarshalDataKey][obj.__id__] = soap_obj
     end
 
-    def markUnmarshalledObj(node, obj)
+    def mark_unmarshalled_obj(node, obj)
       # node.id is not Object#id but SOAPReference#id
       Thread.current[:SOAPMarshalDataKey][node.id] = obj
     end
   end
 
 
-  def self.obj2soap(obj, mappingRegistry = nil, type = nil)
-    mappingRegistry ||= Mapping::DefaultRegistry
+  def self.obj2soap(obj, registry = nil, type = nil)
+    registry ||= Mapping::DefaultRegistry
     Thread.current[:SOAPMarshalDataKey] = {}
-    soapObj = _obj2soap(obj, mappingRegistry, type)
+    soap_obj = _obj2soap(obj, registry, type)
     Thread.current[:SOAPMarshalDataKey] = nil
-    soapObj
+    soap_obj
   end
 
-  def self.soap2obj(node, mappingRegistry = nil)
-    mappingRegistry ||= Mapping::DefaultRegistry
+  def self.soap2obj(node, registry = nil)
+    registry ||= Mapping::DefaultRegistry
     Thread.current[:SOAPMarshalDataKey] = {}
-    obj = _soap2obj(node, mappingRegistry)
+    obj = _soap2obj(node, registry)
     Thread.current[:SOAPMarshalDataKey] = nil
     obj
   end
 
-  def self.ary2soap(ary, typeNamespace = XSD::Namespace,
-      typeName = XSD::AnyTypeLiteral, mappingRegistry = nil)
-    type = XSD::QName.new(typeNamespace, typeName)
-    mappingRegistry ||= Mapping::DefaultRegistry
-    soapAry = SOAPArray.new(ValueArrayName, 1, type)
+  def self.ary2soap(ary, type_ns = XSD::Namespace, typename = XSD::AnyTypeLiteral, registry = nil)
+    registry ||= Mapping::DefaultRegistry
+    type = XSD::QName.new(type_ns, typename)
+    soap_ary = SOAPArray.new(ValueArrayName, 1, type)
     Thread.current[:SOAPMarshalDataKey] = {}
     ary.each do |ele|
-      soapAry.add(_obj2soap(ele, mappingRegistry, type))
+      soap_ary.add(_obj2soap(ele, registry, type))
     end
     Thread.current[:SOAPMarshalDataKey] = nil
-    soapAry
+    soap_ary
   end
 
-  def self.ary2md(ary, rank, typeNamespace = XSD::Namespace,
-      typeName = XSD::AnyTypeLiteral, mappingRegistry = nil)
-    type = XSD::QName.new(typeNamespace, typeName)
-    mappingRegistry ||= Mapping::DefaultRegistry
-    mdAry = SOAPArray.new(ValueArrayName, rank, type)
+  def self.ary2md(ary, rank, type_ns = XSD::Namespace, typename = XSD::AnyTypeLiteral, registry = nil)
+    registry ||= Mapping::DefaultRegistry
+    type = XSD::QName.new(type_ns, typename)
+    md_ary = SOAPArray.new(ValueArrayName, rank, type)
     Thread.current[:SOAPMarshalDataKey] = {}
-    addMDAry(mdAry, ary, [], mappingRegistry)
+    add_md_ary(md_ary, ary, [], registry)
     Thread.current[:SOAPMarshalDataKey] = nil
-    mdAry
+    md_ary
   end
 
-  def self.fault2exception(e, mappingRegistry = nil)
-    mappingRegistry ||= Mapping::DefaultRegistry
+  def self.fault2exception(e, registry = nil)
+    registry ||= Mapping::DefaultRegistry
     detail = if e.detail
-        soap2obj(e.detail, mappingRegistry) || ""
+        soap2obj(e.detail, registry) || ""
       else
         ""
       end
@@ -99,38 +97,36 @@ module Mapping
       e.detail = detail
       e.set_backtrace(
         if detail.is_a?(Array)
-          detail.map! { |s|
-            s.sub(/^/, @handler.endPoint + ':')
-          }
+	  detail
         else
           [detail.to_s]
         end
-     )
+      )
       raise
     end
   end
 
-  def self._obj2soap(obj, mappingRegistry, type = nil)
+  def self._obj2soap(obj, registry, type = nil)
     if referent = Thread.current[:SOAPMarshalDataKey][obj.__id__]
-      soapObj = SOAPReference.new
-      soapObj.__setobj__(referent)
-      soapObj
+      soap_obj = SOAPReference.new
+      soap_obj.__setobj__(referent)
+      soap_obj
     else
-      mappingRegistry.obj2soap(obj.class, obj, type)
+      registry.obj2soap(obj.class, obj, type)
     end
   end
 
-  def self._soap2obj(node, mappingRegistry)
+  def self._soap2obj(node, registry)
     if node.is_a?(SOAPReference)
       target = node.__getobj__
       # target.id is not Object#id but SOAPReference#id
       if referent = Thread.current[:SOAPMarshalDataKey][target.id]
         return referent
       else
-        return _soap2obj(target, mappingRegistry)
+        return _soap2obj(target, registry)
       end
     end
-    return mappingRegistry.soap2obj(node.class, node)
+    return registry.soap2obj(node.class, node)
   end
 
 
@@ -140,26 +136,26 @@ module Mapping
   #   (denied chars) => .[0-F][0-F]
   #   ex. a.b => a.2eb
   #
-  def self.getElementNameFromName(name)
+  def self.name2elename(name)
     name.gsub(/([^a-zA-Z0-9:_\-]+)/n) {
       '.' << $1.unpack('H2' * $1.size).join('.')
     }.gsub(/::/n, '..')
   end
 
-  def self.getNameFromElementName(name)
+  def self.elename2name(name)
     name.gsub(/\.\./n, '::').gsub(/((?:\.[0-9a-fA-F]{2})+)/n) {
       [$1.delete('.')].pack('H*')
     }
   end
 
-  def self.getClassFromName(name)
+  def self.class_from_name(name)
     if /^[A-Z]/ !~ name
       return nil
     end
     klass = ::Object
-    name.split('::').each do |klassStr|
-      if klass.const_defined?(klassStr)
-        klass = klass.const_get(klassStr)
+    name.split('::').each do |klass_str|
+      if klass.const_defined?(klass_str)
+        klass = klass.const_get(klass_str)
       else
         return nil
       end
@@ -167,38 +163,38 @@ module Mapping
     klass
   end
 
-  def self.createClassType(klass)
-    type = Mapping.getClassType(klass)
-    type.name ||= Mapping.getElementNameFromName(klass.name)
-    type.namespace ||= RubyCustomTypeNamespace
-    type
-  end
-
-  def self.getClassType(klass)
-    name = if klass.class_variables.include?("@@typeName")
-        klass.class_eval("@@typeName")
+  def self.class2qname(klass)
+    name = if klass.class_variables.include?("@@schema_type")
+        klass.class_eval("@@schema_type")
       else
         nil
       end
-    namespace = if klass.class_variables.include?("@@typeNamespace")
-        klass.class_eval("@@typeNamespace")
+    namespace = if klass.class_variables.include?("@@schema_ns")
+        klass.class_eval("@@schema_ns")
       else
         nil
       end
     XSD::QName.new(namespace, name)
   end
 
-  def self.getObjType(obj)
+  def self.class2element(klass)
+    type = Mapping.class2qname(klass)
+    type.name ||= Mapping.name2elename(klass.name)
+    type.namespace ||= RubyCustomTypeNamespace
+    type
+  end
+
+  def self.obj2element(obj)
     name = namespace = nil
     ivars = obj.instance_variables
-    if ivars.include?("@typeName")
-      name = obj.instance_eval("@typeName")
+    if ivars.include?("@schema_type")
+      name = obj.instance_eval("@schema_type")
     end
-    if ivars.include?("@typeNamespace")
-      namespace = obj.instance_eval("@typeNamespace")
+    if ivars.include?("@schema_ns")
+      namespace = obj.instance_eval("@schema_ns")
     end
     if !name or !namespace
-      getClassType(obj.class)
+      class2qname(obj.class)
     else
       XSD::QName.new(namespace, name)
     end
@@ -206,12 +202,12 @@ module Mapping
 
   class << Mapping
   private
-    def addMDAry(mdAry, ary, indices, mappingRegistry)
+    def add_md_ary(md_ary, ary, indices, registry)
       for idx in 0..(ary.size - 1)
         if ary[idx].is_a?(Array)
-          addMDAry(mdAry, ary[idx], indices + [idx], mappingRegistry)
+          add_md_ary(md_ary, ary[idx], indices + [idx], registry)
         else
-          mdAry[*(indices + [idx])] = _obj2soap(ary[idx], mappingRegistry)
+          md_ary[*(indices + [idx])] = _obj2soap(ary[idx], registry)
         end
       end
     end

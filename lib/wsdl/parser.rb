@@ -38,21 +38,21 @@ class WSDLParser
   class UnexpectedElementError < FormatDecodeError; end
   class ElementConstraintError < FormatDecodeError; end
 
-  @@parserFactory = nil
+  @@parser_factory = nil
 
   def self.factory
-    @@parserFactory
+    @@parser_factory
   end
 
-  def self.createParser( opt = {} )
-    @@parserFactory.new( opt )
+  def self.create_parser(opt = {})
+    @@parser_factory.new(opt)
   end
 
-  def self.setFactory( factory )
+  def self.add_factory(factory)
     if $DEBUG
       puts "Set #{ factory } as XML processor."
     end
-    @@parserFactory = factory
+    @@parser_factory = factory
   end
 
   class ParseFrame
@@ -61,7 +61,7 @@ class WSDLParser
     attr_accessor :node
 
   private
-    def initialize( ns, name, node )
+    def initialize(ns, name, node)
       @ns = ns
       @name = name
       @node = node
@@ -71,68 +71,68 @@ class WSDLParser
 public
   attr_accessor :charset
 
-  def initialize( opt = {} )
-    @parseStack = nil
-    @lastNode = nil
-    @charset = opt[ :charset ]
+  def initialize(opt = {})
+    @parsestack = nil
+    @lastnode = nil
+    @charset = opt[:charset]
   end
 
-  def parse( stringOrReadable )
-    @parseStack = []
-    @lastNode = nil
-    @textBuf = ''
+  def parse(string_or_readable)
+    @parsestack = []
+    @lastnode = nil
+    @textbuf = ''
 
     prologue
 
-    doParse( stringOrReadable )
+    do_parse(string_or_readable)
 
     epilogue
 
-    @lastNode
+    @lastnode
   end
 
-  def doParse( stringOrReadable )
+  def do_parse(string_or_readable)
     raise NotImplementError.new(
-      'Method doParse must be defined in derived class.' )
+      'Method do_parse must be defined in derived class.')
   end
 
-  def startElement( name, attrs )
-    lastFrame = @parseStack.last
+  def start_element(name, attrs)
+    lastframe = @parsestack.last
     ns = parent = nil
-    if lastFrame
-      ns = lastFrame.ns.clone
-      parent = lastFrame.node
+    if lastframe
+      ns = lastframe.ns.clone
+      parent = lastframe.node
     else
       ::SOAP::NS.reset
       ns = ::SOAP::NS.new
       parent = nil
     end
 
-    parseNS( ns, attrs )
+    parse_ns(ns, attrs)
 
-    node = decodeTag( ns, name, attrs, parent )
+    node = decode_tag(ns, name, attrs, parent)
 
-    @parseStack << ParseFrame.new( ns, name, node )
+    @parsestack << ParseFrame.new(ns, name, node)
   end
 
-  def characters( text )
-    lastFrame = @parseStack.last
-    if lastFrame
+  def characters(text)
+    lastframe = @parsestack.last
+    if lastframe
       # Need not to be cloned because character does not have attr.
-      ns = lastFrame.ns
-      decodeText( ns, text )
+      ns = lastframe.ns
+      decode_text(ns, text)
     else
       p text if $DEBUG
     end
   end
 
-  def endElement( name )
-    lastFrame = @parseStack.pop
-    unless name == lastFrame.name
-      raise UnexpectedElementError.new( "Closing element name '#{ name }' does not match with opening element '#{ lastFrame.name }'." )
+  def end_element(name)
+    lastframe = @parsestack.pop
+    unless name == lastframe.name
+      raise UnexpectedElementError.new("Closing element name '#{ name }' does not match with opening element '#{ lastframe.name }'.")
     end
-    decodeTagEnd( lastFrame.ns, lastFrame.node )
-    @lastNode = lastFrame.node
+    decode_tag_end(lastframe.ns, lastframe.node)
+    @lastnode = lastframe.node
   end
 
 private
@@ -142,7 +142,7 @@ private
   def epilogue
   end
 
-  def setXMLDeclEncoding( charset )
+  def xmldecl_encoding=(charset)
     if @charset.nil?
       @charset = charset
     else
@@ -152,65 +152,64 @@ private
   end
 
   # $1 is necessary.
-  NSParseRegexp = Regexp.new( '^xmlns:?(.*)$' )
+  NSParseRegexp = Regexp.new('^xmlns:?(.*)$')
 
-  def parseNS( ns, attrs )
+  def parse_ns(ns, attrs)
     return unless attrs
-    attrs.each do | key, value |
-      next unless ( NSParseRegexp =~ key )
+    attrs.each do |key, value|
+      next unless (NSParseRegexp =~ key)
       # '' means 'default namespace'.
       tag = $1 || ''
-      ns.assign( value, tag )
+      ns.assign(value, tag)
     end
   end
 
-  DefinitionsName = XSD::QName.new( Namespace, 'definitions' )
-  def decodeTag( ns, name, attrs, parent )
+  def decode_tag(ns, name, attrs, parent)
     o = nil
-    element = ns.parse( name )
+    element = ns.parse(name)
     if !parent
       if element == DefinitionsName
-	o = Definitions.parseElement( element )
+	o = Definitions.parse_element(element)
       else
-	raise UnknownElementError.new( "Unknown element #{ element }." )
+	raise UnknownElementError.new("Unknown element #{ element }.")
       end
     else
-      o = parent.parseElement( element )
+      o = parent.parse_element(element)
       unless o
-	raise UnknownElementError.new( "Unknown element #{ element }." )
+	raise UnknownElementError.new("Unknown element #{ element }.")
       end
       o.parent = parent
     end
-    attrs.each do | key, value |
+    attrs.each do |key, value|
       if /^xmlns/ !~ key
 	attr = unless /:/ =~ key
-	    XSD::QName.new( nil, key )
+	    XSD::QName.new(nil, key)
 	  else
-	    ns.parse( key )
+	    ns.parse(key)
 	  end
-	valueEle = if /:/ !~ value
+	value_ele = if /:/ !~ value
 	    value
-	  elsif /^http:/ =~ value and !ns.assignedTag?( 'http' )
+	  elsif /^http:/ =~ value and !ns.assigned_tag?('http')
 	    value
 	  else
 	    begin
-	      ns.parse( value )
+	      ns.parse(value)
 	    rescue
 	      value
 	    end
 	  end
-	o.parseAttr( attr, valueEle )
+	o.parse_attr(attr, value_ele)
       end
     end
     o
   end
 
-  def decodeTagEnd( ns, node )
-    node.postParse
+  def decode_tag_end(ns, node)
+    node.parse_epilogue
   end
 
-  def decodeText( ns, text )
-    @textBuf << text
+  def decode_text(ns, text)
+    @textbuf << text
   end
 end
 
@@ -225,7 +224,7 @@ loaded = false
   'wsdl/xmlparser',
   'wsdl/rexmlparser',
   'wsdl/nqxmlparser',
-].each do | lib |
+].each do |lib|
   begin
     require lib
     loaded = true
@@ -234,5 +233,5 @@ loaded = false
   end
 end
 unless loaded
-  raise RuntimeError.new( "XML processor module not found." )
+  raise RuntimeError.new("XML processor module not found.")
 end

@@ -26,52 +26,50 @@ module WSDL
 class Port < Info
   attr_reader :name		# required
   attr_reader :binding	# required
-  attr_reader :soapAddress
+  attr_reader :soap_address
 
   def initialize
     super
     @name = nil
     @binding = nil
-    @soapAddress = nil
+    @soap_address = nil
   end
 
-  def targetNamespace
-    parent.targetNamespace
+  def targetnamespace
+    parent.targetnamespace
   end
 
-  def getPortType
-    root.getPortType( getBinding.type )
+  def porttype
+    root.porttype(find_binding.type)
   end
 
-  def getBinding
-    root.getBinding( @binding )
+  def find_binding
+    root.binding(@binding)
   end
 
-  def createInputOperationMap
+  def inputoperation_map
     result = {}
-    getBinding.operations.each do | operationBinding |
-      operationName, messageName, parts, soapAction =
-	operationBinding.inputOperationInfo
-      result[ operationName ] = [ messageName, parts, soapAction ]
+    find_binding.operations.each do |op_bind|
+      op_name, msg_name, parts, soapaction = op_bind.inputoperation_sig
+      result[op_name] = [msg_name, parts, soapaction]
     end
     result
   end
 
-  def createOutputOperationMap
+  def outputoperation_map
     result = {}
-    getBinding.operations.each do | operationBinding |
-      operationName, messageName, parts = operationBinding.outputOperationInfo
-      result[ operationName ] = [ messageName, parts ]
+    find_binding.operations.each do |op_bind|
+      op_name, msg_name, parts = op_bind.outputoperation_sig
+      result[op_name] = [msg_name, parts]
     end
     result
   end
 
-  SOAPAddressName = XSD::QName.new( SOAPBindingNamespace, 'address' )
-  def parseElement( element )
+  def parse_element(element)
     case element
     when SOAPAddressName
       o = WSDL::SOAP::Address.new
-      @soapAddress = o
+      @soap_address = o
       o
     when DocumentationName
       o = Documentation.new
@@ -81,16 +79,14 @@ class Port < Info
     end
   end
 
-  NameAttrName = XSD::QName.new( nil, 'name' )
-  BindingAttrName = XSD::QName.new( nil, 'binding' )
-  def parseAttr( attr, value )
+  def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new( targetNamespace, value )
+      @name = XSD::QName.new(targetnamespace, value)
     when BindingAttrName
       @binding = value
     else
-      raise WSDLParser::UnknownAttributeError.new( "Unknown attr #{ attr }." )
+      raise WSDLParser::UnknownAttributeError.new("Unknown attr #{ attr }.")
     end
   end
 end

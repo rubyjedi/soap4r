@@ -1,15 +1,15 @@
 require 'soap/rpc/driver'
-#GC.start
+
 server = 'http://localhost:7000/'
-# server = 'http://localhost/cgi-bin/server2.cgi'
+# server = 'http://localhost:8808/server2.cgi'
 
 var = SOAP::RPC::Driver.new( server, 'http://tempuri.org/calcService' )
-var.addMethod( 'set', 'newValue' )
-var.addMethod( 'get' )
-var.addMethodAs( '+', 'add', 'rhs' )
-var.addMethodAs( '-', 'sub', 'rhs' )
-var.addMethodAs( '*', 'multi', 'rhs' )
-var.addMethodAs( '/', 'div', 'rhs' )
+var.add_method( 'set', 'newValue' )
+var.add_method( 'get' )
+var.add_method_as( '+', 'add', 'rhs' )
+var.add_method_as( '-', 'sub', 'rhs' )
+var.add_method_as( '*', 'multi', 'rhs' )
+var.add_method_as( '/', 'div', 'rhs' )
 
 puts 'var.set( 1 )'
 puts '# Bare in mind that another client set another value to this service.'

@@ -33,153 +33,153 @@ class SOAPParser
   class FormatDecodeError < Error; end
   class UnexpectedElementError < Error; end
 
-  @@parserFactory = nil
+  @@parser_factory = nil
 
   def self.factory
-    @@parserFactory
+    @@parser_factory
   end
 
-  def self.createParser( opt = {} )
-    @@parserFactory.new( opt )
+  def self.create_parser(opt = {})
+    @@parser_factory.new(opt)
   end
 
-  def self.setFactory( factory )
+  def self.add_factory(factory)
     if $DEBUG
       puts "Set #{ factory } as XML processor."
     end
-    @@parserFactory = factory
+    @@parser_factory = factory
   end
 
 private
+
   class ParseFrame
     attr_reader :node
     attr_reader :name
-    attr_reader :ns, :encodingStyle
+    attr_reader :ns, :encodingstyle
 
     class NodeContainer
-      def initialize( node )
+      def initialize(node)
 	@node = node
-	@typeDef = nil
       end
 
       def node
 	@node
       end
 
-      def replaceNode( node )
+      def replace_node(node)
 	@node = node
       end
     end
 
   public
 
-    def initialize( ns, name, node, encodingStyle )
+    def initialize(ns, name, node, encodingstyle)
       @ns = ns
       @name = name
       self.node = node
-      @encodingStyle = encodingStyle
+      @encodingstyle = encodingstyle
     end
 
-    def node=( node )
-      @node = NodeContainer.new( node )
+    def node=(node)
+      @node = NodeContainer.new(node)
     end
   end
 
 public
 
   attr_accessor :charset
-  attr_accessor :defaultEncodingStyle
-  attr_accessor :decodeComplexTypes
-  attr_accessor :allowUnqualifiedElement
+  attr_accessor :default_encodingstyle
+  attr_accessor :decode_typemap
+  attr_accessor :allow_unqualified_element
 
-  def initialize( opt = {} )
-    @parseStack = nil
-    @lastNode = nil
+  def initialize(opt = {})
+    @parsestack = nil
+    @lastnode = nil
     @handlers = {}
-    @charset = opt[ :charset ] || 'us-ascii'
-    @defaultEncodingStyle = opt[ :defaultEncodingStyle ] || EncodingNamespace
-    @decodeComplexTypes = opt[ :decodeComplexTypes ] || nil
-    @allowUnqualifiedElement = opt[ :allowUnqualifiedElement ] || false
+    @charset = opt[:charset] || 'us-ascii'
+    @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
+    @decode_typemap = opt[:decode_typemap] || nil
+    @allow_unqualified_element = opt[:allow_unqualified_element] || false
   end
 
-  def parse( stringOrReadable )
-    @parseStack = []
-    @lastNode = nil
+  def parse(string_or_readable)
+    @parsestack = []
+    @lastnode = nil
 
     prologue
-    @handlers.each do | uri, handler |
-      handler.decodePrologue
+    @handlers.each do |uri, handler|
+      handler.decode_prologue
     end
 
-    doParse( stringOrReadable )
+    do_parse(string_or_readable)
 
-    unless @parseStack.empty?
-      raise FormatDecodeError.new( "Unbalanced tag in XML." )
+    unless @parsestack.empty?
+      raise FormatDecodeError.new("Unbalanced tag in XML.")
     end
 
-    @handlers.each do | uri, handler |
-      handler.decodeEpilogue
+    @handlers.each do |uri, handler|
+      handler.decode_epilogue
     end
     epilogue
 
-    @lastNode
+    @lastnode
   end
 
-  def doParse( stringOrReadable )
-    raise NotImplementError.new( 'Method doParse must be defined in derived class.' )
+  def do_parse(string_or_readable)
+    raise NotImplementError.new('Method do_parse must be defined in derived class.')
   end
 
-  def startElement( name, attrs )
-    lastFrame = @parseStack.last
-    ns = parent = parentEncodingStyle = nil
-    if lastFrame
-      ns = lastFrame.ns.clone
-      parent = lastFrame.node
-      parentEncodingStyle = lastFrame.encodingStyle
+  def start_element(name, attrs)
+    lastframe = @parsestack.last
+    ns = parent = parent_encodingstyle = nil
+    if lastframe
+      ns = lastframe.ns.clone
+      parent = lastframe.node
+      parent_encodingstyle = lastframe.encodingstyle
     else
       NS.reset
       ns = NS.new
-      parent = ParseFrame::NodeContainer.new( nil )
-      parentEncodingStyle = nil
+      parent = ParseFrame::NodeContainer.new(nil)
+      parent_encodingstyle = nil
     end
 
-    attrs = parseNS( ns, attrs )
-    encodingStyle = getEncodingStyle( ns, attrs )
+    attrs = parse_ns(ns, attrs)
+    encodingstyle = find_encodingstyle(ns, attrs)
 
-    # Children's encodingStyle is derived from its parent.
-    encodingStyle ||= parentEncodingStyle || @defaultEncodingStyle
+    # Children's encodingstyle is derived from its parent.
+    encodingstyle ||= parent_encodingstyle || @default_encodingstyle
 
-    node = decodeTag( ns, name, attrs, parent, encodingStyle )
+    node = decode_tag(ns, name, attrs, parent, encodingstyle)
 
-    @parseStack << ParseFrame.new( ns, name, node, encodingStyle )
+    @parsestack << ParseFrame.new(ns, name, node, encodingstyle)
   end
 
-  def characters( text )
-    lastFrame = @parseStack.last
-    if lastFrame
+  def characters(text)
+    lastframe = @parsestack.last
+    if lastframe
       # Need not to be cloned because character does not have attr.
-      ns = lastFrame.ns
-      parent = lastFrame.node
-      encodingStyle = lastFrame.encodingStyle
-      decodeText( ns, text, encodingStyle )
+      ns = lastframe.ns
+      parent = lastframe.node
+      encodingstyle = lastframe.encodingstyle
+      decode_text(ns, text, encodingstyle)
     else
       # Ignore Text outside of SOAP Envelope.
       p text if $DEBUG
     end
   end
 
-  def endElement( name )
-    lastFrame = @parseStack.pop
-    unless name == lastFrame.name
-      raise UnexpectedElementError.new( "Closing element name '#{ name }' does not match with opening element '#{ lastFrame.name }'." )
+  def end_element(name)
+    lastframe = @parsestack.pop
+    unless name == lastframe.name
+      raise UnexpectedElementError.new("Closing element name '#{ name }' does not match with opening element '#{ lastframe.name }'.")
     end
-    decodeTagEnd( lastFrame.ns, lastFrame.node, lastFrame.encodingStyle )
-    @lastNode = lastFrame.node.node
+    decode_tag_end(lastframe.ns, lastframe.node, lastframe.encodingstyle)
+    @lastnode = lastframe.node.node
   end
 
 private
 
-  def setXMLDeclEncoding( charset )
+  def xmldecl_encoding=(charset)
     if @charset.nil?
       @charset = charset
     else
@@ -189,95 +189,94 @@ private
   end
 
   # $1 is necessary.
-  NSParseRegexp = Regexp.new( '^xmlns:?(.*)$' )
+  NSParseRegexp = Regexp.new('^xmlns:?(.*)$')
 
-  def parseNS( ns, attrs )
+  def parse_ns(ns, attrs)
     return attrs if attrs.nil? or attrs.empty?
-    newAttrs = {}
-    attrs.each do | key, value |
-      if ( NSParseRegexp =~ key )
+    newattrs = {}
+    attrs.each do |key, value|
+      if (NSParseRegexp =~ key)
         # '' means 'default namespace'.
         tag = $1 || ''
-        ns.assign( value, tag )
+        ns.assign(value, tag)
       else
-        newAttrs[ key ] = value
+        newattrs[key] = value
       end
     end
-    newAttrs
+    newattrs
   end
 
-  def getEncodingStyle( ns, attrs )
-    attrs.each do | key, value |
-      if ( ns.compare( EnvelopeNamespace, AttrEncodingStyle, key ))
+  def find_encodingstyle(ns, attrs)
+    attrs.each do |key, value|
+      if (ns.compare(EnvelopeNamespace, AttrEncodingStyle, key))
 	return value
       end
     end
     nil
   end
 
-  def decodeTag( ns, name, attrs, parent, encodingStyle )
-    element = ns.parse( name )
+  def decode_tag(ns, name, attrs, parent, encodingstyle)
+    ele = ns.parse(name)
 
     # Envelope based parsing.
-    if (( element.namespace == EnvelopeNamespace ) ||
-	( @allowUnqualifiedElement && element.namespace.nil? ))
-      o = decodeSOAPEnvelope( ns, element, attrs, parent )
+    if ((ele.namespace == EnvelopeNamespace) ||
+	(@allow_unqualified_element && ele.namespace.nil?))
+      o = decode_soap_envelope(ns, ele, attrs, parent)
       return o if o
     end
 
     # Encoding based parsing.
-    handler = getHandler( encodingStyle )
+    handler = find_handler(encodingstyle)
     if handler
-      return handler.decodeTag( ns, element, attrs, parent )
+      return handler.decode_tag(ns, ele, attrs, parent)
     else
-      raise FormatDecodeError.new(
-	"Unknown encodingStyle: #{ encodingStyle }." )
+      raise FormatDecodeError.new("Unknown encodingStyle: #{ encodingstyle }.")
     end
   end
 
-  def decodeTagEnd( ns, node, encodingStyle )
-    return unless encodingStyle
+  def decode_tag_end(ns, node, encodingstyle)
+    return unless encodingstyle
 
-    handler = getHandler( encodingStyle )
+    handler = find_handler(encodingstyle)
     if handler
-      return handler.decodeTagEnd( ns, node )
+      return handler.decode_tag_end(ns, node)
     else
-      raise FormatDecodeError.new( "Unknown encodingStyle: #{ encodingStyle }." )
+      raise FormatDecodeError.new("Unknown encodingStyle: #{ encodingstyle }.")
     end
   end
 
-  def decodeText( ns, text, encodingStyle )
-    handler = getHandler( encodingStyle )
+  def decode_text(ns, text, encodingstyle)
+    handler = find_handler(encodingstyle)
 
     if handler
-      handler.decodeText( ns, text )
+      handler.decode_text(ns, text)
     else
       # How should I do?
     end
   end
 
-  def decodeSOAPEnvelope( ns, element, attrs, parent )
+  def decode_soap_envelope(ns, ele, attrs, parent)
     o = nil
-    if element.name == EleEnvelope
+    if ele.name == EleEnvelope
       o = SOAPEnvelope.new
-    elsif element.name == EleHeader
-      unless parent.node.is_a?( SOAPEnvelope )
-	raise FormatDecodeError.new( "Header should be a child of Envelope." )
+    elsif ele.name == EleHeader
+      unless parent.node.is_a?(SOAPEnvelope)
+	raise FormatDecodeError.new("Header should be a child of Envelope.")
       end
       o = SOAPHeader.new
       parent.node.header = o
-    elsif element.name == EleBody
-      unless parent.node.is_a?( SOAPEnvelope )
-	raise FormatDecodeError.new( "Body should be a child of Envelope." )
+    elsif ele.name == EleBody
+      unless parent.node.is_a?(SOAPEnvelope)
+	raise FormatDecodeError.new("Body should be a child of Envelope.")
       end
       o = SOAPBody.new
       parent.node.body = o
-    elsif element.name == EleFault
-      unless parent.node.is_a?( SOAPBody )
-	raise FormatDecodeError.new( "Fault should be a child of Body." )
+    elsif ele.name == EleFault
+      unless parent.node.is_a?(SOAPBody)
+	raise FormatDecodeError.new("Fault should be a child of Body.")
       end
       o = SOAPFault.new
-      parent.node.setFault( o )
+      parent.node.fault = o
     end
     o.parent = parent if o
     o
@@ -289,16 +288,16 @@ private
   def epilogue
   end
 
-  def getHandler( encodingStyle )
-    unless @handlers.has_key?( encodingStyle )
-      handlerFactory = SOAP::EncodingStyleHandler.getHandler( encodingStyle ) ||
-	SOAP::EncodingStyleHandler.getHandler( EncodingNamespace )
-      handler = handlerFactory.new( @charset )
-      handler.decodeComplexTypes = @decodeComplexTypes
-      handler.decodePrologue
-      @handlers[ encodingStyle ] = handler
+  def find_handler(encodingstyle)
+    unless @handlers.key?(encodingstyle)
+      handler_factory = SOAP::EncodingStyleHandler.handler(encodingstyle) ||
+	SOAP::EncodingStyleHandler.handler(EncodingNamespace)
+      handler = handler_factory.new(@charset)
+      handler.decode_typemap = @decode_typemap
+      handler.decode_prologue
+      @handlers[encodingstyle] = handler
     end
-    @handlers[ encodingStyle ]
+    @handlers[encodingstyle]
   end
 end
 

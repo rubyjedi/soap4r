@@ -33,29 +33,29 @@ class SOAPXMLParser < SOAPParser
     end
   end
 
-  def initialize( *vars )
-    super( *vars )
+  def initialize(*vars)
+    super(*vars)
   end
 
-  def doParse( stringOrReadable )
+  def do_parse(string_or_readable)
     # XMLParser passes a String in utf-8.
     @charset = 'utf-8'
     @parser = Listener.new
-    @parser.parse( stringOrReadable ) do | type, name, data |
+    @parser.parse(string_or_readable) do |type, name, data|
       case type
       when XML::Parser::START_ELEM
-	startElement( name, data )
+	start_element(name, data)
       when XML::Parser::END_ELEM
-	endElement( name )
+	end_element(name)
       when XML::Parser::CDATA
-	characters( data )
+	characters(data)
       else
-	raise FormatDecodeError.new( "Unexpected XML: #{ type }/#{ name }/#{ data }." )
+	raise FormatDecodeError.new("Unexpected XML: #{ type }/#{ name }/#{ data }.")
       end
     end
   end
 
-  setFactory( self )
+  add_factory(self)
 end
 
 
