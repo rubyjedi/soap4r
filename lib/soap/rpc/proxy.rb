@@ -204,9 +204,6 @@ private
         @document_method_name = {}
         param_def.each do |inout, paramname, typeinfo|
           klass, namespace, name = typeinfo
-          unless klass.ancestors.include?(::SOAP::SOAPElement)
-            raise MethodDefinitionError, "illegal class: " + klass
-          end
           case inout.to_s
           when "input"
             @document_method_name[:input] = ::XSD::QName.new(namespace, name)
