@@ -53,11 +53,10 @@ private
     mr_creator = MappingRegistryCreator.new(@definitions)
 
     return <<__EOD__
-require 'soap/standaloneServer'
+require 'soap/rpc/standaloneServer'
 
 class #{ name }
-  require 'soap/rpcUtils'
-  MappingRegistry = SOAP::RPCUtils::MappingRegistry.new
+  MappingRegistry = SOAP::Mapping::Registry.new
 
 #{ mr_creator.dump(types).gsub(/^/, "  ").chomp }
   Methods = [
@@ -65,17 +64,18 @@ class #{ name }
   ]
 end
 
-class App < SOAP::StandaloneServer
+class App < SOAP::RPC::StandaloneServer
   def initialize(*arg)
-    super(*arg)
+    super
 
     servant = #{ name }.new
     #{ name }::Methods.each do |name_as, name, params, soapaction, namespace|
-      add_method_with_namespace_as(namespace, servant, name, name_as, params, soapaction)
+      qname = XSD::QName.new(namespace, name_as)
+      @soaplet.app_scope_router.add_method(servant, qname, soapaction,
+	name, params)
     end
 
     self.mapping_registry = #{ name }::MappingRegistry
-    self.sev_threshold = Devel::Logger::ERROR
   end
 end
 
