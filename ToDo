@@ -1,6 +1,7 @@
 = ToDo
 
-* header handler.
+* wsdl2ruby literal support.
+  * WSDL attribute support.
 * mappingRegistryCreator: do not dump a type which is in default
   mappingRegistry.
 * RAA exception
@@ -17,79 +18,7 @@
   ref‘®«‚ğg—p‚µ‚Ü‚·
 * Parse XML Namespace with xmlscan, not by itself.
 * Support all derived built-in types in XML Schema Part2 Sec. 3.2.
-* Support actor and mustUnderstand.
-
-
-== Header handler API
-
-=== for client
-
-drv = ...
-
-drv.with_header(headers) do |d|
-  returned_obj = d.my_method(foo, bar)
-  p d.returned_headers
-  returned_obj = d.my_method(foo, bar)
-  returned_obj = d.my_method(foo, bar)
-  returned_obj = d.my_method(foo, bar)
-  ...
-end
-
-header_handler ?
-
-class MyHeaderHandler < HeaderHandler
-  MyHeaderName = XSD::QName.new("foo", "bar")
-
-  def initialize(userid, passwd)
-    super(MyHeaderName)
-    @session_id = nil
-    @userid = userid
-    @passwd = passwd
-  end
-
-  def on_outbound
-    if @session_id
-      { :session_id => @session_id }
-    elsif false
-      SOAPElement.new(MyHeaderName)
-    else
-      { :userid => @userid, :passwd => @passwd }
-    end
-  end
-
-  alias on_request on_outbound
-
-  def on_inbound(my_header)
-    @session_id = my_header[:session_id]
-  end
-
-  alias on_response on_inbound
-
-end
-
-drv.header_handler << MyHeaderHandler.new
-
-drv.my_method(foo, bar)
-drv.my_method(foo, bar)
-drv.my_method(foo, bar)
-drv.my_method(foo, bar)
-drv.my_method(foo, bar)
-
-
-drv.with_header.my_method(headers, foo, bar)
-
-drv.my_method_with_header(headers, foo, bar)
-
-
-=== for server
-
-class MyService
-  def foo
-  end
-end
-
-@router.header_handler = hh  ?
-
+* Support actor.
 
 
 = Done
@@ -110,3 +39,5 @@ end
 * Design and implement SOAPHeader handler API.
 * Rewrite the interop test client with test/unit.
 * merge SwA patch.
+* header handler.
+* Support mustUnderstand.
