@@ -60,11 +60,11 @@ __EOD__
   end
 
   def dq(ele)
-    "\"#{ ele }\""
+    ele.dump
   end
 
   def ndq(ele)
-    ele.nil? ? "nil" : dq(ele)
+    ele.nil? ? 'nil' : dq(ele)
   end
 
   def sym(ele)
