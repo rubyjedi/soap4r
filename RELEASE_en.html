@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: November  3, 2003<br />
+Last modified: December 25, 2003<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.5.1
+Target SOAP4R version: SOAP4R/1.5.2
 </p>
 
 <ol>
@@ -56,61 +56,98 @@ Target SOAP4R version: SOAP4R/1.5.1
 Important news:  Soap4r library is included in ruby distribution after
 ruby/1.8.1.  You might not be need to install this package under ruby/1.8.
 The files this package includes and are not included in ruby/1.8 distribution
-are an application program (bin/wsdl2ruby) and some test codes.
-Consider to get this package if,
+are; some experimental code, application program (bin/wsdl2ruby) and some test
+codes.  Consider to get this package if,
 </p>
 
 <ul>
-  <li>You need the WSDL to ruby (reads a WSDL file and generates stubs and Ruby class definitions) application, or</li>
-  <li>You want to use soap4r under ruby/1.6.</li>
+  <li>You want to use soap4r under ruby/1.6</li>
+  <li>You need to do SOAP Messages with Attachments (SwA)</li>
+  <li>You need the WSDL to ruby (reads a WSDL file and generates stubs and Ruby class definitions) application</li>
 </ul>
 
+<p>
+Changes from 1.5.1.2.
+</p>
+
 <ul>
-  <li>Features;
+  <li>License;
   <ul>
-    <li>Sample updates; Update Amazon Web Service WSDL (v2 -&gt; v3), and update RAA WSDL(0.0.1 -&gt; 0.0.2).
-    <li>Supports ivars of basetype and extending modules marshalling with XML attribute.
-Using XML attribute to support ruby object dependent information, marshalled object keeps compatibility with SOAP spec.
-It shows the power of XML, extensibility.<br/>
-Now I think SOAP marshaller supports all kind of object graph which is supported by Ruby's original marshaller.</li>
-    <li>Better XML pretty printing.
-<pre>
-puts SOAPMarshal.dump(Person.new(&quot;NaHi&quot;, 33))
-
-=&gt;
-
-&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
-&lt;env:Envelope xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;
-    xmlns:env=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;
-    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;
-  &lt;env:Body&gt;
-    &lt;Person xmlns:n1=&quot;http://www.ruby-lang.org/xmlns/ruby/type/custom&quot;
-        xsi:type=&quot;n1:Person&quot;
-        env:encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot;&gt;
-      &lt;age xsi:type=&quot;xsd:int&quot;&gt;33&lt;/age&gt;
-      &lt;name xsi:type=&quot;xsd:string&quot;&gt;NaHi&lt;/name&gt;
-    &lt;/Person&gt;
-  &lt;/env:Body&gt;
-&lt;/env:Envelope&gt;
-    </pre></li>
+    <li>Changed license from GPL2 to Ruby's.</li>
   </ul></li>
 
-  <li>Installation;
+  <li>Features;
   <ul>
-    <li>The previous version soap4r/1.5.0 required http-access2 to be installed to build CGI server, but no longer needed fot this purpose now.
-You can use almost all features of soap4r without http-access2,
-but for actual usage, consider installing http-access2 for speed and
-thread-safe SOAP client.</li>
-    <li>Under ruby/1.8, installer installs lib files to rubylibdir(e.g. /usr/local/lib/ruby/1.8) instead of sitelibdir(e.g. /usr/local/lib/ruby/site_ruby/1.8)</li>
+    <li>Add SOAP Messages with Attachments (SwA) support.
+    Patched by Jamie Herre.
+    &quot;SOAP Messages with Attachments&quot; is the W3C Note which defines a
+    binding for a SOAP 1.1 message to be carried within a MIME
+    multipart/related message.  <a href="http://www.w3.org/TR/SOAP-attachments">http://www.w3.org/TR/SOAP-attachments</a>
+    This feature is still experimental.  Interop testing is going on.</li>
+
+    <li>HTTPS support even when you use net/http (not http-access2).
+    Patched by Oliver M. Bolzer.</li>
+
+    <li>Property file support.  SOAP and WSDL client reads &quot;soap/property&quot;
+    file located at somewhere in $: (ruby libray locations).  For
+    example, save these lines to
+    &quot;$rubylibdir/site_ruby/1.8/soap/property&quot;.
+<pre>
+      client.protocol.http.proxy = http://myproxy:8080
+      client.protocol.http.no_proxy = 192.168.71.71,192.168.71.72
+</pre>
+    Then all HTTP connections should use these proxy and no_proxy
+    definition.</li>
+
+    <li>Do not trust "HTTP_PROXY" environment variable by default to
+    avoid security problem.  cf.
+    <ul>
+      <li><a href="http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0072.html">http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0072.html</a></li>
+      <li><a href="http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0241.html">http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0241.html</a></li>
+      <li><a href="http://curl.haxx.se/mail/archive-2001-12/0034.html">http://curl.haxx.se/mail/archive-2001-12/0034.html</a></li> 
+    </ul>
+    To use HTTP_PROXY and NO_PROXY environment variable, you must set
+    SOAP_USE_PROXY environment variable 'on', too.
+<pre>
+      bash$ soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
+      csh$  env soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
+</pre></li>
+
+    <li>Add SOAP::RPC::Driver#mandatorycharset= and
+    SOAP::WSDLDriver#mandatorycharset= interface to force using
+    charset when parsing response from buggy server such as AWS.</li>
+
+    <li>Support a halfway-typed multi-ref array that Axis dumps.</li>
+
+    <li>Added a interface XSD::Charset.encoding= to control internal
+    encoding scheme.  Internal encoding scheme was fixed to 'utf-8'
+    when iconv or uconv was installed.  You can set 'euc-jp', etc.
+    to avoid encoding scheme conversion if you know what encoding
+    scheme the server uses.</li>
   </ul></li>
 
   <li>Bug fixes;
   <ul>
-    <li>Do not introduce XSD constants to toplevel.</li>
-    <li>'NO_PROXY'/'no_proxy' env var was not supported under net/http.  Fixed.</li>
-    <li>Remove some ruby/1.8 dependent codes.  Should work fine under 1.6, too.</li>
-    <li>XSD::XSDString did not check its value space under $KCODE = 'NONE' env for example where iconv module is not installed.</li>
-    <li>XSD::XSDFloat, XSD::XSDDouble: add +/- sign explicitly when stringified and embedded into XML instance.  Ruby's sprintf may format -0.0 as "0.0" (no minus sign) depending on underlying C sprintf implementation.</li>
+    <li>SOAP::Marshal.unmarshal: raise an exception if parse fails.
+    (returned nil)</li>
+
+    <li>SOAP::WSDLDriver: decode unknown element according to self-defined
+    type even if WSDL was given.</li>
+
+    <li> SOAP::Mapping::Factory#create_empty_object: fix Class#allocate
+    emulation code for ruby/1.6.  no effective change under ruby/1.8.</li>
+
+    <li>SOAP::RPC::SOAPMethodResponse: element name of response message
+    could have the name other than 'return'.</li>
+
+    <li>SOAP::RPC::StandaloneServer: add methods 'shutdown' and 'status'
+    as delegates to WEBrick.</li>
+
+    <li>WSDL::SOAP::ClassDefCreator: WSDL/1.1 allows plural fault
+    definition in a operation.</li>
+
+    <li>XSD::Charset.init: use cp932 under emx.
+    Patched by Siena. / SHINAGAWA, Norihide.</li>
   </ul></li>
 </ul>
 
@@ -211,7 +248,7 @@ For now, one of following XML processor must be installed
 <dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=devel-logger">[RAA:devel-logger]</a> (1.1.0)</dt>
 <dd>Logging utility by NaHi.  ruby/1.8 includes this library so you don't have to re-install it.</dd>
 
-<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=webrick">[RAA:webrick]</a> (1.3.1) (required for soap server)</dt>
+<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=webrick">[RAA:webrick]</a> (1.3.1)</dt>
 <dd>TCP server toolkit by Gotoyuzo.
 ruby/1.8 includes WEBrick in standard distribution library.</dd>
 
@@ -223,13 +260,12 @@ ruby/1.8 includes WEBrick in standard distribution library.</dd>
 Note: From ruby/1.8, this module is included in standard distribution.
 You don't have to install it if you are using ruby/1.8 or later.</dd>
 
-<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=uconv">[RAA:uconv]</a> (0.4.10) (required for UTF-8 handling under ruby/1.6)</dt>
+<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=uconv">[RAA:uconv]</a> (0.4.10) (required for UTF-8 handling under ruby/1.6 or under ruby/1.8 without iconv)</dt>
 <dd>by Yoshida Masato.
 It is requred when you use ruby/1.6 and want automatic CES conversion between
 SJIS &lt;-&gt; UTF8 and EUC &lt;-&gt; UTF8.
-Under ruby/1.8, soap4r uses iconv in standard distribution library.
+Under ruby/1.8, soap4r uses iconv in standard distribution library (if you installed it).
 Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
-I will support Iconv for more conversion set.
 </dd>
 
 </dl>
@@ -239,12 +275,14 @@ I will support Iconv for more conversion set.
 <p>
 Samples are in sample/ directory of distribution.
 Some samples try to connect to public servers.
-Set environment variable HTTP_PROXY if you are in a firewall and you have
+Set environment variable SOAP_USE_PROXY and HTTP_PROXY if you are in a firewall and you have
 http proxy to the internet like;
 </p>
 <pre class="path">
+$ export SOAP_USE_PROXY=on
 $ export HTTP_PROXY=http://myproxyserver:8080
   or
+$ setenv SOAP_USE_PROXY on
 $ setenv HTTP_PROXY http://myproxyserver:8080
 </pre>
 
@@ -546,17 +584,91 @@ Any comments are welcomed. (as always)</dd>
 <h2 id="history" name="history"><span class="content">9. History</span></h2>
 
 <dl>
-<dt>1.5.1 - November  2, 2003</dt>
-<dd>Important news:  Soap4r library is included in ruby distribution after
-ruby/1.8.1.  You might not be need to install this package under ruby/1.8.
-The files this package includes and are not included in ruby/1.8 distribution
-are an application program (bin/wsdl2ruby) and some test codes.
-Consider to get this package if,
+<dt>1.5.2 - December 25, 2003</dt>
+<dd>
 <ul>
-  <li>You need the WSDL to ruby (reads a WSDL file and generates stubs and Ruby class definitions) application, or</li>
-  <li>You want to use soap4r under ruby/1.6.</li>
-</ul>
+  <li>License;
+  <ul>
+    <li>Changed license from GPL2 to Ruby's.</li>
+  </ul></li>
 
+  <li>Features;
+  <ul>
+    <li>Add SOAP Messages with Attachments (SwA) support.
+    Patched by Jamie Herre.
+    &quot;SOAP Messages with Attachments&quot; is the W3C Note which defines a
+    binding for a SOAP 1.1 message to be carried within a MIME
+    multipart/related message.  <a href="http://www.w3.org/TR/SOAP-attachments">http://www.w3.org/TR/SOAP-attachments</a>
+    This feature is still experimental.  Interop testing is going on.</li>
+
+    <li>HTTPS support even when you use net/http (not http-access2).
+    Patched by Oliver M. Bolzer.</li>
+
+    <li>Property file support.  SOAP and WSDL client reads &quot;soap/property&quot;
+    file located at somewhere in $: (ruby libray locations).  For
+    example, save these lines to
+    &quot;$rubylibdir/site_ruby/1.8/soap/property&quot;.
+<pre>
+      client.protocol.http.proxy = http://myproxy:8080
+      client.protocol.http.no_proxy = 192.168.71.71,192.168.71.72
+</pre>
+    Then all HTTP connections should use these proxy and no_proxy
+    definition.</li>
+
+    <li>Do not trust "HTTP_PROXY" environment variable by default to
+    avoid security problem.  cf.
+    <ul>
+      <li><a href="http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0072.html">http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0072.html</a></li>
+      <li><a href="http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0241.html">http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0241.html</a></li>
+      <li><a href="http://curl.haxx.se/mail/archive-2001-12/0034.html">http://curl.haxx.se/mail/archive-2001-12/0034.html</a></li> 
+    </ul>
+    To use HTTP_PROXY and NO_PROXY environment variable, you must set
+    SOAP_USE_PROXY environment variable 'on', too.
+<pre>
+      bash$ soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
+      csh$  env soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
+</pre></li>
+
+    <li>Add SOAP::RPC::Driver#mandatorycharset= and
+    SOAP::WSDLDriver#mandatorycharset= interface to force using
+    charset when parsing response from buggy server such as AWS.</li>
+
+    <li>Support a halfway-typed multi-ref array that Axis dumps.</li>
+
+    <li>Added a interface XSD::Charset.encoding= to control internal
+    encoding scheme.  Internal encoding scheme was fixed to 'utf-8'
+    when iconv or uconv was installed.  You can set 'euc-jp', etc.
+    to avoid encoding scheme conversion if you know what encoding
+    scheme the server uses.</li>
+  </ul></li>
+
+  <li>Bug fixes;
+  <ul>
+    <li>SOAP::Marshal.unmarshal: raise an exception if parse fails.
+    (returned nil)</li>
+
+    <li>SOAP::WSDLDriver: decode unknown element according to self-defined
+    type even if WSDL was given.</li>
+
+    <li> SOAP::Mapping::Factory#create_empty_object: fix Class#allocate
+    emulation code for ruby/1.6.  no effective change under ruby/1.8.</li>
+
+    <li>SOAP::RPC::SOAPMethodResponse: element name of response message
+    could have the name other than 'return'.</li>
+
+    <li>SOAP::RPC::StandaloneServer: add methods 'shutdown' and 'status'
+    as delegates to WEBrick.</li>
+
+    <li>WSDL::SOAP::ClassDefCreator: WSDL/1.1 allows plural fault
+    definition in a operation.</li>
+
+    <li>XSD::Charset.init: use cp932 under emx.
+    Patched by Siena. / SHINAGAWA, Norihide.</li>
+  </ul></li>
+</ul></dd>
+
+<dt>1.5.1 - November  2, 2003</dt>
+<dd>
 <ul>
   <li>Features;
   <ul>
