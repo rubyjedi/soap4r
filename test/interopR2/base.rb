@@ -1,4 +1,5 @@
 require 'soap/soap'
+require 'soap/rpcUtils'
 
 
 InterfaceNS = 'http://soapinterop.org/'

@@ -1,10 +1,11 @@
 $KCODE = 'EUC'
 
-require 'soap/driver'
-include SOAP
+require 'devel/logger'
+Log = Devel::Logger
 
+require 'soap/driver'
 require 'soap/rpcUtils'
-include SOAP::RPCUtils
+include SOAP
 
 require 'base'
 include SOAPBuildersInterop
@@ -138,6 +139,7 @@ def getIdObj( obj )
 end
 
 def dumpTitle( title )
+  p title
   $wireDumpLogFile << "##########\n# " << title << "\n\n"
 end
 
