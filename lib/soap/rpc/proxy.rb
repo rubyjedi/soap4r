@@ -30,15 +30,19 @@ public
   attr_accessor :default_encodingstyle
   attr_accessor :generate_explicit_type
   attr_reader :headerhandler
+  attr_reader :streamhandler
 
   attr_accessor :mapping_registry
   attr_accessor :literal_mapping_registry
 
   attr_reader :operation
 
-  def initialize(streamhandler, soapaction = nil)
-    @streamhandler = streamhandler
+  def initialize(endpoint_url, soapaction, options)
+    @endpoint_url = endpoint_url
     @soapaction = soapaction
+    @options = options
+    @streamhandler = HTTPStreamHandler.new(
+      @options["protocol.http"] ||= ::SOAP::Property.new)
     @operation = {}
     @mandatorycharset = nil
     @allow_unqualified_element = true
@@ -47,6 +51,31 @@ public
     @headerhandler = Header::HandlerSet.new
     @mapping_registry = nil
     @literal_mapping_registry = ::SOAP::Mapping::WSDLLiteralRegistry.new
+  end
+
+  def inspect
+    "#<#{self.class}:#{@endpoint_url}>"
+  end
+
+  def endpoint_url
+    @endpoint_url
+  end
+
+  def endpoint_url=(endpoint_url)
+    @endpoint_url = endpoint_url
+    reset_stream
+  end
+
+  def reset_stream
+    @streamhandler.reset(@endpoint_url)
+  end
+
+  def set_wiredump_file_base(wiredump_file_base)
+    @streamhandler.wiredump_file_base = wiredump_file_base
+  end
+
+  def test_loopback_response
+    @streamhandler.test_loopback_response
   end
 
   def add_rpc_method(qname, soapaction, name, param_def, opt = {})
@@ -82,7 +111,7 @@ public
       conn_data.send_string = mime.content_str
       conn_data.send_contenttype = mime.headers['content-type'].str
     end
-    conn_data = @streamhandler.send(conn_data, opt[:soapaction])
+    conn_data = @streamhandler.send(@endpoint_url, conn_data, opt[:soapaction])
     if conn_data.receive_string.empty?
       return nil
     end
@@ -182,7 +211,6 @@ private
   end
 
   class Operation
-    attr_reader :name
     attr_reader :soapaction
     attr_reader :request_style
     attr_reader :response_style
@@ -190,6 +218,7 @@ private
     attr_reader :response_use
 
     def initialize(qname, soapaction, name, param_def, opt)
+      @soapaction = soapaction
       @request_style = opt[:request_style]
       @response_style = opt[:response_style]
       @request_use = opt[:request_use]
