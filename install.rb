@@ -43,6 +43,8 @@ begin
     join(DSTPATH, 'wsdl', 'xmlSchema'))
   installDir(join(SRCPATH, 'lib', 'wsdl', 'soap'),
     join(DSTPATH, 'wsdl', 'soap'))
+  installDir(join(SRCPATH, 'lib', 'xsd'),
+    join(DSTPATH, 'xsd'))
 
   puts "install succeed!"
 

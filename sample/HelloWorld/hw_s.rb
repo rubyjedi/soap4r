@@ -1,6 +1,6 @@
-require 'soap/standaloneServer'
+require 'soap/rpc/standaloneServer'
 
-class HelloWorldServer < SOAP::StandaloneServer
+class HelloWorldServer < SOAP::RPC::StandaloneServer
   def on_init
     @log.sev_threshold = Devel::Logger::SEV_DEBUG
     add_method(self, 'hello_world', 'from')

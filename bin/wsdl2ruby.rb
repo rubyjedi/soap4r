@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'getoptlong'
-require 'soap/qname'
+require 'xsd/qname'
 require 'wsdl/parser'
 require 'wsdl/soap/classDefCreator'
 require 'wsdl/soap/servantSkeltonCreator'

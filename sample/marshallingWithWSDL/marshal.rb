@@ -4,8 +4,8 @@ require 'soap/marshal'
 class WSDLMarshaller
   include SOAP
 
-  def initialize(wsdlFile)
-    wsdl = WSDL::WSDLParser.create_parser.parse(File.open(wsdlFile).read)
+  def initialize(wsdlfile)
+    wsdl = WSDL::WSDLParser.create_parser.parse(File.open(wsdlfile).read)
     types = wsdl.collect_complextypes
     @opt = {
       :decode_typemap => types,
