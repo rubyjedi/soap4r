@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <definitions
     name="RAA"
-    targetNamespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"
-    xmlns:tns="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"
-    xmlns:txd="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"
+    targetNamespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"
+    xmlns:tns="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"
+    xmlns:txd="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"
     xmlns="http://schemas.xmlsoap.org/wsdl/"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -14,7 +14,7 @@
   <types>
     <schema
 	xmlns="http://www.w3.org/2001/XMLSchema"
-	targetNamespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1">
+	targetNamespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/">
 
       <complexType name="Category">
   	<all>
@@ -50,7 +50,8 @@
     	  <element name="category" type="txd:Category"/>
     	  <element name="product" type="txd:Product"/>
 	  <element name="owner" type="txd:Owner"/>
-	  <element name="update" type="xsd:dateTime"/>
+	  <element name="created" type="xsd:dateTime"/>
+	  <element name="updated" type="xsd:dateTime"/>
   	</all>
       </complexType>
 
@@ -175,12 +176,12 @@
       <input>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </input>
       <output>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </output>
     </operation>
 
@@ -189,12 +190,12 @@
       <input>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </input>
       <output>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </output>
     </operation>
 
@@ -203,12 +204,12 @@
       <input>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </input>
       <output>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </output>
     </operation>
 
@@ -217,12 +218,12 @@
       <input>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </input>
       <output>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </output>
     </operation>
 
@@ -231,12 +232,12 @@
       <input>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </input>
       <output>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </output>
     </operation>
 
@@ -245,19 +246,19 @@
       <input>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </input>
       <output>
 	<soap:body use="encoded"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.1"/>
+	    namespace="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"/>
       </output>
     </operation>
   </binding>
 
   <service name="RAAService">
     <port name="RAABaseServicePort" binding="tns:RAABaseServicePortBinding">
-      <soap:address location="http://raa.ruby-lang.org/soap/1.0/"/>
+      <soap:address location="http://raa.ruby-lang.org/soap/1.0.2/"/>
     </port>
   </service>
 </definitions>
