@@ -467,7 +467,7 @@ public
 
   ArrayEncodePostfix = 'Ary'
 
-  attr_reader :offset
+  attr_reader :offset, :rank
   attr_accessor :sparse, :size, :sizeFixed
 
   def initialize( typeName = nil, rank = 1 )
