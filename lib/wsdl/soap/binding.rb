@@ -41,7 +41,11 @@ class Binding < Info
   def parse_attr(attr, value)
     case attr
     when StyleAttrName
-      @style = value
+      if ["document", "rpc"].include?(value)
+	@style = value.intern
+      else
+	raise AttributeConstraintError.new("Unexpected value #{ value }.")
+      end
     when TransportAttrName
       @transport = value
     else
