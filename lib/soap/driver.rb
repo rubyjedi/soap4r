@@ -129,7 +129,12 @@ private
     rescue SOAP::FaultError => e
       detail = RPCUtils.soap2obj( e.detail, @mappingRegistry ) || ""
       if detail.is_a?( RPCUtils::SOAPException )
-	raise detail.to_e
+	begin
+	  raise detail.to_e
+	rescue Exception => e2
+	  detail.set_backtrace( e2 )
+	  raise
+	end
       else
 	e.set_backtrace(
 	  if detail.is_a?( Array )
