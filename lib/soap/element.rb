@@ -87,19 +87,19 @@ public
       parseNS( childNS, child )
 
       if child.nodeName == 'faultcode'
-	raise FormatDecodeError.new( 'Duplicated faultcode in Fault' ) if faultCode
+	raise SOAPParser::FormatDecodeError.new( 'Duplicated faultcode in Fault' ) if faultCode
 	faultCode = SOAPString.decode( childNS, child )
 
       elsif child.nodeName == 'faultstring'
-	raise FormatDecodeError.new( 'Duplicated faultstring in Fault' ) if faultString
+	raise SOAPParser::FormatDecodeError.new( 'Duplicated faultstring in Fault' ) if faultString
 	faultString = SOAPString.decode( childNS, child )
 
       elsif child.nodeName == 'faultactor'
-	raise FormatDecodeError.new( 'Duplicated faultactor in Fault' ) if faultActor
+	raise SOAPParser::FormatDecodeError.new( 'Duplicated faultactor in Fault' ) if faultActor
 	faultActor = SOAPString.decode( childNS, child )
 
       elsif child.nodeName == 'detail'
-	raise FormatDecodeError.new( 'Duplicated detail in Fault' ) if detail
+	raise SOAPParser::FormatDecodeError.new( 'Duplicated detail in Fault' ) if detail
 	detail = decodeChild( childNS, child )
 
       else
@@ -152,7 +152,7 @@ public
       end
     end
 
-    raise FormatDecodeError.new( 'No root element.' )
+    raise SOAPParser::FormatDecodeError.new( 'No root element.' )
   end
 end
 
@@ -195,13 +195,13 @@ public
     elem.attributes.each do | attr |
       name = attr.nodeName
       if ( ns.compare( EnvelopeNamespace, AttrMustUnderstand, name ))
-	raise FormatDecodeError.new( 'Duplicated mustUnderstand in HeaderItem' ) if mustUnderstand
+	raise SOAPParser::FormatDecodeError.new( 'Duplicated mustUnderstand in HeaderItem' ) if mustUnderstand
 	mustUnderstand = attr.nodeValue
       elsif ( ns.compare( EnvelopeNamespace, AttrEncodingStyle, name ))
-	raise FormatDecodeError.new( 'Duplicated encodingStyle in HeaderItem' ) if encodingStyle
+	raise SOAPParser::FormatDecodeError.new( 'Duplicated encodingStyle in HeaderItem' ) if encodingStyle
     	encodingStyle = attr.nodeValue
       else
-    	# raise FormatDecodeError.new( 'Unknown attribute: ' << name )
+    	# raise SOAPParser::FormatDecodeError.new( 'Unknown attribute: ' << name )
       end
     end
 
