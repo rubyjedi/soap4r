@@ -190,7 +190,7 @@ private
 	  end
 	value_ele = if /:/ !~ value
 	    value
-	  elsif /^http:/ =~ value and !ns.assigned_tag?('http')
+	  elsif /^http:\/\// =~ value	# ToDo: ugly.
 	    value
 	  else
 	    begin
