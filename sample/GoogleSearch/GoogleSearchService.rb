@@ -9,31 +9,31 @@ class GoogleSearchPort
   MappingRegistry.set(
     GoogleSearchResult,
     ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+    ::SOAP::Mapping::Registry::TypedStructFactory,
     { :type => XSD::QName.new("urn:GoogleSearch", "GoogleSearchResult") }
   )
   MappingRegistry.set(
     ResultElementArray,
     ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+    ::SOAP::Mapping::Registry::TypedArrayFactory,
     { :type => XSD::QName.new("urn:GoogleSearch", "ResultElement") }
   )
   MappingRegistry.set(
     DirectoryCategoryArray,
     ::SOAP::SOAPArray,
-    ::SOAP::RPCUtils::MappingRegistry::TypedArrayFactory,
+    ::SOAP::Mapping::Registry::TypedArrayFactory,
     { :type => XSD::QName.new("urn:GoogleSearch", "DirectoryCategory") }
   )
   MappingRegistry.set(
     ResultElement,
     ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+    ::SOAP::Mapping::Registry::TypedStructFactory,
     { :type => XSD::QName.new("urn:GoogleSearch", "ResultElement") }
   )
   MappingRegistry.set(
     DirectoryCategory,
     ::SOAP::SOAPStruct,
-    ::SOAP::RPCUtils::MappingRegistry::TypedStructFactory,
+    ::SOAP::Mapping::Registry::TypedStructFactory,
     { :type => XSD::QName.new("urn:GoogleSearch", "DirectoryCategory") }
   )
   
