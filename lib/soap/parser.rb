@@ -28,6 +28,8 @@ module SOAP
 class SOAPParser
   include SOAP
 
+  class FormatDecodeError < Error; end
+
 private
 
   class ParseFrame

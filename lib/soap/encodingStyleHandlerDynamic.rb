@@ -229,14 +229,14 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
 	o = decodeTagAsXSD( ns, typeNameString, name )
 	unless o
       	  # Not supported...
-	  raise FormatDecodeError.new( "Type xsd:#{ typeNameString } have not supported." )
+	  raise EncodingStyleError.new( "Type xsd:#{ typeNameString } have not supported." )
 	end
 
       elsif typeNamespace == EncodingNamespace
 	o = decodeTagAsSOAPENC( ns, typeNameString, name )
 	unless o
 	  # Not supported...
-	  raise FormatDecodeError.new( "Type SOAP-ENC:#{ typeNameString } have not supported." )
+	  raise EncodingStyleError.new( "Type SOAP-ENC:#{ typeNameString } have not supported." )
 	end
 
       else
@@ -305,7 +305,7 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       decodeParent( parent, node )
 
     when SOAPReference
-      raise FormatDecodeError.new( "Reference node must not have a child." )
+      raise EncodingStyleError.new( "Reference node must not have a child." )
 
     when SOAPStruct
       parent.node.add( node.name, node )
@@ -319,11 +319,11 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
       end
 
     when SOAPBasetype
-      raise FormatDecodeError.new( "SOAP base type must not have a child." )
+      raise EncodingStyleError.new( "SOAP base type must not have a child." )
 
     else
       # SOAPUnknown does not have parent.
-      # raise FormatDecodeError.new( "Illegal parent: #{ parent }." )
+      # raise EncodingStyleError.new( "Illegal parent: #{ parent }." )
     end
   end
 
@@ -428,7 +428,7 @@ private
 	if value == XSD::NilValue
 	  isNil = true
 	else
-	  raise FormatDecodeError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true')." )
+	  raise EncodingStyleError.new( "Cannot accept attribute value: #{ value } as the value of xsi:#{ XSD::NilLiteral } (expected 'true')." )
 	end
       elsif ( ns.compare( XSD::InstanceNamespace, XSD::AttrType, key ))
 	type = value
@@ -444,7 +444,7 @@ private
 	elsif value == '0'
 	  root = 0
 	else
-	  raise FormatDecodeError.new( "Illegal root attribute value: #{ value }." )
+	  raise EncodingStyleError.new( "Illegal root attribute value: #{ value }." )
 	end
       elsif ( ns.compare( EncodingNamespace, AttrOffset, key ))
 	offset = value
@@ -470,7 +470,7 @@ private
 	  ( '#' << item.id == ref.refId )
 	}
 	unless o
-	  raise FormatDecodeError.new( "Unresolved reference: #{ ref.refId }." )
+	  raise EncodingStyleError.new( "Unresolved reference: #{ ref.refId }." )
 	end
 	if o.is_a?( SOAPReference )
 	  true
