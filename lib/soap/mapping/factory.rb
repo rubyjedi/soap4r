@@ -36,37 +36,6 @@ class Factory
 
 protected
 
-  def getClassType(klass)
-    name = if klass.class_variables.include?("@@typeName")
-        klass.class_eval("@@typeName")
-      else
-        nil
-      end
-    namespace = if klass.class_variables.include?("@@typeNamespace")
-        klass.class_eval("@@typeNamespace")
-      else
-        nil
-      end
-    XSD::QName.new(namespace, name)
-  end
-
-  def getObjType(obj)
-    name = namespace = nil
-    ivars = obj.instance_variables
-    if ivars.include?("@typeName")
-      name = obj.instance_eval("@typeName")
-    end
-    if ivars.include?("@typeNamespace")
-      namespace = obj.instance_eval("@typeNamespace")
-    end
-    # Do not mix type and its namespace.
-    if !name or !namespace
-      getClassType(obj.class)
-    else
-      XSD::QName.new(namespace, name)
-    end
-  end
-
   if Object.respond_to?(:allocate)
     # ruby/1.7 or later.
     def createEmptyObject(klass)
@@ -225,7 +194,7 @@ class ArrayFactory_ < Factory
   # [[1], [2]] is converted to Array of Array, not 2-D Array.
   # To create M-D Array, you must call Mapping.ary2md.
   def obj2soap(soapKlass, obj, info, map)
-    arrayType = getObjType(obj)
+    arrayType = Mapping.getObjType(obj)
     if arrayType.name
       arrayType.namespace ||= RubyTypeNamespace
     else

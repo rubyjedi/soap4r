@@ -167,6 +167,43 @@ module Mapping
     klass
   end
 
+  def self.createClassType(klass)
+    type = Mapping.getClassType(klass)
+    type.name ||= Mapping.getElementNameFromName(klass.name)
+    type.namespace ||= RubyCustomTypeNamespace
+    type
+  end
+
+  def self.getClassType(klass)
+    name = if klass.class_variables.include?("@@typeName")
+        klass.class_eval("@@typeName")
+      else
+        nil
+      end
+    namespace = if klass.class_variables.include?("@@typeNamespace")
+        klass.class_eval("@@typeNamespace")
+      else
+        nil
+      end
+    XSD::QName.new(namespace, name)
+  end
+
+  def self.getObjType(obj)
+    name = namespace = nil
+    ivars = obj.instance_variables
+    if ivars.include?("@typeName")
+      name = obj.instance_eval("@typeName")
+    end
+    if ivars.include?("@typeNamespace")
+      namespace = obj.instance_eval("@typeNamespace")
+    end
+    if !name or !namespace
+      getClassType(obj.class)
+    else
+      XSD::QName.new(namespace, name)
+    end
+  end
+
   class << Mapping
   private
     def addMDAry(mdAry, ary, indices, mappingRegistry)
