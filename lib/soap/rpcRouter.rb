@@ -19,7 +19,6 @@ Ave, Cambridge, MA 02139, USA.
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/rpcUtils'
-require 'nqxml/writer'
 
 # Ruby bundled library
 
@@ -51,10 +50,10 @@ class RPCRouter
   end
 
   # Method definition.
-  def addMethod( namespace, receiver, methodName, paramDef = nil )
+  def addMethod( namespace, receiver, methodName, paramDef, soapAction = nil )
     name = "#{ namespace }:#{ methodName }"
     @receiver[ name ] = receiver
-    @method[ name ] = SOAPMethod.new( namespace, methodName, paramDef )
+    @method[ name ] = SOAPMethod.new( namespace, methodName, paramDef, soapAction )
   end
 
   def addHeaderHandler
