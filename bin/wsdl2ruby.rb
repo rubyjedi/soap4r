@@ -3,6 +3,7 @@
 require 'getoptlong'
 require 'xsd/qname'
 require 'wsdl/parser'
+require 'wsdl/importer'
 require 'wsdl/soap/classDefCreator'
 require 'wsdl/soap/servantSkeltonCreator'
 require 'wsdl/soap/driverCreator'
@@ -228,15 +229,7 @@ __EOU__
   end
 
   def import(location)
-    content = nil
-    if FileTest.exist?(location)
-      content = File.open(location).read
-    else
-      require 'http-access2'
-      c = HTTPAccess2::Client.new(ENV['http_proxy'] || ENV['HTTP_PROXY'])
-      content = c.get_content(location)
-    end
-    WSDL::WSDLParser.create_parser.parse(content)
+    WSDL::Importer.import(location)
   end
 end
 
