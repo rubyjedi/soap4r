@@ -62,50 +62,78 @@ end
 
 # For anyType object: SOAP::Mapping::Object not ::Object
 class Object; include Marshallable
-  def set_property(name, value)
-    var_name = name
-    begin
-      instance_eval <<-EOS
-        def #{ var_name }
-          @#{ var_name }
-        end
-
-        def #{ var_name }=(value)
-          @#{ var_name } = value
-        end
-      EOS
-      self.send(var_name + '=', value)
-    rescue SyntaxError
-      var_name = safe_name(var_name)
-      retry
-    end
-
-    var_name
-  end
-
-  def members
-    instance_variables.collect { |str| str[1..-1] }
+  def initialize
+    @__members = []
+    @__value_type = {}
   end
 
   def [](name)
-    if self.respond_to?(name)
-      self.send(name)
+    if @__members.include?(name)
+      self.__send__(name)
     else
-      self.send(safe_name(name))
+      self.__send__(Object.safe_name(name))
     end
   end
 
   def []=(name, value)
-    if self.respond_to?(name)
-      self.send(name + '=', value)
+    if @__members.include?(name)
+      self.__send__(name + '=', value)
     else
-      self.send(safe_name(name) + '=', value)
+      self.__send__(Object.safe_name(name) + '=', value)
     end
+  end
+
+  def __set_property(name, value)
+    var_name = name
+    unless @__members.include?(name)
+      var_name = __define_attr_accessor(var_name)
+    end
+    __set_property_value(var_name, value)
+    var_name
+  end
+
+  def __members
+    @__members
   end
 
 private
 
-  def safe_name(name)
+  def __set_property_value(name, value)
+    org = self.__send__(name)
+    case @__value_type[name]
+    when :single
+      self.__send__(name + '=', [org, value])
+      @__value_type[name] = :multi
+    when :multi
+      org << value
+    else
+      self.__send__(name + '=', value)
+      @__value_type[name] = :single
+    end
+    value
+  end
+
+  def __define_attr_accessor(name)
+    var_name = name
+    begin
+      instance_eval <<-EOS
+	def #{ var_name }
+	  @#{ var_name }
+	end
+
+	def #{ var_name }=(value)
+  	  @#{ var_name } = value
+	end
+      EOS
+    rescue SyntaxError
+      var_name = Object.safe_name(var_name)
+      retry
+    end
+    @__members << var_name
+    var_name
+  end
+
+  def Object.safe_name(name)
     require 'md5'
     "var_" << MD5.new(name).hexdigest
   end
