@@ -55,6 +55,10 @@ def getWireDumpLogFile
   f << "Date: #{ Time.now }\n\n"
 end
 
+def getWireDumpLogFileBase
+  File.basename( $0 ).sub( /\.rb$/, '' )
+end
+
 def dumpTitle( dumpDev, str )
   dumpDev << "##########\n# " << str << "\n\n"
 end
@@ -70,8 +74,8 @@ end
 def doTest( drv )
   dumpDev = getWireDumpLogFile
   drv.setWireDumpDev( dumpDev )
+#  drv.setWireDumpFileBase( getWireDumpLogFileBase )
 
-#=begin
   dumpTitle( dumpDev, 'echoVoid' )
   var =  drv.echoVoid()
   dumpResult( dumpDev, var, nil )
@@ -108,6 +112,11 @@ def doTest( drv )
   var = drv.echoIntegerArray( arg )
   dumpResult( dumpDev, arg, var )
 
+  dumpTitle( dumpDev, 'echoIntegerArray with empty Array' )
+  arg = []
+  var = drv.echoIntegerArray( arg )
+
+  dumpResult( dumpDev, arg, var )
   dumpTitle( dumpDev, 'echoFloat' )
   arg = 3.14159265358979
   var = drv.echoFloat( arg )
@@ -145,7 +154,6 @@ def doTest( drv )
   arg = SOAP::SOAPBase64.new( str )
   var = drv.echoBase64( arg )
   dumpResult( dumpDev, str, var )
-#=end
 
   dumpDev.close
 end
