@@ -92,7 +92,7 @@ public
     elementName = nil
 
     case obj
-    when SOAPEnvelope, SOAPHeader, SOAPFault
+    when SOAPEnvelope, SOAPHeader, SOAPHeaderItem, SOAPFault
       obj.encode( buf, ns ) do | child, childQualified |
 	encodeData( buf, ns.clone, childQualified, child, obj )
       end
