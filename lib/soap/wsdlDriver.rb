@@ -93,10 +93,14 @@ public
   attr_accessor :wsdlMappingRegistry
   attr_reader :opt
   attr_accessor :actor
+  attr_reader :endPointUrl
+  attr_reader :wireDumpDev
+  attr_reader :wireDumpFileBase
+  attr_reader :httpProxy
 
   attr_accessor :defaultEncodingStyle
   attr_accessor :allowUnqualifiedElement
-  attr_accessor :noEncodeType
+  attr_accessor :generateEncodeType
 
   def initialize( wsdl, port, logDev, opt )
     @wsdl = wsdl
@@ -108,12 +112,13 @@ public
     @endpointUrl = nil
     @wireDumpDev = nil
     @dumpFileBase = nil
+    @httpProxy = ENV[ 'http_proxy' ] || ENV[ 'HTTP_PROXY' ]
 
     @opt = opt.dup
-    @opt[ 'decodeComplexTypes' ] = @wsdl.getComplexTypesWithMessages
+    @opt[ :decodeComplexTypes ] = @wsdl.getComplexTypesWithMessages
     @defaultEncodingStyle = EncodingNamespace
     @allowUnqualifiedElement = true
-    @noEncodeType = true
+    @generateEncodeType = false
 
     createHandler
     @operationMap = {}
@@ -152,10 +157,10 @@ private
       raise RuntimeError.new( "soap:address element not found in WSDL." )
     end
     endpointUrl = @endpointUrl || @port.soapAddress.location
-    @handler = HTTPPostStreamHandler.new( endpointUrl )
+    @handler = HTTPPostStreamHandler.new( endpointUrl, @httpProxy,
+      Charset.getEncodingLabel )
     @handler.dumpDev = @wireDumpDev
     @handler.dumpFileBase = @dumpFileBase
-    @handler.proxy = @httpProxy
   end
 
   def createMethodObject( names, params )
@@ -208,28 +213,12 @@ private
     data = @handler.send( sendString, soapAction )
     return nil, nil if data.receiveString.empty?
 
+    # Received charset might be different from request.
     receiveCharset = StreamHandler.parseMediaType( data.receiveContentType )
-    kcodeAdjusted = false
-    charsetStrBackup = nil
-    if receiveCharset
-      charsetStr = Charset.getCharsetStr( receiveCharset )
-      Charset.setXMLInstanceEncoding( charsetStr )
-      if SOAPParser.factory.adjustKCode
-        charsetStrBackup = $KCODE.to_s.dup
-        $KCODE = charsetStr
-        kcodeAdjusted = true
-      end
-    end
+    opt = getOpt
+    opt[ :charset ] = receiveCharset
 
-    header = body = nil
-    begin
-      header, body = Processor.unmarshal( data.receiveString, getOpt )
-    ensure
-      if kcodeAdjusted
-        $KCODE = charsetStrBackup
-      end
-    end
-
+    header, body = Processor.unmarshal( data.receiveString, opt )
     if body.fault
       raise SOAP::FaultError.new( body.fault )
     end
@@ -265,9 +254,9 @@ private
 
   def getOpt
     opt = @opt.dup
-    opt[ 'defaultEncodingStyle' ] = @defaultEncodingStyle
-    opt[ 'allowUnqualifiedElement' ] = @allowUnqualifiedElement
-    opt[ 'noEncodeType' ] = @noEncodeType
+    opt[ :defaultEncodingStyle ] = @defaultEncodingStyle
+    opt[ :allowUnqualifiedElement ] = @allowUnqualifiedElement
+    opt[ :generateEncodeType ] = @generateEncodeType
     opt
   end
 
