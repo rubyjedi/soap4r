@@ -39,58 +39,57 @@ class SOAPEncodingStyleHandlerDynamic < EncodingStyleHandler
   def encodeData( buf, ns, qualified, data, parent )
     attrs = {}
 
-  if !data.is_a?( SOAPReference )
+    if !data.is_a?( SOAPReference )
 
-    if !parent || parent.encodingStyle != EncodingNamespace
-      if !ns.assigned?( EnvelopeNamespace )
-	tag = ns.assign( EnvelopeNamespace )
-	attrs[ 'xmlns:' << tag ] = EnvelopeNamespace
+      if !parent || parent.encodingStyle != EncodingNamespace
+	if !ns.assigned?( EnvelopeNamespace )
+	  tag = ns.assign( EnvelopeNamespace )
+	  attrs[ 'xmlns:' << tag ] = EnvelopeNamespace
+	end
+	if !ns.assigned?( EncodingNamespace )
+	  tag = ns.assign( EncodingNamespace )
+	  attrs[ 'xmlns:' << tag ] = EncodingNamespace
+	end
+	attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
+	  EncodingNamespace
+	data.encodingStyle = EncodingNamespace
       end
-      if !ns.assigned?( EncodingNamespace )
-	tag = ns.assign( EncodingNamespace )
-	attrs[ 'xmlns:' << tag ] = EncodingNamespace
+
+      if !ns.assigned?( XSD::InstanceNamespace )
+	tag = ns.assign( XSD::InstanceNamespace )
+	attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
       end
-      attrs[ ns.name( EnvelopeNamespace, AttrEncodingStyle ) ] =
-	EncodingNamespace
-      data.encodingStyle = EncodingNamespace
-    end
 
-    if !ns.assigned?( XSD::InstanceNamespace )
-      tag = ns.assign( XSD::InstanceNamespace )
-      attrs[ 'xmlns:' << tag ] = XSD::InstanceNamespace
-    end
+      if data.typeNamespace and !ns.assigned?( data.typeNamespace )
+	tag = ns.assign( data.typeNamespace )
+	attrs[ 'xmlns:' << tag ] = data.typeNamespace
+      end
 
-    if data.typeNamespace and !ns.assigned?( data.typeNamespace )
-      tag = ns.assign( data.typeNamespace )
-      attrs[ 'xmlns:' << tag ] = data.typeNamespace
-    end
-
-    if data.is_a?( SOAPArray )
-      attrs[ ns.name( EncodingNamespace, 'arrayType' ) ] =
-	ns.name( data.typeNamespace, arrayTypeValue( ns, data ) ) 
-      if data.typeName
+      if data.is_a?( SOAPArray )
+	attrs[ ns.name( EncodingNamespace, 'arrayType' ) ] =
+	  ns.name( data.typeNamespace, arrayTypeValue( ns, data ) ) 
+	if data.typeName
+	  attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
+	    ns.name( EncodingNamespace, 'Array' )
+	end
+      elsif parent && parent.is_a?( SOAPArray ) &&
+	  parent.typeNamespace == data.typeNamespace &&
+	  parent.baseTypeName == data.typeName
+	# No need to add.
+      elsif !data.typeName
+	# No need to add.
+      elsif data.is_a?( SOAPNil )
+	attrs[ ns.name( XSD::InstanceNamespace, XSD::NilLiteral ) ] =
+	  XSD::NilValue
+      else
 	attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
-	  ns.name( EncodingNamespace, 'Array' )
+	  ns.name( data.typeNamespace, data.typeName )
       end
-    elsif parent && parent.is_a?( SOAPArray ) &&
-	parent.typeNamespace == data.typeNamespace &&
-     	parent.baseTypeName == data.typeName
-      # No need to add.
-    elsif !data.typeName
-      # No need to add.
-    elsif data.is_a?( SOAPNil )
-      attrs[ ns.name( XSD::InstanceNamespace, XSD::NilLiteral ) ] =
-	XSD::NilValue
-    else
-      attrs[ ns.name( XSD::InstanceNamespace, 'type' ) ] =
-	ns.name( data.typeNamespace, data.typeName )
-    end
 
-    if data.id
-      attrs[ 'id' ] = data.id
+      if data.id
+	attrs[ 'id' ] = data.id
+      end
     end
-
-  end
 
     if parent && parent.is_a?( SOAPArray ) && parent.position
       attrs[ ns.name( EncodingNamespace, AttrPosition ) ] =
