@@ -45,7 +45,7 @@ class Server < Devel::Application
     @router.mappingRegistry
   end
 
-  def mappingRegistry= ( value )
+  def mappingRegistry=( value )
     @router.mappingRegistry = value
   end
 
@@ -88,8 +88,8 @@ protected
       paramDef )
   end
 
-  def route( requestString )
-    @router.route( requestString )
+  def route( requestString, charset )
+    @router.route( requestString, charset )
   end
 
   def createFaultResponseString( e )
