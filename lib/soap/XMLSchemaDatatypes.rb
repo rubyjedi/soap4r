@@ -322,7 +322,6 @@ end
 
 require 'rational'
 require 'date3'
-require 'parsedate3'
 class XSDDateTime < XSDBase
 public
   def initialize( initDateTime = nil )
