@@ -1,5 +1,5 @@
 =begin
-SOAP4R - XML Literal EncodingStyle handler library
+SOAP4R - ASP.NET EncodingStyle handler library
 Copyright (C) 2001 NAKAMURA Hiroshi.
 
 This program is free software; you can redistribute it and/or modify it under
@@ -22,9 +22,9 @@ require 'soap/encodingStyleHandler'
 module SOAP
 
 
-class EncodingStyleHandlerLiteral < EncodingStyleHandler
+class EncodingStyleHandlerASPDotNet < EncodingStyleHandler
 
-  Namespace = 'http://xml.apache.org/xml-soap/literalxml'
+  Namespace = 'http://tempuri.org/ASP.NET'
 
   def initialize
     super( Namespace )
@@ -103,6 +103,7 @@ yle." )
     def toStruct
       o = SOAPStruct.decode( @ns, @name, XSD::Namespace, XSD::AnyTypeLiteral )
       o.parent = @parent
+      o.typeName = @name
       @handler.decodeParent( @parent, o )
       o
     end
@@ -133,11 +134,12 @@ yle." )
   def decodeTagEnd( ns, node )
     o = node.node
     if o.is_a?( SOAPUnknown )
-      newNode = if /\A\s*\z/ =~ @textBuf
-	  o.toStruct
-	else
-	  o.toString
-	end
+      newNode = o.toString
+#	if /\A\s*\z/ =~ @textBuf
+#	  o.toStruct
+#	else
+#	  o.toString
+#	end
       node.replaceNode( newNode )
       o = node.node
     end
@@ -166,7 +168,17 @@ yle." )
       decodeParent( parent, node )
 
     when SOAPStruct
-      parent.node.add( node.name, node )
+      data = parent.node[ node.name ]
+      case data
+      when nil
+	parent.node.add( node.name, node )
+      when SOAPArray
+	data.add( node )
+      else
+	parent.node[ node.name ] = SOAPArray.new
+	parent.node[ node.name ].add( data )
+	parent.node[ node.name ].add( node )
+      end
 
     when SOAPArray
       if node.position
@@ -197,7 +209,7 @@ private
   end
 end
 
-EncodingStyleHandlerLiteral.new
+EncodingStyleHandlerASPDotNet.new
 
 
 end
