@@ -46,6 +46,10 @@ class NamedElements
     end
   end
 
+  def find_name(name)
+    @elements.find { |item| item.name.name == name }
+  end
+
   def each
     @elements.each do |element|
       yield(element)
