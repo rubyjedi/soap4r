@@ -14,6 +14,8 @@ module SOAP
 
 
 class MappingRegistryCreator
+  include MethodDefCreatorSupport
+
   attr_reader :definitions
 
   def initialize(definitions)
@@ -59,7 +61,7 @@ private
     ele = definedtype.name
     return <<__EOD__
 MappingRegistry.set(
-  #{ ele.name },
+  #{ create_class_name(ele) },
   ::SOAP::SOAPStruct,
   ::SOAP::Mapping::Registry::TypedStructFactory,
   { :type => XSD::QName.new("#{ ele.namespace }", "#{ ele.name }") }
@@ -74,7 +76,7 @@ __EOD__
     @types << type
     return <<__EOD__
 MappingRegistry.set(
-  #{ ele.name },
+  #{ create_class_name(ele) },
   ::SOAP::SOAPArray,
   ::SOAP::Mapping::Registry::TypedArrayFactory,
   { :type => XSD::QName.new("#{ type.namespace }", "#{ type.name }") }
