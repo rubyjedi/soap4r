@@ -63,10 +63,6 @@ class AuthHeaderPortServer < SOAP::RPC::StandaloneServer
 	@sessions.delete(sessionkey)
       end
 
-      def a
-	@sessions
-      end
-
     private
 
       def create_sessionkey
@@ -98,7 +94,6 @@ class AuthHeaderPortServer < SOAP::RPC::StandaloneServer
       raise RuntimeError.new("authentication failed") unless auth
       @userid = userid
       @sessionid = self.class.create_session(userid)
-      p self.class.a
     end
   end
 end
