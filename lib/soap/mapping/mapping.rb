@@ -105,7 +105,7 @@ module Mapping
     if referent = Thread.current[:SOAPMarshalDataKey][obj.__id__]
       SOAPReference.new(referent)
     else
-      registry.obj2soap(obj.class, obj, type)
+      registry.obj2soap(obj, type)
     end
   end
 
@@ -119,7 +119,7 @@ module Mapping
         return _soap2obj(target, registry)
       end
     end
-    return registry.soap2obj(node.class, node)
+    return registry.soap2obj(node)
   end
 
   def self.set_instance_vars(obj, values)

@@ -147,7 +147,8 @@ class Registry
       @registry = registry
     end
 
-    def obj2soap(klass, obj, type_qname = nil)
+    def obj2soap(obj, type_qname = nil)
+      klass = obj.class
       @map.each do |obj_class, soap_class, factory, info|
         if klass == obj_class or
             (info[:derived_class] and klass <= obj_class)
@@ -158,7 +159,8 @@ class Registry
       nil
     end
 
-    def soap2obj(klass, node)
+    def soap2obj(node)
+      klass = node.class
       @map.each do |obj_class, soap_class, factory, info|
         if klass == soap_class or
             (info[:derived_class] and klass <= soap_class)
@@ -309,6 +311,10 @@ class Registry
       {:type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException")}],
   ]
 
+  attr_accessor :default_factory
+  attr_accessor :excn_handler_obj2soap
+  attr_accessor :excn_handler_soap2obj
+
   def initialize(config = {})
     @config = config
     @map = Map.new(self)
@@ -319,7 +325,6 @@ class Registry
       @allow_original_mapping = false
       @map.init(SOAPBaseMap)
     end
-
     @allow_untyped_struct = @config.key?(:allow_untyped_struct) ?
       @config[:allow_untyped_struct] : true
     @rubytype_factory = RubytypeFactory.new(
@@ -337,33 +342,21 @@ class Registry
   alias set add
 
   # This mapping registry ignores type hint.
-  def obj2soap(klass, obj, type_qname = nil)
-    soap = _obj2soap(klass, obj, type_qname)
+  def obj2soap(obj, type_qname = nil)
+    soap = _obj2soap(obj, type_qname)
     if @allow_original_mapping
       addextend2soap(soap, obj)
     end
     soap
   end
 
-  def soap2obj(klass, node)
-    obj = _soap2obj(klass, node)
+  def soap2obj(node)
+    obj = _soap2obj(node)
     if @allow_original_mapping
       addextend2obj(obj, node.extraattr[RubyExtendName])
       addiv2obj(obj, node.extraattr[RubyIVarName])
     end
     obj
-  end
-
-  def default_factory=(factory)
-    @default_factory = factory
-  end
-
-  def excn_handler_obj2soap=(handler)
-    @excn_handler_obj2soap = handler
-  end
-
-  def excn_handler_soap2obj=(handler)
-    @excn_handler_soap2obj = handler
   end
 
   def find_mapped_soap_class(obj_class)
@@ -376,7 +369,7 @@ class Registry
 
 private
 
-  def _obj2soap(klass, obj, type_qname)
+  def _obj2soap(obj, type_qname)
     ret = nil
     if obj.is_a?(SOAPStruct) or obj.is_a?(SOAPArray)
       obj.replace do |ele|
@@ -387,32 +380,31 @@ private
       return obj
     end
     begin 
-      ret = @map.obj2soap(klass, obj, type_qname) ||
-        @default_factory.obj2soap(klass, obj, nil, self)
+      ret = @map.obj2soap(obj, type_qname) ||
+        @default_factory.obj2soap(nil, obj, nil, self)
+      return ret if ret
     rescue MappingError
     end
-    return ret if ret
     if @excn_handler_obj2soap
       ret = @excn_handler_obj2soap.call(obj) { |yield_obj|
         Mapping._obj2soap(yield_obj, self)
       }
+      return ret if ret
     end
-    return ret if ret
-    raise MappingError.new("Cannot map #{ klass.name } to SOAP/OM.")
+    raise MappingError.new("Cannot map #{ obj.class.name } to SOAP/OM.")
   end
 
   # Might return nil as a mapping result.
-  def _soap2obj(klass, node)
+  def _soap2obj(node)
     if node.extraattr.key?(RubyTypeName)
-      conv, obj = @rubytype_factory.soap2obj(klass, node, nil, self)
+      conv, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
       return obj if conv
     else
-      conv, obj = @map.soap2obj(klass, node)
+      conv, obj = @map.soap2obj(node)
       return obj if conv
-      conv, obj = @default_factory.soap2obj(klass, node, nil, self)
+      conv, obj = @default_factory.soap2obj(nil, node, nil, self)
       return obj if conv
     end
-
     if @excn_handler_soap2obj
       begin
         return @excn_handler_soap2obj.call(node) { |yield_node|
