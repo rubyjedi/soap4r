@@ -1,8 +1,8 @@
 #!/usr/local/bin/ruby
 
-require 'soap/cgistub'
+require 'soap/rpc/cgistub'
 
-class CalcServer < SOAP::CGIStub
+class CalcServer < SOAP::RPC::CGIStub
   def on_init
     require 'calc2'
     servant = CalcService2.new

@@ -1,9 +1,9 @@
 #!/usr/local/bin/ruby
 
-require 'soap/cgistub'
+require 'soap/rpc/cgistub'
 require 'exchange'
 
-class ExchangeServer < SOAP::CGIStub
+class ExchangeServer < SOAP::RPC::CGIStub
   def initialize(*arg)
     super
     servant = Exchange.new

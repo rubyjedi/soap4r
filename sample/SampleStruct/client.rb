@@ -3,7 +3,7 @@ require 'devel/logger'
 
 require 'iSampleStruct'
 
-server = 'http://localhost:7000/'
+server = ARGV.shift || 'http://localhost:7000/'
 # server = 'http://localhost:8808/server.cgi'
 
 drv = SOAP::RPC::Driver.new(server, SampleStructServiceNamespace)

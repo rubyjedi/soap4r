@@ -10,11 +10,11 @@ $:.unshift(File::join($RWIKI_DIR, 'lib'))
 require 'cgi'
 require 'drb/drb'
 require 'rw-lib'
-require 'soap/cgistub'
+require 'soap/rpc/cgistub'
 
 NS = 'http://www.ruby-lang.org/xmlns/soap/interface/RWiki/0.0.1'
 
-class RWikiSOAPApp < SOAP::CGIStub
+class RWikiSOAPApp < SOAP::RPC::CGIStub
   def methodDef
     add_method(self, 'find')
     add_method(self, 'view')

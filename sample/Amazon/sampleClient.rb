@@ -27,7 +27,7 @@ obj = AmazonSearchPort.new(endpoint_url)
 # RAISES
 #    N/A
 #
-keywordSearchRequest = KeywordRequest.new("Ruby", "1", "books", "webservices-20", "lite", "", "+salesrank")
+keywordSearchRequest = KeywordRequest.new("Ruby Object", "1", "books", "webservices-20", "lite", "", "+salesrank")
 obj.keywordSearchRequest(keywordSearchRequest).Details.each do |detail|
   puts "== #{detail.ProductName}"
   puts "Author: #{detail.Authors.join(", ")}"

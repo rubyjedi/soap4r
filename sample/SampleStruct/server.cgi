@@ -1,9 +1,9 @@
 #!/usr/local/bin/ruby
 
-require 'soap/cgistub'
+require 'soap/rpc/cgistub'
 require 'sampleStruct'
 
-class SampleStructServer < SOAP::CGIStub
+class SampleStructServer < SOAP::RPC::CGIStub
   def initialize(*arg)
     super
     servant = SampleStructService.new
