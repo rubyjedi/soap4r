@@ -30,7 +30,7 @@ class QName
   end
 
   def match( rhs )
-    unless self.type === rhs
+    unless self.class === rhs
       return false
     end
     if rhs.namespace and ( rhs.namespace != @namespace )
@@ -43,7 +43,7 @@ class QName
   end
 
   def ==( rhs )
-    ( self.type === rhs && @namespace == rhs.namespace && @name == rhs.name )
+    ( self.class === rhs && @namespace == rhs.namespace && @name == rhs.name )
   end
 
   def ===( rhs )
