@@ -20,8 +20,11 @@ module SOAP
 
 
 module Charset
-  @xmlInstanceEncoding = $KCODE
   @dataModelEncoding = $KCODE
+
+  class CharsetError < SOAP::Error; end
+  class UnknownCharsetError < CharsetError; end
+  class CharsetConversionError < CharsetError; end
 
 public
 
@@ -46,7 +49,6 @@ public
       EncodingConvertMap[ [ 'EUC' , 'UTF8' ] ] = Uconv.method( :euctou8 )
       EncodingConvertMap[ [ 'SJIS', 'UTF8' ] ] = Uconv.method( :sjistou8 )
 
-      @xmlInstanceEncoding = 'UTF8'
       @dataModelEncoding = 'UTF8'
     rescue LoadError
     end
@@ -70,35 +72,29 @@ public
     @dataModelEncoding
   end
 
-  def Charset.setXMLInstanceEncoding( streamEncoding )
-    @xmlInstanceEncoding = streamEncoding
+  def Charset.getEncodingLabel
+    getCharsetLabel( @dataModelEncoding )
   end
 
-  def Charset.getXMLInstanceEncoding
-    @xmlInstanceEncoding
+  def Charset.encodingToXML( str, charset )
+    codeConv( str, @dataModelEncoding, getCharsetStr( charset ))
   end
 
-  def Charset.encodingToXML( str )
-    codeConv( str, getEncoding, getXMLInstanceEncoding )
-  end
-
-  def Charset.encodingFromXML( str )
-    codeConv( str, getXMLInstanceEncoding, getEncoding )
+  def Charset.encodingFromXML( str, charset )
+    codeConv( str, getCharsetStr( charset ), @dataModelEncoding )
   end
 
   def Charset.codeConv( str, encFrom, encTo )
-    return str if encFrom == encTo
-    if encFrom == 'NONE' or encTo == 'NONE'
-      return str
+    if encFrom == encTo or encFrom == 'NONE' or encTo == 'NONE'
+      str
+    elsif converter = EncodingConvertMap[[ encFrom, encTo ]]
+      converter.call( str )
+    else
+      raise CharsetConversionError.new(
+	"Converter not found: #{ encFrom } -> #{ encTo }" )
+      # In 1.4.7 or earlier, it only ignored encoding mismatch.
+      # str
     end
-    if converter = EncodingConvertMap[ [ encFrom, encTo ] ]
-      return converter.call( str )
-    end
-    str
-  end
-
-  def Charset.getXMLInstanceEncodingLabel
-    getCharsetLabel( getXMLInstanceEncoding )
   end
 
   def Charset.getCharsetLabel( encoding )
@@ -106,11 +102,7 @@ public
   end
 
   def Charset.getCharsetStr( label )
-    if label
-      CharsetMap.index( label.downcase ) || 'NONE'
-    else
-      'NONE'
-    end
+    CharsetMap.index( label.downcase )
   end
 
   # Original regexps: http://www.din.or.jp/~ohzaki/perl.htm
@@ -162,7 +154,7 @@ public
     when 'SJIS'
       isSJIS( str )
     else
-      raise RuntimeError.new( "Unknown encoding: #{ code }" )
+      raise UnknownCharsetError.new( "Unknown charset: #{ code }" )
     end
   end
 end
