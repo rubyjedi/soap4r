@@ -219,8 +219,7 @@ class RubytypeFactory < Factory
       param.add('member', ele_member)
       addiv2soapattr(param, obj, map)
     when IO, Binding, Continuation, Data, Dir, File::Stat, MatchData, Method,
-        Proc, Thread, ThreadGroup
-	# from 1.8: Process::Status, UnboundMethod
+        Proc, Thread, ThreadGroup # from 1.8: Process::Status, UnboundMethod
       return nil
     when ::SOAP::Mapping::Object
       param = SOAPStruct.new(XSD::AnyTypeName)
@@ -234,35 +233,9 @@ class RubytypeFactory < Factory
       param.add('backtrace', Mapping._obj2soap(obj.backtrace, map))
       addiv2soapattr(param, obj, map)
     else
-      if obj.class.name.empty?
-        raise TypeError.new("Can't dump anonymous class #{ obj }.")
-      end
-      singleton_class = class << obj; self; end
-      if !singleton_methods_true(obj).empty? or
-	  !singleton_class.instance_variables.empty?
-        raise TypeError.new("singleton can't be dumped #{ obj }")
-      end
-      if !(singleton_class.ancestors - obj.class.ancestors).empty?
-	typestr = Mapping.name2elename(obj.class.to_s)
-	type = XSD::QName.new(RubyTypeNamespace, typestr)
-      else
-	type = Mapping.class2element(obj.class)
-      end
-      param = SOAPStruct.new(type)
-      mark_marshalled_obj(obj, param)
-      setiv2soap(param, obj, map)
+      param = unknownobj2soap(soap_class, obj, info, map)
     end
     param
-  end
-
-  if RUBY_VERSION >= '1.8.0'
-    def singleton_methods_true(obj)
-      obj.singleton_methods(true)
-    end
-  else
-    def singleton_methods_true(obj)
-      obj.singleton_methods
-    end
   end
 
   def soap2obj(obj_class, node, info, map)
@@ -283,6 +256,37 @@ private
     ivars = SOAPStruct.new    # Undefined type.
     setiv2soap(ivars, obj, map)
     node.extraattr[RubyIVarName] = ivars
+  end
+
+  def unknownobj2soap(soap_class, obj, info, map)
+    if obj.class.name.empty?
+      raise TypeError.new("Can't dump anonymous class #{ obj }.")
+    end
+    singleton_class = class << obj; self; end
+    if !singleton_methods_true(obj).empty? or
+	!singleton_class.instance_variables.empty?
+      raise TypeError.new("singleton can't be dumped #{ obj }")
+    end
+    if !(singleton_class.ancestors - obj.class.ancestors).empty?
+      typestr = Mapping.name2elename(obj.class.to_s)
+      type = XSD::QName.new(RubyTypeNamespace, typestr)
+    else
+      type = Mapping.class2element(obj.class)
+    end
+    param = SOAPStruct.new(type)
+    mark_marshalled_obj(obj, param)
+    setiv2soap(param, obj, map)
+    param
+  end
+
+  if RUBY_VERSION >= '1.8.0'
+    def singleton_methods_true(obj)
+      obj.singleton_methods(true)
+    end
+  else
+    def singleton_methods_true(obj)
+      obj.singleton_methods
+    end
   end
 
   def rubytype2obj(node, info, map, rubytype)
@@ -365,17 +369,7 @@ private
         obj[Mapping.elename2name(name)] = Mapping._soap2obj(value, map)
       end
     else
-      typestr = Mapping.elename2name(node.type.name)
-      klass = Mapping.class_from_name(typestr)
-      if klass.nil?
-       	return false
-      end
-      if klass <= ::Exception
-	obj = exception2obj(klass, node, map)
-      else
-	obj = create_empty_object(klass)
-	mark_unmarshalled_obj(node, obj)
-      end
+      return unknowntype2obj(node, info, map)
     end
     return true, obj
   end
@@ -422,6 +416,9 @@ private
     end
     if klass.nil?
       return nil
+    end
+    if klass <= ::Exception
+      return exception2obj(klass, node, map)
     end
     klass_type = Mapping.class2qname(klass)
     return nil unless node.type.match(klass_type)
