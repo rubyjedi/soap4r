@@ -99,7 +99,7 @@ class InteropApp < SOAP::CGIStub
     outputString = inputStruct.varString
     outputInteger = inputStruct.varInt
     outputFloat = inputStruct.varFloat
-    return outputString, outputInteger, outputFloat
+    return nil, outputString, outputInteger, outputFloat
   end
 
   def echoSimpleTypesAsStruct( inputString, inputInt, inputFloat )
