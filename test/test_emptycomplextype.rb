@@ -11,4 +11,4 @@ class TestWSDL < Test::Unit::TestCase
   end
 end
 
-TestWSDL.setup(ARGV.shift || 'emptycomplextype.wsdl')
+TestWSDL.setup('emptycomplextype.wsdl')
