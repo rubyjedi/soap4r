@@ -7,7 +7,6 @@
 
 
 require 'xsd/namedelements'
-require 'soap/header/item'
 
 
 module SOAP
@@ -28,6 +27,10 @@ class HandlerSet
     @store.delete(handler)
   end
 
+  def include?(handler)
+    @store.include?(handler)
+  end
+
   # returns: Array of SOAPHeaderItem
   def on_outbound
     @store.collect { |handler|
@@ -38,7 +41,9 @@ class HandlerSet
   # headers: SOAPHeaderItem enumerable object
   def on_inbound(headers)
     @store.each do |handler|
-      name, item = headers.find { |header| handler.name == header.elename }
+      name, item = headers.find { |name, item|
+	handler.name == item.element.elename
+      }
       handler.on_inbound_headeritem(item)
     end
   end
