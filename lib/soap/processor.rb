@@ -20,13 +20,11 @@ require 'soap/soap'
 require 'soap/element'
 require 'soap/XMLSchemaDatatypes'
 require 'soap/parser'
+require 'soap/generator'
 require 'soap/charset'
-require 'soap/nqxmlDocument'
 
 require 'soap/encodingStyleHandlerDynamic'
 require 'soap/encodingStyleHandlerLiteral'
-
-require 'nqxml/writer'
 
 
 module SOAP
@@ -38,24 +36,13 @@ module Processor
   ###
   ## SOAP marshalling
   #
-  def marshal( ns, header, body )
-
-    # Namespace preparing.
-    ns.assign( SOAP::EnvelopeNamespace, SOAPNamespaceTag )
-    ns.assign( XSD::Namespace, XSDNamespaceTag )
-    ns.assign( XSD::InstanceNamespace, XSINamespaceTag )
-
-    # Create SOAP envelope.
+  def marshal( header, body )
+    generator = SOAPGenerator.new
     env = SOAPEnvelope.new( header, body )
-
-    # XML tree construction.
-    doc = NQXML::Document.new
-    doc.setRootNode( env.encode( ns ))
-    marshalledString = ""
-    NQXML::Writer.new( marshalledString ).writeDocument( doc )
-    xmlDecl + marshalledString
+    xmlDecl + generator.generate( env )
   end
   module_function :marshal
+
 
   ###
   ## SOAP unmarshalling
@@ -68,9 +55,9 @@ module Processor
       parser = loadParser( opt )
     end
 
-    envelopeNode = parser.parse( stream )
+    env = parser.parse( stream )
 
-    return envelopeNode.header, envelopeNode.body
+    return env.header, env.body
   end
   module_function :unmarshal
 
@@ -90,9 +77,14 @@ module Processor
     elsif SOAP.const_defined?( "SOAPSAXDriver" )
       parser = SOAPSAXDriver.new( opt )
     else
-      require 'soap/nqxmlparser'
-      # parser = SOAPNQXMLStreamingParser.new( opt )
-      parser = SOAPNQXMLLightWeightParser.new( opt )
+      begin
+	require 'soap/nqxmlparser'
+	# parser = SOAPNQXMLStreamingParser.new( opt )
+	parser = SOAPNQXMLLightWeightParser.new( opt )
+      rescue LoadError
+	require 'soap/xmlparser'
+	parser = SOAPXMLParser.new( opt )
+      end
     end
     parser
   end
