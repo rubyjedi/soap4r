@@ -26,7 +26,6 @@ module SOAP
 
   AttrMustUnderstand = 'mustUnderstand'
   AttrEncodingStyle = 'encodingStyle'
-  AttrRoot = 'root'
   AttrActor = 'actor'
 
   class Error < StandardError; end
