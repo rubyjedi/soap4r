@@ -175,6 +175,7 @@ private
     obj = createMethodObject( paramNames, params )
     method = RPCUtils.obj2soap( obj, @wsdlMappingRegistry, messageName )
     method.elementName = operationName
+    method.type = XSD::QName.new	# Request should not be typed.
 
     if @dumpFileBase
       @handler.dumpFileBase = @dumpFileBase + '_' << methodName
