@@ -128,14 +128,15 @@ module RPCUtils
     def encode( ns )
       attrs = []
       createNS( attrs, ns )
-      attrs.push( datatypeAttr( ns ))
       if !retVal
+	attrs.push( datatypeAttr( ns ))
         paramElem = @paramNames.collect { | param |
           @params[ param ].encode( ns.clone, param )
         }
         # Element.new( ns.name( @namespace, @name ), attrs, paramElem )
 	Node.initializeWithChildren( ns.name( @namespace, @name ), attrs, paramElem )
       else
+	attrs.push( datatypeAttrResponse( ns ))
         retElem = retVal.encode( ns.clone, 'return' )
         # Element.new( ns.name( @namespace, responseTypeName() ), attrs, retElem )
         Node.initializeWithChildren( ns.name( @namespace, responseTypeName() ), attrs, retElem )
@@ -146,6 +147,10 @@ module RPCUtils
 
     def datatypeAttr( ns )
       Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, @name ))
+    end
+
+    def datatypeAttrResponse( ns )
+      Attr.new( ns.name( XSD::InstanceNamespace, 'type' ), ns.name( @namespace, responseTypeName() ))
     end
 
     def createNS( attrs, ns )
@@ -277,7 +282,8 @@ module RPCUtils
     when SOAPNil
       nil
     when SOAPBase64
-      node.to_s
+      # Stringify
+      node.toString
     when SOAPArray
       node.collect { |elem|
 	soap2obj( elem )
