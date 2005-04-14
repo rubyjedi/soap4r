@@ -444,8 +444,19 @@ public
 
   def to_obj
     hash = {}
+    proptype = {}
     each do |k, v|
-      hash[k] = v.respond_to?(:to_obj) ? v.to_obj : v.to_s
+      value = v.respond_to?(:to_obj) ? v.to_obj : v.to_s
+      case proptype[k]
+      when :single
+        hash[k] = [hash[k], value]
+        proptype[k] = :multi
+      when :multi
+        hash[k] << value
+      else
+        hash[k] = value
+        proptype[k] = :single
+      end
     end
     hash
   end
@@ -556,8 +567,19 @@ class SOAPElement
       @text
     else
       hash = {}
+      proptype = {}
       each do |k, v|
-	hash[k] = v.respond_to?(:to_obj) ? v.to_obj : v.to_s
+        value = v.respond_to?(:to_obj) ? v.to_obj : v.to_s
+        case proptype[k]
+        when :single
+          hash[k] = [hash[k], value]
+          proptype[k] = :multi
+        when :multi
+          hash[k] << value
+        else
+          hash[k] = value
+          proptype[k] = :single
+        end
       end
       hash
     end
@@ -574,22 +596,39 @@ class SOAPElement
     o
   end
 
-  def self.from_obj(hash_or_string, namespace = nil)
+  def self.from_obj(obj, namespace = nil)
     o = SOAPElement.new(nil)
-    case hash_or_string
+    case obj
     when nil
       o.text = nil
     when Hash
-      hash_or_string.each do |k, v|
-	child = self.from_obj(v, namespace)
-	child.elename =
-          k.is_a?(XSD::QName) ? k : XSD::QName.new(namespace, k.to_s)
-	o.add(child)
+      obj.each do |elename, value|
+        if value.is_a?(Array)
+          value.each do |subvalue|
+            child = from_obj(subvalue, namespace)
+            child.elename = to_elename(elename, namespace)
+            o.add(child)
+          end
+        else
+          child = from_obj(value, namespace)
+          child.elename = to_elename(elename, namespace)
+          o.add(child)
+        end
       end
     else
-      o.text = hash_or_string.to_s
+      o.text = obj.to_s
     end
     o
+  end
+
+  def self.to_elename(obj, namespace = nil)
+    if obj.is_a?(XSD::QName)
+      obj
+    elsif /\A(.+):([^:]+)\z/ =~ obj.to_s
+      XSD::QName.new($1, $2)
+    else
+      XSD::QName.new(namespace, obj.to_s)
+    end
   end
 
 private
