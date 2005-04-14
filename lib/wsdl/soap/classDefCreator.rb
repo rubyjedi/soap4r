@@ -163,15 +163,19 @@ private
       init_lines << "@__soap_attribute = {}\n"
     end
     c.def_classvar('schema_element',
-      '{' +
+      '[' +
         schema_element.collect { |varname, name, type|
-          if name
-            varname.dump + ' => [' + ndq(type) + ', ' + dqname(name) + ']'
-          else
-            varname.dump + ' => ' + ndq(type)
-          end
+          '[' +
+            (
+              if name
+                varname.dump + ', [' + ndq(type) + ', ' + dqname(name) + ']'
+              else
+                varname.dump + ', ' + ndq(type)
+              end
+            ) +
+          ']'
         }.join(', ') +
-      '}'
+      ']'
     )
     c.def_method('initialize', *params) do
       init_lines

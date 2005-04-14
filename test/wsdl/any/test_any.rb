@@ -1,5 +1,6 @@
 require 'test/unit'
 require 'wsdl/parser'
+require 'wsdl/soap/wsdl2ruby'
 module WSDL; module Any
 
 

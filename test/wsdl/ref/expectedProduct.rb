@@ -10,7 +10,7 @@ class ProductBag
   @@schema_type = "Product-Bag"
   @@schema_ns = "urn:product"
   @@schema_attribute = {"version" => "SOAP::SOAPString", "yesno" => "SOAP::SOAPString"}
-  @@schema_element = {"bag" => "Product[]", "rating" => ["SOAP::SOAPString[]", XSD::QName.new("urn:product", "Rating")], "product_Bag" => [nil, XSD::QName.new("urn:product", "Product-Bag")], "comment_1" => nil, "comment_2" => ["Comment[]", XSD::QName.new(nil, "comment-2")]}
+  @@schema_element = [["bag", "Product[]"], ["rating", ["SOAP::SOAPString[]", XSD::QName.new("urn:product", "Rating")]], ["product_Bag", [nil, XSD::QName.new("urn:product", "Product-Bag")]], ["comment_1", nil], ["comment_2", ["Comment[]", XSD::QName.new(nil, "comment-2")]]]
 
   attr_accessor :bag
   attr_accessor :product_Bag
@@ -55,7 +55,7 @@ end
 class Creator
   @@schema_type = "Creator"
   @@schema_ns = "urn:product"
-  @@schema_element = {}
+  @@schema_element = []
 
   def initialize
   end
@@ -65,7 +65,7 @@ end
 class Product
   @@schema_type = "Product"
   @@schema_ns = "urn:product"
-  @@schema_element = {"name" => "SOAP::SOAPString", "rating" => ["SOAP::SOAPString", XSD::QName.new("urn:product", "Rating")]}
+  @@schema_element = [["name", "SOAP::SOAPString"], ["rating", ["SOAP::SOAPString", XSD::QName.new("urn:product", "Rating")]]]
 
   attr_accessor :name
 

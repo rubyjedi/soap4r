@@ -2,7 +2,7 @@
 class Question
   @@schema_type = "question"
   @@schema_ns = "urn:mysample"
-  @@schema_element = {"something" => "SOAP::SOAPString"}
+  @@schema_element = [["something", "SOAP::SOAPString"]]
 
   attr_accessor :something
 
@@ -15,7 +15,7 @@ end
 class Section
   @@schema_type = "section"
   @@schema_ns = "urn:mysample"
-  @@schema_element = {"sectionID" => "SOAP::SOAPInt", "name" => "SOAP::SOAPString", "description" => "SOAP::SOAPString", "index" => "SOAP::SOAPInt", "firstQuestion" => "Question"}
+  @@schema_element = [["sectionID", "SOAP::SOAPInt"], ["name", "SOAP::SOAPString"], ["description", "SOAP::SOAPString"], ["index", "SOAP::SOAPInt"], ["firstQuestion", "Question"]]
 
   attr_accessor :sectionID
   attr_accessor :name

@@ -3,7 +3,7 @@ class Echoele
   @@schema_type = "echoele"
   @@schema_ns = "urn:docrpc"
   @@schema_attribute = {"attr_string" => "SOAP::SOAPString", "attr_int" => "SOAP::SOAPInt"}
-  @@schema_element = {"struct1" => "Echo_struct", "struct2" => "Echo_struct"}
+  @@schema_element = [["struct1", "Echo_struct"], ["struct2", "Echo_struct"]]
 
   attr_accessor :struct1
   attr_accessor :struct2
@@ -36,7 +36,7 @@ class Echo_response
   @@schema_type = "echo_response"
   @@schema_ns = "urn:docrpc"
   @@schema_attribute = {"attr_string" => "SOAP::SOAPString", "attr_int" => "SOAP::SOAPInt"}
-  @@schema_element = {"struct1" => "Echo_struct", "struct2" => "Echo_struct"}
+  @@schema_element = [["struct1", "Echo_struct"], ["struct2", "Echo_struct"]]
 
   attr_accessor :struct1
   attr_accessor :struct2
@@ -69,7 +69,7 @@ class Echo_struct
   @@schema_type = "echo_struct"
   @@schema_ns = "urn:docrpc"
   @@schema_attribute = {"m_attr" => "SOAP::SOAPString"}
-  @@schema_element = {"m_string" => "SOAP::SOAPString", "m_datetime" => "SOAP::SOAPDateTime"}
+  @@schema_element = [["m_string", "SOAP::SOAPString"], ["m_datetime", "SOAP::SOAPDateTime"]]
 
   attr_accessor :m_string
   attr_accessor :m_datetime

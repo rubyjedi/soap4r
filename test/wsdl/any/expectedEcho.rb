@@ -2,7 +2,7 @@
 class FooBar
   @@schema_type = "foo.bar"
   @@schema_ns = "urn:example.com:echo-type"
-  @@schema_element = {"any" => nil}
+  @@schema_element = [["any", nil]]
 
   attr_accessor :any
 
