@@ -276,17 +276,17 @@ private
 
     def request_body(values, mapping_registry, literal_mapping_registry)
       if @request_style == :rpc
-        request_rpc(values, mapping_registry)
+        request_rpc(values, mapping_registry, literal_mapping_registry)
       else
-        request_doc(values, literal_mapping_registry)
+        request_doc(values, mapping_registry, literal_mapping_registry)
       end
     end
 
     def response_obj(body, mapping_registry, literal_mapping_registry)
       if @response_style == :rpc
-        response_rpc(body, mapping_registry)
+        response_rpc(body, mapping_registry, literal_mapping_registry)
       else
-        response_doc(body, literal_mapping_registry)
+        response_doc(body, mapping_registry, literal_mapping_registry)
       end
     end
 
@@ -304,19 +304,19 @@ private
       end
     end
 
-    def request_rpc(values, mapping_registry)
+    def request_rpc(values, mapping_registry, literal_mapping_registry)
       if @request_use == :encoded
         request_rpc_enc(values, mapping_registry)
       else
-        request_rpc_lit(values, mapping_registry)
+        request_rpc_lit(values, literal_mapping_registry)
       end
     end
 
-    def request_doc(values, mapping_registry)
+    def request_doc(values, mapping_registry, literal_mapping_registry)
       if @request_use == :encoded
         request_doc_enc(values, mapping_registry)
       else
-        request_doc_lit(values, mapping_registry)
+        request_doc_lit(values, literal_mapping_registry)
       end
     end
 
@@ -334,7 +334,8 @@ private
       params = {}
       idx = 0
       method.input_params.each do |name|
-        params[name] = SOAPElement.from_obj(values[idx])
+        params[name] = Mapping.obj2soap(values[idx], mapping_registry, 
+          XSD::QName.new(nil, name))
         idx += 1
       end
       method.set_param(params)
@@ -343,33 +344,34 @@ private
 
     def request_doc_enc(values, mapping_registry)
       (0...values.size).collect { |idx|
-        ele = Mapping.obj2soap(values[idx], mapping_registry)
-        ele.elename = @doc_request_qnames[idx]
+        ele = Mapping.obj2soap(values[idx], mapping_registry,
+          @doc_request_qnames[idx])
         ele
       }
     end
 
     def request_doc_lit(values, mapping_registry)
       (0...values.size).collect { |idx|
-        ele = mapping_registry.obj2soap(values[idx], @doc_request_qnames[idx])
+        ele = Mapping.obj2soap(values[idx], mapping_registry,
+          @doc_request_qnames[idx])
         ele.encodingstyle = LiteralNamespace
         ele
       }
     end
 
-    def response_rpc(body, mapping_registry)
+    def response_rpc(body, mapping_registry, literal_mapping_registry)
       if @response_use == :encoded
         response_rpc_enc(body, mapping_registry)
       else
-        response_rpc_lit(body, mapping_registry)
+        response_rpc_lit(body, literal_mapping_registry)
       end
     end
 
-    def response_doc(body, mapping_registry)
+    def response_doc(body, mapping_registry, literal_mapping_registry)
       if @response_use == :encoded
         return *response_doc_enc(body, mapping_registry)
       else
-        return *response_doc_lit(body, mapping_registry)
+        return *response_doc_lit(body, literal_mapping_registry)
       end
     end
 
@@ -390,7 +392,7 @@ private
 
     def response_rpc_lit(body, mapping_registry)
       body.root_node.collect { |key, value|
-        value.respond_to?(:to_obj) ? value.to_obj : value.data
+        Mapping.soap2obj(value, mapping_registry)
       }
     end
 
@@ -402,7 +404,7 @@ private
 
     def response_doc_lit(body, mapping_registry)
       body.collect { |key, value|
-        value.respond_to?(:to_obj) ? value.to_obj : value.data
+        Mapping.soap2obj(value, mapping_registry)
       }
     end
 

@@ -65,9 +65,12 @@ class TestDocument < Test::Unit::TestCase
   end
 
   def test_document
-    msg = {'version' => "1.9", 'date' => "2004-01-01T00:00:00Z"}
+    msg = {'myversion' => "1.9", 'date' => "2004-01-01T00:00:00Z"}
     reply_msg = @client.submit(msg)
-    assert_equal(msg, reply_msg)
+    assert_equal('1.9', reply_msg.myversion)
+    assert_equal('1.9', reply_msg['myversion'])
+    assert_equal('2004-01-01T00:00:00Z', reply_msg.date)
+    assert_equal('2004-01-01T00:00:00Z', reply_msg['date'])
   end
 end
 

@@ -26,19 +26,19 @@ class ProductBag
   end
 
   def attr_version
-    @__soap_attribute["version"]
+    (@__soap_attribute ||= {})["version"]
   end
 
   def attr_version=(value)
-    @__soap_attribute["version"] = value
+    (@__soap_attribute ||= {})["version"] = value
   end
 
   def attr_yesno
-    @__soap_attribute["yesno"]
+    (@__soap_attribute ||= {})["yesno"]
   end
 
   def attr_yesno=(value)
-    @__soap_attribute["yesno"] = value
+    (@__soap_attribute ||= {})["yesno"] = value
   end
 
   def initialize(bag = [], rating = [], product_Bag = nil, comment_1 = [], comment_2 = [])

@@ -16,7 +16,7 @@ class TestSimpleType < Test::Unit::TestCase
     end
   
     def ruby(ruby)
-      version = ruby["version"]
+      version = ruby["myversion"]
       date = ruby["date"]
       "#{version} (#{date})"
     end
@@ -69,7 +69,7 @@ class TestSimpleType < Test::Unit::TestCase
   end
 
   def test_ping
-    ret = @client.ping({:version => "1.9", :date => "2004-01-01T00:00:00Z"})
+    ret = @client.ping({:myversion => "1.9", :date => "2004-01-01T00:00:00Z"})
     assert_equal("1.9 (2004-01-01T00:00:00Z)", ret)
   end
 end
