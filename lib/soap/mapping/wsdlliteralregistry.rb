@@ -124,7 +124,9 @@ private
   end
 
   def unknownobj2soap(obj, name)
-    if obj.class.class_variables.include?('@@schema_element')
+    if obj.is_a?(SOAPElement)
+      obj
+    elsif obj.class.class_variables.include?('@@schema_element')
       ele = SOAPElement.new(name)
       add_elements2soap(obj, ele)
       add_attributes2soap(obj, ele)
@@ -133,7 +135,9 @@ private
       ele = SOAPElement.from_obj(obj)
       ele.elename = name
       ele
-    else # expected to be a basetype or an anyType.
+    else
+      # expected to be a basetype or an anyType.
+      # SOAPStruct, etc. is used instead of SOAPElement.
       o = Mapping.obj2soap(obj)
       o.elename = name
       o
@@ -142,15 +146,17 @@ private
 
   def add_elements2soap(obj, ele)
     elements, as_array = schema_element_definition(obj.class)
-    elements.each do |elename, type|
-      child = Mapping.get_attribute(obj, elename)
-      name = XSD::QName.new(nil, elename)
-      if as_array.include?(type)
-        child.each do |item|
-          ele.add(obj2soap(item, name))
+    if elements
+      elements.each do |elename, type|
+        child = Mapping.get_attribute(obj, elename)
+        name = XSD::QName.new(nil, elename)
+        if as_array.include?(type)
+          child.each do |item|
+            ele.add(obj2soap(item, name))
+          end
+        else
+          ele.add(obj2soap(child, name))
         end
-      else
-        ele.add(obj2soap(child, name))
       end
     end
   end
@@ -183,9 +189,6 @@ private
     end
     klass = ::SOAP::Mapping::Object
     obj = klass.new
-    node.each do |name, value|
-      obj.__soap_set_property(name, Mapping.soap2obj(value))
-    end
     obj
   end
 
@@ -196,12 +199,19 @@ private
     end
     if obj_class and obj_class.class_variables.include?('@@schema_element')
       soapele2definedobj(node, obj_class)
-    elsif node.is_a?(SOAPElement)
-      node.to_obj
+    elsif node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
+      obj = soapele2undefinedobj(node)
     else
       result, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
       obj
     end
+  end
+
+  def soapele2undefinedobj(node)
+    obj = anytype2obj(node)
+    add_elements2undefinedobj(node, obj)
+    add_attributes2undefinedobj(node, obj)
+    obj
   end
 
   def soapele2definedobj(node, obj_class)
@@ -213,52 +223,69 @@ private
 
   def add_elements2obj(node, obj)
     elements, as_array = schema_element_definition(obj.class)
-    vars = {}
-    node.each do |name, value|
-      if class_name = elements[name]
-        if klass = Mapping.class_from_name(class_name)
-          if klass.ancestors.include?(::SOAP::SOAPBasetype)
-            if value.respond_to?(:data)
-              child = klass.new(value.data).data
+    if elements
+      vars = {}
+      node.each do |name, value|
+        if class_name = elements[name]
+          if klass = Mapping.class_from_name(class_name)
+            if klass.ancestors.include?(::SOAP::SOAPBasetype)
+              if value.respond_to?(:data)
+                child = klass.new(value.data).data
+              else
+                child = klass.new(nil).data
+              end
             else
-              child = klass.new(nil).data
+              child = soapele2obj(value, klass)
             end
           else
-            child = soapele2obj(value, klass)
+            raise MappingError.new("Unknown class: #{class_name}")
           end
-        else
-          raise MappingError.new("Unknown class: #{class_name}")
+        else      # untyped element is treated as anyType.
+          child = soapele2obj(value)
         end
-      else      # untyped element is treated as anyType.
-        child = anytype2obj(value)
+        if as_array.include?(class_name)
+          (vars[name] ||= []) << child
+        else
+          vars[name] = child
+        end
       end
-      if as_array.include?(class_name)
-        (vars[name] ||= []) << child
-      else
-        vars[name] = child
-      end
+      Mapping.set_attributes(obj, vars)
     end
-    Mapping.set_attributes(obj, vars)
   end
 
   def add_attributes2obj(node, obj)
-    Mapping.set_attributes(obj, {'__soap_attribute' => {}})
-    vars = {}
-    attributes = schema_attribute_definition(obj.class)
-    if attributes
+    if attributes = schema_attribute_definition(obj.class)
+      vars = {}
+      obj.instance_variable_set('@__soap_attribute', {})
       attributes.each do |attrname, class_name|
         attr = node.extraattr[XSD::QName.new(nil, attrname)]
         next if attr.nil? or attr.empty?
         klass = Mapping.class_from_name(class_name)
         if klass.ancestors.include?(::SOAP::SOAPBasetype)
           child = klass.new(attr).data
-          else
+        else
           child = attr
         end
         vars['attr_' + attrname] = child
       end
+      Mapping.set_attributes(obj, vars)
     end
-    Mapping.set_attributes(obj, vars)
+  end
+
+  def add_elements2undefinedobj(node, obj)
+    node.each do |name, value|
+      obj.__soap_set_property(name, soapele2obj(value))
+    end
+  end
+
+  def add_attributes2undefinedobj(node, obj)
+    return if node.extraattr.empty?
+    obj.instance_variable_set('@__soap_attribute', node.extraattr)
+    unless obj.respond_to?(:__soap_attribute)
+      class << obj
+        define_method(:__soap_attribute, proc { @__soap_attribute })
+      end
+    end
   end
 
   # it caches @@schema_element.  this means that @@schema_element must not be

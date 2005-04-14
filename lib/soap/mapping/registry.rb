@@ -66,6 +66,11 @@ class Object; include Marshallable
   def initialize
     @__soap_value_type = {}
     @__soap_value = {}
+    @__soap_attribute = {}
+  end
+
+  def __soap_attribute
+    @__soap_attribute
   end
 
   def [](name)
@@ -81,6 +86,10 @@ class Object; include Marshallable
       __define_attr_accessor(name)
     end
     __soap_set_property_value(name, value)
+  end
+
+  def __soap_get_properties
+    @__soap_value
   end
 
 private
@@ -128,7 +137,10 @@ class Registry
       if map = @obj2soap[klass]
         map.each do |soap_class, factory, info|
           ret = factory.obj2soap(soap_class, obj, info, @registry)
-          return ret if ret
+          if ret
+            ret.elename = type_qname if type_qname
+            return ret
+          end
         end
       end
       ancestors = klass.ancestors[1..-3] # except itself, Object and Kernel
@@ -137,7 +149,10 @@ class Registry
           map.each do |soap_class, factory, info|
             if info[:derived_class]
               ret = factory.obj2soap(soap_class, obj, info, @registry)
-              return ret if ret
+              if ret
+                ret.elename = type_qname if type_qname
+                return ret
+              end
             end
           end
         end
@@ -356,7 +371,6 @@ class Registry
   end
   alias set add
 
-  # This mapping registry ignores type hint.
   def obj2soap(obj, type_qname = nil)
     soap = _obj2soap(obj, type_qname)
     if @allow_original_mapping
