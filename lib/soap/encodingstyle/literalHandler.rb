@@ -34,6 +34,17 @@ class LiteralHandler < Handler
       else
         data.elename.name
       end
+    data.extraattr.each do |k, v|
+      if k.is_a?(XSD::QName)
+        if k.namespace
+          SOAPGenerator.assign_ns(attrs, ns, k.namespace)
+          k = ns.name(k)
+        else
+          k = k.name
+        end
+      end
+      attrs[k] = v
+    end
 
     case data
     when SOAPRawString
@@ -62,7 +73,7 @@ class LiteralHandler < Handler
         yield(child, true)
       end
     when SOAPElement
-      generator.encode_tag(name, attrs.update(data.extraattr))
+      generator.encode_tag(name, attrs)
       generator.encode_rawstring(data.text) if data.text
       data.each do |key, value|
 	yield(value, qualified)
@@ -79,7 +90,8 @@ class LiteralHandler < Handler
       else
         data.elename.name
       end
-    cr = data.is_a?(SOAPElement) && !data.text
+    cr = (data.is_a?(SOAPCompoundtype) or
+      (data.is_a?(SOAPElement) and !data.text))
     generator.encode_tag_end(name, cr)
   end
 
