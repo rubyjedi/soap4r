@@ -13,7 +13,7 @@ class TestCalc < Test::Unit::TestCase
     end
   
     def add(x, y)
-      x + y
+      x.to_f + y.to_f
     end
   end
 

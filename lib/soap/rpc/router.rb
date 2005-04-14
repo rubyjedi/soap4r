@@ -139,6 +139,7 @@ class Router
   end
 
   def route(conn_data)
+    # we cannot set request_default_encodingsyle before parsing the content.
     env = unmarshal(conn_data)
     if env.nil?
       raise ArgumentError.new("illegal SOAP marshal format")
@@ -153,10 +154,12 @@ class Router
     begin
       soap_response =
         op.call(env.body, @mapping_registry, @literal_mapping_registry)
+      default_encodingstyle = op.response_default_encodingstyle
     rescue Exception
       soap_response = fault($!)
+      default_encodingstyle = nil
     end
-    conn_data.is_fault = true if soap_response.is_a?(SOAPFault) # To be fixed.
+    conn_data.is_fault = true if soap_response.is_a?(SOAPFault)
     header = call_headers(headerhandler)
     body = SOAPBody.new(soap_response)
     env = SOAPEnvelope.new(header, body)
@@ -341,18 +344,26 @@ private
       end
     end
 
+    def request_default_encodingstyle
+      (@request_use == :encoded) ? EncodingNamespace : LiteralNamespace
+    end
+
+    def response_default_encodingstyle
+      (@response_use == :encoded) ? EncodingNamespace : LiteralNamespace
+    end
+
     def call(body, mapping_registry, literal_mapping_registry)
       if @request_style == :rpc
-        values = request_rpc(body, mapping_registry)
+        values = request_rpc(body, mapping_registry, literal_mapping_registry)
       else
-        values = request_document(body, literal_mapping_registry)
+        values = request_document(body, mapping_registry, literal_mapping_registry)
       end
       result = receiver.method(@name.intern).call(*values)
       return result if result.is_a?(SOAPFault)
       if @response_style == :rpc
-        response_rpc(result, mapping_registry)
+        response_rpc(result, mapping_registry, literal_mapping_registry)
       else
-        response_doc(result, literal_mapping_registry)
+        response_doc(result, mapping_registry, literal_mapping_registry)
       end
     end
 
@@ -362,7 +373,7 @@ private
       raise NotImplementedError.new('must be defined in derived class')
     end
 
-    def request_rpc(body, mapping_registry)
+    def request_rpc(body, mapping_registry, literal_mapping_registry)
       request = body.request
       unless request.is_a?(SOAPStruct)
         raise RPCRoutingError.new("not an RPC style")
@@ -370,16 +381,16 @@ private
       if @request_use == :encoded
         request_rpc_enc(request, mapping_registry)
       else
-        request_rpc_lit(request, mapping_registry)
+        request_rpc_lit(request, literal_mapping_registry)
       end
     end
 
-    def request_document(body, mapping_registry)
+    def request_document(body, mapping_registry, literal_mapping_registry)
       # ToDo: compare names with @doc_request_qnames
       if @request_use == :encoded
         request_doc_enc(body, mapping_registry)
       else
-        request_doc_lit(body, mapping_registry)
+        request_doc_lit(body, literal_mapping_registry)
       end
     end
 
@@ -392,7 +403,7 @@ private
 
     def request_rpc_lit(request, mapping_registry)
       request.collect { |key, value|
-        value.respond_to?(:to_obj) ? value.to_obj : value.data
+        Mapping.soap2obj(value, mapping_registry)
       }
     end
 
@@ -404,19 +415,19 @@ private
 
     def request_doc_lit(body, mapping_registry)
       body.collect { |key, value|
-        value.respond_to?(:to_obj) ? value.to_obj : value.data
+        Mapping.soap2obj(value, mapping_registry)
       }
     end
 
-    def response_rpc(result, mapping_registry)
+    def response_rpc(result, mapping_registry, literal_mapping_registry)
       if @response_use == :encoded
         response_rpc_enc(result, mapping_registry)
       else
-        response_rpc_lit(result, mapping_registry)
+        response_rpc_lit(result, literal_mapping_registry)
       end
     end
     
-    def response_doc(result, mapping_registry)
+    def response_doc(result, mapping_registry, literal_mapping_registry)
       if @doc_response_qnames.size == 1 and !result.is_a?(Array)
         result = [result]
       end
@@ -427,7 +438,7 @@ private
       if @response_use == :encoded
         response_doc_enc(result, mapping_registry)
       else
-        response_doc_lit(result, mapping_registry)
+        response_doc_lit(result, literal_mapping_registry)
       end
     end
 
@@ -462,13 +473,16 @@ private
         outparams = {}
         i = 1
         soap_response.output_params.each do |outparam|
-          outparams[outparam] = SOAPElement.from_obj(result[i])
+          outparams[outparam] = Mapping.obj2soap(result[i], mapping_registry,
+            XSD::QName.new(nil, outparam))
           i += 1
         end
         soap_response.set_outparam(outparams)
-        soap_response.retval = SOAPElement.from_obj(result[0])
+        soap_response.retval = Mapping.obj2soap(result[0], mapping_registry,
+          XSD::QName.new(nil, soap_response.elename))
       else
-        soap_response.retval = SOAPElement.from_obj(result)
+        soap_response.retval = Mapping.obj2soap(result, mapping_registry,
+          XSD::QName.new(nil, soap_response.elename))
       end
       soap_response
     end
@@ -483,9 +497,7 @@ private
 
     def response_doc_lit(result, mapping_registry)
       (0...result.size).collect { |idx|
-        ele = mapping_registry.obj2soap(result[idx], @doc_response_qnames[idx])
-        ele.encodingstyle = LiteralNamespace
-        ele
+        mapping_registry.obj2soap(result[idx], @doc_response_qnames[idx])
       }
     end
 

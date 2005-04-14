@@ -10,13 +10,13 @@
       <xsd:element name="ruby">
         <xsd:complexType>
           <xsd:sequence>
-            <xsd:element minOccurs="1" maxOccurs="1" name="version" type="tns:version"/>
+            <xsd:element minOccurs="1" maxOccurs="1" name="myversion" type="tns:myversion"/>
             <xsd:element minOccurs="0" maxOccurs="1" name="date" type="xsd:dateTime"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
 
-      <xsd:simpleType name="version">
+      <xsd:simpleType name="myversion">
         <xsd:restriction base="xsd:string">
           <xsd:enumeration value="1.6"/>
           <xsd:enumeration value="1.8"/>

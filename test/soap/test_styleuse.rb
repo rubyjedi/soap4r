@@ -7,32 +7,82 @@ module SOAP
 
 
 class TestStyleUse < Test::Unit::TestCase
+  # rpc driver: obj in(Hash allowed for literal), obj out
+  # 
+  #   style: not visible from user
+  #     rpc: wrapped element
+  #     document: unwrappted element
+  #
+  #   use:
+  #     encoding: a graph (SOAP Data Model)
+  #     literal: not a graph (SOAPElement)
+  #
+  # rpc stub: obj in, obj out(Hash is allowed for literal)
+  #
+  #   style: not visible from user
+  #     rpc: wrapped element
+  #     document: unwrappted element
+  #
+  #   use:
+  #     encoding: a graph (SOAP Data Model)
+  #     literal: not a graph (SOAPElement)
+  #
+  # document driver: SOAPElement in, SOAPElement out? [not implemented]
+  #
+  #   style: ditto
+  #   use: ditto
+  #
+  #
+  # document stub: SOAPElement in, SOAPElement out? [not implemented]
+  #
+  #   style: ditto
+  #   use: ditto
+  #
   class GenericServant
     # method name style: requeststyle_requestuse_responsestyle_responseuse
 
     # 2 params -> array
     def rpc_enc_rpc_enc(obj1, obj2)
+      [obj1, [obj1, obj2]]
+    end
+
+    # 2 objs -> array
+    def rpc_lit_rpc_enc(obj1, obj2)
+      [obj2, obj1]
+    end
+
+    # 2 params -> 2 params
+    def rpc_enc_rpc_lit(obj1, obj2)
+      klass = [obj1.class.name, obj2.class.name]
+      [obj2, obj1]
+    end
+
+    # 2 objs -> 2 objs
+    def rpc_lit_rpc_lit(obj1, obj2)
       [obj1, obj2]
     end
-    alias doc_enc_doc_enc rpc_enc_rpc_enc
 
-    # 2 hashes -> array
-    def rpc_lit_rpc_enc(obj1, obj2)
-      [obj1.keys, obj2.keys]
+    # 2 params -> array
+    def doc_enc_doc_enc(obj1, obj2)
+      [obj1, [obj1, obj2]]
     end
-    alias doc_lit_doc_enc rpc_lit_rpc_enc
+
+    # 2 objs -> array
+    def doc_lit_doc_enc(obj1, obj2)
+      [obj2, obj1]
+    end
 
     # 2 params -> 2 hashes
-    def rpc_enc_rpc_lit(obj1, obj2)
-      return {'obj1' => obj1.class.name}, {'obj2' => obj2.class.name}
+    def doc_enc_doc_lit(obj1, obj2)
+      klass = [obj1.class.name, obj2.class.name]
+      return {'obj1' => {'klass' => klass}, 'misc' => 'hash does not have an order'},
+        {'obj2' => {'klass' => klass}}
     end
-    alias doc_enc_doc_lit rpc_enc_rpc_lit
 
-    # 2 hashes -> 2 hashes
-    def rpc_lit_rpc_lit(obj1, obj2)
+    # 2 objs -> 2 objs
+    def doc_lit_doc_lit(obj1, obj2)
       return obj1, obj2
     end
-    alias doc_lit_doc_lit rpc_lit_rpc_lit
   end
 
   Namespace = "urn:styleuse"
@@ -202,59 +252,79 @@ class TestStyleUse < Test::Unit::TestCase
   end
 
   def test_rpc_enc_rpc_enc
-    assert_equal(
-      [1, [2]],
-      @client.rpc_enc_rpc_enc(1, [2])
-    )
+    o = "hello"
+    obj1 = o
+    obj2 = [1]
+    ret = @client.rpc_enc_rpc_enc(obj1, obj2)
+    # server returns [obj1, [obj1, obj2]]
+    assert_equal([obj1, [obj1, obj2]], ret)
+    assert_same(ret[0], ret[1][0])
   end
 
+  S1 = Struct.new(:a)
+  S2 = Struct.new(:c)
   def test_rpc_lit_rpc_enc
+    ret1, ret2 = @client.rpc_lit_rpc_enc(S1.new('b'), S2.new('d'))
+    assert_equal('d', ret1.c)
+    assert_equal('b', ret2.a)
+    # Hash is allowed for literal
+    ret1, ret2 = @client.rpc_lit_rpc_enc({'a' => 'b'}, {'c' => 'd'})
+    assert_equal('d', ret1.c)
+    assert_equal('b', ret2.a)
+    # simple value
     assert_equal(
-      [["a"], ["c"]],
-      @client.rpc_lit_rpc_enc({'a' => 'b'}, {'c' => 'd'})
+      ['1', 'a'],
+      @client.rpc_lit_rpc_enc('a', 1)
     )
   end
 
   def test_rpc_enc_rpc_lit
     assert_equal(
-      [{'obj1' => 'String'}, {'obj2' => 'Fixnum'}],
-      @client.rpc_enc_rpc_lit('a', 1)
+      ['1', 'a'],
+      @client.rpc_enc_rpc_lit('a', '1')
     )
   end
 
   def test_rpc_lit_rpc_lit
-    assert_equal(
-      [{'a' => 'b'}, {'c' => 'd'}],
-      @client.rpc_lit_rpc_lit({'a' => 'b'}, {'c' => 'd'})
-    )
+    ret1, ret2 = @client.rpc_lit_rpc_lit({'a' => 'b'}, {'c' => 'd'})
+    assert_equal('b', ret1["a"])
+    assert_equal('d', ret2["c"])
   end
 
   def test_doc_enc_doc_enc
-    assert_equal(
-      [1, [2]],
-      @client.doc_enc_doc_enc(1, [2])
-    )
+    o = "hello"
+    obj1 = o
+    obj2 = [1]
+    ret = @client.rpc_enc_rpc_enc(obj1, obj2)
+    # server returns [obj1, [obj1, obj2]]
+    assert_equal([obj1, [obj1, obj2]], ret)
+    assert_same(ret[0], ret[1][0])
   end
 
   def test_doc_lit_doc_enc
+    ret1, ret2 = @client.doc_lit_doc_enc({'a' => 'b'}, {'c' => 'd'})
+    assert_equal('d', ret1.c)
+    assert_equal('b', ret2.a)
     assert_equal(
-      [["a"], ["c"]],
-      @client.doc_lit_doc_enc({'a' => 'b'}, {'c' => 'd'})
+      ['a', '1'],
+      @client.doc_lit_doc_enc(1, 'a')
     )
   end
 
   def test_doc_enc_doc_lit
-    assert_equal(
-      [{'obj1' => 'String'}, {'obj2' => 'Fixnum'}],
-      @client.doc_enc_doc_lit('a', 1)
-    )
+    ret1, ret2 = @client.doc_enc_doc_lit('a', 1)
+    # literal Array
+    assert_equal(['String', 'Fixnum'], ret1['obj1']['klass'])
+    # same value
+    assert_equal(ret1['obj1']['klass'], ret2['obj2']['klass'])
+    # not the same object (not encoded)
+    assert_not_same(ret1['obj1']['klass'], ret2['obj2']['klass'])
   end
 
   def test_doc_lit_doc_lit
-    assert_equal(
-      [{'a' => 'b'}, {'c' => 'd'}],
-      @client.doc_lit_doc_lit({'a' => 'b'}, {'c' => 'd'})
-    )
+    ret1, ret2 = @client.doc_lit_doc_lit({'a' => 'b'}, {'c' => 'd'})
+    assert_equal('b', ret1["a"])
+    assert_equal('d', ret2["c"])
   end
 end
 
