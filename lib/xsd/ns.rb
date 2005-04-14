@@ -103,9 +103,9 @@ public
   end
 
   # For local attribute key parsing
-  #   <foo xmlns="urn:" xmlns:n1="urn:" bar="1" n1:baz="2" />
+  #   <foo xmlns="urn:a" xmlns:n1="urn:a" bar="1" n1:baz="2" />
   #     =>
-  #   {}bar, {urn:}baz
+  #   {}bar, {urn:a}baz
   def parse_local(elem)
     ParseRegexp =~ elem
     if $2
