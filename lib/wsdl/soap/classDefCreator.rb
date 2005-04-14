@@ -218,11 +218,11 @@ private
       end
       varname = safevarname('attr_' + name)
       c.def_method(varname) do <<-__EOD__
-          @__soap_attribute[#{name.dump}]
+          (@__soap_attribute ||= {})[#{name.dump}]
         __EOD__
       end
       c.def_method(varname + '=', 'value') do <<-__EOD__
-          @__soap_attribute[#{name.dump}] = value
+          (@__soap_attribute ||= {})[#{name.dump}] = value
         __EOD__
       end
       schema_attribute << [name, type]

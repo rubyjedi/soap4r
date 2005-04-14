@@ -246,13 +246,19 @@ module Mapping
   end
 
   def self.set_attributes(obj, values)
-    values.each do |attr_name, value|
-      name = XSD::CodeGen::GenSupport.safevarname(attr_name)
-      setter = name + "="
-      if obj.respond_to?(setter)
-        obj.__send__(setter, value)
-      else
-        obj.instance_variable_set('@' + name, value)
+    if obj.is_a?(::SOAP::Mapping::Object)
+      values.each do |attr_name, value|
+        obj.__soap_set_property(attr_name, value)
+      end
+    else
+      values.each do |attr_name, value|
+        name = XSD::CodeGen::GenSupport.safevarname(attr_name)
+        setter = name + "="
+        if obj.respond_to?(setter)
+          obj.__send__(setter, value)
+        else
+          obj.instance_variable_set('@' + name, value)
+        end
       end
     end
   end
@@ -267,7 +273,7 @@ module Mapping
         class_name = class_name.sub(/\[\]$/, '')
         as_array << class_name
       end
-      elements[name] = class_name
+      elements[name || varname] = class_name
     end
     [elements, as_array]
   end

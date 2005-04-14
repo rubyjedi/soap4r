@@ -222,7 +222,12 @@ class RubytypeFactory < Factory
     when ::SOAP::Mapping::Object
       param = SOAPStruct.new(XSD::AnyTypeName)
       mark_marshalled_obj(obj, param)
-      addiv2soapattr(param, obj, map)
+      obj.__soap_get_properties.each do |key, value|
+        param.add(key, Mapping._obj2soap(value, map))
+      end
+      obj.__soap_attribute.each do |key, value|
+        param.extraattr[key] = value
+      end
     when ::Exception
       typestr = Mapping.name2elename(obj.class.to_s)
       param = SOAPStruct.new(XSD::QName.new(RubyTypeNamespace, typestr))
