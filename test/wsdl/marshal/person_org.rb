@@ -2,7 +2,7 @@
 class Person
   @@schema_type = "Person"
   @@schema_ns = "http://www.jin.gr.jp/~nahi/xmlns/sample/Person"
-  @@schema_element = {"familyname" => "SOAP::SOAPString", "givenname" => "SOAP::SOAPString", "var1" => "SOAP::SOAPInt", "var2" => "SOAP::SOAPDouble", "var3" => "SOAP::SOAPString"}
+  @@schema_element = [["familyname", "SOAP::SOAPString"], ["givenname", "SOAP::SOAPString"], ["var1", "SOAP::SOAPInt"], ["var2", "SOAP::SOAPDouble"], ["var3", "SOAP::SOAPString"]]
 
   attr_accessor :familyname
   attr_accessor :givenname
