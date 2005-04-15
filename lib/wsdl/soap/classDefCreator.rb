@@ -26,7 +26,7 @@ class ClassDefCreator
   end
 
   def dump(type = nil)
-    result = ''
+    result = "require 'xsd/qname'\n"
     if type
       result = dump_classdef(type.name, type)
     else
@@ -58,9 +58,9 @@ private
       elsif ele.local_simpletype
         dump_simpletypedef(ele.name, ele.local_simpletype)
       else
-        ''
+        nil
       end
-    }.join("\n")
+    }.compact.join("\n")
   end
 
   def dump_simpletype
@@ -80,11 +80,12 @@ private
         dump_simpleclassdef(type)
       when :TYPE_MAP
         # mapped as a general Hash
+        nil
       else
         raise RuntimeError.new(
           "unknown kind of complexContent: #{type.compoundtype}")
       end
-    }.join("\n")
+    }.compact.join("\n")
   end
 
   def dump_simpletypedef(qname, simpletype)
