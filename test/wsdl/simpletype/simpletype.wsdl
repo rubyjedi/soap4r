@@ -40,7 +40,7 @@
   </message>
 
   <message name="ping_out">
-    <part name="parameters" element="xsd:string"/>
+    <part name="parameters" type="xsd:string"/>
   </message>
 
   <message name="ping_id_in">

@@ -35,6 +35,7 @@ class MethodDefCreator
     binding = @definitions.porttype_binding(porttype)
     operations.each do |operation|
       op_bind = binding.operations[operation.name]
+      next unless op_bind # no binding is defined
       next unless op_bind.soapoperation # not a SOAP operation binding
       result << ",\n" unless result.empty?
       result << dump_method(operation, op_bind).chomp
@@ -125,7 +126,9 @@ __EOD__
   end
 
   def documentdefinedtype(part)
-    if definedtype = @simpletypes[part.type]
+    if mapped = basetype_mapped_class(part.type)
+      ['::' + mapped.name, nil, part.name]
+    elsif definedtype = @simpletypes[part.type]
       ['::' + basetype_mapped_class(definedtype.base).name, nil, part.name]
     elsif definedtype = @elements[part.element]
       ['::SOAP::SOAPElement', part.element.namespace, part.element.name]

@@ -89,8 +89,7 @@ private
   end
 
   def dump_simpletypedef(qname, simpletype)
-    if simpletype.restriction.enumeration.empty?
-      STDERR.puts("#{qname}: simpleType which is not enum type not supported")
+    if !simpletype.restriction or simpletype.restriction.enumeration.empty?
       return ''
     end
     c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
