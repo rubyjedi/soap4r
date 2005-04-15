@@ -47,12 +47,12 @@ private
     mr_creator = MappingRegistryCreator.new(@definitions)
     binding = @definitions.bindings.find { |item| item.type == name }
     return '' unless binding.soapbinding        # not a SOAP binding
-    addresses = @definitions.porttype(name).locations
+    address = @definitions.porttype(name).locations[0]
 
     c = XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
     c.def_require("soap/rpc/driver")
     c.def_const("MappingRegistry", "::SOAP::Mapping::Registry.new")
-    c.def_const("DefaultEndpointUrl", addresses[0].dump)
+    c.def_const("DefaultEndpointUrl", ndq(address))
     c.def_code(mr_creator.dump(types))
     c.def_code <<-EOD
 Methods = [
