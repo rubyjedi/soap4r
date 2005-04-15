@@ -1,3 +1,5 @@
+require 'xsd/qname'
+
 # urn:example.com:simpletype-rpc-type
 class Version_struct
   @@schema_type = "version_struct"

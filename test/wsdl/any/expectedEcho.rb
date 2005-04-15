@@ -1,3 +1,5 @@
+require 'xsd/qname'
+
 # urn:example.com:echo-type
 class FooBar
   @@schema_type = "foo.bar"

@@ -1,3 +1,5 @@
+require 'xsd/qname'
+
 # http://www.jin.gr.jp/~nahi/xmlns/sample/Person
 class Person
   @@schema_type = "Person"
