@@ -79,24 +79,36 @@ class Schema < Info
   def collect_attributes
     result = XSD::NamedElements.new
     result.concat(@attributes)
+    @imports.each do |import|
+      result.concat(import.content.collect_attributes) if import.content
+    end
     result
   end
 
   def collect_elements
     result = XSD::NamedElements.new
     result.concat(@elements)
+    @imports.each do |import|
+      result.concat(import.content.collect_elements) if import.content
+    end
     result
   end
 
   def collect_complextypes
     result = XSD::NamedElements.new
     result.concat(@complextypes)
+    @imports.each do |import|
+      result.concat(import.content.collect_complextypes) if import.content
+    end
     result
   end
 
   def collect_simpletypes
     result = XSD::NamedElements.new
     result.concat(@simpletypes)
+    @imports.each do |import|
+      result.concat(import.content.collect_simpletypes) if import.content
+    end
     result
   end
 
