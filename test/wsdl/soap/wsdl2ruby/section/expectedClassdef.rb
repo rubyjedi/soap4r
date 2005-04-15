@@ -1,3 +1,5 @@
+require 'xsd/qname'
+
 # urn:mysample
 class Question
   @@schema_type = "question"

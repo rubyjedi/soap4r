@@ -1,3 +1,5 @@
+require 'xsd/qname'
+
 # urn:product
 module Rating
   C_0 = "0"

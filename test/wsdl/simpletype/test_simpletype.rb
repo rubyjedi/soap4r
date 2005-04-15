@@ -10,15 +10,22 @@ module SimpleType
 class TestSimpleType < Test::Unit::TestCase
   class Server < ::SOAP::RPC::StandaloneServer
     def on_init
-      add_document_method(self, 'urn:example.com:simpletype', 'ruby',
+      add_document_method(self, 'urn:example.com:simpletype:ping', 'ping',
         XSD::QName.new('urn:example.com:simpletype', 'ruby'),
         XSD::QName.new('http://www.w3.org/2001/XMLSchema', 'string'))
+      add_document_method(self, 'urn:example.com:simpletype:ping_id', 'ping_id',
+        XSD::QName.new('urn:example.com:simpletype', 'myid'),
+        XSD::QName.new('urn:example.com:simpletype', 'myid'))
     end
   
-    def ruby(ruby)
+    def ping(ruby)
       version = ruby["myversion"]
       date = ruby["date"]
       "#{version} (#{date})"
+    end
+
+    def ping_id(id)
+      id
     end
   end
 
@@ -71,6 +78,17 @@ class TestSimpleType < Test::Unit::TestCase
   def test_ping
     ret = @client.ping({:myversion => "1.9", :date => "2004-01-01T00:00:00Z"})
     assert_equal("1.9 (2004-01-01T00:00:00Z)", ret)
+  end
+
+  def test_ping_id
+    ret = @client.ping_id("012345678901234567")
+    assert_equal("012345678901234567", ret)
+    assert_raise(XSD::ValueSpaceError) do
+      @client.ping_id("0123456789012345678")
+    end
+    assert_raise(XSD::ValueSpaceError) do
+      @client.ping_id("01234567890123456;")
+    end
   end
 end
 
