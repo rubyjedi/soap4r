@@ -83,9 +83,11 @@ class TestSimpleType < Test::Unit::TestCase
   def test_ping_id
     ret = @client.ping_id("012345678901234567")
     assert_equal("012345678901234567", ret)
+    # length
     assert_raise(XSD::ValueSpaceError) do
       @client.ping_id("0123456789012345678")
     end
+    # pattern
     assert_raise(XSD::ValueSpaceError) do
       @client.ping_id("01234567890123456;")
     end

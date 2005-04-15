@@ -24,6 +24,8 @@ require 'wsdl/xmlSchema/sequence'
 require 'wsdl/xmlSchema/attribute'
 require 'wsdl/xmlSchema/unique'
 require 'wsdl/xmlSchema/enumeration'
+require 'wsdl/xmlSchema/length'
+require 'wsdl/xmlSchema/pattern'
 
 module WSDL
 module XMLSchema
@@ -40,6 +42,8 @@ ElementName = XSD::QName.new(XSD::Namespace, 'element')
 EnumerationName = XSD::QName.new(XSD::Namespace, 'enumeration')
 ExtensionName = XSD::QName.new(XSD::Namespace, 'extension')
 ImportName = XSD::QName.new(XSD::Namespace, 'import')
+LengthName = XSD::QName.new(XSD::Namespace, 'length')
+PatternName = XSD::QName.new(XSD::Namespace, 'pattern')
 RestrictionName = XSD::QName.new(XSD::Namespace, 'restriction')
 SequenceName = XSD::QName.new(XSD::Namespace, 'sequence')
 SchemaName = XSD::QName.new(XSD::Namespace, 'schema')
