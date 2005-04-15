@@ -105,11 +105,6 @@ private
 
   def simple2soap(obj, type)
     o = base2soap(obj, TypeMap[type.base])
-    if type.restriction.enumeration.empty?
-      STDERR.puts(
-        "#{type.name}: simpleType which is not enum type not supported")
-      return o
-    end
     type.check_lexical_format(obj)
     o
   end
