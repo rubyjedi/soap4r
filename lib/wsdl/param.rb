@@ -61,6 +61,9 @@ class Param < Info
   def parse_attr(attr, value)
     case attr
     when MessageAttrName
+      if value.namespace.nil?
+        value = XSD::QName.new(targetnamespace, value.source)
+      end
       @message = value
     when NameAttrName
       @name = XSD::QName.new(targetnamespace, value.source)
