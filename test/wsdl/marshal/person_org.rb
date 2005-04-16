@@ -1,6 +1,6 @@
 require 'xsd/qname'
 
-# http://www.jin.gr.jp/~nahi/xmlns/sample/Person
+# {http://www.jin.gr.jp/~nahi/xmlns/sample/Person}Person
 class Person
   @@schema_type = "Person"
   @@schema_ns = "http://www.jin.gr.jp/~nahi/xmlns/sample/Person"

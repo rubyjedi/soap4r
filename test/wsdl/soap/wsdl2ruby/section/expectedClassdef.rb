@@ -1,6 +1,6 @@
 require 'xsd/qname'
 
-# urn:mysample
+# {urn:mysample}question
 class Question
   @@schema_type = "question"
   @@schema_ns = "urn:mysample"
@@ -13,7 +13,7 @@ class Question
   end
 end
 
-# urn:mysample
+# {urn:mysample}section
 class Section
   @@schema_type = "section"
   @@schema_ns = "urn:mysample"
@@ -34,7 +34,7 @@ class Section
   end
 end
 
-# urn:mysample
+# {urn:mysample}sectionArray
 class SectionArray < ::Array
   @@schema_type = "section"
   @@schema_ns = "urn:mysample"

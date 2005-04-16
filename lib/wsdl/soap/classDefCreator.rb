@@ -22,7 +22,10 @@ class ClassDefCreator
     @elements = definitions.collect_elements
     @simpletypes = definitions.collect_simpletypes
     @complextypes = definitions.collect_complextypes
-    @faulttypes = definitions.collect_faulttypes if definitions.respond_to?(:collect_faulttypes)
+    @faulttypes = nil
+    if definitions.respond_to?(:collect_faulttypes)
+      @faulttypes = definitions.collect_faulttypes
+    end
   end
 
   def dump(type = nil)
@@ -93,7 +96,7 @@ private
       return ''
     end
     c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
-    c.comment = "#{qname.namespace}"
+    c.comment = "#{qname}"
     const = {}
     simpletype.restriction.enumeration.each do |value|
       constname = safeconstname(value)
@@ -101,7 +104,7 @@ private
       if (const[constname] += 1) > 1
         constname += "_#{const[constname]}"
       end
-      c.def_const(constname, value.dump)
+      c.def_const(constname, ndq(value))
     end
     c.dump
   end
@@ -110,7 +113,7 @@ private
     qname = type_or_element.name
     base = create_class_name(type_or_element.simplecontent.base)
     c = XSD::CodeGen::ClassDef.new(create_class_name(qname), base)
-    c.comment = "#{qname.namespace}"
+    c.comment = "#{qname}"
     c.dump
   end
 
@@ -121,9 +124,9 @@ private
     else
       c = XSD::CodeGen::ClassDef.new(create_class_name(qname))
     end
-    c.comment = "#{qname.namespace}"
-    c.def_classvar('schema_type', qname.name.dump)
-    c.def_classvar('schema_ns', qname.namespace.dump)
+    c.comment = "#{qname}"
+    c.def_classvar('schema_type', ndq(qname.name))
+    c.def_classvar('schema_ns', ndq(qname.namespace))
     schema_element = []
     init_lines = ''
     params = []
@@ -255,10 +258,10 @@ private
   def dump_arraydef(complextype)
     qname = complextype.name
     c = XSD::CodeGen::ClassDef.new(create_class_name(qname), '::Array')
-    c.comment = "#{qname.namespace}"
+    c.comment = "#{qname}"
     type = complextype.child_type
-    c.def_classvar('schema_type', type.name.dump)
-    c.def_classvar('schema_ns', type.namespace.dump)
+    c.def_classvar('schema_type', ndq(type.name))
+    c.def_classvar('schema_ns', ndq(type.namespace))
     c.dump
   end
 end

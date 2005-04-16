@@ -1,6 +1,6 @@
 require 'xsd/qname'
 
-# urn:example.com:simpletype-rpc-type
+# {urn:example.com:simpletype-rpc-type}version_struct
 class Version_struct
   @@schema_type = "version_struct"
   @@schema_ns = "urn:example.com:simpletype-rpc-type"
@@ -15,7 +15,7 @@ class Version_struct
   end
 end
 
-# urn:example.com:simpletype-rpc-type
+# {urn:example.com:simpletype-rpc-type}version
 module Version
   C_16 = "1.6"
   C_18 = "1.8"

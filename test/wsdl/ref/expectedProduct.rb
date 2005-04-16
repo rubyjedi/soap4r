@@ -1,13 +1,13 @@
 require 'xsd/qname'
 
-# urn:product
+# {urn:product}Rating
 module Rating
   C_0 = "0"
   C_1 = "+1"
   C_1_2 = "-1"
 end
 
-# urn:product
+# {urn:product}Product-Bag
 class ProductBag
   @@schema_type = "Product-Bag"
   @@schema_ns = "urn:product"
@@ -53,7 +53,7 @@ class ProductBag
   end
 end
 
-# urn:product
+# {urn:product}Creator
 class Creator
   @@schema_type = "Creator"
   @@schema_ns = "urn:product"
@@ -63,7 +63,7 @@ class Creator
   end
 end
 
-# urn:product
+# {urn:product}Product
 class Product
   @@schema_type = "Product"
   @@schema_ns = "urn:product"
@@ -85,6 +85,6 @@ class Product
   end
 end
 
-# urn:product
+# {urn:product}Comment
 class Comment < String
 end
