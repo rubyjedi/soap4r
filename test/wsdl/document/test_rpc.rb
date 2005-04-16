@@ -26,14 +26,14 @@ class TestRPC < Test::Unit::TestCase
       if arg.is_a?(Echoele)
         # swap args
         tmp = arg.struct1
-        arg.struct1 = arg.struct2
-        arg.struct2 = tmp
+        arg.struct1 = arg.struct_2
+        arg.struct_2 = tmp
         arg
       else
         # swap args
         tmp = arg["struct1"]
-        arg["struct1"] = arg["struct2"]
-        arg["struct2"] = tmp
+        arg["struct1"] = arg["struct-2"]
+        arg["struct-2"] = tmp
         arg
       end
     end
@@ -108,8 +108,8 @@ class TestRPC < Test::Unit::TestCase
     timeformat = "%Y-%m-%dT%H:%M:%S.%s"
     assert_equal("mystring2", ret.struct1.m_string)
     assert_equal(now2.strftime(timeformat), ret.struct1.m_datetime.strftime(timeformat))
-    assert_equal("mystring1", ret.struct2.m_string)
-    assert_equal(now1.strftime(timeformat), ret.struct2.m_datetime.strftime(timeformat))
+    assert_equal("mystring1", ret.struct_2.m_string)
+    assert_equal(now1.strftime(timeformat), ret.struct_2.m_datetime.strftime(timeformat))
     assert_equal("attr_string", ret.attr_attr_string)
     assert_equal(5, ret.attr_attr_int)
   end
@@ -124,12 +124,12 @@ class TestRPC < Test::Unit::TestCase
 
     echo = SOAPElement.new('foo')
     echo.extraattr['attr_string'] = 'attr_string'
-    echo.extraattr['attr_int'] = 5
+    echo.extraattr['attr-int'] = 5
     echo.add(struct1 = SOAPElement.new('struct1'))
     struct1.add(SOAPElement.new('m_string', 'mystring1'))
     struct1.add(SOAPElement.new('m_datetime', '2005-03-17T19:47:31+01:00'))
     struct1.extraattr['m_attr'] = 'myattr1'
-    echo.add(struct2 = SOAPElement.new('struct2'))
+    echo.add(struct2 = SOAPElement.new('struct-2'))
     struct2.add(SOAPElement.new('m_string', 'mystring2'))
     struct2.add(SOAPElement.new('m_datetime', '2005-03-17T19:47:32+02:00'))
     struct2.extraattr['m_attr'] = 'myattr2'
@@ -137,19 +137,21 @@ class TestRPC < Test::Unit::TestCase
     timeformat = "%Y-%m-%dT%H:%M:%S"
     assert_equal('mystring2', ret.struct1.m_string)
     assert_equal('2005-03-17T19:47:32', ret.struct1.m_datetime.strftime(timeformat))
-    assert_equal("mystring1", ret.struct2.m_string)
-    assert_equal('2005-03-17T19:47:31', ret.struct2.m_datetime.strftime(timeformat))
+    #p ret.struct1.class
+    #p ret.struct_2.class
+    assert_equal("mystring1", ret.struct_2.m_string)
+    assert_equal('2005-03-17T19:47:31', ret.struct_2.m_datetime.strftime(timeformat))
     assert_equal('attr_string', ret.attr_attr_string)
     assert_equal(5, ret.attr_attr_int)
 
     echo = {'struct1' => {'m_string' => 'mystring1', 'm_datetime' => '2005-03-17T19:47:31+01:00'}, 
-          'struct2' => {'m_string' => 'mystring2', 'm_datetime' => '2005-03-17T19:47:32+02:00'}}
+          'struct-2' => {'m_string' => 'mystring2', 'm_datetime' => '2005-03-17T19:47:32+02:00'}}
     ret = @client.echo(echo)
     timeformat = "%Y-%m-%dT%H:%M:%S"
     assert_equal('mystring2', ret.struct1.m_string)
     assert_equal('2005-03-17T19:47:32', ret.struct1.m_datetime.strftime(timeformat))
-    assert_equal("mystring1", ret.struct2.m_string)
-    assert_equal('2005-03-17T19:47:31', ret.struct2.m_datetime.strftime(timeformat))
+    assert_equal("mystring1", ret.struct_2.m_string)
+    assert_equal('2005-03-17T19:47:31', ret.struct_2.m_datetime.strftime(timeformat))
   end
 end
 

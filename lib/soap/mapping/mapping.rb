@@ -273,7 +273,7 @@ module Mapping
         class_name = class_name.sub(/\[\]$/, '')
         as_array << class_name
       end
-      elements[name || varname] = class_name
+      elements[name ? name.name : varname] = class_name
     end
     [elements, as_array]
   end

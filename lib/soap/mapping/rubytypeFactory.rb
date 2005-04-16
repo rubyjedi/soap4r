@@ -385,6 +385,9 @@ private
       node.each do |name, value|
         obj.__soap_set_property(name, Mapping._soap2obj(value, map))
       end
+      unless node.extraattr.empty?
+        obj.instance_variable_set('@__soap_attribute', node.extraattr)
+      end
       return true, obj
     else
       return false
