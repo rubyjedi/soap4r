@@ -10,6 +10,7 @@ require 'xsd/datatypes'
 require 'wsdl/xmlSchema/annotation'
 require 'wsdl/xmlSchema/schema'
 require 'wsdl/xmlSchema/import'
+require 'wsdl/xmlSchema/include'
 require 'wsdl/xmlSchema/simpleType'
 require 'wsdl/xmlSchema/simpleRestriction'
 require 'wsdl/xmlSchema/simpleExtension'
@@ -42,6 +43,7 @@ ElementName = XSD::QName.new(XSD::Namespace, 'element')
 EnumerationName = XSD::QName.new(XSD::Namespace, 'enumeration')
 ExtensionName = XSD::QName.new(XSD::Namespace, 'extension')
 ImportName = XSD::QName.new(XSD::Namespace, 'import')
+IncludeName = XSD::QName.new(XSD::Namespace, 'include')
 LengthName = XSD::QName.new(XSD::Namespace, 'length')
 PatternName = XSD::QName.new(XSD::Namespace, 'pattern')
 RestrictionName = XSD::QName.new(XSD::Namespace, 'restriction')
