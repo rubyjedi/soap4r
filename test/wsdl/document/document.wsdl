@@ -20,20 +20,20 @@
         <xsd:complexType>
           <xsd:sequence>
             <xsd:element minOccurs="0" maxOccurs="1" name="struct1" type="tns:echo_struct" />
-            <xsd:element minOccurs="0" maxOccurs="1" name="struct2" type="tns:echo_struct" />
+            <xsd:element minOccurs="0" maxOccurs="1" name="struct-2" type="tns:echo_struct" />
           </xsd:sequence>
           <xsd:attribute name="attr_string" type="xsd:string" />
-          <xsd:attribute name="attr_int" type="xsd:int" />
+          <xsd:attribute name="attr-int" type="xsd:int" />
         </xsd:complexType>
       </xsd:element>
       <xsd:element name="echo_response">
         <xsd:complexType>
           <xsd:sequence>
             <xsd:element minOccurs="0" maxOccurs="1" name="struct1" type="tns:echo_struct" />
-            <xsd:element minOccurs="0" maxOccurs="1" name="struct2" type="tns:echo_struct" />
+            <xsd:element minOccurs="0" maxOccurs="1" name="struct-2" type="tns:echo_struct" />
           </xsd:sequence>
           <xsd:attribute name="attr_string" type="xsd:string" />
-          <xsd:attribute name="attr_int" type="xsd:int" />
+          <xsd:attribute name="attr-int" type="xsd:int" />
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
