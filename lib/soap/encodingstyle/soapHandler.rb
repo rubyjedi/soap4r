@@ -226,9 +226,7 @@ class SOAPHandler < Handler
   end
 
   def decode_parent(parent, node)
-    if parent.node.nil?
-      raise EncodingStyleError.new("unknown node: #{node.elename}")
-    end
+    return unless parent.node
     case parent.node
     when SOAPUnknown
       newparent = parent.node.as_struct
@@ -249,8 +247,6 @@ class SOAPHandler < Handler
 	parent.node.add(node)
       end
       node.parent = parent.node
-    when SOAPBasetype
-      raise EncodingStyleError.new("SOAP base type must not have a child")
     else
       raise EncodingStyleError.new("illegal parent: #{parent.node}")
     end
