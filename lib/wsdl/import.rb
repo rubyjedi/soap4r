@@ -45,7 +45,10 @@ class Import < Info
       end
       @namespace
     when LocationAttrName
-      @location = value.source
+      @location = URI.parse(value.source)
+      if @location.relative?
+        @location = parent.location + @location
+      end
       @content = import(@location)
       if @content.is_a?(Definitions)
 	@content.root = root

@@ -24,6 +24,8 @@ class Schema < Info
   attr_accessor :attributeformdefault
   attr_accessor :elementformdefault
 
+  attr_accessor :location
+
   def initialize
     super
     @targetnamespace = nil
@@ -33,6 +35,7 @@ class Schema < Info
     @attributes = XSD::NamedElements.new
     @imports = []
     @elementformdefault = "qualified"
+    @location = nil
     @root = self
   end
 
@@ -40,6 +43,10 @@ class Schema < Info
     case element
     when ImportName
       o = Import.new
+      @imports << o
+      o
+    when IncludeName
+      o = Include.new
       @imports << o
       o
     when ComplexTypeName

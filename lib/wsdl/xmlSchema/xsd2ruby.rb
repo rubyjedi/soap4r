@@ -86,7 +86,10 @@ private
   end
 
   def create_classname(xsd)
-    name = xsd.targetnamespace.scan(/[a-zA-Z0-9]+$/)[0]
+    name = nil
+    if xsd.targetnamespace
+      name = xsd.targetnamespace.scan(/[a-zA-Z0-9]+$/)[0]
+    end
     if name.nil?
       'default'
     else

@@ -20,11 +20,11 @@ class Importer < WSDL::XMLSchema::Importer
 
 private
 
-  def parse(content)
+  def parse(content, location)
     begin
-      WSDL::Parser.new({}).parse(content)
+      WSDL::Parser.new({:location => location}).parse(content)
     rescue WSDL::Parser::ParseError
-      super(content)
+      super(content, location)
     end
   end
 
