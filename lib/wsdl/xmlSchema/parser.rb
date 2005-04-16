@@ -115,7 +115,7 @@ private
     else
       if elename == AnnotationName
         # only the first annotation element is allowed for each element.
-        o = Annoattion.new
+        o = Annotation.new
       else
         o = parent.parse_element(elename)
       end
