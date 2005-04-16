@@ -96,7 +96,9 @@ class NetHttpClient
   end
 
   def get_content(url, header = {})
-    url = URI.parse(url)
+    unless url.is_a?(URI)
+      url = URI.parse(url)
+    end
     extra = header.dup
     extra['User-Agent'] = @agent if @agent
     res = start(url) { |http|

@@ -35,7 +35,10 @@ class Import < Info
     when NamespaceAttrName
       @namespace = value.source
     when SchemaLocationAttrName
-      @schemalocation = value.source
+      @schemalocation = URI.parse(value.source)
+      if @schemalocation.relative?
+        @schemalocation = parent.location + @schemalocation
+      end
       @content = import(@schemalocation)
       @schemalocation
     else

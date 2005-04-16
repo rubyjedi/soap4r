@@ -18,10 +18,13 @@ class Definitions < Info
   attr_reader :targetnamespace
   attr_reader :imports
 
+  attr_accessor :location
+
   def initialize
     super
     @name = nil
     @targetnamespace = nil
+    @location = nil
     @types = nil
     @imports = []
     @messages = XSD::NamedElements.new

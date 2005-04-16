@@ -24,20 +24,26 @@ class Importer
   end
 
   def import(location)
-    parse(fetch(location))
+    unless location.is_a?(URI)
+      location = URI.parse(location)
+    end
+    content = parse(fetch(location), location)
+    content.location = location
+    content
   end
 
 private
 
-  def parse(content)
-    WSDL::XMLSchema::Parser.new({}).parse(content)
+  def parse(content, location)
+    WSDL::XMLSchema::Parser.new({:location => location}).parse(content)
   end
 
   def fetch(location)
     STDERR.puts("importing: #{location}") if $DEBUG
     content = nil
-    if FileTest.exist?(location)
-      content = File.open(location).read
+    if location.scheme == 'file' or
+        (location.relative? and FileTest.exist?(location.path))
+      content = File.open(location.path).read
     else
       client = web_client.new(nil, "WSDL4R")
       if opt = ::SOAP::Property.loadproperty(::SOAP::PropertyName)

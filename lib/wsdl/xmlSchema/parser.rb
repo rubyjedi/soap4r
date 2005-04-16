@@ -52,6 +52,7 @@ public
     @parsestack = nil
     @lastnode = nil
     @ignored = {}
+    @location = opt[:location]
   end
 
   def parse(string_or_readable)
@@ -109,6 +110,8 @@ private
     if !parent
       if elename == SchemaName
 	o = Schema.parse_element(elename)
+        o.location = @location
+        o
       else
 	raise UnknownElementError.new("unknown element: #{elename}")
       end
