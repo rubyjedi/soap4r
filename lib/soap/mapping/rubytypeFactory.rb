@@ -427,7 +427,13 @@ private
     end
     klass_type = Mapping.class2qname(klass)
     return nil unless node.type.match(klass_type)
-    obj = Mapping.create_empty_object(klass)
+    obj = nil
+    begin
+      obj = Mapping.create_empty_object(klass)
+    rescue
+      # type name "data" tries Data.new which raises TypeError
+      nil
+    end
     mark_unmarshalled_obj(node, obj)
     setiv2obj(obj, node, map)
     obj
