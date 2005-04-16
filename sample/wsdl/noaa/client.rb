@@ -10,11 +10,13 @@ longitude = -77.0
 
 require 'soap/wsdlDriver'
 
-params = {:maxt => nil, :mint => nil, :temp => true, :dew => true,
-  :pop12 => nil, :qpf => nil, :sky => nil, :snow => nil, :wspd => nil,
-  :wdir => nil, :wx => nil, :waveh => nil, :icons => nil}
+params = {:maxt => false, :mint => false, :temp => true, :dew => true,
+  :pop12 => false, :qpf => false, :sky => false, :snow => false,
+  :wspd => false, :wdir => false, :wx => false, :waveh => false,
+  :icons => false}
 
-drv = SOAP::WSDLDriverFactory.new("http://weather.gov/forecasts/xml/DWMLgen/wsdl/ndfdXML.wsdl").create_rpc_driver
+wsdl = "http://weather.gov/forecasts/xml/DWMLgen/wsdl/ndfdXML.wsdl"
+drv = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
 drv.wiredump_dev = STDOUT if $DEBUG
 puts drv.NDFDgen(lattitude, longitude, 'time-series', starter, ender, params)
 
@@ -23,8 +25,10 @@ puts drv.NDFDgen(lattitude, longitude, 'time-series', starter, ender, params)
 # run wsdl2ruby.rb to create needed files like this;
 # wsdl2ruby.rb --wsdl http://weather.gov/forecasts/xml/DWMLgen/wsdl/ndfdXML.wsdl --type client
 require 'defaultDriver.rb'
-params = WeatherParametersType.new(nil, nil, true, true, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+params = WeatherParametersType.new(false, false, true, true, false, false,
+  false, false, false, false, false, false, false)
 
 drv = NdfdXMLPortType.new
 drv.wiredump_dev = STDOUT if $DEBUG
-puts drv.NDFDgen(lattitude, longitude, ProductType::TimeSeries, starter, ender, params)
+puts drv.NDFDgen(lattitude, longitude, ProductType::TimeSeries, starter, ender,
+  params)
