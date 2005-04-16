@@ -18,7 +18,16 @@ params = {:maxt => false, :mint => false, :temp => true, :dew => true,
 wsdl = "http://weather.gov/forecasts/xml/DWMLgen/wsdl/ndfdXML.wsdl"
 drv = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
 drv.wiredump_dev = STDOUT if $DEBUG
-puts drv.NDFDgen(lattitude, longitude, 'time-series', starter, ender, params)
+dwml = drv.NDFDgen(lattitude, longitude, 'time-series', starter, ender, params)
+puts dwml
+
+soap = SOAP::Processor.unmarshal(dwml)
+data = SOAP::Mapping.soap2obj(soap["data"])
+
+data.parameters.temperature.each do |temp|
+  p temp.name
+  p temp.value
+end
 
 ## accessing through statically generated driver
 
@@ -30,5 +39,6 @@ params = WeatherParametersType.new(false, false, true, true, false, false,
 
 drv = NdfdXMLPortType.new
 drv.wiredump_dev = STDOUT if $DEBUG
-puts drv.NDFDgen(lattitude, longitude, ProductType::TimeSeries, starter, ender,
-  params)
+dwml = drv.NDFDgen(lattitude, longitude, ProductType::TimeSeries, starter,
+  ender, params)
+puts dwml
