@@ -128,7 +128,7 @@ private
     init_lines = ''
     params = []
     typedef.each_element do |element|
-      name = element.name.name
+      name = name_element(element)
       if element.type == XSD::AnyTypeName
         type = nil
       elsif basetype = element_basetype(element)
@@ -214,7 +214,7 @@ private
   def define_attribute(c, attributes)
     schema_attribute = []
     attributes.each do |attribute|
-      name = attribute.name.name
+      name = name_attribute(attribute)
       if basetype = attribute_basetype(attribute)
         type = basetype.name
       else
@@ -238,6 +238,18 @@ private
         }.join(', ') +
       '}'
     )
+  end
+
+  def name_element(element)
+    return element.name.name if element.name 
+    return element.ref.name if element.ref
+    raise RuntimeError.new("cannot define name of #{element}")
+  end
+
+  def name_attribute(attribute)
+    return attribute.name.name if attribute.name 
+    return attribute.ref.name if attribute.ref
+    raise RuntimeError.new("cannot define name of #{attribute}")
   end
 
   def dump_arraydef(complextype)
