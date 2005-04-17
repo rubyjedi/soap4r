@@ -6,7 +6,7 @@
 # either the dual license version in 2003, or any later version.
 
 
-require 'soap/property'
+require 'soap/httpconfigloader'
 require 'wsdl/xmlSchema/parser'
 
 
@@ -46,12 +46,11 @@ private
       content = File.open(location.path).read
     else
       client = web_client.new(nil, "WSDL4R")
+      client.proxy = ::SOAP::Env::HTTP_PROXY
+      client.no_proxy = ::SOAP::Env::NO_PROXY
       if opt = ::SOAP::Property.loadproperty(::SOAP::PropertyName)
-	client.proxy = opt["client.protocol.http.proxy"]
-	client.no_proxy = opt["client.protocol.http.no_proxy"]
+        ::SOAP::HTTPConfigLoader.set_options(client, opt["client.protocol.http"])
       end
-      client.proxy ||= ::SOAP::Env::HTTP_PROXY
-      client.no_proxy ||= ::SOAP::Env::NO_PROXY
       content = client.get_content(location)
     end
     content
