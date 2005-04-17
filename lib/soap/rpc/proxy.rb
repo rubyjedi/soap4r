@@ -124,7 +124,7 @@ public
     begin
       check_fault(env.body)
     rescue ::SOAP::FaultError => e
-      Mapping.fault2exception(e)
+      op_info.raise_fault(e, @mapping_registry, @literal_mapping_registry)
     end
     op_info.response_obj(env.body, @mapping_registry, @literal_mapping_registry)
   end
@@ -287,6 +287,14 @@ private
         response_rpc(body, mapping_registry, literal_mapping_registry)
       else
         response_doc(body, mapping_registry, literal_mapping_registry)
+      end
+    end
+
+    def raise_fault(e, mapping_registry, literal_mapping_registry)
+      if @response_style == :rpc
+        Mapping.fault2exception(e, mapping_registry)
+      else
+        Mapping.fault2exception(e, literal_mapping_registry)
       end
     end
 
