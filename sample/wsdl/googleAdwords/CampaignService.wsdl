@@ -1,0 +1,785 @@
+<?xml version="1.0" ?>
+<wsdl:definitions targetNamespace="https://adwords.google.com/api/adwords/v2" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="https://adwords.google.com/api/adwords/v2" xmlns:intf="https://adwords.google.com/api/adwords/v2" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<!--WSDL created by Apache Axis version: 1.2beta
+Built on Sep 16, 2004 (04:43:18 PDT)-->
+ <wsdl:types>
+  <schema elementFormDefault="qualified" targetNamespace="https://adwords.google.com/api/adwords/v2" xmlns="http://www.w3.org/2001/XMLSchema"><element name="email">
+  <simpleType>
+    <restriction base="xsd:string"/>
+  </simpleType>
+</element><element name="password">
+  <simpleType>
+    <restriction base="xsd:string"/>
+  </simpleType>
+</element><element name="useragent">
+  <simpleType>
+    <restriction base="xsd:string"/>
+  </simpleType>
+</element><element name="token">
+  <simpleType>
+    <restriction base="xsd:string"/>
+  </simpleType>
+</element><element name="clientEmail">
+  <simpleType>
+    <restriction base="xsd:string"/>
+  </simpleType>
+</element>
+<element name="responseTime">
+  <simpleType>
+    <restriction base="xsd:long"/>
+  </simpleType>
+</element>
+<element name="operations">
+  <simpleType>
+    <restriction base="xsd:long"/>
+  </simpleType>
+</element>
+
+   <element name="getCampaign">
+    <complexType>
+     <sequence>
+      <element name="id" type="xsd:int"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getCampaignResponse">
+    <complexType>
+     <sequence>
+      <element name="getCampaignReturn" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <!-- Keyword Status -->
+   <simpleType name="KeywordStatus">
+     <restriction base="string">
+       <enumeration value="Normal"/>
+       <enumeration value="InTrial"/>
+       <enumeration value="OnHold"/>
+       <enumeration value="Disabled"/>
+       <enumeration value="Disapproved"/>
+       <enumeration value="Deleted"/>
+     </restriction>
+   </simpleType>
+   <!-- Keyword Type -->
+   <simpleType name="KeywordType">
+     <restriction base="string">
+       <enumeration value="Broad"/>
+       <enumeration value="Exact"/>
+       <enumeration value="Phrase"/>
+     </restriction>
+   </simpleType>
+   <complexType name="Keyword">
+    <sequence>
+     <element name="type" nillable="true" type="impl:KeywordType"/>
+     <element name="maxCpc" type="xsd:long"/>
+     <element name="adGroupId" type="xsd:int"/>
+     <element name="language" nillable="true" type="xsd:string"/>
+     <element name="status" nillable="true" minOccurs="0" type="impl:KeywordStatus"/>
+     <element name="negative" type="xsd:boolean"/>
+     <element name="destinationUrl" nillable="true" type="xsd:string"/>
+     <element name="text" nillable="true" type="xsd:string"/>
+     <element name="id" type="xsd:int"/>
+    </sequence>
+   </complexType>
+   <complexType name="LanguageTarget">
+    <sequence>
+     <element maxOccurs="unbounded" name="languages" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="GeoTarget">
+    <sequence>
+     <element maxOccurs="unbounded" name="countries" nillable="true" type="xsd:string"/>
+     <element maxOccurs="unbounded" name="regions" nillable="true" type="xsd:string"/>
+     <element maxOccurs="unbounded" name="metros" nillable="true" type="xsd:string"/>
+     <element maxOccurs="unbounded" name="cities" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <!-- Campaign Status -->
+   <simpleType name="CampaignStatus">
+     <restriction base="string">
+       <enumeration value="Active"/>
+       <enumeration value="Pending"/>
+       <enumeration value="Ended"/>
+       <enumeration value="Paused"/>
+       <enumeration value="Deleted"/>
+       <enumeration value="Suspended"/>
+     </restriction>
+   </simpleType>
+   <complexType name="Campaign">
+    <sequence>
+     <element name="id" type="xsd:int"/>
+     <element name="name" nillable="true" type="xsd:string"/>
+     <element name="status" nillable="true" type="impl:CampaignStatus"/>
+     <element name="startDate" nillable="true" type="xsd:dateTime"/>
+     <element name="endDate" nillable="true" type="xsd:dateTime"/>
+     <element name="dailyBudget" type="xsd:long"/>
+     <element name="optInSearchNetwork" nillable="true" type="xsd:boolean"/>
+     <element name="optInContentNetwork" nillable="true" type="xsd:boolean"/>
+     <element maxOccurs="unbounded" name="campaignNegativeKeywords" nillable="true" type="impl:Keyword"/>
+     <element name="languageTargeting" nillable="true" type="impl:LanguageTarget"/>
+     <element name="geoTargeting" nillable="true" type="impl:GeoTarget"/>
+    </sequence>
+   </complexType>
+   <complexType name="ApiException">
+    <sequence>
+     <element name="code" type="xsd:int"/>
+     <element name="internal" type="xsd:boolean"/>
+     <element name="message" nillable="true" type="xsd:string"/>
+     <element name="trigger" nillable="true" type="xsd:string"/>
+    </sequence>
+   </complexType>
+   <element name="fault" type="impl:ApiException"/>
+   <element name="getCampaignList">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="ids" type="xsd:int"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getCampaignListResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="getCampaignListReturn" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getAllAdWordsCampaigns">
+    <complexType>
+     <sequence>
+      <element name="dummy" type="xsd:int"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getAllAdWordsCampaignsResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="getAllAdWordsCampaignsReturn" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="addCampaign">
+    <complexType>
+     <sequence>
+      <element name="campaign" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="addCampaignResponse">
+    <complexType>
+     <sequence>
+      <element name="addCampaignReturn" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="addCampaignList">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="campaigns" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="addCampaignListResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="addCampaignListReturn" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="updateCampaign">
+    <complexType>
+     <sequence>
+      <element name="campaign" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="updateCampaignResponse">
+    <complexType/>
+   </element>
+   <element name="updateCampaignList">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="campaigns" type="impl:Campaign"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="updateCampaignListResponse">
+    <complexType/>
+   </element>
+   <element name="getOptimizeAdServing">
+    <complexType>
+     <sequence>
+      <element name="campaignId" type="xsd:int"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getOptimizeAdServingResponse">
+    <complexType>
+     <sequence>
+      <element name="getOptimizeAdServingReturn" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="setOptimizeAdServing">
+    <complexType>
+     <sequence>
+      <element name="campaignId" type="xsd:int"/>
+      <element name="enable" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="setOptimizeAdServingResponse">
+    <complexType/>
+   </element>
+   <element name="getCampaignStats">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="campaignIds" type="xsd:int"/>
+      <element name="start" type="xsd:dateTime"/>
+      <element name="end" type="xsd:dateTime"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getCampaignStatsResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="getCampaignStatsReturn" type="impl:StatsRecord"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="StatsRecord">
+    <sequence>
+     <element name="averagePosition" type="xsd:double"/>
+     <element name="clicks" type="xsd:long"/>
+     <element name="conversionRate" type="xsd:double"/>
+     <element name="conversions" type="xsd:long"/>
+     <element name="cost" type="xsd:long"/>
+     <element name="id" type="xsd:long"/>
+     <element name="impressions" type="xsd:long"/>
+    </sequence>
+   </complexType>
+  </schema>
+ </wsdl:types>
+
+<wsdl:message name="token">
+  <wsdl:part element="impl:token" name="token"/>
+</wsdl:message><wsdl:message name="useragent">
+  <wsdl:part element="impl:useragent" name="useragent"/>
+</wsdl:message><wsdl:message name="password">
+  <wsdl:part element="impl:password" name="password"/>
+</wsdl:message><wsdl:message name="email">
+  <wsdl:part element="impl:email" name="email"/>
+</wsdl:message><wsdl:message name="clientEmail">
+  <wsdl:part element="impl:clientEmail" name="clientEmail"/>
+</wsdl:message><wsdl:message name="responseTime">
+  <wsdl:part element="impl:responseTime" name="responseTime"/>
+</wsdl:message><wsdl:message name="operations">
+  <wsdl:part element="impl:operations" name="operations"/>
+</wsdl:message>
+
+   <wsdl:message name="updateCampaignRequest">
+
+      <wsdl:part element="impl:updateCampaign" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="setOptimizeAdServingResponse">
+
+      <wsdl:part element="impl:setOptimizeAdServingResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="addCampaignListResponse">
+
+      <wsdl:part element="impl:addCampaignListResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getCampaignListResponse">
+
+      <wsdl:part element="impl:getCampaignListResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getCampaignResponse">
+
+      <wsdl:part element="impl:getCampaignResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getOptimizeAdServingRequest">
+
+      <wsdl:part element="impl:getOptimizeAdServing" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getAllAdWordsCampaignsRequest">
+
+      <wsdl:part element="impl:getAllAdWordsCampaigns" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="ApiException">
+
+      <wsdl:part element="impl:fault" name="fault"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getCampaignListRequest">
+
+      <wsdl:part element="impl:getCampaignList" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="updateCampaignListRequest">
+
+      <wsdl:part element="impl:updateCampaignList" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getAllAdWordsCampaignsResponse">
+
+      <wsdl:part element="impl:getAllAdWordsCampaignsResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getCampaignRequest">
+
+      <wsdl:part element="impl:getCampaign" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="setOptimizeAdServingRequest">
+
+      <wsdl:part element="impl:setOptimizeAdServing" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="updateCampaignResponse">
+
+      <wsdl:part element="impl:updateCampaignResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="addCampaignRequest">
+
+      <wsdl:part element="impl:addCampaign" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getOptimizeAdServingResponse">
+
+      <wsdl:part element="impl:getOptimizeAdServingResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="addCampaignResponse">
+
+      <wsdl:part element="impl:addCampaignResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="updateCampaignListResponse">
+
+      <wsdl:part element="impl:updateCampaignListResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="addCampaignListRequest">
+
+      <wsdl:part element="impl:addCampaignList" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getCampaignStatsRequest">
+
+      <wsdl:part element="impl:getCampaignStats" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getCampaignStatsResponse">
+
+      <wsdl:part element="impl:getCampaignStatsResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:portType name="CampaignService">
+
+      <wsdl:operation name="getCampaign">
+
+         <wsdl:input message="impl:getCampaignRequest" name="getCampaignRequest"/>
+
+         <wsdl:output message="impl:getCampaignResponse" name="getCampaignResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getCampaignList">
+
+         <wsdl:input message="impl:getCampaignListRequest" name="getCampaignListRequest"/>
+
+         <wsdl:output message="impl:getCampaignListResponse" name="getCampaignListResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getAllAdWordsCampaigns">
+
+         <wsdl:input message="impl:getAllAdWordsCampaignsRequest" name="getAllAdWordsCampaignsRequest"/>
+
+         <wsdl:output message="impl:getAllAdWordsCampaignsResponse" name="getAllAdWordsCampaignsResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="addCampaign">
+
+         <wsdl:input message="impl:addCampaignRequest" name="addCampaignRequest"/>
+
+         <wsdl:output message="impl:addCampaignResponse" name="addCampaignResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="addCampaignList">
+
+         <wsdl:input message="impl:addCampaignListRequest" name="addCampaignListRequest"/>
+
+         <wsdl:output message="impl:addCampaignListResponse" name="addCampaignListResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="updateCampaign">
+
+         <wsdl:input message="impl:updateCampaignRequest" name="updateCampaignRequest"/>
+
+         <wsdl:output message="impl:updateCampaignResponse" name="updateCampaignResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="updateCampaignList">
+
+         <wsdl:input message="impl:updateCampaignListRequest" name="updateCampaignListRequest"/>
+
+         <wsdl:output message="impl:updateCampaignListResponse" name="updateCampaignListResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getOptimizeAdServing">
+
+         <wsdl:input message="impl:getOptimizeAdServingRequest" name="getOptimizeAdServingRequest"/>
+
+         <wsdl:output message="impl:getOptimizeAdServingResponse" name="getOptimizeAdServingResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="setOptimizeAdServing">
+
+         <wsdl:input message="impl:setOptimizeAdServingRequest" name="setOptimizeAdServingRequest"/>
+
+         <wsdl:output message="impl:setOptimizeAdServingResponse" name="setOptimizeAdServingResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getCampaignStats">
+
+         <wsdl:input message="impl:getCampaignStatsRequest" name="getCampaignStatsRequest"/>
+
+         <wsdl:output message="impl:getCampaignStatsResponse" name="getCampaignStatsResponse"/>
+
+         <wsdl:fault message="impl:ApiException" name="ApiException"/>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="CampaignServiceSoapBinding" type="impl:CampaignService">
+
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="getCampaign">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getCampaignRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getCampaignResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getCampaignList">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getCampaignListRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getCampaignListResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getAllAdWordsCampaigns">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getAllAdWordsCampaignsRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getAllAdWordsCampaignsResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="addCampaign">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="addCampaignRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="addCampaignResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="addCampaignList">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="addCampaignListRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="addCampaignListResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="updateCampaign">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="updateCampaignRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="updateCampaignResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="updateCampaignList">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="updateCampaignListRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="updateCampaignListResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getOptimizeAdServing">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getOptimizeAdServingRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getOptimizeAdServingResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="setOptimizeAdServing">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="setOptimizeAdServingRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="setOptimizeAdServingResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body namespace="https://adwords.google.com/api/adwords/v2" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getCampaignStats">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getCampaignStatsRequest"><wsdlsoap:header message="impl:email" part="email" use="literal"/><wsdlsoap:header message="impl:clientEmail" part="clientEmail" use="literal"/><wsdlsoap:header message="impl:password" part="password" use="literal"/><wsdlsoap:header message="impl:useragent" part="useragent" use="literal"/><wsdlsoap:header message="impl:token" part="token" use="literal"/>
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getCampaignStatsResponse">
+         
+            <wsdlsoap:header message="impl:responseTime" part="responseTime" use="literal"/>
+            <wsdlsoap:header message="impl:operations" part="operations" use="literal"/>
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="ApiException">
+
+            <wsdlsoap:fault name="ApiException" use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="CampaignServiceService">
+
+      <wsdl:port binding="impl:CampaignServiceSoapBinding" name="CampaignService">
+
+         <wsdlsoap:address location="https://adwords.google.com/api/adwords/v2/CampaignService"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>
