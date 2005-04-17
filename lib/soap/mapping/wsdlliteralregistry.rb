@@ -83,12 +83,12 @@ private
       end
       o.elename = ele.name
     elsif ele.local_complextype
-      o = SOAPElement.new(ele.name)
-      ele.local_complextype.each_element do |child_ele|
-        o.add(_obj2soap(Mapping.get_attribute(obj, child_ele.name.name),
-          child_ele))
-      end
+      o = obj2type(obj, ele.local_complextype)
+      o.elename = ele.name
       add_attributes2soap(obj, o)
+    elsif ele.local_simpletype
+      o = obj2type(obj, ele.local_simpletype)
+      o.elename = ele.name
     else
       raise MappingError.new('illegal schema?')
     end
@@ -112,8 +112,19 @@ private
   def complex2soap(obj, type)
     o = SOAPElement.new(type.name)
     type.each_element do |child_ele|
-      o.add(_obj2soap(Mapping.get_attribute(obj, child_ele.name.name),
-        child_ele))
+      child = Mapping.get_attribute(obj, child_ele.name.name)
+      if child.nil?
+        if child_ele.nillable
+          # ToDo: empty element should be added?
+          o.add(_obj2soap(nil))
+        elsif Integer(child_ele.minoccurs) == 0
+          # nothing to do
+        else
+          raise MappingError.new("nil not allowed: #{child_ele.name.name}")
+        end
+      else
+        o.add(_obj2soap(child, child_ele))
+      end
     end
     o
   end
@@ -160,7 +171,8 @@ private
     attributes = schema_attribute_definition(obj.class)
     if attributes
       attributes.each do |attrname, param|
-        attr = Mapping.get_attribute(obj, 'attr_' + attrname)
+        attr = obj.__send__('attr_' +
+          XSD::CodeGen::GenSupport.safevarname(attrname))
         ele.extraattr[attrname] = attr
       end
     end
@@ -233,7 +245,7 @@ private
               child = soapele2obj(value, klass)
             end
           else
-            raise MappingError.new("Unknown class: #{class_name}")
+            raise MappingError.new("unknown class: #{class_name}")
           end
         else      # untyped element is treated as anyType.
           child = soapele2obj(value)
