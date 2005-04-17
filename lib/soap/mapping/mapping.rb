@@ -237,10 +237,11 @@ module Mapping
       obj[attr_name] || obj[attr_name.intern]
     else
       name = XSD::CodeGen::GenSupport.safevarname(attr_name)
-      if obj.respond_to?(name)
-        obj.__send__(name)
-      else
+      if obj.instance_variables.include?('@' + name)
         obj.instance_variable_get('@' + name)
+      elsif ((obj.is_a?(::Struct) or obj.is_a?(Marshallable)) and
+          obj.respond_to?(name))
+        obj.__send__(name)
       end
     end
   end
