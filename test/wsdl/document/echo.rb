@@ -1,12 +1,14 @@
-# urn:docrpc
+require 'xsd/qname'
+
+# {urn:docrpc}echoele
 class Echoele
   @@schema_type = "echoele"
   @@schema_ns = "urn:docrpc"
-  @@schema_attribute = {"attr_string" => "SOAP::SOAPString", "attr_int" => "SOAP::SOAPInt"}
-  @@schema_element = [["struct1", "Echo_struct"], ["struct2", "Echo_struct"]]
+  @@schema_attribute = {"attr_string" => "SOAP::SOAPString", "attr-int" => "SOAP::SOAPInt"}
+  @@schema_element = [["struct1", "Echo_struct"], ["struct_2", ["Echo_struct", XSD::QName.new(nil, "struct-2")]]]
 
   attr_accessor :struct1
-  attr_accessor :struct2
+  attr_accessor :struct_2
 
   def attr_attr_string
     (@__soap_attribute ||= {})["attr_string"]
@@ -17,29 +19,29 @@ class Echoele
   end
 
   def attr_attr_int
-    (@__soap_attribute ||= {})["attr_int"]
+    (@__soap_attribute ||= {})["attr-int"]
   end
 
   def attr_attr_int=(value)
-    (@__soap_attribute ||= {})["attr_int"] = value
+    (@__soap_attribute ||= {})["attr-int"] = value
   end
 
-  def initialize(struct1 = nil, struct2 = nil)
+  def initialize(struct1 = nil, struct_2 = nil)
     @struct1 = struct1
-    @struct2 = struct2
+    @struct_2 = struct_2
     @__soap_attribute = {}
   end
 end
 
-# urn:docrpc
+# {urn:docrpc}echo_response
 class Echo_response
   @@schema_type = "echo_response"
   @@schema_ns = "urn:docrpc"
-  @@schema_attribute = {"attr_string" => "SOAP::SOAPString", "attr_int" => "SOAP::SOAPInt"}
-  @@schema_element = [["struct1", "Echo_struct"], ["struct2", "Echo_struct"]]
+  @@schema_attribute = {"attr_string" => "SOAP::SOAPString", "attr-int" => "SOAP::SOAPInt"}
+  @@schema_element = [["struct1", "Echo_struct"], ["struct_2", ["Echo_struct", XSD::QName.new(nil, "struct-2")]]]
 
   attr_accessor :struct1
-  attr_accessor :struct2
+  attr_accessor :struct_2
 
   def attr_attr_string
     (@__soap_attribute ||= {})["attr_string"]
@@ -50,21 +52,21 @@ class Echo_response
   end
 
   def attr_attr_int
-    (@__soap_attribute ||= {})["attr_int"]
+    (@__soap_attribute ||= {})["attr-int"]
   end
 
   def attr_attr_int=(value)
-    (@__soap_attribute ||= {})["attr_int"] = value
+    (@__soap_attribute ||= {})["attr-int"] = value
   end
 
-  def initialize(struct1 = nil, struct2 = nil)
+  def initialize(struct1 = nil, struct_2 = nil)
     @struct1 = struct1
-    @struct2 = struct2
+    @struct_2 = struct_2
     @__soap_attribute = {}
   end
 end
 
-# urn:docrpc
+# {urn:docrpc}echo_struct
 class Echo_struct
   @@schema_type = "echo_struct"
   @@schema_ns = "urn:docrpc"
