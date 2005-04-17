@@ -69,7 +69,7 @@ private
   def dump_simpletype
     @simpletypes.collect { |type|
       dump_simpletypedef(type.name, type)
-    }.join("\n")
+    }.compact.join("\n")
   end
 
   def dump_complextype
@@ -93,7 +93,7 @@ private
 
   def dump_simpletypedef(qname, simpletype)
     if !simpletype.restriction or simpletype.restriction.enumeration.empty?
-      return ''
+      return nil
     end
     c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
     c.comment = "#{qname}"
