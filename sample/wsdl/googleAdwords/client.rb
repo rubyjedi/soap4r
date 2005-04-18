@@ -15,7 +15,10 @@ class HeaderHandler < SOAP::Header::SimpleHandler
   end
 end
 
+# To generate deafult.rb, do like this;
+# % wsdl2ruby.rb --wsdl "https://adwords.google.com/api/adwords/v2/CampaignService?WSDL" --classdef --force
 require 'default'
+
 # I don't have an account of AdWords so the following code is not tested.
 # Please tell me (nahi@ruby-lang.org) if you will get good/bad result in
 # communicating with AdWords Server...
