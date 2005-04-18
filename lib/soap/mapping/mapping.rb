@@ -175,24 +175,42 @@ module Mapping
     }
   end
 
-  def self.class_from_name(name, lenient = false)
-    klass = ::Object
-    name.split('::').each do |klass_str|
-      if XSD::CodeGen::GenSupport.safeconstname?(klass_str)
-        if klass.const_defined?(klass_str)
-          klass = klass.const_get(klass_str)
+  def self.const_from_name(name, lenient = false)
+    const = ::Object
+    name.sub(/\A::/, '').split('::').each do |const_str|
+      if XSD::CodeGen::GenSupport.safeconstname?(const_str)
+        if const.const_defined?(const_str)
+          const = const.const_get(const_str)
           next
         end
       elsif lenient
-        klass_str = XSD::CodeGen::GenSupport.safeconstname(klass_str)
-        if klass.const_defined?(klass_str)
-          klass = klass.const_get(klass_str)
+        const_str = XSD::CodeGen::GenSupport.safeconstname(const_str)
+        if const.const_defined?(const_str)
+          const = const.const_get(const_str)
           next
         end
       end
       return nil
     end
-    klass
+    const
+  end
+
+  def self.class_from_name(name, lenient = false)
+    const = const_from_name(name, lenient)
+    if const.is_a?(::Class)
+      const
+    else
+      nil
+    end
+  end
+
+  def self.module_from_name(name, lenient = false)
+    const = const_from_name(name, lenient)
+    if const.is_a?(::Module)
+      const
+    else
+      nil
+    end
   end
 
   def self.class2qname(klass)
