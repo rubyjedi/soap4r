@@ -458,7 +458,7 @@ private
     def addextend2obj(obj, attr)
       return unless attr
       attr.split(/ /).reverse_each do |mstr|
-	obj.extend(Mapping.class_from_name(mstr))
+	obj.extend(Mapping.module_from_name(mstr))
       end
     end
   else
@@ -466,8 +466,8 @@ private
     def addextend2obj(obj, attr)
       return unless attr
       attr.split(/ /).reverse_each do |mstr|
-	m = Mapping.class_from_name(mstr)
-	obj.extend(m) if m.class == Module
+	m = Mapping.module_from_name(mstr)
+	obj.extend(m)
       end
     end
   end
