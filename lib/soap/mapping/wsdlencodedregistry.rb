@@ -63,8 +63,20 @@ class WSDLEncodedRegistry
   end
 
   # map anything for now: must refer WSDL while mapping.  [ToDo]
-  def soap2obj(node)
-    Mapping.soap2obj(node)
+  def soap2obj(node, obj_class = nil)
+    begin
+      return Mapping.soap2obj(node)
+    rescue MappingError
+    end
+    if @excn_handler_soap2obj
+      begin
+        return @excn_handler_soap2obj.call(node) { |yield_node|
+	    Mapping._soap2obj(yield_node, self)
+	  }
+      rescue Exception
+      end
+    end
+    raise MappingError.new("cannot map #{node.type.name} to Ruby object")
   end
 
 private
