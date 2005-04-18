@@ -115,7 +115,8 @@ private
       child = Mapping.get_attribute(obj, child_ele.name.name)
       if child.nil?
         if child_ele.nillable
-          # ToDo: empty element should be added?
+          # ToDo: test
+          # add empty element
           o.add(_obj2soap(nil))
         elsif Integer(child_ele.minoccurs) == 0
           # nothing to do
@@ -207,18 +208,11 @@ private
     if obj_class and obj_class.class_variables.include?('@@schema_element')
       soapele2definedobj(node, obj_class)
     elsif node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
-      obj = soapele2undefinedobj(node)
+      soapele2undefinedobj(node)
     else
       result, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
       obj
     end
-  end
-
-  def soapele2undefinedobj(node)
-    obj = anytype2obj(node)
-    add_elements2undefinedobj(node, obj)
-    add_attributes2undefinedobj(node, obj)
-    obj
   end
 
   def soapele2definedobj(node, obj_class)
@@ -228,36 +222,41 @@ private
     obj
   end
 
+  def soapele2undefinedobj(node)
+    obj = anytype2obj(node)
+    add_elements2undefinedobj(node, obj)
+    add_attributes2undefinedobj(node, obj)
+    obj
+  end
+
   def add_elements2obj(node, obj)
     elements, as_array = schema_element_definition(obj.class)
-    if elements
-      vars = {}
-      node.each do |name, value|
-        if class_name = elements[name]
-          if klass = Mapping.class_from_name(class_name)
-            if klass.ancestors.include?(::SOAP::SOAPBasetype)
-              if value.respond_to?(:data)
-                child = klass.new(value.data).data
-              else
-                child = klass.new(nil).data
-              end
+    vars = {}
+    node.each do |name, value|
+      if class_name = elements[name]
+        if klass = Mapping.class_from_name(class_name)
+          if klass.ancestors.include?(::SOAP::SOAPBasetype)
+            if value.respond_to?(:data)
+              child = klass.new(value.data).data
             else
-              child = soapele2obj(value, klass)
+              child = klass.new(nil).data
             end
           else
-            raise MappingError.new("unknown class: #{class_name}")
+            child = soapele2obj(value, klass)
           end
-        else      # untyped element is treated as anyType.
-          child = soapele2obj(value)
-        end
-        if as_array.include?(class_name)
-          (vars[name] ||= []) << child
         else
-          vars[name] = child
+          raise MappingError.new("unknown class: #{class_name}")
         end
+      else      # untyped element is treated as anyType.
+        child = soapele2obj(value)
       end
-      Mapping.set_attributes(obj, vars)
+      if as_array.include?(class_name)
+        (vars[name] ||= []) << child
+      else
+        vars[name] = child
+      end
     end
+    Mapping.set_attributes(obj, vars)
   end
 
   def add_attributes2obj(node, obj)
