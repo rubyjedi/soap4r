@@ -20,6 +20,14 @@ class Info
     @id = nil
   end
 
+  def inspect
+    if self.respond_to?(:name)
+      sprintf("#<%s:0x%x %s>", self.class.name, __id__, self.name)
+    else
+      sprintf("#<%s:0x%x>", self.class.name, __id__)
+    end
+  end
+
   def parse_element(element); end	# abstract
   
   def parse_attr(attr, value); end	# abstract
