@@ -56,6 +56,14 @@ module SOAPType
     @extraattr = {}
   end
 
+  def inspect
+    if self.is_a?(XSD::NSDBase)
+      sprintf("#<%s:0x%x %s %s>", self.class.name, __id__, self.elename, self.type)
+    else
+      sprintf("#<%s:0x%x %s>", self.class.name, __id__, self.elename)
+    end
+  end
+
   def rootnode
     node = self
     while node = node.parent
@@ -526,6 +534,10 @@ class SOAPElement
     @array = []
     @data = []
     @text = text
+  end
+
+  def inspect
+    sprintf("#<%s:0x%x %s>", self.class.name, __id__, self.elename)
   end
 
   # Text interface.

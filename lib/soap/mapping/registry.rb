@@ -69,6 +69,11 @@ class Object; include Marshallable
     @__soap_attribute = {}
   end
 
+  def inspect
+    sprintf("#<%s:0x%x%s>", self.class.name, __id__,
+      @__soap_value.collect { |name, value| " #{name}=#{value.inspect}" }.join)
+  end
+
   def __soap_attribute
     @__soap_attribute
   end
