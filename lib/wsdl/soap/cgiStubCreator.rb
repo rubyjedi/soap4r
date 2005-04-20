@@ -27,7 +27,7 @@ class CGIStubCreator
 
   def dump(service_name)
     STDERR.puts "!!! IMPORTANT !!!"
-    STDERR.puts "- CGI stub can only 1 port.  Creating stub for the first port...  Rests are ignored."
+    STDERR.puts "- CGI stub can have only 1 port.  Creating stub for the first port...  Rests are ignored."
     STDERR.puts "!!! IMPORTANT !!!"
     port = @definitions.service(service_name).ports[0]
     dump_porttype(port.porttype.name)

@@ -28,7 +28,7 @@ class StandaloneServerStubCreator
   def dump(service_name)
     STDERR.puts "!!! IMPORTANT !!!"
     STDERR.puts "- Standalone stub can have only 1 port for now.  So creating stub for the first port and rests are ignored."
-    STDERR.puts "- Standalone server stub ignores port location defined in WSDL.  Location is http://localhost:10080/ by default.  Generated client from WSDL must be configured to point this endpoint by hand."
+    STDERR.puts "- Standalone server stub ignores port location defined in WSDL.  Location is http://localhost:10080/ by default.  Generated client from WSDL must be configured to point this endpoint manually."
     STDERR.puts "!!! IMPORTANT !!!"
     port = @definitions.service(service_name).ports[0]
     dump_porttype(port.porttype.name)
