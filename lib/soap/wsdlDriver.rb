@@ -13,6 +13,7 @@ require 'xsd/codegen/gensupport'
 require 'soap/mapping/wsdlencodedregistry'
 require 'soap/mapping/wsdlliteralregistry'
 require 'soap/rpc/driver'
+require 'wsdl/soap/methodDefCreator'
 
 
 module SOAP
@@ -25,6 +26,7 @@ class WSDLDriverFactory
 
   def initialize(wsdl)
     @wsdl = import(wsdl)
+    @methoddefcreator = WSDL::SOAP::MethodDefCreator.new(@wsdl)
   end
   
   def inspect
@@ -119,42 +121,29 @@ private
 
   def create_param_def(op_bind)
     op = op_bind.find_operation
-    result = []
-    inputparts = op.inputparts
-    if op_bind.input.soapbody.parts
-      inputparts = filter_parts(op_bind.input.soapbody.parts, inputparts)
-    end
-    inputparts.each do |part|
-      result << param_def(::SOAP::RPC::SOAPMethod::IN, partqname(part))
-    end
-    outputparts = op.outputparts
-    if op_bind.output.soapbody.parts
-      outputparts = filter_parts(op_bind.output.soapbody.parts, outputparts)
-    end
     if op_bind.soapoperation_style == :rpc
-      part = outputparts.shift
-      result << param_def(::SOAP::RPC::SOAPMethod::RETVAL, partqname(part))
-      outputparts.each do |part|
-        result << param_def(::SOAP::RPC::SOAPMethod::OUT, partqname(part))
-      end
+      param_def = @methoddefcreator.collect_rpcparameter(op)
     else
-      outputparts.each do |part|
-        result << param_def(::SOAP::RPC::SOAPMethod::OUT, partqname(part))
-      end
+      param_def = @methoddefcreator.collect_documentparameter(op)
     end
-    result
+    # the first element of typedef in param_def is a String like
+    # "::SOAP::SOAPStruct".  turn this String to a class.
+    param_def.collect { |io, typedef, name|
+      typedef[0] = Mapping.class_from_name(typedef[0])
+      [io, name, typedef]
+    }
   end
 
   def partqname(part)
     if part.type
-      XSD::QName.new(@wsdl.targetnamespace, part.name)
+      part.type
     else
       part.element
     end
   end
 
-  def param_def(type, partqname)
-    [type, partqname.name, [nil, partqname.namespace, partqname.name]]
+  def param_def(type, name, klass, partqname)
+    [type, name, [klass, partqname.namespace, partqname.name]]
   end
 
   def filter_parts(partsdef, partssource)
