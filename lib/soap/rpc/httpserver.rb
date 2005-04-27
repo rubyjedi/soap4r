@@ -54,6 +54,14 @@ class HTTPServer < Logger::Application
     @router.mapping_registry = mapping_registry
   end
 
+  def generate_explicit_type
+    @router.generate_explicit_type
+  end
+
+  def generate_explicit_type=(generate_explicit_type)
+    @router.generate_explicit_type = generate_explicit_type
+  end
+
   # servant entry interface
 
   def add_rpc_request_servant(factory, namespace = @default_namespace)

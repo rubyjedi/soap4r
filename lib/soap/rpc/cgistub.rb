@@ -70,6 +70,14 @@ class CGIStub < Logger::Application
     @router.mapping_registry = value
   end
 
+  def generate_explicit_type
+    @router.generate_explicit_type
+  end
+
+  def generate_explicit_type=(generate_explicit_type)
+    @router.generate_explicit_type = generate_explicit_type
+  end
+
   # servant entry interface
 
   def add_rpc_servant(obj, namespace = @default_namespace)
