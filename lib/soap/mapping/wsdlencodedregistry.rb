@@ -6,6 +6,8 @@
 # either the dual license version in 2003, or any later version.
 
 
+require 'xsd/qname'
+require 'xsd/namedelements'
 require 'soap/baseData'
 require 'soap/mapping/mapping'
 require 'soap/mapping/typeMap'
