@@ -22,7 +22,7 @@
     <part name="parameters" element="tns:get_foo" />
   </message>
   <message name="get_foo_out">
-    <part name="parameters" element="xsd:string" />
+    <part name="parameters" type="xsd:string" />
   </message>
 
   <portType name="foo_porttype">
