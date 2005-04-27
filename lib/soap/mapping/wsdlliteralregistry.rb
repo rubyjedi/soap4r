@@ -17,7 +17,7 @@ module SOAP
 module Mapping
 
 
-class WSDLLiteralRegistry
+class WSDLLiteralRegistry < Registry
   attr_reader :definedelements
   attr_reader :definedtypes
   attr_accessor :excn_handler_obj2soap
@@ -53,7 +53,10 @@ class WSDLLiteralRegistry
   end
 
   # node should be a SOAPElement
-  def soap2obj(node)
+  def soap2obj(node, obj_class = nil)
+    unless obj_class.nil?
+      raise MappingError.new("must not reach here")
+    end
     begin
       return soapele2obj(node)
     rescue MappingError
@@ -208,6 +211,7 @@ private
     if obj_class and obj_class.class_variables.include?('@@schema_element')
       soapele2definedobj(node, obj_class)
     elsif node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
+        # SOAPArray for literal?
       soapele2undefinedobj(node)
     else
       result, obj = @rubytype_factory.soap2obj(nil, node, nil, self)

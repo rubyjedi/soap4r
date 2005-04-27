@@ -12,6 +12,8 @@
 	<xsd:all>
 	  <xsd:element name="family-name" type="xsd:string" />
 	  <xsd:element name="given_name" type="xsd:string" />
+	  <xsd:element name="age" type="xsd:int" />
+	  <xsd:element name="link" type="txd:person" />
 	</xsd:all>
       </xsd:complexType>
     </xsd:schema>
@@ -31,11 +33,29 @@
       <input message="tns:echo_in"/>
       <output message="tns:echo_out"/>
     </operation>
+
+    <operation name="echo_err">
+      <input message="tns:echo_in"/>
+      <output message="tns:echo_out"/>
+    </operation>
   </portType>
 
   <binding name="echo_binding" type="tns:echo_port_type">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
     <operation name="echo">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded" namespace="urn:rpc"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <soap:body use="encoded" namespace="urn:rpc"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="echo_err">
+      <soap:operation soapAction=""/>
       <input>
         <soap:body use="encoded" namespace="urn:rpc"
 	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>

@@ -25,11 +25,11 @@ class MethodDefCreator
     @simpletypes = @definitions.collect_simpletypes
     @complextypes = @definitions.collect_complextypes
     @elements = @definitions.collect_elements
-    @types = nil
+    @types = []
   end
 
   def dump(porttype)
-    @types = []
+    @types.clear
     result = ""
     operations = @definitions.porttype(porttype).operations
     binding = @definitions.porttype_binding(porttype)
@@ -41,31 +41,6 @@ class MethodDefCreator
       result << dump_method(operation, op_bind).chomp
     end
     return result, @types
-  end
-
-private
-
-  def dump_method(operation, binding)
-    name = safemethodname(operation.name.name)
-    name_as = operation.name.name
-    style = binding.soapoperation_style
-    namespace = binding.input.soapbody.namespace
-    if style == :rpc
-      paramstr = param2str(collect_rpcparameter(operation))
-    else
-      paramstr = param2str(collect_documentparameter(operation))
-    end
-    if paramstr.empty?
-      paramstr = '[]'
-    else
-      paramstr = "[\n" << paramstr.gsub(/^/, '    ') << "\n  ]"
-    end
-    return <<__EOD__
-[#{dq(name_as)}, #{dq(name)},
-  #{paramstr},
-  #{ndq(binding.soapaction)}, #{ndq(namespace)}, #{sym(style.id2name)}
-]
-__EOD__
   end
 
   def collect_rpcparameter(operation)
@@ -101,22 +76,52 @@ __EOD__
     param
   end
 
+private
+
+  def dump_method(operation, binding)
+    name = safemethodname(operation.name.name)
+    name_as = operation.name.name
+    style = binding.soapoperation_style
+    namespace = binding.input.soapbody.namespace
+    if style == :rpc
+      paramstr = param2str(collect_rpcparameter(operation))
+    else
+      paramstr = param2str(collect_documentparameter(operation))
+    end
+    if paramstr.empty?
+      paramstr = '[]'
+    else
+      paramstr = "[\n" << paramstr.gsub(/^/, '    ') << "\n  ]"
+    end
+    return <<__EOD__
+[#{dq(name_as)}, #{dq(name)},
+  #{paramstr},
+  #{ndq(binding.soapaction)}, #{ndq(namespace)}, #{sym(style.id2name)}
+]
+__EOD__
+  end
+
   def rpcdefinedtype(part)
     if mapped = basetype_mapped_class(part.type)
       ['::' + mapped.name]
     elsif definedtype = @simpletypes[part.type]
       ['::' + basetype_mapped_class(definedtype.base).name]
     elsif definedtype = @elements[part.element]
-      ['::SOAP::SOAPStruct', part.element.namespace, part.element.name]
+      #['::SOAP::SOAPStruct', part.element.namespace, part.element.name]
+      ['nil', part.element.namespace, part.element.name]
     elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
-      when :TYPE_STRUCT, :TYPE_MAP
-	['::SOAP::SOAPStruct', part.type.namespace, part.type.name]
+      when :TYPE_STRUCT
+        type = create_class_name(part.type)
+	[type, part.type.namespace, part.type.name]
+      when :TYPE_MAP
+	[Hash.name, part.type.namespace, part.type.name]
       when :TYPE_ARRAY
 	arytype = definedtype.find_arytype || XSD::AnyTypeName
 	ns = arytype.namespace
 	name = arytype.name.sub(/\[(?:,)*\]$/, '')
-	['::SOAP::SOAPArray', ns, name]
+        type = create_class_name(XSD::QName.new(ns, name))
+	[type + '[]', ns, name]
       else
 	raise NotImplementedError.new("must not reach here")
       end
@@ -146,6 +151,7 @@ __EOD__
   def collect_type(type)
     # ignore inline type definition.
     return if type.nil?
+    return if @types.include?(type)
     @types << type
     return unless @complextypes[type]
     @complextypes[type].each_element do |element|

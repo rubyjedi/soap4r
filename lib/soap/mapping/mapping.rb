@@ -23,10 +23,12 @@ module Mapping
   # TraverseSupport breaks Thread.current[:SOAPMarshalDataKey].
   module TraverseSupport
     def mark_marshalled_obj(obj, soap_obj)
+      raise if obj.nil?
       Thread.current[:SOAPMarshalDataKey][obj.__id__] = soap_obj
     end
 
     def mark_unmarshalled_obj(node, obj)
+      return if obj.nil?
       # node.id is not Object#id but SOAPReference#id
       Thread.current[:SOAPMarshalDataKey][node.id] = obj
     end
@@ -41,10 +43,10 @@ module Mapping
     soap_obj
   end
 
-  def self.soap2obj(node, registry = nil)
+  def self.soap2obj(node, registry = nil, klass = nil)
     registry ||= Mapping::DefaultRegistry
     Thread.current[:SOAPMarshalDataKey] = {}
-    obj = _soap2obj(node, registry)
+    obj = _soap2obj(node, registry, klass)
     Thread.current[:SOAPMarshalDataKey] = nil
     obj
   end
@@ -111,17 +113,17 @@ module Mapping
     end
   end
 
-  def self._soap2obj(node, registry)
+  def self._soap2obj(node, registry, klass = nil)
     if node.is_a?(SOAPReference)
       target = node.__getobj__
       # target.id is not Object#id but SOAPReference#id
       if referent = Thread.current[:SOAPMarshalDataKey][target.id]
         return referent
       else
-        return _soap2obj(target, registry)
+        return _soap2obj(target, registry, klass)
       end
     end
-    return registry.soap2obj(node)
+    return registry.soap2obj(node, klass)
   end
 
   if Object.respond_to?(:allocate)

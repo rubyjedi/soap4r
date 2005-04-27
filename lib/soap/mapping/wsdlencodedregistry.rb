@@ -15,7 +15,7 @@ module SOAP
 module Mapping
 
 
-class WSDLEncodedRegistry
+class WSDLEncodedRegistry < Registry
   include TraverseSupport
 
   attr_reader :definedelements
@@ -33,6 +33,7 @@ class WSDLEncodedRegistry
       :allow_untyped_struct => true,
       :allow_original_mapping => true
     )
+    @schema_element_cache = {}
   end
 
   def obj2soap(obj, type_qname = nil)
@@ -65,7 +66,7 @@ class WSDLEncodedRegistry
   # map anything for now: must refer WSDL while mapping.  [ToDo]
   def soap2obj(node, obj_class = nil)
     begin
-      return Mapping.soap2obj(node)
+      return _soap2obj(node, obj_class)
     rescue MappingError
     end
     if @excn_handler_soap2obj
@@ -111,8 +112,9 @@ private
   end
 
   def simple2soap(obj, type)
-    o = base2soap(obj, TypeMap[type.base])
     type.check_lexical_format(obj)
+    return SOAPNil.new if obj.nil?      # ToDo: check nillable.
+    o = base2soap(obj, TypeMap[type.base])
     o
   end
 
@@ -144,18 +146,24 @@ private
   end
 
   def struct2soap(obj, type_qname, type)
+    return SOAPNil.new if obj.nil?      # ToDo: check nillable.
     soap_obj = SOAPStruct.new(type_qname)
-    mark_marshalled_obj(obj, soap_obj)
-    elements2soap(obj, soap_obj, type.content.elements)
+    unless obj.nil?
+      mark_marshalled_obj(obj, soap_obj)
+      elements2soap(obj, soap_obj, type.content.elements)
+    end
     soap_obj
   end
 
   def array2soap(obj, type_qname, type)
+    return SOAPNil.new if obj.nil?      # ToDo: check nillable.
     arytype = type.child_type
     soap_obj = SOAPArray.new(ValueArrayName, 1, arytype)
-    mark_marshalled_obj(obj, soap_obj)
-    obj.each do |item|
-      soap_obj.add(Mapping._obj2soap(item, self, arytype))
+    unless obj.nil?
+      mark_marshalled_obj(obj, soap_obj)
+      obj.each do |item|
+        soap_obj.add(Mapping._obj2soap(item, self, arytype))
+      end
     end
     soap_obj
   end
@@ -163,16 +171,19 @@ private
   MapKeyName = XSD::QName.new(nil, "key")
   MapValueName = XSD::QName.new(nil, "value")
   def map2soap(obj, type_qname, type)
+    return SOAPNil.new if obj.nil?      # ToDo: check nillable.
     keytype = type.child_type(MapKeyName) || XSD::AnyTypeName
     valuetype = type.child_type(MapValueName) || XSD::AnyTypeName
     soap_obj = SOAPStruct.new(MapQName)
-    mark_marshalled_obj(obj, soap_obj)
-    obj.each do |key, value|
-      elem = SOAPStruct.new
-      elem.add("key", Mapping._obj2soap(key, self, keytype))
-      elem.add("value", Mapping._obj2soap(value, self, valuetype))
-      # ApacheAxis allows only 'item' here.
-      soap_obj.add("item", elem)
+    unless obj.nil?
+      mark_marshalled_obj(obj, soap_obj)
+      obj.each do |key, value|
+        elem = SOAPStruct.new
+        elem.add("key", Mapping._obj2soap(key, self, keytype))
+        elem.add("value", Mapping._obj2soap(value, self, valuetype))
+        # ApacheAxis allows only 'item' here.
+        soap_obj.add("item", elem)
+      end
     end
     soap_obj
   end
@@ -184,6 +195,59 @@ private
       soap_obj.add(name,
         Mapping._obj2soap(child_obj, self, element.type || element.name))
     end
+  end
+
+  def _soap2obj(node, obj_class)
+    unless obj_class
+      typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
+      obj_class = Mapping.class_from_name(typestr)
+    end
+    if obj_class and obj_class.class_variables.include?('@@schema_element')
+      soap2definedobj(node, obj_class)
+    else
+      Mapping.soap2obj(node, nil, obj_class)
+    end
+  end
+
+  def soap2definedobj(node, obj_class)
+    obj = Mapping.create_empty_object(obj_class)
+    unless node.is_a?(SOAPNil)
+      add_elements2obj(node, obj)
+    end
+    obj
+  end
+
+  def add_elements2obj(node, obj)
+    elements, as_array = schema_element_definition(obj.class)
+    vars = {}
+    node.each do |name, value|
+      if class_name = elements[name]
+        if klass = Mapping.class_from_name(class_name)
+          # klass must be a SOAPBasetype or a class
+          if klass.ancestors.include?(::SOAP::SOAPBasetype)
+            if value.respond_to?(:data)
+              child = klass.new(value.data).data
+            else
+              child = klass.new(nil).data
+            end
+          else
+            child = Mapping._soap2obj(value, self, klass)
+          end
+        else
+          raise MappingError.new("unknown class: #{class_name}")
+        end
+      else      # untyped element is treated as anyType.
+        child = Mapping._soap2obj(value, self)
+      end
+      vars[name] = child
+    end
+    Mapping.set_attributes(obj, vars)
+  end
+
+  # it caches @@schema_element.  this means that @@schema_element must not be
+  # changed while a lifetime of a WSDLLiteralRegistry.
+  def schema_element_definition(klass)
+    @schema_element_cache[klass] ||= Mapping.schema_element_definition(klass)
   end
 end
 

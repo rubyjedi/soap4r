@@ -11,13 +11,29 @@ module WSDL; module RPC
 class TestRPC < Test::Unit::TestCase
   class Server < ::SOAP::RPC::StandaloneServer
     def on_init
+      self.generate_explicit_type = false
       add_rpc_method(self, 'echo', 'arg1', 'arg2')
+      add_rpc_method(self, 'echo_err', 'arg1', 'arg2')
     end
   
+    DummyPerson = Struct.new("family-name".intern, :given_name)
     def echo(arg1, arg2)
-      arg1.family_name = arg2.family_name
-      arg1.given_name = arg2.given_name
-      arg1
+      case arg1.family_name
+      when 'normal'
+        arg1.family_name = arg2.family_name
+        arg1.given_name = arg2.given_name
+        arg1.age = arg2.age
+        arg1
+      when 'dummy'
+        DummyPerson.new("family-name", "given_name")
+      else
+        raise
+      end
+    end
+  
+    ErrPerson = Struct.new(:given_name, :no_such_element)
+    def echo_err(arg1, arg2)
+      ErrPerson.new(58, Time.now)
     end
   end
 
@@ -78,9 +94,23 @@ class TestRPC < Test::Unit::TestCase
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
 
-    ret = @client.echo(Person.new("Na", "Hi"), Person.new("Hi", "Na"))
+    ret = @client.echo(Person.new("normal", "", 12), Person.new("Hi", "Na", 21))
+    assert_equal(Person, ret.class)
     assert_equal("Hi", ret.family_name)
     assert_equal("Na", ret.given_name)
+    assert_equal(21, ret.age)
+
+    ret = @client.echo(Person.new("dummy", "", 12), Person.new("Hi", "Na", 21))
+    assert_equal(Person, ret.class)
+    assert_equal("family-name", ret.family_name)
+    assert_equal("given_name", ret.given_name)
+    assert_equal(nil, ret.age)
+
+    ret = @client.echo_err(Person.new("Na", "Hi"), Person.new("Hi", "Na"))
+    assert_equal(Person, ret.class)
+    assert_equal("58", ret.given_name)
+    assert_equal(nil, ret.family_name)
+    assert_equal(nil, ret.age)
   end
 end
 
