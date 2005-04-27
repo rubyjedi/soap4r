@@ -100,8 +100,8 @@ public
   alias add_rpc_method add_rpc_operation
   alias add_document_method add_document_operation
 
-  def invoke(req_header, req_body, opt = create_options)
-    opt = create_options
+  def invoke(req_header, req_body, opt = nil)
+    opt ||= create_options
     route(req_header, req_body, opt, opt)
   end
 
@@ -249,7 +249,7 @@ private
         @doc_request_qnames = []
         @doc_response_qnames = []
         param_def.each do |inout, paramname, typeinfo|
-          klass, nsdef, namedef = typeinfo
+          klass_not_used, nsdef, namedef = typeinfo
           if namedef.nil?
             raise MethodDefinitionError.new("qname must be given")
           end
@@ -386,11 +386,12 @@ private
     def response_rpc_enc(body, mapping_registry)
       ret = nil
       if body.response
-        ret = Mapping.soap2obj(body.response, mapping_registry)
+        ret = Mapping.soap2obj(body.response, mapping_registry,
+          @rpc_method_factory.retavl_class_name)
       end
       if body.outparams
         outparams = body.outparams.collect { |outparam|
-          Mapping.soap2obj(outparam)
+          Mapping.soap2obj(outparam, mapping_regisry)
         }
         [ret].concat(outparams)
       else
@@ -400,7 +401,8 @@ private
 
     def response_rpc_lit(body, mapping_registry)
       body.root_node.collect { |key, value|
-        Mapping.soap2obj(value, mapping_registry)
+        Mapping.soap2obj(value, mapping_registry,
+          @rpc_method_factory.retavl_class_name)
       }
     end
 
