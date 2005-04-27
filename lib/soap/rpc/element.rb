@@ -77,6 +77,8 @@ class SOAPMethod < SOAPStruct
   attr_reader :param_def
   attr_reader :inparam
   attr_reader :outparam
+  attr_reader :retval_name
+  attr_reader :retavl_class_name
 
   def initialize(qname, param_def = nil)
     super(nil)
@@ -93,6 +95,7 @@ class SOAPMethod < SOAPStruct
     @inparam = {}
     @outparam = {}
     @retval_name = nil
+    @retavl_class_name = nil
 
     init_param(@param_def) if @param_def
   end
@@ -192,12 +195,13 @@ private
         @signature.push([INOUT, name, param_type])
         @inoutparam_names.push(name)
       when RETVAL
-        if (@retval_name)
-          raise MethodDefinitionError.new('Duplicated retval')
+        if @retval_name
+          raise MethodDefinitionError.new('duplicated retval')
         end
         @retval_name = name
+        @retavl_class_name = param_type ? param_type[0] : nil
       else
-        raise MethodDefinitionError.new("Unknown type: #{io_type}")
+        raise MethodDefinitionError.new("unknown type: #{io_type}")
       end
     end
   end
@@ -255,7 +259,7 @@ private
   def check_elename(qname)
     # NCName & ruby's method name
     unless /\A[\w_][\w\d_\-]*\z/ =~ qname.name
-      raise MethodDefinitionError.new("Element name '#{qname.name}' not allowed")
+      raise MethodDefinitionError.new("element name '#{qname.name}' not allowed")
     end
   end
 end

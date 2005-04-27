@@ -134,8 +134,8 @@ private
       name = name_element(element)
       if element.type == XSD::AnyTypeName
         type = nil
-      elsif basetype = element_basetype(element)
-        type = basetype.name
+      elsif klass = element_basetype(element)
+        type = klass.name
       elsif element.type
         type = create_class_name(element.type)
       else
@@ -158,8 +158,8 @@ private
       else
         params << "#{varname} = nil"
       end
-      qname = (varname == name) ? nil : element.name
-      schema_element << [varname, qname, type]
+      eleqname = (varname == name) ? nil : element.name
+      schema_element << [varname, eleqname, type]
     end
     unless typedef.attributes.empty?
       define_attribute(c, typedef.attributes)
@@ -187,8 +187,8 @@ private
   end
 
   def element_basetype(ele)
-    if type = basetype_class(ele.type)
-      type
+    if klass = basetype_class(ele.type)
+      klass
     elsif ele.local_simpletype
       basetype_class(ele.local_simpletype.base)
     else
@@ -197,8 +197,8 @@ private
   end
 
   def attribute_basetype(attr)
-    if type = basetype_class(attr.type)
-      type
+    if klass = basetype_class(attr.type)
+      klass
     elsif attr.local_simpletype
       basetype_class(attr.local_simpletype.base)
     else
@@ -207,6 +207,7 @@ private
   end
 
   def basetype_class(type)
+    return nil if type.nil?
     if simpletype = @simpletypes[type]
       basetype_mapped_class(simpletype.base)
     else
@@ -218,8 +219,8 @@ private
     schema_attribute = []
     attributes.each do |attribute|
       name = name_attribute(attribute)
-      if basetype = attribute_basetype(attribute)
-        type = basetype.name
+      if klass = attribute_basetype(attribute)
+        type = klass.name
       else
         type = nil
       end

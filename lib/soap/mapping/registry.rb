@@ -165,10 +165,10 @@ class Registry
       nil
     end
 
-    def soap2obj(node)
-      klass = node.class
-      if map = @soap2obj[klass]
+    def soap2obj(node, klass = nil)
+      if map = @soap2obj[node.class]
         map.each do |obj_class, factory, info|
+          next if klass and obj_class != klass
           conv, obj = factory.soap2obj(obj_class, node, info, @registry)
           return true, obj if conv
         end
@@ -384,8 +384,8 @@ class Registry
     soap
   end
 
-  def soap2obj(node)
-    obj = _soap2obj(node)
+  def soap2obj(node, klass = nil)
+    obj = _soap2obj(node, klass)
     if @allow_original_mapping
       addextend2obj(obj, node.extraattr[RubyExtendName])
       addiv2obj(obj, node.extraattr[RubyIVarName])
@@ -429,12 +429,12 @@ private
   end
 
   # Might return nil as a mapping result.
-  def _soap2obj(node)
+  def _soap2obj(node, klass = nil)
     if node.extraattr.key?(RubyTypeName)
       conv, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
       return obj if conv
     else
-      conv, obj = @map.soap2obj(node)
+      conv, obj = @map.soap2obj(node, klass)
       return obj if conv
       conv, obj = @default_factory.soap2obj(nil, node, nil, self)
       return obj if conv

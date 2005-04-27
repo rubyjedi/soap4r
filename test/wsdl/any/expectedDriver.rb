@@ -16,8 +16,8 @@ class Echo_port_type < ::SOAP::RPC::Driver
   Methods = [
     ["echo", "echo",
       [
-        ["in", "echoitem", [::SOAP::SOAPStruct, "urn:example.com:echo-type", "foo.bar"]],
-        ["retval", "echoitem", [::SOAP::SOAPStruct, "urn:example.com:echo-type", "foo.bar"]]
+        ["in", "echoitem", [FooBar, "urn:example.com:echo-type", "foo.bar"]],
+        ["retval", "echoitem", [FooBar, "urn:example.com:echo-type", "foo.bar"]]
       ],
       "urn:example.com:echo", "urn:example.com:echo", :rpc
     ]
