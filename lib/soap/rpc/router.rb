@@ -27,12 +27,14 @@ class Router
   attr_reader :actor
   attr_accessor :mapping_registry
   attr_accessor :literal_mapping_registry
+  attr_accessor :generate_explicit_type
 
   def initialize(actor)
     @actor = actor
     @mapping_registry = nil
     @headerhandler = Header::HandlerSet.new
     @literal_mapping_registry = ::SOAP::Mapping::WSDLLiteralRegistry.new
+    @generate_explicit_type = true
     @operation_by_soapaction = {}
     @operation_by_qname = {}
     @headerhandlerfactory = []
@@ -272,6 +274,7 @@ private
     opt = {}
     opt[:external_content] = nil
     opt[:default_encodingstyle] = default_encodingstyle
+    opt[:generate_explicit_type] = @generate_explicit_type
     response_string = Processor.marshal(env, opt)
     conn_data.send_string = response_string
     if ext = opt[:external_content]
