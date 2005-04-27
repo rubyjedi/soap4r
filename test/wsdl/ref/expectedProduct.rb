@@ -27,20 +27,20 @@ class ProductBag
     @rating = value
   end
 
-  def attr_version
-    (@__soap_attribute ||= {})["version"]
+  def xmlattr_version
+    (@__xmlattr ||= {})["version"]
   end
 
-  def attr_version=(value)
-    (@__soap_attribute ||= {})["version"] = value
+  def xmlattr_version=(value)
+    (@__xmlattr ||= {})["version"] = value
   end
 
-  def attr_yesno
-    (@__soap_attribute ||= {})["yesno"]
+  def xmlattr_yesno
+    (@__xmlattr ||= {})["yesno"]
   end
 
-  def attr_yesno=(value)
-    (@__soap_attribute ||= {})["yesno"] = value
+  def xmlattr_yesno=(value)
+    (@__xmlattr ||= {})["yesno"] = value
   end
 
   def initialize(bag = [], rating = [], product_Bag = nil, comment_1 = [], comment_2 = [])
@@ -49,7 +49,7 @@ class ProductBag
     @product_Bag = product_Bag
     @comment_1 = comment_1
     @comment_2 = comment_2
-    @__soap_attribute = {}
+    @__xmlattr = {}
   end
 end
 

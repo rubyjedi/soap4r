@@ -64,52 +64,52 @@ end
 # For anyType object: SOAP::Mapping::Object not ::Object
 class Object; include Marshallable
   def initialize
-    @__soap_value_type = {}
-    @__soap_value = {}
-    @__soap_attribute = {}
+    @__xmlele_type = {}
+    @__xmlele = {}
+    @__xmlattr = {}
   end
 
   def inspect
     sprintf("#<%s:0x%x%s>", self.class.name, __id__,
-      @__soap_value.collect { |name, value| " #{name}=#{value.inspect}" }.join)
+      @__xmlele.collect { |name, value| " #{name}=#{value.inspect}" }.join)
   end
 
-  def __soap_attribute
-    @__soap_attribute
+  def __xmlattr
+    @__xmlattr
+  end
+
+  def __xmlele
+    @__xmlele
   end
 
   def [](name)
-    @__soap_value[name]
+    @__xmlele[name]
   end
 
   def []=(name, value)
-    @__soap_value[name] = value
+    @__xmlele[name] = value
   end
 
-  def __soap_set_property(name, value)
-    unless @__soap_value.key?(name)
+  def __set_xmlele(name, value)
+    unless @__xmlele.key?(name)
       __define_attr_accessor(name)
     end
-    __soap_set_property_value(name, value)
-  end
-
-  def __soap_get_properties
-    @__soap_value
+    __set_xmlele_value(name, value)
   end
 
 private
 
-  def __soap_set_property_value(name, value)
+  def __set_xmlele_value(name, value)
     org = self[name]
-    case @__soap_value_type[name]
+    case @__xmlele_type[name]
     when :single
       self[name] = [org, value]
-      @__soap_value_type[name] = :multi
+      @__xmlele_type[name] = :multi
     when :multi
       org << value
     else
       self[name] = value
-      @__soap_value_type[name] = :single
+      @__xmlele_type[name] = :single
     end
     value
   end

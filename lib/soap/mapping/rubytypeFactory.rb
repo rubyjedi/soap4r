@@ -222,10 +222,10 @@ class RubytypeFactory < Factory
     when ::SOAP::Mapping::Object
       param = SOAPStruct.new(XSD::AnyTypeName)
       mark_marshalled_obj(obj, param)
-      obj.__soap_get_properties.each do |key, value|
+      obj.__xmlele.each do |key, value|
         param.add(key, Mapping._obj2soap(value, map))
       end
-      obj.__soap_attribute.each do |key, value|
+      obj.__xmlattr.each do |key, value|
         param.extraattr[key] = value
       end
     when ::Exception
@@ -383,10 +383,10 @@ private
       obj = klass.new
       mark_unmarshalled_obj(node, obj)
       node.each do |name, value|
-        obj.__soap_set_property(name, Mapping._soap2obj(value, map))
+        obj.__set_xmlele(name, Mapping._soap2obj(value, map))
       end
       unless node.extraattr.empty?
-        obj.instance_variable_set('@__soap_attribute', node.extraattr)
+        obj.instance_variable_set('@__xmlattr', node.extraattr)
       end
       return true, obj
     else
