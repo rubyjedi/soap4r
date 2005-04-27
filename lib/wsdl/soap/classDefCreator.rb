@@ -163,7 +163,7 @@ private
     end
     unless typedef.attributes.empty?
       define_attribute(c, typedef.attributes)
-      init_lines << "@__soap_attribute = {}\n"
+      init_lines << "@__xmlattr = {}\n"
     end
     c.def_classvar('schema_element',
       '[' +
@@ -224,13 +224,13 @@ private
       else
         type = nil
       end
-      varname = safevarname('attr_' + name)
+      varname = safevarname('xmlattr_' + name)
       c.def_method(varname) do <<-__EOD__
-          (@__soap_attribute ||= {})[#{name.dump}]
+          (@__xmlattr ||= {})[#{name.dump}]
         __EOD__
       end
       c.def_method(varname + '=', 'value') do <<-__EOD__
-          (@__soap_attribute ||= {})[#{name.dump}] = value
+          (@__xmlattr ||= {})[#{name.dump}] = value
         __EOD__
       end
       schema_attribute << [name, type]

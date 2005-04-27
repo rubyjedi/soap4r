@@ -51,7 +51,7 @@ class TestRPC < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('echo.rb'))
+    #File.unlink(pathname('echo.rb'))
     @client.reset_stream if @client
   end
 
@@ -97,12 +97,12 @@ class TestRPC < Test::Unit::TestCase
     @client.wiredump_dev = STDOUT if $DEBUG
 
     struct1 = Echo_struct.new("mystring1", now1 = Time.now)
-    struct1.attr_m_attr = 'myattr1'
+    struct1.xmlattr_m_attr = 'myattr1'
     struct2 = Echo_struct.new("mystring2", now2 = Time.now)
-    struct2.attr_m_attr = 'myattr2'
+    struct2.xmlattr_m_attr = 'myattr2'
     echo = Echoele.new(struct1, struct2)
-    echo.attr_attr_string = 'attr_string'
-    echo.attr_attr_int = 5
+    echo.xmlattr_attr_string = 'attr_string'
+    echo.xmlattr_attr_int = 5
     ret = @client.echo(echo)
 
     timeformat = "%Y-%m-%dT%H:%M:%S.%s"
@@ -110,8 +110,8 @@ class TestRPC < Test::Unit::TestCase
     assert_equal(now2.strftime(timeformat), ret.struct1.m_datetime.strftime(timeformat))
     assert_equal("mystring1", ret.struct_2.m_string)
     assert_equal(now1.strftime(timeformat), ret.struct_2.m_datetime.strftime(timeformat))
-    assert_equal("attr_string", ret.attr_attr_string)
-    assert_equal(5, ret.attr_attr_int)
+    assert_equal("attr_string", ret.xmlattr_attr_string)
+    assert_equal(5, ret.xmlattr_attr_int)
   end
 
   include ::SOAP
@@ -141,8 +141,8 @@ class TestRPC < Test::Unit::TestCase
     #p ret.struct_2.class
     assert_equal("mystring1", ret.struct_2.m_string)
     assert_equal('2005-03-17T19:47:31', ret.struct_2.m_datetime.strftime(timeformat))
-    assert_equal('attr_string', ret.attr_attr_string)
-    assert_equal(5, ret.attr_attr_int)
+    assert_equal('attr_string', ret.xmlattr_attr_string)
+    assert_equal(5, ret.xmlattr_attr_int)
 
     echo = {'struct1' => {'m_string' => 'mystring1', 'm_datetime' => '2005-03-17T19:47:31+01:00'}, 
           'struct-2' => {'m_string' => 'mystring2', 'm_datetime' => '2005-03-17T19:47:32+02:00'}}

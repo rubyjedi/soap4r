@@ -23,7 +23,8 @@ class WSDLLiteralRegistry < Registry
   attr_accessor :excn_handler_obj2soap
   attr_accessor :excn_handler_soap2obj
 
-  def initialize(definedtypes = XSD::NamedElements::Empty, definedelements = XSD::NamedElements::Empty)
+  def initialize(definedtypes = XSD::NamedElements::Empty,
+      definedelements = XSD::NamedElements::Empty)
     @definedtypes = definedtypes
     @definedelements = definedelements
     @excn_handler_obj2soap = nil
@@ -175,7 +176,7 @@ private
     attributes = schema_attribute_definition(obj.class)
     if attributes
       attributes.each do |attrname, param|
-        attr = obj.__send__('attr_' +
+        attr = obj.__send__('xmlattr_' +
           XSD::CodeGen::GenSupport.safevarname(attrname))
         ele.extraattr[attrname] = attr
       end
@@ -215,6 +216,9 @@ private
       soapele2undefinedobj(node)
     else
       result, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
+      if result
+        add_attributes2undefinedobj(node, obj)
+      end
       obj
     end
   end
@@ -266,7 +270,7 @@ private
   def add_attributes2obj(node, obj)
     if attributes = schema_attribute_definition(obj.class)
       vars = {}
-      obj.instance_variable_set('@__soap_attribute', {})
+      obj.instance_variable_set('@__xmlattr', {})
       attributes.each do |attrname, class_name|
         attr = node.extraattr[XSD::QName.new(nil, attrname)]
         next if attr.nil? or attr.empty?
@@ -276,7 +280,7 @@ private
         else
           child = attr
         end
-        vars['attr_' + attrname] = child
+        vars['xmlattr_' + attrname] = child
       end
       Mapping.set_attributes(obj, vars)
     end
@@ -284,16 +288,16 @@ private
 
   def add_elements2undefinedobj(node, obj)
     node.each do |name, value|
-      obj.__soap_set_property(name, soapele2obj(value))
+      obj.__set_xmlele(name, soapele2obj(value))
     end
   end
 
   def add_attributes2undefinedobj(node, obj)
     return if node.extraattr.empty?
-    obj.instance_variable_set('@__soap_attribute', node.extraattr)
-    unless obj.respond_to?(:__soap_attribute)
+    obj.instance_variable_set('@__xmlattr', node.extraattr)
+    unless obj.respond_to?(:__xmlattr)
       class << obj
-        define_method(:__soap_attribute, proc { @__soap_attribute })
+        define_method(:__xmlattr, proc { @__xmlattr })
       end
     end
   end
