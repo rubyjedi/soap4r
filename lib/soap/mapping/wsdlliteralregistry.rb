@@ -138,10 +138,9 @@ private
     if obj.is_a?(SOAPElement)
       obj
     elsif obj.class.class_variables.include?('@@schema_element')
-      ele = SOAPElement.new(name)
-      add_elements2soap(obj, ele)
-      add_attributes2soap(obj, ele)
-      ele
+      unknownobj2definedsoap(obj, name)
+    elsif obj.is_a?(SOAP::Mapping::Object)
+      mappingobj2soap(obj, name)
     elsif obj.is_a?(Hash)
       ele = SOAPElement.from_obj(obj)
       ele.elename = name
@@ -149,10 +148,44 @@ private
     else
       # expected to be a basetype or an anyType.
       # SOAPStruct, etc. is used instead of SOAPElement.
-      o = Mapping.obj2soap(obj)
-      o.elename = name
-      o
+      begin
+        ele = Mapping.obj2soap(obj)
+        ele.elename = name
+        ele
+      rescue MappingError
+        ele = SOAPElement.new(name, obj.to_s)
+      end
+      if obj.respond_to?(:__xmlattr)
+        obj.__xmlattr.each do |key, value|
+          ele.extraattr[key] = value
+        end
+      end
+      ele
     end
+  end
+
+  def unknownobj2definedsoap(obj, name)
+    ele = SOAPElement.new(name)
+    add_elements2soap(obj, ele)
+    add_attributes2soap(obj, ele)
+    ele
+  end
+
+  def mappingobj2soap(obj, name)
+    ele = SOAPElement.new(name)
+    obj.__xmlele.each do |key, value|
+      if value.is_a?(::Array)
+        value.each do |item|
+          ele.add(obj2soap(item, key))
+        end
+      else
+        ele.add(obj2soap(value, key))
+      end
+    end
+    obj.__xmlattr.each do |key, value|
+      ele.extraattr[key] = value
+    end
+    ele
   end
 
   def add_elements2soap(obj, ele)
@@ -175,10 +208,10 @@ private
   def add_attributes2soap(obj, ele)
     attributes = schema_attribute_definition(obj.class)
     if attributes
-      attributes.each do |attrname, param|
+      attributes.each do |qname, param|
         attr = obj.__send__('xmlattr_' +
-          XSD::CodeGen::GenSupport.safevarname(attrname))
-        ele.extraattr[attrname] = attr
+          XSD::CodeGen::GenSupport.safevarname(qname.name))
+        ele.extraattr[qname] = attr
       end
     end
   end
@@ -269,10 +302,9 @@ private
 
   def add_attributes2obj(node, obj)
     if attributes = schema_attribute_definition(obj.class)
-      vars = {}
-      obj.instance_variable_set('@__xmlattr', {})
-      attributes.each do |attrname, class_name|
-        attr = node.extraattr[XSD::QName.new(nil, attrname)]
+      define_xmlattr(obj)
+      attributes.each do |qname, class_name|
+        attr = node.extraattr[qname]
         next if attr.nil? or attr.empty?
         klass = Mapping.class_from_name(class_name)
         if klass.ancestors.include?(::SOAP::SOAPBasetype)
@@ -280,25 +312,36 @@ private
         else
           child = attr
         end
-        vars['xmlattr_' + attrname] = child
+        obj.__xmlattr[qname] = child
+        Mapping.define_attr_accessor(obj, 'xmlattr_' + qname.name,
+          proc { @__xmlattr[qname] },
+          proc { |value| @__xmlattr[qname] = value })
       end
-      Mapping.set_attributes(obj, vars)
     end
   end
 
   def add_elements2undefinedobj(node, obj)
     node.each do |name, value|
-      obj.__set_xmlele(name, soapele2obj(value))
+      obj.__set_xmlele(XSD::QName.new(nil, name), soapele2obj(value))
     end
   end
 
   def add_attributes2undefinedobj(node, obj)
     return if node.extraattr.empty?
-    obj.instance_variable_set('@__xmlattr', node.extraattr)
+    define_xmlattr(obj)
+    node.extraattr.each do |qname, value|
+      attrname = qname.name
+      obj.__xmlattr[qname] = value
+      Mapping.define_attr_accessor(obj, 'xmlattr_' + attrname,
+        proc { @__xmlattr[qname] },
+        proc { |value| @__xmlattr[qname] = value })
+    end
+  end
+
+  def define_xmlattr(obj)
+    obj.instance_variable_set('@__xmlattr', {})
     unless obj.respond_to?(:__xmlattr)
-      class << obj
-        define_method(:__xmlattr, proc { @__xmlattr })
-      end
+      Mapping.define_attr_accessor(obj, :__xmlattr, proc { @__xmlattr })
     end
   end
 

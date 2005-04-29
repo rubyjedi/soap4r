@@ -82,46 +82,48 @@ class Object; include Marshallable
     @__xmlele
   end
 
-  def [](name)
-    @__xmlele[name]
-  end
-
-  def []=(name, value)
-    @__xmlele[name] = value
-  end
-
-  def __set_xmlele(name, value)
-    unless @__xmlele.key?(name)
-      __define_attr_accessor(name)
+  def [](qname)
+    unless qname.is_a?(XSD::QName)
+      qname = XSD::QName.new(nil, qname)
     end
-    __set_xmlele_value(name, value)
+    @__xmlele[qname]
+  end
+
+  def []=(qname, value)
+    unless qname.is_a?(XSD::QName)
+      qname = XSD::QName.new(nil, qname)
+    end
+    @__xmlele[qname] = value
+  end
+
+  def __set_xmlele(qname, value)
+    unless @__xmlele.key?(qname)
+      __define_attr_accessor(qname)
+    end
+    __set_xmlele_value(qname, value)
   end
 
 private
 
-  def __set_xmlele_value(name, value)
-    org = self[name]
-    case @__xmlele_type[name]
+  def __set_xmlele_value(qname, value)
+    org = self[qname]
+    case @__xmlele_type[qname]
     when :single
-      self[name] = [org, value]
-      @__xmlele_type[name] = :multi
+      self[qname] = [org, value]
+      @__xmlele_type[qname] = :multi
     when :multi
       org << value
     else
-      self[name] = value
-      @__xmlele_type[name] = :single
+      self[qname] = value
+      @__xmlele_type[qname] = :single
     end
     value
   end
 
-  def __define_attr_accessor(name)
-    sclass = class << self; self; end
-    sclass.__send__(:define_method, name, proc {
-      self[name]
-    })
-    sclass.__send__(:define_method, name + '=', proc { |value|
-      self[name] = value
-    })
+  def __define_attr_accessor(qname)
+    Mapping.define_attr_accessor(self, qname.name,
+      proc { self[qname] },
+      proc { |value| self[qname] = value })
   end
 end
 

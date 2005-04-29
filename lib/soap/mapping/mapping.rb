@@ -279,9 +279,22 @@ module Mapping
           obj.__send__(setter, value)
         else
           obj.instance_variable_set('@' + name, value)
+          begin
+            define_attr_accessor(obj, name,
+              proc { instance_variable_get('@' + name) },
+              proc { |value| instance_variable_set('@' + name, value) })
+          rescue TypeError
+            # singleton class may not exist (e.g. Float)
+          end
         end
       end
     end
+  end
+
+  def self.define_attr_accessor(obj, name, getterproc, setterproc = nil)
+    sclass = class << obj; self; end
+    sclass.__send__(:define_method, name, getterproc)
+    sclass.__send__(:define_method, name + '=', setterproc) if setterproc
   end
 
   def self.schema_element_definition(klass)

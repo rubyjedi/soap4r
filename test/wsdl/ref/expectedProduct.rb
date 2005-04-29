@@ -11,7 +11,7 @@ end
 class ProductBag
   @@schema_type = "Product-Bag"
   @@schema_ns = "urn:product"
-  @@schema_attribute = {"version" => "SOAP::SOAPString", "yesno" => "SOAP::SOAPString"}
+  @@schema_attribute = {XSD::QName.new("urn:product", "version") => "SOAP::SOAPString", XSD::QName.new("urn:product", "yesno") => "SOAP::SOAPString"}
   @@schema_element = [["bag", "Product[]"], ["rating", ["SOAP::SOAPString[]", XSD::QName.new("urn:product", "Rating")]], ["product_Bag", [nil, XSD::QName.new("urn:product", "Product-Bag")]], ["comment_1", nil], ["comment_2", ["Comment[]", XSD::QName.new(nil, "comment-2")]]]
 
   attr_accessor :bag
@@ -28,19 +28,19 @@ class ProductBag
   end
 
   def xmlattr_version
-    (@__xmlattr ||= {})["version"]
+    (@__xmlattr ||= {})[XSD::QName.new("urn:product", "version")]
   end
 
   def xmlattr_version=(value)
-    (@__xmlattr ||= {})["version"] = value
+    (@__xmlattr ||= {})[XSD::QName.new("urn:product", "version")] = value
   end
 
   def xmlattr_yesno
-    (@__xmlattr ||= {})["yesno"]
+    (@__xmlattr ||= {})[XSD::QName.new("urn:product", "yesno")]
   end
 
   def xmlattr_yesno=(value)
-    (@__xmlattr ||= {})["yesno"] = value
+    (@__xmlattr ||= {})[XSD::QName.new("urn:product", "yesno")] = value
   end
 
   def initialize(bag = [], rating = [], product_Bag = nil, comment_1 = [], comment_2 = [])
