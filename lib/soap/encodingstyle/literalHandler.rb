@@ -184,21 +184,19 @@ class LiteralHandler < Handler
   end
 
   def decode_parent(parent, node)
+    return unless parent.node
     case parent.node
     when SOAPUnknown
       newparent = parent.node.as_element
       node.parent = newparent
       parent.replace_node(newparent)
       decode_parent(parent, node)
-
     when SOAPElement
       parent.node.add(node)
       node.parent = parent.node
-
     when SOAPStruct
       parent.node.add(node.elename.name, node)
       node.parent = parent.node
-
     when SOAPArray
       if node.position
 	parent.node[*(decode_arypos(node.position))] = node
@@ -207,13 +205,8 @@ class LiteralHandler < Handler
 	parent.node.add(node)
       end
       node.parent = parent.node
-
-    when SOAPBasetype
-      raise EncodingStyleError.new("SOAP base type must not have a child")
-
     else
-      # SOAPUnknown does not have parent.
-      raise EncodingStyleError.new("illegal parent: #{parent}")
+      raise EncodingStyleError.new("illegal parent: #{parent.node}")
     end
   end
 
