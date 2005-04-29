@@ -223,7 +223,7 @@ class RubytypeFactory < Factory
       param = SOAPStruct.new(XSD::AnyTypeName)
       mark_marshalled_obj(obj, param)
       obj.__xmlele.each do |key, value|
-        param.add(key, Mapping._obj2soap(value, map))
+        param.add(key.name, Mapping._obj2soap(value, map))
       end
       obj.__xmlattr.each do |key, value|
         param.extraattr[key] = value
@@ -383,7 +383,8 @@ private
       obj = klass.new
       mark_unmarshalled_obj(node, obj)
       node.each do |name, value|
-        obj.__set_xmlele(name, Mapping._soap2obj(value, map))
+        obj.__set_xmlele(XSD::QName.new(nil, name),
+          Mapping._soap2obj(value, map))
       end
       unless node.extraattr.empty?
         obj.instance_variable_set('@__xmlattr', node.extraattr)

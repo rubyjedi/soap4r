@@ -131,7 +131,6 @@ private
     init_lines = ''
     params = []
     typedef.each_element do |element|
-      name = name_element(element)
       if element.type == XSD::AnyTypeName
         type = nil
       elsif klass = element_basetype(element)
@@ -148,6 +147,7 @@ private
         #   </complexType>
         # </element>
       end
+      name = name_element(element).name
       attrname = safemethodname?(name) ? name : safemethodname(name)
       varname = safevarname(name)
       c.def_attr(attrname, true, varname)
@@ -224,13 +224,13 @@ private
       else
         type = nil
       end
-      varname = safevarname('xmlattr_' + name)
-      c.def_method(varname) do <<-__EOD__
-          (@__xmlattr ||= {})[#{name.dump}]
+      methodname = safemethodname('xmlattr_' + name.name)
+      c.def_method(methodname) do <<-__EOD__
+          (@__xmlattr ||= {})[#{dqname(name)}]
         __EOD__
       end
-      c.def_method(varname + '=', 'value') do <<-__EOD__
-          (@__xmlattr ||= {})[#{name.dump}] = value
+      c.def_method(methodname + '=', 'value') do <<-__EOD__
+          (@__xmlattr ||= {})[#{dqname(name)}] = value
         __EOD__
       end
       schema_attribute << [name, type]
@@ -238,21 +238,21 @@ private
     c.def_classvar('schema_attribute',
       '{' +
         schema_attribute.collect { |name, type|
-          name.dump + ' => ' + ndq(type)
+          dqname(name) + ' => ' + ndq(type)
         }.join(', ') +
       '}'
     )
   end
 
   def name_element(element)
-    return element.name.name if element.name 
-    return element.ref.name if element.ref
+    return element.name if element.name 
+    return element.ref if element.ref
     raise RuntimeError.new("cannot define name of #{element}")
   end
 
   def name_attribute(attribute)
-    return attribute.name.name if attribute.name 
-    return attribute.ref.name if attribute.ref
+    return attribute.name if attribute.name 
+    return attribute.ref if attribute.ref
     raise RuntimeError.new("cannot define name of #{attribute}")
   end
 
