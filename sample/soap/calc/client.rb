@@ -4,7 +4,7 @@ server = ARGV.shift || 'http://localhost:7000/'
 # server = 'http://localhost:8808/server.cgi'
 
 calc = SOAP::RPC::Driver.new(server, 'http://tempuri.org/calcService')
-#calc.wiredump_dev = STDERR
+calc.wiredump_dev = STDERR if $DEBUG
 calc.add_method('add', 'lhs', 'rhs')
 calc.add_method('sub', 'lhs', 'rhs')
 calc.add_method('multi', 'lhs', 'rhs')

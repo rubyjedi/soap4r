@@ -37,7 +37,7 @@ class CGIStub < Logger::Application
     end
 
     def [](var)
-      ENV[var.upcase]
+      ENV[var.gsub(/-/, '_').upcase]
     end
 
     def meta_vars
