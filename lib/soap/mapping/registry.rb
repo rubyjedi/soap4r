@@ -96,29 +96,14 @@ class Object; include Marshallable
     unless qname.is_a?(XSD::QName)
       qname = XSD::QName.new(nil, qname)
     end
-    __set_xmlele(qname, value)
-  end
-
-  def __set_xmlele(qname, value)
     found = false
     @__xmlele.map! do |k, v|
-      vv = nil
       if k == qname
         found = true
-        case @__xmlele_type[k]
-        when :multi
-          v << value
-          vv = v
-        when :single
-          @__xmlele_type[qname] = :multi
-          vv = [v, value]
-        else
-          raise RuntimeError.new("unknown type")
-        end
+        [k, __set_xmlele_value(k, v, value)]
       else
-        vv = v
+        [k, v]
       end
-      [k, vv]
     end
     unless found
       __define_attr_accessor(qname)
@@ -134,6 +119,19 @@ private
     Mapping.define_attr_accessor(self, qname.name,
       proc { self[qname] },
       proc { |value| self[qname] = value })
+  end
+
+  def __set_xmlele_value(key, org, value)
+    case @__xmlele_type[key]
+    when :multi
+      org << value
+      org
+    when :single
+      @__xmlele_type[key] = :multi
+      [org, value]
+    else
+      raise RuntimeError.new("unknown type")
+    end
   end
 end
 

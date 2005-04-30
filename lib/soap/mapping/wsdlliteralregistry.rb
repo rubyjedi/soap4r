@@ -322,7 +322,7 @@ private
 
   def add_elements2undefinedobj(node, obj)
     node.each do |name, value|
-      obj.__set_xmlele(XSD::QName.new(nil, name), soapele2obj(value))
+      obj[XSD::QName.new(nil, name)] = soapele2obj(value)
     end
   end
 
