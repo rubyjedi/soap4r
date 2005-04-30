@@ -1,5 +1,5 @@
-# SOAP4R - CGI stub library
-# Copyright (C) 2001, 2003, 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# SOAP4R - CGI/mod_ruby stub library
+# Copyright (C) 2001, 2003-2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -144,9 +144,17 @@ private
     rescue StandardError, NameError => ex # for Ruby 1.6
       res.set_error(ex, true)
     ensure
-      buf = ''
-      res.send_response(buf)
-      buf.sub!(/^[^\r]+\r\n/, '')       # Trim status line.
+      if defined?(MOD_RUBY)
+        r = Apache.request
+        r.status = res.status
+        r.content_type = res.content_type
+        r.send_http_header
+        buf = res.body
+      else
+        buf = ''
+        res.send_response(buf)
+        buf.sub!(/^[^\r]+\r\n/, '')       # Trim status line.
+      end
       @log.debug { "SOAP CGI Response:\n#{ buf }" }
       print buf
     end
