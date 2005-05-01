@@ -31,6 +31,14 @@ class CGIStub < Logger::Application
   class SOAPRequest
     attr_reader :body
 
+    def [](var); end
+
+    def meta_vars; end
+  end
+
+  class SOAPStdinRequest < SOAPRequest
+    attr_reader :body
+
     def initialize(stream)
       size = ENV['CONTENT_LENGTH'].to_i || 0
       @body = stream.read(size)
@@ -43,6 +51,25 @@ class CGIStub < Logger::Application
     def meta_vars
       {
         'HTTP_SOAPACTION' => ENV['HTTP_SOAPAction']
+      }
+    end
+  end
+
+  class SOAPFCGIRequest < SOAPRequest
+    attr_reader :body
+
+    def initialize(request)
+      @request = request
+      @body = @request.in.read
+    end
+
+    def [](var)
+      @request.env[var.gsub(/-/, '_').upcase]
+    end
+
+    def meta_vars
+      {
+        'HTTP_SOAPACTION' => @request.env['HTTP_SOAPAction']
       }
     end
   end
@@ -123,18 +150,24 @@ class CGIStub < Logger::Application
     @router.add_document_operation(receiver, soapaction, name, param_def, opt)
   end
 
+  def set_fcgi_request(request)
+    @fcgi = request
+  end
+
 private
 
+  HTTPVersion = WEBrick::HTTPVersion.new('1.0')       # dummy; ignored
+
   def run
-    prologue
-    httpversion = WEBrick::HTTPVersion.new('1.0')
-    res = WEBrick::HTTPResponse.new({:HTTPVersion => httpversion})
-    conn_data = nil
+    res = WEBrick::HTTPResponse.new({:HTTPVersion => HTTPVersion})
     begin
       @log.info { "received a request from '#{ @remote_host }'" }
-      req = SOAPRequest.new($stdin)
+      if @fcgi
+        req = SOAPFCGIRequest.new(@fcgi)
+      else
+        req = SOAPStdinRequest.new($stdin)
+      end
       @soaplet.do_POST(req, res)
-      epilogue
     rescue HTTPStatus::EOFError, HTTPStatus::RequestTimeout => ex
       res.set_error(ex)
     rescue HTTPStatus::Error => ex
@@ -156,14 +189,16 @@ private
         buf.sub!(/^[^\r]+\r\n/, '')       # Trim status line.
       end
       @log.debug { "SOAP CGI Response:\n#{ buf }" }
-      print buf
+      if @fcgi
+        @fcgi.out.print buf
+        @fcgi.finish
+        @fcgi = nil
+      else
+        print buf
+      end
     end
-    epilogue
     0
   end
-
-  def prologue; end
-  def epilogue; end
 end
 
 
