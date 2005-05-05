@@ -78,7 +78,7 @@ class SOAPMethod < SOAPStruct
   attr_reader :inparam
   attr_reader :outparam
   attr_reader :retval_name
-  attr_reader :retavl_class_name
+  attr_reader :retval_class_name
 
   def initialize(qname, param_def = nil)
     super(nil)
@@ -95,7 +95,7 @@ class SOAPMethod < SOAPStruct
     @inparam = {}
     @outparam = {}
     @retval_name = nil
-    @retavl_class_name = nil
+    @retval_class_name = nil
 
     init_param(@param_def) if @param_def
   end
@@ -199,7 +199,14 @@ private
           raise MethodDefinitionError.new('duplicated retval')
         end
         @retval_name = name
-        @retavl_class_name = param_type ? param_type[0] : nil
+        @retval_class_name = nil
+        if param_type
+          if param_type[0].is_a?(String)
+            @retval_class_name = Mapping.class_from_name(param_type[0])
+          else
+            @retval_class_name = param_type[0]
+          end
+        end
       else
         raise MethodDefinitionError.new("unknown type: #{io_type}")
       end
