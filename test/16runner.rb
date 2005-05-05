@@ -33,18 +33,27 @@ runners_map = {
   end,
 }
 
+def test_require(list)
+  list.each do |tc_name|
+    if File.directory?(tc_name)
+      newlist = Dir.glob(File.join(tc_name, "**", "test_*.rb")).sort
+      test_require(newlist)
+    else
+      dir = File.expand_path(File.dirname(tc_name))
+      backup = $:.dup
+      $:.push(dir)
+      require tc_name
+      $:.replace(backup)
+    end
+  end
+end
+
 argv = ARGV
 if argv.empty?
   argv = Dir.glob(File.join(File.dirname(__FILE__), "**", "test_*.rb")).sort
 end
 
-argv.each do |tc_name|
-  dir = File.expand_path(File.dirname(tc_name))
-  backup = $:.dup
-  $:.push(dir)
-  require tc_name
-  $:.replace(backup)
-end
+test_require(argv)
 
 runner = 'console'
 GC.start

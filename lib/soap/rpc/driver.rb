@@ -23,15 +23,33 @@ module RPC
 
 class Driver
   class << self
-    def __attr_proxy(symbol, assignable = false)
-      name = symbol.to_s
-      self.__send__(:define_method, name, proc {
-        @proxy.__send__(name)
-      })
-      if assignable
-        self.__send__(:define_method, name + '=', proc { |rhs|
-          @proxy.__send__(name + '=', rhs)
+    if RUBY_VERSION >= "1.7.0"
+      def __attr_proxy(symbol, assignable = false)
+        name = symbol.to_s
+        self.__send__(:define_method, name, proc {
+          @proxy.__send__(name)
         })
+        if assignable
+          self.__send__(:define_method, name + '=', proc { |rhs|
+            @proxy.__send__(name + '=', rhs)
+          })
+        end
+      end
+    else
+      def __attr_proxy(symbol, assignable = false)
+        name = symbol.to_s
+        module_eval <<-EOS
+          def #{name}
+            @proxy.#{name}
+          end
+        EOS
+        if assignable
+          module_eval <<-EOS
+            def #{name}=(value)
+              @proxy.#{name} = value
+            end
+          EOS
+        end
       end
     end
   end
