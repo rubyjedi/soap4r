@@ -15,27 +15,31 @@ module XMLSchema
 
 
 class Importer
-  def self.import(location)
-    new.import(location)
+  def self.import(location, originalroot = nil)
+    new.import(location, originalroot)
   end
 
   def initialize
     @web_client = nil
   end
 
-  def import(location)
+  def import(location, originalroot = nil)
     unless location.is_a?(URI)
       location = URI.parse(location)
     end
-    content = parse(fetch(location), location)
+    content = parse(fetch(location), location, originalroot)
     content.location = location
     content
   end
 
 private
 
-  def parse(content, location)
-    WSDL::XMLSchema::Parser.new({:location => location}).parse(content)
+  def parse(content, location, originalroot)
+    opt = {
+      :location => location,
+      :originalroot => originalroot
+    }
+    WSDL::XMLSchema::Parser.new(opt).parse(content)
   end
 
   def fetch(location)

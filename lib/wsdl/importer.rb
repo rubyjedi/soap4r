@@ -14,17 +14,21 @@ module WSDL
 
 
 class Importer < WSDL::XMLSchema::Importer
-  def self.import(location)
-    new.import(location)
+  def self.import(location, originalroot = nil)
+    new.import(location, originalroot)
   end
 
 private
 
-  def parse(content, location)
+  def parse(content, location, originalroot)
+    opt = {
+      :location => location,
+      :originalroot => originalroot
+    }
     begin
-      WSDL::Parser.new({:location => location}).parse(content)
+      WSDL::Parser.new(opt).parse(content)
     rescue WSDL::Parser::ParseError
-      super(content, location)
+      super(content, location, originalroot)
     end
   end
 

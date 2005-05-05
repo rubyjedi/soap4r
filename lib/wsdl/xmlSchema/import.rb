@@ -36,10 +36,17 @@ class Import < Info
       @namespace = value.source
     when SchemaLocationAttrName
       @schemalocation = URI.parse(value.source)
-      if @schemalocation.relative?
+      if @schemalocation.relative? and !parent.location.nil? and
+          !parent.location.relative?
         @schemalocation = parent.location + @schemalocation
       end
-      @content = import(@schemalocation)
+      if root.importedschema.key?(@schemalocation)
+        @content = root.importedschema[@schemalocation]
+      else
+        root.importedschema[@schemalocation] = nil      # placeholder
+        @content = import(@schemalocation)
+        root.importedschema[@schemalocation] = @content
+      end
       @schemalocation
     else
       nil
@@ -49,7 +56,7 @@ class Import < Info
 private
 
   def import(location)
-    Importer.import(location)
+    Importer.import(location, root)
   end
 end
 
