@@ -1,18 +1,21 @@
-# http://soap.amazon.com
-class ProductLineArray < Array
-  @@schema_type = "ProductLineArray"
+require 'xsd/qname'
+
+# {http://soap.amazon.com}ProductLineArray
+class ProductLineArray < ::Array
+  @@schema_type = "ProductLine"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ProductLine
 class ProductLine
   @@schema_type = "ProductLine"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["mode", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Mode")]], ["relevanceRank", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "RelevanceRank")]], ["productInfo", ["ProductInfo", XSD::QName.new("http://soap.amazon.com", "ProductInfo")]]]
 
   def Mode
     @mode
   end
-  
+
   def Mode=(value)
     @mode = value
   end
@@ -20,7 +23,7 @@ class ProductLine
   def RelevanceRank
     @relevanceRank
   end
-  
+
   def RelevanceRank=(value)
     @relevanceRank = value
   end
@@ -28,7 +31,7 @@ class ProductLine
   def ProductInfo
     @productInfo
   end
-  
+
   def ProductInfo=(value)
     @productInfo = value
   end
@@ -40,15 +43,16 @@ class ProductLine
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ProductInfo
 class ProductInfo
   @@schema_type = "ProductInfo"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["totalResults", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "TotalResults")]], ["totalPages", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "TotalPages")]], ["listName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ListName")]], ["details", ["DetailsArray", XSD::QName.new("http://soap.amazon.com", "Details")]]]
 
   def TotalResults
     @totalResults
   end
-  
+
   def TotalResults=(value)
     @totalResults = value
   end
@@ -56,7 +60,7 @@ class ProductInfo
   def TotalPages
     @totalPages
   end
-  
+
   def TotalPages=(value)
     @totalPages = value
   end
@@ -64,7 +68,7 @@ class ProductInfo
   def ListName
     @listName
   end
-  
+
   def ListName=(value)
     @listName = value
   end
@@ -72,7 +76,7 @@ class ProductInfo
   def Details
     @details
   end
-  
+
   def Details=(value)
     @details = value
   end
@@ -85,21 +89,22 @@ class ProductInfo
   end
 end
 
-# http://soap.amazon.com
-class DetailsArray < Array
-  @@schema_type = "DetailsArray"
+# {http://soap.amazon.com}DetailsArray
+class DetailsArray < ::Array
+  @@schema_type = "Details"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}Details
 class Details
   @@schema_type = "Details"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["url", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Url")]], ["asin", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Asin")]], ["productName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ProductName")]], ["catalog", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Catalog")]], ["keyPhrases", ["KeyPhraseArray", XSD::QName.new("http://soap.amazon.com", "KeyPhrases")]], ["artists", ["ArtistArray", XSD::QName.new("http://soap.amazon.com", "Artists")]], ["authors", ["AuthorArray", XSD::QName.new("http://soap.amazon.com", "Authors")]], ["mpn", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Mpn")]], ["starring", ["StarringArray", XSD::QName.new("http://soap.amazon.com", "Starring")]], ["directors", ["DirectorArray", XSD::QName.new("http://soap.amazon.com", "Directors")]], ["theatricalReleaseDate", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "TheatricalReleaseDate")]], ["releaseDate", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ReleaseDate")]], ["manufacturer", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Manufacturer")]], ["distributor", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Distributor")]], ["imageUrlSmall", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ImageUrlSmall")]], ["imageUrlMedium", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ImageUrlMedium")]], ["imageUrlLarge", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ImageUrlLarge")]], ["merchantId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MerchantId")]], ["minPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MinPrice")]], ["maxPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MaxPrice")]], ["minSalePrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MinSalePrice")]], ["maxSalePrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MaxSalePrice")]], ["multiMerchant", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MultiMerchant")]], ["merchantSku", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MerchantSku")]], ["listPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ListPrice")]], ["ourPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "OurPrice")]], ["usedPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "UsedPrice")]], ["refurbishedPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "RefurbishedPrice")]], ["collectiblePrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CollectiblePrice")]], ["thirdPartyNewPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ThirdPartyNewPrice")]], ["numberOfOfferings", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumberOfOfferings")]], ["thirdPartyNewCount", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ThirdPartyNewCount")]], ["usedCount", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "UsedCount")]], ["collectibleCount", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CollectibleCount")]], ["refurbishedCount", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "RefurbishedCount")]], ["thirdPartyProductInfo", ["ThirdPartyProductInfo", XSD::QName.new("http://soap.amazon.com", "ThirdPartyProductInfo")]], ["salesRank", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SalesRank")]], ["browseList", ["BrowseNodeArray", XSD::QName.new("http://soap.amazon.com", "BrowseList")]], ["media", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Media")]], ["readingLevel", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ReadingLevel")]], ["numberOfPages", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumberOfPages")]], ["numberOfIssues", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumberOfIssues")]], ["issuesPerYear", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "IssuesPerYear")]], ["subscriptionLength", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SubscriptionLength")]], ["deweyNumber", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "DeweyNumber")]], ["runningTime", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "RunningTime")]], ["publisher", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Publisher")]], ["numMedia", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumMedia")]], ["isbn", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Isbn")]], ["features", ["FeaturesArray", XSD::QName.new("http://soap.amazon.com", "Features")]], ["mpaaRating", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MpaaRating")]], ["esrbRating", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "EsrbRating")]], ["ageGroup", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "AgeGroup")]], ["availability", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Availability")]], ["upc", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Upc")]], ["tracks", ["TrackArray", XSD::QName.new("http://soap.amazon.com", "Tracks")]], ["accessories", ["AccessoryArray", XSD::QName.new("http://soap.amazon.com", "Accessories")]], ["platforms", ["PlatformArray", XSD::QName.new("http://soap.amazon.com", "Platforms")]], ["encoding", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Encoding")]], ["productDescription", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ProductDescription")]], ["reviews", ["Reviews", XSD::QName.new("http://soap.amazon.com", "Reviews")]], ["similarProducts", ["SimilarProductsArray", XSD::QName.new("http://soap.amazon.com", "SimilarProducts")]], ["featuredProducts", ["FeaturedProductsArray", XSD::QName.new("http://soap.amazon.com", "FeaturedProducts")]], ["lists", ["ListArray", XSD::QName.new("http://soap.amazon.com", "Lists")]], ["status", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Status")]], ["variations", ["VariationArray", XSD::QName.new("http://soap.amazon.com", "Variations")]]]
 
   def Url
     @url
   end
-  
+
   def Url=(value)
     @url = value
   end
@@ -107,7 +112,7 @@ class Details
   def Asin
     @asin
   end
-  
+
   def Asin=(value)
     @asin = value
   end
@@ -115,7 +120,7 @@ class Details
   def ProductName
     @productName
   end
-  
+
   def ProductName=(value)
     @productName = value
   end
@@ -123,7 +128,7 @@ class Details
   def Catalog
     @catalog
   end
-  
+
   def Catalog=(value)
     @catalog = value
   end
@@ -131,7 +136,7 @@ class Details
   def KeyPhrases
     @keyPhrases
   end
-  
+
   def KeyPhrases=(value)
     @keyPhrases = value
   end
@@ -139,7 +144,7 @@ class Details
   def Artists
     @artists
   end
-  
+
   def Artists=(value)
     @artists = value
   end
@@ -147,7 +152,7 @@ class Details
   def Authors
     @authors
   end
-  
+
   def Authors=(value)
     @authors = value
   end
@@ -155,7 +160,7 @@ class Details
   def Mpn
     @mpn
   end
-  
+
   def Mpn=(value)
     @mpn = value
   end
@@ -163,7 +168,7 @@ class Details
   def Starring
     @starring
   end
-  
+
   def Starring=(value)
     @starring = value
   end
@@ -171,7 +176,7 @@ class Details
   def Directors
     @directors
   end
-  
+
   def Directors=(value)
     @directors = value
   end
@@ -179,7 +184,7 @@ class Details
   def TheatricalReleaseDate
     @theatricalReleaseDate
   end
-  
+
   def TheatricalReleaseDate=(value)
     @theatricalReleaseDate = value
   end
@@ -187,7 +192,7 @@ class Details
   def ReleaseDate
     @releaseDate
   end
-  
+
   def ReleaseDate=(value)
     @releaseDate = value
   end
@@ -195,7 +200,7 @@ class Details
   def Manufacturer
     @manufacturer
   end
-  
+
   def Manufacturer=(value)
     @manufacturer = value
   end
@@ -203,7 +208,7 @@ class Details
   def Distributor
     @distributor
   end
-  
+
   def Distributor=(value)
     @distributor = value
   end
@@ -211,7 +216,7 @@ class Details
   def ImageUrlSmall
     @imageUrlSmall
   end
-  
+
   def ImageUrlSmall=(value)
     @imageUrlSmall = value
   end
@@ -219,7 +224,7 @@ class Details
   def ImageUrlMedium
     @imageUrlMedium
   end
-  
+
   def ImageUrlMedium=(value)
     @imageUrlMedium = value
   end
@@ -227,7 +232,7 @@ class Details
   def ImageUrlLarge
     @imageUrlLarge
   end
-  
+
   def ImageUrlLarge=(value)
     @imageUrlLarge = value
   end
@@ -235,7 +240,7 @@ class Details
   def MerchantId
     @merchantId
   end
-  
+
   def MerchantId=(value)
     @merchantId = value
   end
@@ -243,7 +248,7 @@ class Details
   def MinPrice
     @minPrice
   end
-  
+
   def MinPrice=(value)
     @minPrice = value
   end
@@ -251,7 +256,7 @@ class Details
   def MaxPrice
     @maxPrice
   end
-  
+
   def MaxPrice=(value)
     @maxPrice = value
   end
@@ -259,7 +264,7 @@ class Details
   def MinSalePrice
     @minSalePrice
   end
-  
+
   def MinSalePrice=(value)
     @minSalePrice = value
   end
@@ -267,7 +272,7 @@ class Details
   def MaxSalePrice
     @maxSalePrice
   end
-  
+
   def MaxSalePrice=(value)
     @maxSalePrice = value
   end
@@ -275,7 +280,7 @@ class Details
   def MultiMerchant
     @multiMerchant
   end
-  
+
   def MultiMerchant=(value)
     @multiMerchant = value
   end
@@ -283,7 +288,7 @@ class Details
   def MerchantSku
     @merchantSku
   end
-  
+
   def MerchantSku=(value)
     @merchantSku = value
   end
@@ -291,7 +296,7 @@ class Details
   def ListPrice
     @listPrice
   end
-  
+
   def ListPrice=(value)
     @listPrice = value
   end
@@ -299,7 +304,7 @@ class Details
   def OurPrice
     @ourPrice
   end
-  
+
   def OurPrice=(value)
     @ourPrice = value
   end
@@ -307,7 +312,7 @@ class Details
   def UsedPrice
     @usedPrice
   end
-  
+
   def UsedPrice=(value)
     @usedPrice = value
   end
@@ -315,7 +320,7 @@ class Details
   def RefurbishedPrice
     @refurbishedPrice
   end
-  
+
   def RefurbishedPrice=(value)
     @refurbishedPrice = value
   end
@@ -323,7 +328,7 @@ class Details
   def CollectiblePrice
     @collectiblePrice
   end
-  
+
   def CollectiblePrice=(value)
     @collectiblePrice = value
   end
@@ -331,7 +336,7 @@ class Details
   def ThirdPartyNewPrice
     @thirdPartyNewPrice
   end
-  
+
   def ThirdPartyNewPrice=(value)
     @thirdPartyNewPrice = value
   end
@@ -339,7 +344,7 @@ class Details
   def NumberOfOfferings
     @numberOfOfferings
   end
-  
+
   def NumberOfOfferings=(value)
     @numberOfOfferings = value
   end
@@ -347,7 +352,7 @@ class Details
   def ThirdPartyNewCount
     @thirdPartyNewCount
   end
-  
+
   def ThirdPartyNewCount=(value)
     @thirdPartyNewCount = value
   end
@@ -355,7 +360,7 @@ class Details
   def UsedCount
     @usedCount
   end
-  
+
   def UsedCount=(value)
     @usedCount = value
   end
@@ -363,7 +368,7 @@ class Details
   def CollectibleCount
     @collectibleCount
   end
-  
+
   def CollectibleCount=(value)
     @collectibleCount = value
   end
@@ -371,7 +376,7 @@ class Details
   def RefurbishedCount
     @refurbishedCount
   end
-  
+
   def RefurbishedCount=(value)
     @refurbishedCount = value
   end
@@ -379,7 +384,7 @@ class Details
   def ThirdPartyProductInfo
     @thirdPartyProductInfo
   end
-  
+
   def ThirdPartyProductInfo=(value)
     @thirdPartyProductInfo = value
   end
@@ -387,7 +392,7 @@ class Details
   def SalesRank
     @salesRank
   end
-  
+
   def SalesRank=(value)
     @salesRank = value
   end
@@ -395,7 +400,7 @@ class Details
   def BrowseList
     @browseList
   end
-  
+
   def BrowseList=(value)
     @browseList = value
   end
@@ -403,7 +408,7 @@ class Details
   def Media
     @media
   end
-  
+
   def Media=(value)
     @media = value
   end
@@ -411,7 +416,7 @@ class Details
   def ReadingLevel
     @readingLevel
   end
-  
+
   def ReadingLevel=(value)
     @readingLevel = value
   end
@@ -419,7 +424,7 @@ class Details
   def NumberOfPages
     @numberOfPages
   end
-  
+
   def NumberOfPages=(value)
     @numberOfPages = value
   end
@@ -427,7 +432,7 @@ class Details
   def NumberOfIssues
     @numberOfIssues
   end
-  
+
   def NumberOfIssues=(value)
     @numberOfIssues = value
   end
@@ -435,7 +440,7 @@ class Details
   def IssuesPerYear
     @issuesPerYear
   end
-  
+
   def IssuesPerYear=(value)
     @issuesPerYear = value
   end
@@ -443,7 +448,7 @@ class Details
   def SubscriptionLength
     @subscriptionLength
   end
-  
+
   def SubscriptionLength=(value)
     @subscriptionLength = value
   end
@@ -451,7 +456,7 @@ class Details
   def DeweyNumber
     @deweyNumber
   end
-  
+
   def DeweyNumber=(value)
     @deweyNumber = value
   end
@@ -459,7 +464,7 @@ class Details
   def RunningTime
     @runningTime
   end
-  
+
   def RunningTime=(value)
     @runningTime = value
   end
@@ -467,7 +472,7 @@ class Details
   def Publisher
     @publisher
   end
-  
+
   def Publisher=(value)
     @publisher = value
   end
@@ -475,7 +480,7 @@ class Details
   def NumMedia
     @numMedia
   end
-  
+
   def NumMedia=(value)
     @numMedia = value
   end
@@ -483,7 +488,7 @@ class Details
   def Isbn
     @isbn
   end
-  
+
   def Isbn=(value)
     @isbn = value
   end
@@ -491,7 +496,7 @@ class Details
   def Features
     @features
   end
-  
+
   def Features=(value)
     @features = value
   end
@@ -499,7 +504,7 @@ class Details
   def MpaaRating
     @mpaaRating
   end
-  
+
   def MpaaRating=(value)
     @mpaaRating = value
   end
@@ -507,7 +512,7 @@ class Details
   def EsrbRating
     @esrbRating
   end
-  
+
   def EsrbRating=(value)
     @esrbRating = value
   end
@@ -515,7 +520,7 @@ class Details
   def AgeGroup
     @ageGroup
   end
-  
+
   def AgeGroup=(value)
     @ageGroup = value
   end
@@ -523,7 +528,7 @@ class Details
   def Availability
     @availability
   end
-  
+
   def Availability=(value)
     @availability = value
   end
@@ -531,7 +536,7 @@ class Details
   def Upc
     @upc
   end
-  
+
   def Upc=(value)
     @upc = value
   end
@@ -539,7 +544,7 @@ class Details
   def Tracks
     @tracks
   end
-  
+
   def Tracks=(value)
     @tracks = value
   end
@@ -547,7 +552,7 @@ class Details
   def Accessories
     @accessories
   end
-  
+
   def Accessories=(value)
     @accessories = value
   end
@@ -555,7 +560,7 @@ class Details
   def Platforms
     @platforms
   end
-  
+
   def Platforms=(value)
     @platforms = value
   end
@@ -563,7 +568,7 @@ class Details
   def Encoding
     @encoding
   end
-  
+
   def Encoding=(value)
     @encoding = value
   end
@@ -571,7 +576,7 @@ class Details
   def ProductDescription
     @productDescription
   end
-  
+
   def ProductDescription=(value)
     @productDescription = value
   end
@@ -579,7 +584,7 @@ class Details
   def Reviews
     @reviews
   end
-  
+
   def Reviews=(value)
     @reviews = value
   end
@@ -587,7 +592,7 @@ class Details
   def SimilarProducts
     @similarProducts
   end
-  
+
   def SimilarProducts=(value)
     @similarProducts = value
   end
@@ -595,7 +600,7 @@ class Details
   def FeaturedProducts
     @featuredProducts
   end
-  
+
   def FeaturedProducts=(value)
     @featuredProducts = value
   end
@@ -603,7 +608,7 @@ class Details
   def Lists
     @lists
   end
-  
+
   def Lists=(value)
     @lists = value
   end
@@ -611,7 +616,7 @@ class Details
   def Status
     @status
   end
-  
+
   def Status=(value)
     @status = value
   end
@@ -619,7 +624,7 @@ class Details
   def Variations
     @variations
   end
-  
+
   def Variations=(value)
     @variations = value
   end
@@ -694,21 +699,22 @@ class Details
   end
 end
 
-# http://soap.amazon.com
-class KeyPhraseArray < Array
-  @@schema_type = "KeyPhraseArray"
+# {http://soap.amazon.com}KeyPhraseArray
+class KeyPhraseArray < ::Array
+  @@schema_type = "KeyPhrase"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}KeyPhrase
 class KeyPhrase
   @@schema_type = "KeyPhrase"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["keyPhrase", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "KeyPhrase")]], ["type", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Type")]]]
 
   def KeyPhrase
     @keyPhrase
   end
-  
+
   def KeyPhrase=(value)
     @keyPhrase = value
   end
@@ -716,7 +722,7 @@ class KeyPhrase
   def Type
     @type
   end
-  
+
   def Type=(value)
     @type = value
   end
@@ -727,45 +733,46 @@ class KeyPhrase
   end
 end
 
-# http://soap.amazon.com
-class ArtistArray < Array
-  @@schema_type = "ArtistArray"
+# {http://soap.amazon.com}ArtistArray
+class ArtistArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
+end
+
+# {http://soap.amazon.com}AuthorArray
+class AuthorArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
+end
+
+# {http://soap.amazon.com}StarringArray
+class StarringArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
+end
+
+# {http://soap.amazon.com}DirectorArray
+class DirectorArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
+end
+
+# {http://soap.amazon.com}BrowseNodeArray
+class BrowseNodeArray < ::Array
+  @@schema_type = "BrowseNode"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
-class AuthorArray < Array
-  @@schema_type = "AuthorArray"
-  @@schema_ns = "http://soap.amazon.com"
-end
-
-# http://soap.amazon.com
-class StarringArray < Array
-  @@schema_type = "StarringArray"
-  @@schema_ns = "http://soap.amazon.com"
-end
-
-# http://soap.amazon.com
-class DirectorArray < Array
-  @@schema_type = "DirectorArray"
-  @@schema_ns = "http://soap.amazon.com"
-end
-
-# http://soap.amazon.com
-class BrowseNodeArray < Array
-  @@schema_type = "BrowseNodeArray"
-  @@schema_ns = "http://soap.amazon.com"
-end
-
-# http://soap.amazon.com
+# {http://soap.amazon.com}BrowseNode
 class BrowseNode
   @@schema_type = "BrowseNode"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["browseId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "BrowseId")]], ["browseName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "BrowseName")]]]
 
   def BrowseId
     @browseId
   end
-  
+
   def BrowseId=(value)
     @browseId = value
   end
@@ -773,7 +780,7 @@ class BrowseNode
   def BrowseName
     @browseName
   end
-  
+
   def BrowseName=(value)
     @browseName = value
   end
@@ -784,27 +791,28 @@ class BrowseNode
   end
 end
 
-# http://soap.amazon.com
-class FeaturesArray < Array
-  @@schema_type = "FeaturesArray"
+# {http://soap.amazon.com}FeaturesArray
+class FeaturesArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
+end
+
+# {http://soap.amazon.com}TrackArray
+class TrackArray < ::Array
+  @@schema_type = "Track"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
-class TrackArray < Array
-  @@schema_type = "TrackArray"
-  @@schema_ns = "http://soap.amazon.com"
-end
-
-# http://soap.amazon.com
+# {http://soap.amazon.com}Track
 class Track
   @@schema_type = "Track"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["trackName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "TrackName")]], ["byArtist", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ByArtist")]]]
 
   def TrackName
     @trackName
   end
-  
+
   def TrackName=(value)
     @trackName = value
   end
@@ -812,7 +820,7 @@ class Track
   def ByArtist
     @byArtist
   end
-  
+
   def ByArtist=(value)
     @byArtist = value
   end
@@ -823,27 +831,28 @@ class Track
   end
 end
 
-# http://soap.amazon.com
-class AccessoryArray < Array
-  @@schema_type = "AccessoryArray"
-  @@schema_ns = "http://soap.amazon.com"
+# {http://soap.amazon.com}AccessoryArray
+class AccessoryArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
 end
 
-# http://soap.amazon.com
-class PlatformArray < Array
-  @@schema_type = "PlatformArray"
-  @@schema_ns = "http://soap.amazon.com"
+# {http://soap.amazon.com}PlatformArray
+class PlatformArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}Reviews
 class Reviews
   @@schema_type = "Reviews"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["avgCustomerRating", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "AvgCustomerRating")]], ["totalCustomerReviews", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "TotalCustomerReviews")]], ["customerReviews", ["CustomerReviewArray", XSD::QName.new("http://soap.amazon.com", "CustomerReviews")]]]
 
   def AvgCustomerRating
     @avgCustomerRating
   end
-  
+
   def AvgCustomerRating=(value)
     @avgCustomerRating = value
   end
@@ -851,7 +860,7 @@ class Reviews
   def TotalCustomerReviews
     @totalCustomerReviews
   end
-  
+
   def TotalCustomerReviews=(value)
     @totalCustomerReviews = value
   end
@@ -859,7 +868,7 @@ class Reviews
   def CustomerReviews
     @customerReviews
   end
-  
+
   def CustomerReviews=(value)
     @customerReviews = value
   end
@@ -871,21 +880,22 @@ class Reviews
   end
 end
 
-# http://soap.amazon.com
-class CustomerReviewArray < Array
-  @@schema_type = "CustomerReviewArray"
+# {http://soap.amazon.com}CustomerReviewArray
+class CustomerReviewArray < ::Array
+  @@schema_type = "CustomerReview"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}CustomerReview
 class CustomerReview
   @@schema_type = "CustomerReview"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["rating", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Rating")]], ["date", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Date")]], ["summary", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Summary")]], ["comment", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Comment")]]]
 
   def Rating
     @rating
   end
-  
+
   def Rating=(value)
     @rating = value
   end
@@ -893,7 +903,7 @@ class CustomerReview
   def Date
     @date
   end
-  
+
   def Date=(value)
     @date = value
   end
@@ -901,7 +911,7 @@ class CustomerReview
   def Summary
     @summary
   end
-  
+
   def Summary=(value)
     @summary = value
   end
@@ -909,7 +919,7 @@ class CustomerReview
   def Comment
     @comment
   end
-  
+
   def Comment=(value)
     @comment = value
   end
@@ -922,27 +932,28 @@ class CustomerReview
   end
 end
 
-# http://soap.amazon.com
-class SimilarProductsArray < Array
-  @@schema_type = "SimilarProductsArray"
+# {http://soap.amazon.com}SimilarProductsArray
+class SimilarProductsArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
+end
+
+# {http://soap.amazon.com}FeaturedProductsArray
+class FeaturedProductsArray < ::Array
+  @@schema_type = "FeaturedProduct"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
-class FeaturedProductsArray < Array
-  @@schema_type = "FeaturedProductsArray"
-  @@schema_ns = "http://soap.amazon.com"
-end
-
-# http://soap.amazon.com
+# {http://soap.amazon.com}FeaturedProduct
 class FeaturedProduct
   @@schema_type = "FeaturedProduct"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["asin", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Asin")]], ["comment", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Comment")]]]
 
   def Asin
     @asin
   end
-  
+
   def Asin=(value)
     @asin = value
   end
@@ -950,7 +961,7 @@ class FeaturedProduct
   def Comment
     @comment
   end
-  
+
   def Comment=(value)
     @comment = value
   end
@@ -961,27 +972,28 @@ class FeaturedProduct
   end
 end
 
-# http://soap.amazon.com
-class ListArray < Array
-  @@schema_type = "ListArray"
+# {http://soap.amazon.com}ListArray
+class ListArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
+end
+
+# {http://soap.amazon.com}VariationArray
+class VariationArray < ::Array
+  @@schema_type = "Variation"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
-class VariationArray < Array
-  @@schema_type = "VariationArray"
-  @@schema_ns = "http://soap.amazon.com"
-end
-
-# http://soap.amazon.com
+# {http://soap.amazon.com}Variation
 class Variation
   @@schema_type = "Variation"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["asin", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Asin")]], ["clothingSize", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ClothingSize")]], ["clothingColor", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ClothingColor")]], ["price", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Price")]], ["salePrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SalePrice")]], ["availability", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Availability")]], ["multiMerchant", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MultiMerchant")]], ["merchantSku", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MerchantSku")]]]
 
   def Asin
     @asin
   end
-  
+
   def Asin=(value)
     @asin = value
   end
@@ -989,7 +1001,7 @@ class Variation
   def ClothingSize
     @clothingSize
   end
-  
+
   def ClothingSize=(value)
     @clothingSize = value
   end
@@ -997,7 +1009,7 @@ class Variation
   def ClothingColor
     @clothingColor
   end
-  
+
   def ClothingColor=(value)
     @clothingColor = value
   end
@@ -1005,7 +1017,7 @@ class Variation
   def Price
     @price
   end
-  
+
   def Price=(value)
     @price = value
   end
@@ -1013,7 +1025,7 @@ class Variation
   def SalePrice
     @salePrice
   end
-  
+
   def SalePrice=(value)
     @salePrice = value
   end
@@ -1021,7 +1033,7 @@ class Variation
   def Availability
     @availability
   end
-  
+
   def Availability=(value)
     @availability = value
   end
@@ -1029,7 +1041,7 @@ class Variation
   def MultiMerchant
     @multiMerchant
   end
-  
+
   def MultiMerchant=(value)
     @multiMerchant = value
   end
@@ -1037,7 +1049,7 @@ class Variation
   def MerchantSku
     @merchantSku
   end
-  
+
   def MerchantSku=(value)
     @merchantSku = value
   end
@@ -1054,15 +1066,16 @@ class Variation
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}MarketplaceSearch
 class MarketplaceSearch
   @@schema_type = "MarketplaceSearch"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["marketplaceSearchDetails", ["MarketplaceSearchDetailsArray", XSD::QName.new("http://soap.amazon.com", "MarketplaceSearchDetails")]]]
 
   def MarketplaceSearchDetails
     @marketplaceSearchDetails
   end
-  
+
   def MarketplaceSearchDetails=(value)
     @marketplaceSearchDetails = value
   end
@@ -1072,15 +1085,16 @@ class MarketplaceSearch
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SellerProfile
 class SellerProfile
   @@schema_type = "SellerProfile"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["sellerProfileDetails", ["SellerProfileDetailsArray", XSD::QName.new("http://soap.amazon.com", "SellerProfileDetails")]]]
 
   def SellerProfileDetails
     @sellerProfileDetails
   end
-  
+
   def SellerProfileDetails=(value)
     @sellerProfileDetails = value
   end
@@ -1090,15 +1104,16 @@ class SellerProfile
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SellerSearch
 class SellerSearch
   @@schema_type = "SellerSearch"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["sellerSearchDetails", ["SellerSearchDetailsArray", XSD::QName.new("http://soap.amazon.com", "SellerSearchDetails")]]]
 
   def SellerSearchDetails
     @sellerSearchDetails
   end
-  
+
   def SellerSearchDetails=(value)
     @sellerSearchDetails = value
   end
@@ -1108,15 +1123,16 @@ class SellerSearch
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}MarketplaceSearchDetails
 class MarketplaceSearchDetails
   @@schema_type = "MarketplaceSearchDetails"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["numberOfOpenListings", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumberOfOpenListings")]], ["listingProductInfo", ["ListingProductInfo", XSD::QName.new("http://soap.amazon.com", "ListingProductInfo")]]]
 
   def NumberOfOpenListings
     @numberOfOpenListings
   end
-  
+
   def NumberOfOpenListings=(value)
     @numberOfOpenListings = value
   end
@@ -1124,7 +1140,7 @@ class MarketplaceSearchDetails
   def ListingProductInfo
     @listingProductInfo
   end
-  
+
   def ListingProductInfo=(value)
     @listingProductInfo = value
   end
@@ -1135,21 +1151,22 @@ class MarketplaceSearchDetails
   end
 end
 
-# http://soap.amazon.com
-class MarketplaceSearchDetailsArray < Array
-  @@schema_type = "MarketplaceSearchDetailsArray"
+# {http://soap.amazon.com}MarketplaceSearchDetailsArray
+class MarketplaceSearchDetailsArray < ::Array
+  @@schema_type = "MarketplaceSearchDetails"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SellerProfileDetails
 class SellerProfileDetails
   @@schema_type = "SellerProfileDetails"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["sellerNickname", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SellerNickname")]], ["overallFeedbackRating", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "OverallFeedbackRating")]], ["numberOfFeedback", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumberOfFeedback")]], ["numberOfCanceledBids", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumberOfCanceledBids")]], ["numberOfCanceledAuctions", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumberOfCanceledAuctions")]], ["storeId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "StoreId")]], ["storeName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "StoreName")]], ["sellerFeedback", ["SellerFeedback", XSD::QName.new("http://soap.amazon.com", "SellerFeedback")]]]
 
   def SellerNickname
     @sellerNickname
   end
-  
+
   def SellerNickname=(value)
     @sellerNickname = value
   end
@@ -1157,7 +1174,7 @@ class SellerProfileDetails
   def OverallFeedbackRating
     @overallFeedbackRating
   end
-  
+
   def OverallFeedbackRating=(value)
     @overallFeedbackRating = value
   end
@@ -1165,7 +1182,7 @@ class SellerProfileDetails
   def NumberOfFeedback
     @numberOfFeedback
   end
-  
+
   def NumberOfFeedback=(value)
     @numberOfFeedback = value
   end
@@ -1173,7 +1190,7 @@ class SellerProfileDetails
   def NumberOfCanceledBids
     @numberOfCanceledBids
   end
-  
+
   def NumberOfCanceledBids=(value)
     @numberOfCanceledBids = value
   end
@@ -1181,7 +1198,7 @@ class SellerProfileDetails
   def NumberOfCanceledAuctions
     @numberOfCanceledAuctions
   end
-  
+
   def NumberOfCanceledAuctions=(value)
     @numberOfCanceledAuctions = value
   end
@@ -1189,7 +1206,7 @@ class SellerProfileDetails
   def StoreId
     @storeId
   end
-  
+
   def StoreId=(value)
     @storeId = value
   end
@@ -1197,7 +1214,7 @@ class SellerProfileDetails
   def StoreName
     @storeName
   end
-  
+
   def StoreName=(value)
     @storeName = value
   end
@@ -1205,7 +1222,7 @@ class SellerProfileDetails
   def SellerFeedback
     @sellerFeedback
   end
-  
+
   def SellerFeedback=(value)
     @sellerFeedback = value
   end
@@ -1222,21 +1239,22 @@ class SellerProfileDetails
   end
 end
 
-# http://soap.amazon.com
-class SellerProfileDetailsArray < Array
-  @@schema_type = "SellerProfileDetailsArray"
+# {http://soap.amazon.com}SellerProfileDetailsArray
+class SellerProfileDetailsArray < ::Array
+  @@schema_type = "SellerProfileDetails"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SellerSearchDetails
 class SellerSearchDetails
   @@schema_type = "SellerSearchDetails"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["sellerNickname", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SellerNickname")]], ["storeId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "StoreId")]], ["storeName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "StoreName")]], ["numberOfOpenListings", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "NumberOfOpenListings")]], ["listingProductInfo", ["ListingProductInfo", XSD::QName.new("http://soap.amazon.com", "ListingProductInfo")]]]
 
   def SellerNickname
     @sellerNickname
   end
-  
+
   def SellerNickname=(value)
     @sellerNickname = value
   end
@@ -1244,7 +1262,7 @@ class SellerSearchDetails
   def StoreId
     @storeId
   end
-  
+
   def StoreId=(value)
     @storeId = value
   end
@@ -1252,7 +1270,7 @@ class SellerSearchDetails
   def StoreName
     @storeName
   end
-  
+
   def StoreName=(value)
     @storeName = value
   end
@@ -1260,7 +1278,7 @@ class SellerSearchDetails
   def NumberOfOpenListings
     @numberOfOpenListings
   end
-  
+
   def NumberOfOpenListings=(value)
     @numberOfOpenListings = value
   end
@@ -1268,7 +1286,7 @@ class SellerSearchDetails
   def ListingProductInfo
     @listingProductInfo
   end
-  
+
   def ListingProductInfo=(value)
     @listingProductInfo = value
   end
@@ -1282,21 +1300,22 @@ class SellerSearchDetails
   end
 end
 
-# http://soap.amazon.com
-class SellerSearchDetailsArray < Array
-  @@schema_type = "SellerSearchDetailsArray"
+# {http://soap.amazon.com}SellerSearchDetailsArray
+class SellerSearchDetailsArray < ::Array
+  @@schema_type = "SellerSearchDetails"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ListingProductInfo
 class ListingProductInfo
   @@schema_type = "ListingProductInfo"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["listingProductDetails", ["ListingProductDetailsArray", XSD::QName.new("http://soap.amazon.com", "ListingProductDetails")]]]
 
   def ListingProductDetails
     @listingProductDetails
   end
-  
+
   def ListingProductDetails=(value)
     @listingProductDetails = value
   end
@@ -1306,21 +1325,22 @@ class ListingProductInfo
   end
 end
 
-# http://soap.amazon.com
-class ListingProductDetailsArray < Array
-  @@schema_type = "ListingProductDetailsArray"
+# {http://soap.amazon.com}ListingProductDetailsArray
+class ListingProductDetailsArray < ::Array
+  @@schema_type = "ListingProductDetails"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ListingProductDetails
 class ListingProductDetails
   @@schema_type = "ListingProductDetails"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["exchangeId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeId")]], ["listingId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ListingId")]], ["exchangeTitle", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeTitle")]], ["exchangeDescription", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeDescription")]], ["exchangePrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangePrice")]], ["exchangeAsin", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeAsin")]], ["exchangeEndDate", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeEndDate")]], ["exchangeTinyImage", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeTinyImage")]], ["exchangeSellerId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeSellerId")]], ["exchangeSellerNickname", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeSellerNickname")]], ["exchangeStartDate", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeStartDate")]], ["exchangeStatus", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeStatus")]], ["exchangeQuantity", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeQuantity")]], ["exchangeQuantityAllocated", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeQuantityAllocated")]], ["exchangeFeaturedCategory", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeFeaturedCategory")]], ["exchangeCondition", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeCondition")]], ["exchangeConditionType", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeConditionType")]], ["exchangeAvailability", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeAvailability")]], ["exchangeOfferingType", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeOfferingType")]], ["exchangeSellerState", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeSellerState")]], ["exchangeSellerCountry", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeSellerCountry")]], ["exchangeSellerRating", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeSellerRating")]]]
 
   def ExchangeId
     @exchangeId
   end
-  
+
   def ExchangeId=(value)
     @exchangeId = value
   end
@@ -1328,7 +1348,7 @@ class ListingProductDetails
   def ListingId
     @listingId
   end
-  
+
   def ListingId=(value)
     @listingId = value
   end
@@ -1336,7 +1356,7 @@ class ListingProductDetails
   def ExchangeTitle
     @exchangeTitle
   end
-  
+
   def ExchangeTitle=(value)
     @exchangeTitle = value
   end
@@ -1344,7 +1364,7 @@ class ListingProductDetails
   def ExchangeDescription
     @exchangeDescription
   end
-  
+
   def ExchangeDescription=(value)
     @exchangeDescription = value
   end
@@ -1352,7 +1372,7 @@ class ListingProductDetails
   def ExchangePrice
     @exchangePrice
   end
-  
+
   def ExchangePrice=(value)
     @exchangePrice = value
   end
@@ -1360,7 +1380,7 @@ class ListingProductDetails
   def ExchangeAsin
     @exchangeAsin
   end
-  
+
   def ExchangeAsin=(value)
     @exchangeAsin = value
   end
@@ -1368,7 +1388,7 @@ class ListingProductDetails
   def ExchangeEndDate
     @exchangeEndDate
   end
-  
+
   def ExchangeEndDate=(value)
     @exchangeEndDate = value
   end
@@ -1376,7 +1396,7 @@ class ListingProductDetails
   def ExchangeTinyImage
     @exchangeTinyImage
   end
-  
+
   def ExchangeTinyImage=(value)
     @exchangeTinyImage = value
   end
@@ -1384,7 +1404,7 @@ class ListingProductDetails
   def ExchangeSellerId
     @exchangeSellerId
   end
-  
+
   def ExchangeSellerId=(value)
     @exchangeSellerId = value
   end
@@ -1392,7 +1412,7 @@ class ListingProductDetails
   def ExchangeSellerNickname
     @exchangeSellerNickname
   end
-  
+
   def ExchangeSellerNickname=(value)
     @exchangeSellerNickname = value
   end
@@ -1400,7 +1420,7 @@ class ListingProductDetails
   def ExchangeStartDate
     @exchangeStartDate
   end
-  
+
   def ExchangeStartDate=(value)
     @exchangeStartDate = value
   end
@@ -1408,7 +1428,7 @@ class ListingProductDetails
   def ExchangeStatus
     @exchangeStatus
   end
-  
+
   def ExchangeStatus=(value)
     @exchangeStatus = value
   end
@@ -1416,7 +1436,7 @@ class ListingProductDetails
   def ExchangeQuantity
     @exchangeQuantity
   end
-  
+
   def ExchangeQuantity=(value)
     @exchangeQuantity = value
   end
@@ -1424,7 +1444,7 @@ class ListingProductDetails
   def ExchangeQuantityAllocated
     @exchangeQuantityAllocated
   end
-  
+
   def ExchangeQuantityAllocated=(value)
     @exchangeQuantityAllocated = value
   end
@@ -1432,7 +1452,7 @@ class ListingProductDetails
   def ExchangeFeaturedCategory
     @exchangeFeaturedCategory
   end
-  
+
   def ExchangeFeaturedCategory=(value)
     @exchangeFeaturedCategory = value
   end
@@ -1440,7 +1460,7 @@ class ListingProductDetails
   def ExchangeCondition
     @exchangeCondition
   end
-  
+
   def ExchangeCondition=(value)
     @exchangeCondition = value
   end
@@ -1448,7 +1468,7 @@ class ListingProductDetails
   def ExchangeConditionType
     @exchangeConditionType
   end
-  
+
   def ExchangeConditionType=(value)
     @exchangeConditionType = value
   end
@@ -1456,7 +1476,7 @@ class ListingProductDetails
   def ExchangeAvailability
     @exchangeAvailability
   end
-  
+
   def ExchangeAvailability=(value)
     @exchangeAvailability = value
   end
@@ -1464,7 +1484,7 @@ class ListingProductDetails
   def ExchangeOfferingType
     @exchangeOfferingType
   end
-  
+
   def ExchangeOfferingType=(value)
     @exchangeOfferingType = value
   end
@@ -1472,7 +1492,7 @@ class ListingProductDetails
   def ExchangeSellerState
     @exchangeSellerState
   end
-  
+
   def ExchangeSellerState=(value)
     @exchangeSellerState = value
   end
@@ -1480,7 +1500,7 @@ class ListingProductDetails
   def ExchangeSellerCountry
     @exchangeSellerCountry
   end
-  
+
   def ExchangeSellerCountry=(value)
     @exchangeSellerCountry = value
   end
@@ -1488,7 +1508,7 @@ class ListingProductDetails
   def ExchangeSellerRating
     @exchangeSellerRating
   end
-  
+
   def ExchangeSellerRating=(value)
     @exchangeSellerRating = value
   end
@@ -1519,15 +1539,16 @@ class ListingProductDetails
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SellerFeedback
 class SellerFeedback
   @@schema_type = "SellerFeedback"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["feedback", ["FeedbackArray", XSD::QName.new("http://soap.amazon.com", "Feedback")]]]
 
   def Feedback
     @feedback
   end
-  
+
   def Feedback=(value)
     @feedback = value
   end
@@ -1537,21 +1558,22 @@ class SellerFeedback
   end
 end
 
-# http://soap.amazon.com
-class FeedbackArray < Array
-  @@schema_type = "FeedbackArray"
+# {http://soap.amazon.com}FeedbackArray
+class FeedbackArray < ::Array
+  @@schema_type = "Feedback"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}Feedback
 class Feedback
   @@schema_type = "Feedback"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["feedbackRating", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "FeedbackRating")]], ["feedbackComments", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "FeedbackComments")]], ["feedbackDate", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "FeedbackDate")]], ["feedbackRater", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "FeedbackRater")]]]
 
   def FeedbackRating
     @feedbackRating
   end
-  
+
   def FeedbackRating=(value)
     @feedbackRating = value
   end
@@ -1559,7 +1581,7 @@ class Feedback
   def FeedbackComments
     @feedbackComments
   end
-  
+
   def FeedbackComments=(value)
     @feedbackComments = value
   end
@@ -1567,7 +1589,7 @@ class Feedback
   def FeedbackDate
     @feedbackDate
   end
-  
+
   def FeedbackDate=(value)
     @feedbackDate = value
   end
@@ -1575,7 +1597,7 @@ class Feedback
   def FeedbackRater
     @feedbackRater
   end
-  
+
   def FeedbackRater=(value)
     @feedbackRater = value
   end
@@ -1588,15 +1610,16 @@ class Feedback
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ThirdPartyProductInfo
 class ThirdPartyProductInfo
   @@schema_type = "ThirdPartyProductInfo"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["thirdPartyProductDetails", ["ThirdPartyProductDetailsArray", XSD::QName.new("http://soap.amazon.com", "ThirdPartyProductDetails")]]]
 
   def ThirdPartyProductDetails
     @thirdPartyProductDetails
   end
-  
+
   def ThirdPartyProductDetails=(value)
     @thirdPartyProductDetails = value
   end
@@ -1606,21 +1629,22 @@ class ThirdPartyProductInfo
   end
 end
 
-# http://soap.amazon.com
-class ThirdPartyProductDetailsArray < Array
-  @@schema_type = "ThirdPartyProductDetailsArray"
+# {http://soap.amazon.com}ThirdPartyProductDetailsArray
+class ThirdPartyProductDetailsArray < ::Array
+  @@schema_type = "ThirdPartyProductDetails"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ThirdPartyProductDetails
 class ThirdPartyProductDetails
   @@schema_type = "ThirdPartyProductDetails"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["offeringType", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "OfferingType")]], ["sellerId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SellerId")]], ["sellerNickname", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SellerNickname")]], ["exchangeId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeId")]], ["offeringPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "OfferingPrice")]], ["condition", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Condition")]], ["conditionType", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ConditionType")]], ["exchangeAvailability", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeAvailability")]], ["sellerCountry", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SellerCountry")]], ["sellerState", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SellerState")]], ["shipComments", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ShipComments")]], ["sellerRating", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SellerRating")]]]
 
   def OfferingType
     @offeringType
   end
-  
+
   def OfferingType=(value)
     @offeringType = value
   end
@@ -1628,7 +1652,7 @@ class ThirdPartyProductDetails
   def SellerId
     @sellerId
   end
-  
+
   def SellerId=(value)
     @sellerId = value
   end
@@ -1636,7 +1660,7 @@ class ThirdPartyProductDetails
   def SellerNickname
     @sellerNickname
   end
-  
+
   def SellerNickname=(value)
     @sellerNickname = value
   end
@@ -1644,7 +1668,7 @@ class ThirdPartyProductDetails
   def ExchangeId
     @exchangeId
   end
-  
+
   def ExchangeId=(value)
     @exchangeId = value
   end
@@ -1652,7 +1676,7 @@ class ThirdPartyProductDetails
   def OfferingPrice
     @offeringPrice
   end
-  
+
   def OfferingPrice=(value)
     @offeringPrice = value
   end
@@ -1660,7 +1684,7 @@ class ThirdPartyProductDetails
   def Condition
     @condition
   end
-  
+
   def Condition=(value)
     @condition = value
   end
@@ -1668,7 +1692,7 @@ class ThirdPartyProductDetails
   def ConditionType
     @conditionType
   end
-  
+
   def ConditionType=(value)
     @conditionType = value
   end
@@ -1676,7 +1700,7 @@ class ThirdPartyProductDetails
   def ExchangeAvailability
     @exchangeAvailability
   end
-  
+
   def ExchangeAvailability=(value)
     @exchangeAvailability = value
   end
@@ -1684,7 +1708,7 @@ class ThirdPartyProductDetails
   def SellerCountry
     @sellerCountry
   end
-  
+
   def SellerCountry=(value)
     @sellerCountry = value
   end
@@ -1692,7 +1716,7 @@ class ThirdPartyProductDetails
   def SellerState
     @sellerState
   end
-  
+
   def SellerState=(value)
     @sellerState = value
   end
@@ -1700,7 +1724,7 @@ class ThirdPartyProductDetails
   def ShipComments
     @shipComments
   end
-  
+
   def ShipComments=(value)
     @shipComments = value
   end
@@ -1708,7 +1732,7 @@ class ThirdPartyProductDetails
   def SellerRating
     @sellerRating
   end
-  
+
   def SellerRating=(value)
     @sellerRating = value
   end
@@ -1729,10 +1753,11 @@ class ThirdPartyProductDetails
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}KeywordRequest
 class KeywordRequest
   @@schema_type = "KeywordRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["keyword", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["price", "SOAP::SOAPString"]]
 
   attr_accessor :keyword
   attr_accessor :page
@@ -1757,10 +1782,11 @@ class KeywordRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}TextStreamRequest
 class TextStreamRequest
   @@schema_type = "TextStreamRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["textStream", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["price", "SOAP::SOAPString"]]
 
   attr_accessor :textStream
   attr_accessor :page
@@ -1785,10 +1811,11 @@ class TextStreamRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}PowerRequest
 class PowerRequest
   @@schema_type = "PowerRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["power", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :power
   attr_accessor :page
@@ -1811,10 +1838,11 @@ class PowerRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}BrowseNodeRequest
 class BrowseNodeRequest
   @@schema_type = "BrowseNodeRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["browse_node", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["keywords", "SOAP::SOAPString"], ["price", "SOAP::SOAPString"]]
 
   attr_accessor :browse_node
   attr_accessor :page
@@ -1841,10 +1869,11 @@ class BrowseNodeRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}AsinRequest
 class AsinRequest
   @@schema_type = "AsinRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["asin", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["offer", "SOAP::SOAPString"], ["offerpage", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"]]
 
   attr_accessor :asin
   attr_accessor :tag
@@ -1867,10 +1896,11 @@ class AsinRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}BlendedRequest
 class BlendedRequest
   @@schema_type = "BlendedRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["blended", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :blended
   attr_accessor :tag
@@ -1887,10 +1917,11 @@ class BlendedRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}UpcRequest
 class UpcRequest
   @@schema_type = "UpcRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["upc", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :upc
   attr_accessor :mode
@@ -1911,10 +1942,11 @@ class UpcRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SkuRequest
 class SkuRequest
   @@schema_type = "SkuRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["sku", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["merchant_id", "SOAP::SOAPString"], ["keywords", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :sku
   attr_accessor :mode
@@ -1939,10 +1971,11 @@ class SkuRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ArtistRequest
 class ArtistRequest
   @@schema_type = "ArtistRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["artist", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["keywords", "SOAP::SOAPString"], ["price", "SOAP::SOAPString"]]
 
   attr_accessor :artist
   attr_accessor :page
@@ -1969,10 +2002,11 @@ class ArtistRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}AuthorRequest
 class AuthorRequest
   @@schema_type = "AuthorRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["author", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["keywords", "SOAP::SOAPString"], ["price", "SOAP::SOAPString"]]
 
   attr_accessor :author
   attr_accessor :page
@@ -1999,10 +2033,11 @@ class AuthorRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ActorRequest
 class ActorRequest
   @@schema_type = "ActorRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["actor", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["keywords", "SOAP::SOAPString"], ["price", "SOAP::SOAPString"]]
 
   attr_accessor :actor
   attr_accessor :page
@@ -2029,10 +2064,11 @@ class ActorRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}DirectorRequest
 class DirectorRequest
   @@schema_type = "DirectorRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["director", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["keywords", "SOAP::SOAPString"], ["price", "SOAP::SOAPString"]]
 
   attr_accessor :director
   attr_accessor :page
@@ -2059,10 +2095,11 @@ class DirectorRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ExchangeRequest
 class ExchangeRequest
   @@schema_type = "ExchangeRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["exchange_id", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :exchange_id
   attr_accessor :tag
@@ -2079,10 +2116,11 @@ class ExchangeRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ManufacturerRequest
 class ManufacturerRequest
   @@schema_type = "ManufacturerRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["manufacturer", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["mode", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["keywords", "SOAP::SOAPString"], ["price", "SOAP::SOAPString"]]
 
   attr_accessor :manufacturer
   attr_accessor :page
@@ -2109,10 +2147,11 @@ class ManufacturerRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ListManiaRequest
 class ListManiaRequest
   @@schema_type = "ListManiaRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["lm_id", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :lm_id
   attr_accessor :page
@@ -2131,10 +2170,11 @@ class ListManiaRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}WishlistRequest
 class WishlistRequest
   @@schema_type = "WishlistRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["wishlist_id", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :wishlist_id
   attr_accessor :page
@@ -2153,10 +2193,11 @@ class WishlistRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}MarketplaceRequest
 class MarketplaceRequest
   @@schema_type = "MarketplaceRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["marketplace_search", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["keyword", "SOAP::SOAPString"], ["keyword_search", "SOAP::SOAPString"], ["browse_id", "SOAP::SOAPString"], ["zipcode", "SOAP::SOAPString"], ["area_id", "SOAP::SOAPString"], ["geo", "SOAP::SOAPString"], ["sort", "SOAP::SOAPString"], ["listing_id", "SOAP::SOAPString"], ["desc", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["index", "SOAP::SOAPString"]]
 
   attr_accessor :marketplace_search
   attr_accessor :tag
@@ -2195,10 +2236,11 @@ class MarketplaceRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SellerProfileRequest
 class SellerProfileRequest
   @@schema_type = "SellerProfileRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["seller_id", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["desc", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :seller_id
   attr_accessor :tag
@@ -2219,10 +2261,11 @@ class SellerProfileRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SellerRequest
 class SellerRequest
   @@schema_type = "SellerRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["seller_id", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["offerstatus", "SOAP::SOAPString"], ["page", "SOAP::SOAPString"], ["seller_browse_id", "SOAP::SOAPString"], ["keyword", "SOAP::SOAPString"], ["desc", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"], ["index", "SOAP::SOAPString"]]
 
   attr_accessor :seller_id
   attr_accessor :tag
@@ -2251,10 +2294,11 @@ class SellerRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}SimilarityRequest
 class SimilarityRequest
   @@schema_type = "SimilarityRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["asin", "SOAP::SOAPString"], ["tag", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :asin
   attr_accessor :tag
@@ -2271,27 +2315,28 @@ class SimilarityRequest
   end
 end
 
-# http://soap.amazon.com
-class ItemIdArray < Array
-  @@schema_type = "ItemIdArray"
+# {http://soap.amazon.com}ItemIdArray
+class ItemIdArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
+end
+
+# {http://soap.amazon.com}ItemArray
+class ItemArray < ::Array
+  @@schema_type = "Item"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
-class ItemArray < Array
-  @@schema_type = "ItemArray"
-  @@schema_ns = "http://soap.amazon.com"
-end
-
-# http://soap.amazon.com
+# {http://soap.amazon.com}Item
 class Item
   @@schema_type = "Item"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["itemId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ItemId")]], ["productName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ProductName")]], ["catalog", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Catalog")]], ["asin", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Asin")]], ["exchangeId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeId")]], ["quantity", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Quantity")]], ["listPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ListPrice")]], ["ourPrice", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "OurPrice")]], ["merchantSku", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MerchantSku")]]]
 
   def ItemId
     @itemId
   end
-  
+
   def ItemId=(value)
     @itemId = value
   end
@@ -2299,7 +2344,7 @@ class Item
   def ProductName
     @productName
   end
-  
+
   def ProductName=(value)
     @productName = value
   end
@@ -2307,7 +2352,7 @@ class Item
   def Catalog
     @catalog
   end
-  
+
   def Catalog=(value)
     @catalog = value
   end
@@ -2315,7 +2360,7 @@ class Item
   def Asin
     @asin
   end
-  
+
   def Asin=(value)
     @asin = value
   end
@@ -2323,7 +2368,7 @@ class Item
   def ExchangeId
     @exchangeId
   end
-  
+
   def ExchangeId=(value)
     @exchangeId = value
   end
@@ -2331,7 +2376,7 @@ class Item
   def Quantity
     @quantity
   end
-  
+
   def Quantity=(value)
     @quantity = value
   end
@@ -2339,7 +2384,7 @@ class Item
   def ListPrice
     @listPrice
   end
-  
+
   def ListPrice=(value)
     @listPrice = value
   end
@@ -2347,7 +2392,7 @@ class Item
   def OurPrice
     @ourPrice
   end
-  
+
   def OurPrice=(value)
     @ourPrice = value
   end
@@ -2355,7 +2400,7 @@ class Item
   def MerchantSku
     @merchantSku
   end
-  
+
   def MerchantSku=(value)
     @merchantSku = value
   end
@@ -2373,21 +2418,22 @@ class Item
   end
 end
 
-# http://soap.amazon.com
-class ItemQuantityArray < Array
-  @@schema_type = "ItemQuantityArray"
+# {http://soap.amazon.com}ItemQuantityArray
+class ItemQuantityArray < ::Array
+  @@schema_type = "ItemQuantity"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ItemQuantity
 class ItemQuantity
   @@schema_type = "ItemQuantity"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["itemId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ItemId")]], ["quantity", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Quantity")]]]
 
   def ItemId
     @itemId
   end
-  
+
   def ItemId=(value)
     @itemId = value
   end
@@ -2395,7 +2441,7 @@ class ItemQuantity
   def Quantity
     @quantity
   end
-  
+
   def Quantity=(value)
     @quantity = value
   end
@@ -2406,21 +2452,22 @@ class ItemQuantity
   end
 end
 
-# http://soap.amazon.com
-class AddItemArray < Array
-  @@schema_type = "AddItemArray"
+# {http://soap.amazon.com}AddItemArray
+class AddItemArray < ::Array
+  @@schema_type = "AddItem"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}AddItem
 class AddItem
   @@schema_type = "AddItem"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["parentAsin", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ParentAsin")]], ["asin", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Asin")]], ["merchantId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MerchantId")]], ["exchangeId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeId")]], ["quantity", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Quantity")]]]
 
   def ParentAsin
     @parentAsin
   end
-  
+
   def ParentAsin=(value)
     @parentAsin = value
   end
@@ -2428,7 +2475,7 @@ class AddItem
   def Asin
     @asin
   end
-  
+
   def Asin=(value)
     @asin = value
   end
@@ -2436,7 +2483,7 @@ class AddItem
   def MerchantId
     @merchantId
   end
-  
+
   def MerchantId=(value)
     @merchantId = value
   end
@@ -2444,7 +2491,7 @@ class AddItem
   def ExchangeId
     @exchangeId
   end
-  
+
   def ExchangeId=(value)
     @exchangeId = value
   end
@@ -2452,7 +2499,7 @@ class AddItem
   def Quantity
     @quantity
   end
-  
+
   def Quantity=(value)
     @quantity = value
   end
@@ -2466,15 +2513,16 @@ class AddItem
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ShoppingCart
 class ShoppingCart
   @@schema_type = "ShoppingCart"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["cartId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CartId")]], ["hMAC", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "HMAC")]], ["purchaseUrl", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "PurchaseUrl")]], ["items", ["ItemArray", XSD::QName.new("http://soap.amazon.com", "Items")]], ["similarProducts", ["SimilarProductsArray", XSD::QName.new("http://soap.amazon.com", "SimilarProducts")]]]
 
   def CartId
     @cartId
   end
-  
+
   def CartId=(value)
     @cartId = value
   end
@@ -2482,7 +2530,7 @@ class ShoppingCart
   def HMAC
     @hMAC
   end
-  
+
   def HMAC=(value)
     @hMAC = value
   end
@@ -2490,7 +2538,7 @@ class ShoppingCart
   def PurchaseUrl
     @purchaseUrl
   end
-  
+
   def PurchaseUrl=(value)
     @purchaseUrl = value
   end
@@ -2498,7 +2546,7 @@ class ShoppingCart
   def Items
     @items
   end
-  
+
   def Items=(value)
     @items = value
   end
@@ -2506,7 +2554,7 @@ class ShoppingCart
   def SimilarProducts
     @similarProducts
   end
-  
+
   def SimilarProducts=(value)
     @similarProducts = value
   end
@@ -2520,10 +2568,11 @@ class ShoppingCart
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}GetShoppingCartRequest
 class GetShoppingCartRequest
   @@schema_type = "GetShoppingCartRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["tag", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["cartId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CartId")]], ["hMAC", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "HMAC")]], ["locale", "SOAP::SOAPString"], ["sims", "SOAP::SOAPString"], ["mergeCart", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MergeCart")]]]
 
   attr_accessor :tag
   attr_accessor :devtag
@@ -2533,7 +2582,7 @@ class GetShoppingCartRequest
   def CartId
     @cartId
   end
-  
+
   def CartId=(value)
     @cartId = value
   end
@@ -2541,25 +2590,35 @@ class GetShoppingCartRequest
   def HMAC
     @hMAC
   end
-  
+
   def HMAC=(value)
     @hMAC = value
   end
 
-  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, locale = nil, sims = nil)
+  def MergeCart
+    @mergeCart
+  end
+
+  def MergeCart=(value)
+    @mergeCart = value
+  end
+
+  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, locale = nil, sims = nil, mergeCart = nil)
     @tag = tag
     @devtag = devtag
     @cartId = cartId
     @hMAC = hMAC
     @locale = locale
     @sims = sims
+    @mergeCart = mergeCart
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ClearShoppingCartRequest
 class ClearShoppingCartRequest
   @@schema_type = "ClearShoppingCartRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["tag", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["cartId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CartId")]], ["hMAC", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "HMAC")]], ["locale", "SOAP::SOAPString"], ["mergeCart", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MergeCart")]]]
 
   attr_accessor :tag
   attr_accessor :devtag
@@ -2568,7 +2627,7 @@ class ClearShoppingCartRequest
   def CartId
     @cartId
   end
-  
+
   def CartId=(value)
     @cartId = value
   end
@@ -2576,24 +2635,34 @@ class ClearShoppingCartRequest
   def HMAC
     @hMAC
   end
-  
+
   def HMAC=(value)
     @hMAC = value
   end
 
-  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, locale = nil)
+  def MergeCart
+    @mergeCart
+  end
+
+  def MergeCart=(value)
+    @mergeCart = value
+  end
+
+  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, locale = nil, mergeCart = nil)
     @tag = tag
     @devtag = devtag
     @cartId = cartId
     @hMAC = hMAC
     @locale = locale
+    @mergeCart = mergeCart
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}AddShoppingCartItemsRequest
 class AddShoppingCartItemsRequest
   @@schema_type = "AddShoppingCartItemsRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["tag", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["cartId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CartId")]], ["hMAC", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "HMAC")]], ["items", ["AddItemArray", XSD::QName.new("http://soap.amazon.com", "Items")]], ["locale", "SOAP::SOAPString"], ["sims", "SOAP::SOAPString"], ["mergeCart", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MergeCart")]]]
 
   attr_accessor :tag
   attr_accessor :devtag
@@ -2603,7 +2672,7 @@ class AddShoppingCartItemsRequest
   def CartId
     @cartId
   end
-  
+
   def CartId=(value)
     @cartId = value
   end
@@ -2611,7 +2680,7 @@ class AddShoppingCartItemsRequest
   def HMAC
     @hMAC
   end
-  
+
   def HMAC=(value)
     @hMAC = value
   end
@@ -2619,12 +2688,20 @@ class AddShoppingCartItemsRequest
   def Items
     @items
   end
-  
+
   def Items=(value)
     @items = value
   end
 
-  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, items = nil, locale = nil, sims = nil)
+  def MergeCart
+    @mergeCart
+  end
+
+  def MergeCart=(value)
+    @mergeCart = value
+  end
+
+  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, items = nil, locale = nil, sims = nil, mergeCart = nil)
     @tag = tag
     @devtag = devtag
     @cartId = cartId
@@ -2632,13 +2709,15 @@ class AddShoppingCartItemsRequest
     @items = items
     @locale = locale
     @sims = sims
+    @mergeCart = mergeCart
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}RemoveShoppingCartItemsRequest
 class RemoveShoppingCartItemsRequest
   @@schema_type = "RemoveShoppingCartItemsRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["tag", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["cartId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CartId")]], ["hMAC", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "HMAC")]], ["items", ["ItemIdArray", XSD::QName.new("http://soap.amazon.com", "Items")]], ["locale", "SOAP::SOAPString"], ["sims", "SOAP::SOAPString"], ["mergeCart", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MergeCart")]]]
 
   attr_accessor :tag
   attr_accessor :devtag
@@ -2648,7 +2727,7 @@ class RemoveShoppingCartItemsRequest
   def CartId
     @cartId
   end
-  
+
   def CartId=(value)
     @cartId = value
   end
@@ -2656,7 +2735,7 @@ class RemoveShoppingCartItemsRequest
   def HMAC
     @hMAC
   end
-  
+
   def HMAC=(value)
     @hMAC = value
   end
@@ -2664,12 +2743,20 @@ class RemoveShoppingCartItemsRequest
   def Items
     @items
   end
-  
+
   def Items=(value)
     @items = value
   end
 
-  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, items = nil, locale = nil, sims = nil)
+  def MergeCart
+    @mergeCart
+  end
+
+  def MergeCart=(value)
+    @mergeCart = value
+  end
+
+  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, items = nil, locale = nil, sims = nil, mergeCart = nil)
     @tag = tag
     @devtag = devtag
     @cartId = cartId
@@ -2677,13 +2764,15 @@ class RemoveShoppingCartItemsRequest
     @items = items
     @locale = locale
     @sims = sims
+    @mergeCart = mergeCart
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ModifyShoppingCartItemsRequest
 class ModifyShoppingCartItemsRequest
   @@schema_type = "ModifyShoppingCartItemsRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["tag", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["cartId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CartId")]], ["hMAC", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "HMAC")]], ["items", ["ItemQuantityArray", XSD::QName.new("http://soap.amazon.com", "Items")]], ["locale", "SOAP::SOAPString"], ["sims", "SOAP::SOAPString"], ["mergeCart", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "MergeCart")]]]
 
   attr_accessor :tag
   attr_accessor :devtag
@@ -2693,7 +2782,7 @@ class ModifyShoppingCartItemsRequest
   def CartId
     @cartId
   end
-  
+
   def CartId=(value)
     @cartId = value
   end
@@ -2701,7 +2790,7 @@ class ModifyShoppingCartItemsRequest
   def HMAC
     @hMAC
   end
-  
+
   def HMAC=(value)
     @hMAC = value
   end
@@ -2709,12 +2798,20 @@ class ModifyShoppingCartItemsRequest
   def Items
     @items
   end
-  
+
   def Items=(value)
     @items = value
   end
 
-  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, items = nil, locale = nil, sims = nil)
+  def MergeCart
+    @mergeCart
+  end
+
+  def MergeCart=(value)
+    @mergeCart = value
+  end
+
+  def initialize(tag = nil, devtag = nil, cartId = nil, hMAC = nil, items = nil, locale = nil, sims = nil, mergeCart = nil)
     @tag = tag
     @devtag = devtag
     @cartId = cartId
@@ -2722,24 +2819,26 @@ class ModifyShoppingCartItemsRequest
     @items = items
     @locale = locale
     @sims = sims
+    @mergeCart = mergeCart
   end
 end
 
-# http://soap.amazon.com
-class OrderIdArray < Array
-  @@schema_type = "OrderIdArray"
-  @@schema_ns = "http://soap.amazon.com"
+# {http://soap.amazon.com}OrderIdArray
+class OrderIdArray < ::Array
+  @@schema_type = "string"
+  @@schema_ns = "http://www.w3.org/2001/XMLSchema"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}Price
 class Price
   @@schema_type = "Price"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["amount", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Amount")]], ["currencyCode", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CurrencyCode")]]]
 
   def Amount
     @amount
   end
-  
+
   def Amount=(value)
     @amount = value
   end
@@ -2747,7 +2846,7 @@ class Price
   def CurrencyCode
     @currencyCode
   end
-  
+
   def CurrencyCode=(value)
     @currencyCode = value
   end
@@ -2758,15 +2857,16 @@ class Price
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}Package
 class Package
   @@schema_type = "Package"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["trackingNumber", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "TrackingNumber")]], ["carrierName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "CarrierName")]]]
 
   def TrackingNumber
     @trackingNumber
   end
-  
+
   def TrackingNumber=(value)
     @trackingNumber = value
   end
@@ -2774,7 +2874,7 @@ class Package
   def CarrierName
     @carrierName
   end
-  
+
   def CarrierName=(value)
     @carrierName = value
   end
@@ -2785,21 +2885,22 @@ class Package
   end
 end
 
-# http://soap.amazon.com
-class PackageArray < Array
-  @@schema_type = "PackageArray"
+# {http://soap.amazon.com}PackageArray
+class PackageArray < ::Array
+  @@schema_type = "Package"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}OrderItem
 class OrderItem
   @@schema_type = "OrderItem"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["itemNumber", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ItemNumber")]], ["aSIN", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ASIN")]], ["exchangeId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ExchangeId")]], ["quantity", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Quantity")]], ["unitPrice", ["Price", XSD::QName.new("http://soap.amazon.com", "UnitPrice")]], ["totalPrice", ["Price", XSD::QName.new("http://soap.amazon.com", "TotalPrice")]]]
 
   def ItemNumber
     @itemNumber
   end
-  
+
   def ItemNumber=(value)
     @itemNumber = value
   end
@@ -2807,7 +2908,7 @@ class OrderItem
   def ASIN
     @aSIN
   end
-  
+
   def ASIN=(value)
     @aSIN = value
   end
@@ -2815,7 +2916,7 @@ class OrderItem
   def ExchangeId
     @exchangeId
   end
-  
+
   def ExchangeId=(value)
     @exchangeId = value
   end
@@ -2823,7 +2924,7 @@ class OrderItem
   def Quantity
     @quantity
   end
-  
+
   def Quantity=(value)
     @quantity = value
   end
@@ -2831,7 +2932,7 @@ class OrderItem
   def UnitPrice
     @unitPrice
   end
-  
+
   def UnitPrice=(value)
     @unitPrice = value
   end
@@ -2839,7 +2940,7 @@ class OrderItem
   def TotalPrice
     @totalPrice
   end
-  
+
   def TotalPrice=(value)
     @totalPrice = value
   end
@@ -2854,21 +2955,22 @@ class OrderItem
   end
 end
 
-# http://soap.amazon.com
-class OrderItemArray < Array
-  @@schema_type = "OrderItemArray"
+# {http://soap.amazon.com}OrderItemArray
+class OrderItemArray < ::Array
+  @@schema_type = "OrderItem"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}ShortSummary
 class ShortSummary
   @@schema_type = "ShortSummary"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["orderId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "OrderId")]], ["sellerId", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "SellerId")]], ["condition", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "Condition")]], ["transactionDate", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "TransactionDate")]], ["transactionDateEpoch", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "TransactionDateEpoch")]], ["total", ["Price", XSD::QName.new("http://soap.amazon.com", "Total")]], ["subtotal", ["Price", XSD::QName.new("http://soap.amazon.com", "Subtotal")]], ["shipping", ["Price", XSD::QName.new("http://soap.amazon.com", "Shipping")]], ["tax", ["Price", XSD::QName.new("http://soap.amazon.com", "Tax")]], ["promotion", ["Price", XSD::QName.new("http://soap.amazon.com", "Promotion")]], ["storeName", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "StoreName")]], ["packages", ["PackageArray", XSD::QName.new("http://soap.amazon.com", "Packages")]], ["orderItems", ["OrderItemArray", XSD::QName.new("http://soap.amazon.com", "OrderItems")]], ["errorCode", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ErrorCode")]], ["errorString", ["SOAP::SOAPString", XSD::QName.new("http://soap.amazon.com", "ErrorString")]]]
 
   def OrderId
     @orderId
   end
-  
+
   def OrderId=(value)
     @orderId = value
   end
@@ -2876,7 +2978,7 @@ class ShortSummary
   def SellerId
     @sellerId
   end
-  
+
   def SellerId=(value)
     @sellerId = value
   end
@@ -2884,7 +2986,7 @@ class ShortSummary
   def Condition
     @condition
   end
-  
+
   def Condition=(value)
     @condition = value
   end
@@ -2892,7 +2994,7 @@ class ShortSummary
   def TransactionDate
     @transactionDate
   end
-  
+
   def TransactionDate=(value)
     @transactionDate = value
   end
@@ -2900,7 +3002,7 @@ class ShortSummary
   def TransactionDateEpoch
     @transactionDateEpoch
   end
-  
+
   def TransactionDateEpoch=(value)
     @transactionDateEpoch = value
   end
@@ -2908,7 +3010,7 @@ class ShortSummary
   def Total
     @total
   end
-  
+
   def Total=(value)
     @total = value
   end
@@ -2916,7 +3018,7 @@ class ShortSummary
   def Subtotal
     @subtotal
   end
-  
+
   def Subtotal=(value)
     @subtotal = value
   end
@@ -2924,7 +3026,7 @@ class ShortSummary
   def Shipping
     @shipping
   end
-  
+
   def Shipping=(value)
     @shipping = value
   end
@@ -2932,7 +3034,7 @@ class ShortSummary
   def Tax
     @tax
   end
-  
+
   def Tax=(value)
     @tax = value
   end
@@ -2940,7 +3042,7 @@ class ShortSummary
   def Promotion
     @promotion
   end
-  
+
   def Promotion=(value)
     @promotion = value
   end
@@ -2948,7 +3050,7 @@ class ShortSummary
   def StoreName
     @storeName
   end
-  
+
   def StoreName=(value)
     @storeName = value
   end
@@ -2956,7 +3058,7 @@ class ShortSummary
   def Packages
     @packages
   end
-  
+
   def Packages=(value)
     @packages = value
   end
@@ -2964,7 +3066,7 @@ class ShortSummary
   def OrderItems
     @orderItems
   end
-  
+
   def OrderItems=(value)
     @orderItems = value
   end
@@ -2972,7 +3074,7 @@ class ShortSummary
   def ErrorCode
     @errorCode
   end
-  
+
   def ErrorCode=(value)
     @errorCode = value
   end
@@ -2980,7 +3082,7 @@ class ShortSummary
   def ErrorString
     @errorString
   end
-  
+
   def ErrorString=(value)
     @errorString = value
   end
@@ -3004,16 +3106,17 @@ class ShortSummary
   end
 end
 
-# http://soap.amazon.com
-class ShortSummaryArray < Array
-  @@schema_type = "ShortSummaryArray"
+# {http://soap.amazon.com}ShortSummaryArray
+class ShortSummaryArray < ::Array
+  @@schema_type = "ShortSummary"
   @@schema_ns = "http://soap.amazon.com"
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}GetTransactionDetailsRequest
 class GetTransactionDetailsRequest
   @@schema_type = "GetTransactionDetailsRequest"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["tag", "SOAP::SOAPString"], ["devtag", "SOAP::SOAPString"], ["key", "SOAP::SOAPString"], ["orderIds", ["OrderIdArray", XSD::QName.new("http://soap.amazon.com", "OrderIds")]], ["locale", "SOAP::SOAPString"]]
 
   attr_accessor :tag
   attr_accessor :devtag
@@ -3023,7 +3126,7 @@ class GetTransactionDetailsRequest
   def OrderIds
     @orderIds
   end
-  
+
   def OrderIds=(value)
     @orderIds = value
   end
@@ -3037,15 +3140,16 @@ class GetTransactionDetailsRequest
   end
 end
 
-# http://soap.amazon.com
+# {http://soap.amazon.com}GetTransactionDetailsResponse
 class GetTransactionDetailsResponse
   @@schema_type = "GetTransactionDetailsResponse"
   @@schema_ns = "http://soap.amazon.com"
+  @@schema_element = [["shortSummaries", ["ShortSummaryArray", XSD::QName.new("http://soap.amazon.com", "ShortSummaries")]]]
 
   def ShortSummaries
     @shortSummaries
   end
-  
+
   def ShortSummaries=(value)
     @shortSummaries = value
   end
@@ -3054,4 +3158,3 @@ class GetTransactionDetailsResponse
     @shortSummaries = shortSummaries
   end
 end
-
