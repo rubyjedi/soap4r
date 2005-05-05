@@ -261,8 +261,8 @@ class TestStyleUse < Test::Unit::TestCase
     assert_same(ret[0], ret[1][0])
   end
 
-  S1 = Struct.new(:a)
-  S2 = Struct.new(:c)
+  S1 = ::Struct.new(:a)
+  S2 = ::Struct.new(:c)
   def test_rpc_lit_rpc_enc
     ret1, ret2 = @client.rpc_lit_rpc_enc(S1.new('b'), S2.new('d'))
     assert_equal('d', ret1.c)
