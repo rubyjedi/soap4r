@@ -658,13 +658,12 @@ private
     if self.respond_to?(methodname)
       methodname = safe_accessor_name(methodname)
     end
-    sclass = class << self; self; end
-    sclass.__send__(:define_method, methodname, proc {
+    Mapping.define_singleton_method(self, methodname) do
       @data[@array.index(name)]
-    })
-    sclass.__send__(:define_method, methodname + '=', proc { |value|
+    end
+    Mapping.define_singleton_method(self, methodname + '=') do |value|
       @data[@array.index(name)] = value
-    })
+    end
   end
 
   def safe_accessor_name(name)

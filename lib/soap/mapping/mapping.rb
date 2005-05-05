@@ -252,6 +252,22 @@ module Mapping
     end
   end
 
+  def self.define_singleton_method(obj, name, &block)
+    if RUBY_VERSION >= "1.7.0"
+      sclass = (class << obj; self; end)
+      sclass.__send__(:define_method, name, &block)
+    else
+      obj.instance_eval {
+        (@__method_block ||= {})[name] = block
+      }
+      obj.instance_eval <<-EOS
+        def #{name}(*arg)
+          @__method_block[#{name.dump}].call(*arg)
+        end
+      EOS
+    end
+  end
+
   def self.get_attribute(obj, attr_name)
     if obj.is_a?(::Hash)
       obj[attr_name] || obj[attr_name.intern]
@@ -292,9 +308,8 @@ module Mapping
   end
 
   def self.define_attr_accessor(obj, name, getterproc, setterproc = nil)
-    sclass = class << obj; self; end
-    sclass.__send__(:define_method, name, getterproc)
-    sclass.__send__(:define_method, name + '=', setterproc) if setterproc
+    define_singleton_method(obj, name, &getterproc)
+    define_singleton_method(obj, name + '=', &setterproc) if setterproc
   end
 
   def self.schema_element_definition(klass)
