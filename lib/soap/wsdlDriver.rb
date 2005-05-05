@@ -107,10 +107,9 @@ private
         drv.add_document_operation(soapaction, name, param_def, opt)
       end
       if orgname != name and orgname.capitalize == name.capitalize
-        sclass = class << drv; self; end
-        sclass.__send__(:define_method, orgname, proc { |*arg|
+        ::SOAP::Mapping.define_singleton_method(drv, orgname) do |*arg|
           __send__(name, *arg)
-        })
+        end
       end
     end
   end
@@ -505,22 +504,20 @@ class WSDLDriver
     end
 
     def add_rpc_method_interface(name, parts_names)
-      sclass = class << @host; self; end
-      sclass.__send__(:define_method, name, proc { |*arg|
+      ::SOAP::Mapping.define_singleton_method(@host, name) do |*arg|
         unless arg.size == parts_names.size
           raise ArgumentError.new(
             "wrong number of arguments (#{arg.size} for #{parts_names.size})")
         end
         @servant.rpc_call(name, *arg)
-      })
+      end
       @host.method(name)
     end
 
     def add_document_method_interface(name, parts_names)
-      sclass = class << @host; self; end
-      sclass.__send__(:define_method, name, proc { |h, b|
+      ::SOAP::Mapping.define_singleton_method(@host, name) do |*arg|
         @servant.document_send(name, h, b)
-      })
+      end
       @host.method(name)
     end
 

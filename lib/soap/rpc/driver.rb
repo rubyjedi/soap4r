@@ -204,14 +204,13 @@ private
   end
 
   def add_method_interface(name, param_count)
-    sclass = class << self; self; end
-    sclass.__send__(:define_method, name, proc { |*arg|
+    ::SOAP::Mapping.define_singleton_method(self, name) do |*arg|
       unless arg.size == param_count
         raise ArgumentError.new(
           "wrong number of arguments (#{arg.size} for #{param_count})")
       end
       call(name, *arg)
-    })
+    end
     self.method(name)
   end
 end

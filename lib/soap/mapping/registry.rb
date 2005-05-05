@@ -158,7 +158,10 @@ class Registry
           end
         end
       end
-      ancestors = klass.ancestors[1..-3] # except itself, Object and Kernel
+      ancestors = klass.ancestors
+      ancestors.delete(klass)
+      ancestors.delete(::Object)
+      ancestors.delete(::Kernel)
       ancestors.each do |klass|
         if map = @obj2soap[klass]
           map.each do |soap_class, factory, info|
