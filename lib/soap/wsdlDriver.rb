@@ -155,14 +155,35 @@ end
 class WSDLDriver
   class << self
     def __attr_proxy(symbol, assignable = false)
-      name = symbol.to_s
-      self.__send__(:define_method, name, proc {
-        @servant.__send__(name)
-      })
-      if assignable
-        self.__send__(:define_method, name + '=', proc { |rhs|
-          @servant.__send__(name + '=', rhs)
+    end
+
+    if RUBY_VERSION >= "1.7.0"
+      def __attr_proxy(symbol, assignable = false)
+        name = symbol.to_s
+        self.__send__(:define_method, name, proc {
+          @servant.__send__(name)
         })
+        if assignable
+          self.__send__(:define_method, name + '=', proc { |rhs|
+            @servant.__send__(name + '=', rhs)
+          })
+        end
+      end
+    else
+      def __attr_proxy(symbol, assignable = false)
+        name = symbol.to_s
+        module_eval <<-EOS
+          def #{name}
+            @servant.#{name}
+          end
+        EOS
+        if assignable
+          module_eval <<-EOS
+            def #{name}=(value)
+              @servant.#{name} = value
+            end
+          EOS
+        end
       end
     end
   end

@@ -15,12 +15,23 @@ module XMLSchema
 
 class Attribute < Info
   class << self
-    def attr_reader_ref(symbol)
-      name = symbol.to_s
-      self.__send__(:define_method, name, proc {
-        instance_variable_get("@#{name}") ||
-          (refelement ? refelement.__send__(name) : nil)
-      })
+    if RUBY_VERSION > "1.7.0"
+      def attr_reader_ref(symbol)
+        name = symbol.to_s
+        self.__send__(:define_method, name, proc {
+          instance_variable_get("@#{name}") ||
+            (refelement ? refelement.__send__(name) : nil)
+        })
+      end
+    else
+      def attr_reader_ref(symbol)
+        name = symbol.to_s
+        module_eval <<-EOS
+          def #{name}
+            @#{name} || (refelement ? refelement.#{name} : nil)
+          end
+        EOS
+      end
     end
   end
 
