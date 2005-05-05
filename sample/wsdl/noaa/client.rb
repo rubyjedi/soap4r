@@ -21,8 +21,8 @@ drv.wiredump_dev = STDOUT if $DEBUG
 dwml = drv.NDFDgen(lattitude, longitude, 'time-series', starter, ender, params)
 puts dwml
 
-soap = SOAP::Processor.unmarshal(dwml)
-data = SOAP::Mapping.soap2obj(soap["data"])
+require 'xsd/mapping'
+data = XSD::Mapping.xml2obj(dwml).data
 
 data.parameters.temperature.each do |temp|
   p temp.name
