@@ -53,6 +53,7 @@ public
     @lastnode = nil
     @ignored = {}
     @location = opt[:location]
+    @originalroot = opt[:originalroot]
   end
 
   def parse(string_or_readable)
@@ -111,10 +112,10 @@ private
       if elename == SchemaName
 	o = Schema.parse_element(elename)
         o.location = @location
-        o
       else
 	raise UnknownElementError.new("unknown element: #{elename}")
       end
+      o.root = @originalroot if @originalroot   # o.root = o otherwise
     else
       if elename == AnnotationName
         # only the first annotation element is allowed for each element.

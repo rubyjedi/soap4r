@@ -24,7 +24,7 @@ class Schema < Info
   attr_accessor :attributeformdefault
   attr_accessor :elementformdefault
 
-  attr_accessor :location
+  attr_reader :importedschema
 
   def initialize
     super
@@ -35,8 +35,17 @@ class Schema < Info
     @attributes = XSD::NamedElements.new
     @imports = []
     @elementformdefault = "qualified"
+    @importedschema = {}
     @location = nil
     @root = self
+  end
+
+  def location
+    @location || (root.nil? ? nil : root.location)
+  end
+
+  def location=(location)
+    @location = location
   end
 
   def parse_element(element)
