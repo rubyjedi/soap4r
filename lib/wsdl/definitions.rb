@@ -19,12 +19,15 @@ class Definitions < Info
   attr_reader :imports
 
   attr_accessor :location
+  attr_reader :importedschema
 
   def initialize
     super
     @name = nil
     @targetnamespace = nil
     @location = nil
+    @importedschema = {}
+
     @types = nil
     @imports = []
     @messages = XSD::NamedElements.new
