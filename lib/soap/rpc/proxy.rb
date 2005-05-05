@@ -387,7 +387,7 @@ private
       ret = nil
       if body.response
         ret = Mapping.soap2obj(body.response, mapping_registry,
-          @rpc_method_factory.retavl_class_name)
+          @rpc_method_factory.retval_class_name)
       end
       if body.outparams
         outparams = body.outparams.collect { |outparam|
@@ -402,7 +402,7 @@ private
     def response_rpc_lit(body, mapping_registry)
       body.root_node.collect { |key, value|
         Mapping.soap2obj(value, mapping_registry,
-          @rpc_method_factory.retavl_class_name)
+          @rpc_method_factory.retval_class_name)
       }
     end
 
