@@ -16,15 +16,15 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
   Methods = [
     ["echo_version", "echo_version",
       [
-        ["in", "version", [::SOAP::SOAPString]],
-        ["retval", "version_struct", [Version_struct, "urn:example.com:simpletype-rpc-type", "version_struct"]]
+        ["in", "version", ["::SOAP::SOAPString"]],
+        ["retval", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]]
       ],
       "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
     ],
     ["echo_version_r", "echo_version_r",
       [
-        ["in", "version_struct", [Version_struct, "urn:example.com:simpletype-rpc-type", "version_struct"]],
-        ["retval", "version", [::SOAP::SOAPString]]
+        ["in", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
+        ["retval", "version", ["::SOAP::SOAPString"]]
       ],
       "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
     ]
@@ -50,10 +50,9 @@ private
         add_rpc_method_interface(name, params)
       end
       if name_as != name and name_as.capitalize == name.capitalize
-        sclass = class << self; self; end
-        sclass.__send__(:define_method, name_as, proc { |*arg|
+        ::SOAP::Mapping.define_singleton_method(self, name_as) do |*arg|
           __send__(name, *arg)
-        })
+        end
       end
     end
   end

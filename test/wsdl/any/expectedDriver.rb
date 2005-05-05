@@ -16,8 +16,8 @@ class Echo_port_type < ::SOAP::RPC::Driver
   Methods = [
     ["echo", "echo",
       [
-        ["in", "echoitem", [FooBar, "urn:example.com:echo-type", "foo.bar"]],
-        ["retval", "echoitem", [FooBar, "urn:example.com:echo-type", "foo.bar"]]
+        ["in", "echoitem", ["FooBar", "urn:example.com:echo-type", "foo.bar"]],
+        ["retval", "echoitem", ["FooBar", "urn:example.com:echo-type", "foo.bar"]]
       ],
       "urn:example.com:echo", "urn:example.com:echo", :rpc
     ]
@@ -43,10 +43,9 @@ private
         add_rpc_method_interface(name, params)
       end
       if name_as != name and name_as.capitalize == name.capitalize
-        sclass = class << self; self; end
-        sclass.__send__(:define_method, name_as, proc { |*arg|
+        ::SOAP::Mapping.define_singleton_method(self, name_as) do |*arg|
           __send__(name, *arg)
-        })
+        end
       end
     end
   end

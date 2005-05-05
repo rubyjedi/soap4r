@@ -1,107 +1,24 @@
-# urn:GoogleSearch
+require 'xsd/qname'
+
+# {urn:GoogleSearch}GoogleSearchResult
 class GoogleSearchResult
   @@schema_type = "GoogleSearchResult"
   @@schema_ns = "urn:GoogleSearch"
+  @@schema_element = [["documentFiltering", "SOAP::SOAPBoolean"], ["searchComments", "SOAP::SOAPString"], ["estimatedTotalResultsCount", "SOAP::SOAPInt"], ["estimateIsExact", "SOAP::SOAPBoolean"], ["resultElements", "ResultElementArray"], ["searchQuery", "SOAP::SOAPString"], ["startIndex", "SOAP::SOAPInt"], ["endIndex", "SOAP::SOAPInt"], ["searchTips", "SOAP::SOAPString"], ["directoryCategories", "DirectoryCategoryArray"], ["searchTime", "SOAP::SOAPDouble"]]
 
-  def documentFiltering
-    @documentFiltering
-  end
+  attr_accessor :documentFiltering
+  attr_accessor :searchComments
+  attr_accessor :estimatedTotalResultsCount
+  attr_accessor :estimateIsExact
+  attr_accessor :resultElements
+  attr_accessor :searchQuery
+  attr_accessor :startIndex
+  attr_accessor :endIndex
+  attr_accessor :searchTips
+  attr_accessor :directoryCategories
+  attr_accessor :searchTime
 
-  def documentFiltering=(value)
-    @documentFiltering = value
-  end
-
-  def searchComments
-    @searchComments
-  end
-
-  def searchComments=(value)
-    @searchComments = value
-  end
-
-  def estimatedTotalResultsCount
-    @estimatedTotalResultsCount
-  end
-
-  def estimatedTotalResultsCount=(value)
-    @estimatedTotalResultsCount = value
-  end
-
-  def estimateIsExact
-    @estimateIsExact
-  end
-
-  def estimateIsExact=(value)
-    @estimateIsExact = value
-  end
-
-  def resultElements
-    @resultElements
-  end
-
-  def resultElements=(value)
-    @resultElements = value
-  end
-
-  def searchQuery
-    @searchQuery
-  end
-
-  def searchQuery=(value)
-    @searchQuery = value
-  end
-
-  def startIndex
-    @startIndex
-  end
-
-  def startIndex=(value)
-    @startIndex = value
-  end
-
-  def endIndex
-    @endIndex
-  end
-
-  def endIndex=(value)
-    @endIndex = value
-  end
-
-  def searchTips
-    @searchTips
-  end
-
-  def searchTips=(value)
-    @searchTips = value
-  end
-
-  def directoryCategories
-    @directoryCategories
-  end
-
-  def directoryCategories=(value)
-    @directoryCategories = value
-  end
-
-  def searchTime
-    @searchTime
-  end
-
-  def searchTime=(value)
-    @searchTime = value
-  end
-
-  def initialize(documentFiltering = nil,
-      searchComments = nil,
-      estimatedTotalResultsCount = nil,
-      estimateIsExact = nil,
-      resultElements = nil,
-      searchQuery = nil,
-      startIndex = nil,
-      endIndex = nil,
-      searchTips = nil,
-      directoryCategories = nil,
-      searchTime = nil)
+  def initialize(documentFiltering = nil, searchComments = nil, estimatedTotalResultsCount = nil, estimateIsExact = nil, resultElements = nil, searchQuery = nil, startIndex = nil, endIndex = nil, searchTips = nil, directoryCategories = nil, searchTime = nil)
     @documentFiltering = documentFiltering
     @searchComments = searchComments
     @estimatedTotalResultsCount = estimatedTotalResultsCount
@@ -116,18 +33,20 @@ class GoogleSearchResult
   end
 end
 
-# urn:GoogleSearch
+# {urn:GoogleSearch}ResultElement
 class ResultElement
   @@schema_type = "ResultElement"
   @@schema_ns = "urn:GoogleSearch"
+  @@schema_element = [["summary", "SOAP::SOAPString"], ["uRL", ["SOAP::SOAPString", XSD::QName.new("urn:GoogleSearch", "URL")]], ["snippet", "SOAP::SOAPString"], ["title", "SOAP::SOAPString"], ["cachedSize", "SOAP::SOAPString"], ["relatedInformationPresent", "SOAP::SOAPBoolean"], ["hostName", "SOAP::SOAPString"], ["directoryCategory", "DirectoryCategory"], ["directoryTitle", "SOAP::SOAPString"]]
 
-  def summary
-    @summary
-  end
-
-  def summary=(value)
-    @summary = value
-  end
+  attr_accessor :summary
+  attr_accessor :snippet
+  attr_accessor :title
+  attr_accessor :cachedSize
+  attr_accessor :relatedInformationPresent
+  attr_accessor :hostName
+  attr_accessor :directoryCategory
+  attr_accessor :directoryTitle
 
   def URL
     @uRL
@@ -137,71 +56,7 @@ class ResultElement
     @uRL = value
   end
 
-  def snippet
-    @snippet
-  end
-
-  def snippet=(value)
-    @snippet = value
-  end
-
-  def title
-    @title
-  end
-
-  def title=(value)
-    @title = value
-  end
-
-  def cachedSize
-    @cachedSize
-  end
-
-  def cachedSize=(value)
-    @cachedSize = value
-  end
-
-  def relatedInformationPresent
-    @relatedInformationPresent
-  end
-
-  def relatedInformationPresent=(value)
-    @relatedInformationPresent = value
-  end
-
-  def hostName
-    @hostName
-  end
-
-  def hostName=(value)
-    @hostName = value
-  end
-
-  def directoryCategory
-    @directoryCategory
-  end
-
-  def directoryCategory=(value)
-    @directoryCategory = value
-  end
-
-  def directoryTitle
-    @directoryTitle
-  end
-
-  def directoryTitle=(value)
-    @directoryTitle = value
-  end
-
-  def initialize(summary = nil,
-      uRL = nil,
-      snippet = nil,
-      title = nil,
-      cachedSize = nil,
-      relatedInformationPresent = nil,
-      hostName = nil,
-      directoryCategory = nil,
-      directoryTitle = nil)
+  def initialize(summary = nil, uRL = nil, snippet = nil, title = nil, cachedSize = nil, relatedInformationPresent = nil, hostName = nil, directoryCategory = nil, directoryTitle = nil)
     @summary = summary
     @uRL = uRL
     @snippet = snippet
@@ -214,45 +69,29 @@ class ResultElement
   end
 end
 
-# urn:GoogleSearch
-class ResultElementArray < Array
-  # Contents type should be dumped here...
-  @@schema_type = "ResultElementArray"
+# {urn:GoogleSearch}ResultElementArray
+class ResultElementArray < ::Array
+  @@schema_type = "ResultElement"
   @@schema_ns = "urn:GoogleSearch"
 end
 
-# urn:GoogleSearch
-class DirectoryCategoryArray < Array
-  # Contents type should be dumped here...
-  @@schema_type = "DirectoryCategoryArray"
+# {urn:GoogleSearch}DirectoryCategoryArray
+class DirectoryCategoryArray < ::Array
+  @@schema_type = "DirectoryCategory"
   @@schema_ns = "urn:GoogleSearch"
 end
 
-# urn:GoogleSearch
+# {urn:GoogleSearch}DirectoryCategory
 class DirectoryCategory
   @@schema_type = "DirectoryCategory"
   @@schema_ns = "urn:GoogleSearch"
+  @@schema_element = [["fullViewableName", "SOAP::SOAPString"], ["specialEncoding", "SOAP::SOAPString"]]
 
-  def fullViewableName
-    @fullViewableName
-  end
+  attr_accessor :fullViewableName
+  attr_accessor :specialEncoding
 
-  def fullViewableName=(value)
-    @fullViewableName = value
-  end
-
-  def specialEncoding
-    @specialEncoding
-  end
-
-  def specialEncoding=(value)
-    @specialEncoding = value
-  end
-
-  def initialize(fullViewableName = nil,
-      specialEncoding = nil)
+  def initialize(fullViewableName = nil, specialEncoding = nil)
     @fullViewableName = fullViewableName
     @specialEncoding = specialEncoding
   end
 end
-
