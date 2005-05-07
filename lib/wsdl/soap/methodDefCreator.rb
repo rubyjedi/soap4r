@@ -111,7 +111,7 @@ __EOD__
       ['nil', part.element.namespace, part.element.name]
     elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
-      when :TYPE_STRUCT
+      when :TYPE_STRUCT, :TYPE_EMPTY    # ToDo: empty should be treated as void.
         type = create_class_name(part.type)
 	[type, part.type.namespace, part.type.name]
       when :TYPE_MAP
