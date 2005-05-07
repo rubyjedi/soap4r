@@ -75,7 +75,7 @@ private
   def dump_complextype
     @complextypes.collect { |type|
       case type.compoundtype
-      when :TYPE_STRUCT
+      when :TYPE_STRUCT, :TYPE_EMPTY
         dump_classdef(type.name, type)
       when :TYPE_ARRAY
         dump_arraydef(type)

@@ -419,6 +419,10 @@ private
       end
       o.definedtype = typedef
       return o
+    when :TYPE_EMPTY
+      o = SOAPNil.decode(elename)
+      o.definedtype = typedef
+      return o
     else
       raise RuntimeError.new(
         "Unknown kind of complexType: #{typedef.compoundtype}")

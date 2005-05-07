@@ -41,8 +41,8 @@ class ComplexType < Info
       :TYPE_SIMPLE
     elsif !attributes.empty?
       :TYPE_STRUCT
-    else
-      raise NotImplementedError.new("Unknown kind of complexType.")
+    else # empty complexType definition (seen in partner.wsdl of salesforce)
+      :TYPE_EMPTY
     end
   end
 

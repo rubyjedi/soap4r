@@ -130,6 +130,9 @@ private
       map2soap(obj, type.name, type)
     when :TYPE_SIMPLE
       simple2soap(obj, type.simplecontent)
+    when :TYPE_EMPTY
+      raise MappingError.new("should be empty") unless obj.nil?
+      SOAPNil.new
     else
       raise MappingError.new("unknown compound type: #{type.compoundtype}")
     end
