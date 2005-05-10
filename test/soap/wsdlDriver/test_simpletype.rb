@@ -30,6 +30,7 @@ class TestSimpleType < Test::Unit::TestCase
 
   def setup_server
     @server = Server.new(
+      :BindAddress => "0.0.0.0",
       :Port => Port,
       :AccessLog => [],
       :SOAPDefaultNamespace => "urn:example.com:simpletype-rpc"

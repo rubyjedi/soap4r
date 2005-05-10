@@ -5,7 +5,7 @@ rescue LoadError
 end
 require 'soap/rpc/driver'
 
-if defined?(HTTPAccess2)
+if defined?(HTTPAccess2) and defined?(OpenSSL)
 
 module SOAP; module SSL
 

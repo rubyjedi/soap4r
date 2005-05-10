@@ -30,6 +30,7 @@ class TestStruct < Test::Unit::TestCase
   def setup_server
     @server = Server.new(
       :Port => Port,
+      :BindAddress => "0.0.0.0",
       :AccessLog => [],
       :SOAPDefaultNamespace => Namespace
     )
