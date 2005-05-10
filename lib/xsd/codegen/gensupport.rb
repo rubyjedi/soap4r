@@ -129,7 +129,7 @@ private
 
   def trim_eol(str)
     str.collect { |line|
-      line.sub(/\r?\n$/, "") + "\n"
+      line.sub(/\r?\n\z/, "") + "\n"
     }.join
   end
 
