@@ -72,7 +72,7 @@ __EOD__
   end
 
   def dqname(qname)
-    "XSD::QName.new(#{ndq(qname.namespace)}, #{ndq(qname.name)})"
+    qname.dump
   end
 
 private

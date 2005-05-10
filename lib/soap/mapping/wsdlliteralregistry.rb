@@ -313,9 +313,7 @@ private
           child = attr
         end
         obj.__xmlattr[qname] = child
-        Mapping.define_attr_accessor(obj, 'xmlattr_' + qname.name,
-          proc { @__xmlattr[qname] },
-          proc { |value| @__xmlattr[qname] = value })
+        define_xmlattr_accessor(obj, qname)
       end
     end
   end
@@ -330,18 +328,50 @@ private
     return if node.extraattr.empty?
     define_xmlattr(obj)
     node.extraattr.each do |qname, value|
-      attrname = qname.name
       obj.__xmlattr[qname] = value
-      Mapping.define_attr_accessor(obj, 'xmlattr_' + attrname,
-        proc { @__xmlattr[qname] },
-        proc { |value| @__xmlattr[qname] = value })
+      define_xmlattr_accessor(obj, qname)
     end
   end
 
-  def define_xmlattr(obj)
-    obj.instance_variable_set('@__xmlattr', {})
-    unless obj.respond_to?(:__xmlattr)
-      Mapping.define_attr_accessor(obj, :__xmlattr, proc { @__xmlattr })
+  if RUBY_VERSION > "1.7.0"
+    def define_xmlattr_accessor(obj, qname)
+      name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
+      Mapping.define_attr_accessor(obj, 'xmlattr_' + name,
+        proc { @__xmlattr[qname] },
+        proc { |value| @__xmlattr[qname] = value })
+    end
+  else
+    def define_xmlattr_accessor(obj, qname)
+      name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
+      obj.instance_eval <<-EOS
+        def #{name}
+          @__xmlattr[#{qname.dump}]
+        end
+
+        def #{name}=(value)
+          @__xmlattr[#{qname.dump}] = value
+        end
+      EOS
+    end
+  end
+
+  if RUBY_VERSION > "1.7.0"
+    def define_xmlattr(obj)
+      obj.instance_variable_set('@__xmlattr', {})
+      unless obj.respond_to?(:__xmlattr)
+        Mapping.define_attr_accessor(obj, :__xmlattr, proc { @__xmlattr })
+      end
+    end
+  else
+    def define_xmlattr(obj)
+      obj.instance_variable_set('@__xmlattr', {})
+      unless obj.respond_to?(:__xmlattr)
+        obj.instance_eval <<-EOS
+          def __xmlattr
+            @__xmlattr
+          end
+        EOS
+      end
     end
   end
 

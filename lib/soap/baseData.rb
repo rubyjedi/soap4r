@@ -653,16 +653,31 @@ private
     value
   end
 
-  def add_accessor(name)
-    methodname = name
-    if self.respond_to?(methodname)
-      methodname = safe_accessor_name(methodname)
+  if RUBY_VERSION > "1.7.0"
+    def add_accessor(name)
+      methodname = name
+      if self.respond_to?(methodname)
+        methodname = safe_accessor_name(methodname)
+      end
+      Mapping.define_singleton_method(self, methodname) do
+        @data[@array.index(name)]
+      end
+      Mapping.define_singleton_method(self, methodname + '=') do |value|
+        @data[@array.index(name)] = value
+      end
     end
-    Mapping.define_singleton_method(self, methodname) do
-      @data[@array.index(name)]
-    end
-    Mapping.define_singleton_method(self, methodname + '=') do |value|
-      @data[@array.index(name)] = value
+  else
+    def add_accessor(name)
+      methodname = safe_accessor_name(name)
+      instance_eval <<-EOS
+        def #{methodname}
+          @data[@array.index(#{name.dump})]
+        end
+
+        def #{methodname}=(value)
+          @data[@array.index(#{name.dump})] = value
+        end
+      EOS
     end
   end
 
