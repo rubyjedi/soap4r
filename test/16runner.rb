@@ -7,6 +7,14 @@ rcsid = %w$Id$
 Version = rcsid[2].scan(/\d+/).collect!(&method(:Integer)).freeze
 Release = rcsid[3].freeze
 
+module Test
+  module Unit
+    module Assertions
+      alias assert_raise assert_raises
+    end
+  end
+end
+
 class BulkTestSuite < Test::Unit::TestSuite
   def self.suite
     suite = Test::Unit::TestSuite.new
