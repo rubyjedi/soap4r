@@ -253,19 +253,8 @@ module Mapping
   end
 
   def self.define_singleton_method(obj, name, &block)
-    if RUBY_VERSION >= "1.7.0"
-      sclass = (class << obj; self; end)
-      sclass.__send__(:define_method, name, &block)
-    else
-      obj.instance_eval {
-        (@__method_block ||= {})[name] = block
-      }
-      obj.instance_eval <<-EOS
-        def #{name}(*arg)
-          @__method_block[#{name.dump}].call(*arg)
-        end
-      EOS
-    end
+    sclass = (class << obj; self; end)
+    sclass.__send__(:define_method, name, &block)
   end
 
   def self.get_attribute(obj, attr_name)

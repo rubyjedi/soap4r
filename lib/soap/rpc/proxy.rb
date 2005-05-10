@@ -352,8 +352,8 @@ private
 
     def request_doc_enc(values, mapping_registry)
       (0...values.size).collect { |idx|
-        ele = Mapping.obj2soap(values[idx], mapping_registry,
-          @doc_request_qnames[idx])
+        ele = Mapping.obj2soap(values[idx], mapping_registry)
+        ele.elename = @doc_request_qnames[idx]
         ele
       }
     end

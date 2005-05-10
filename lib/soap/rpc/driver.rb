@@ -221,15 +221,30 @@ private
     add_method_interface(name, param_count)
   end
 
-  def add_method_interface(name, param_count)
-    ::SOAP::Mapping.define_singleton_method(self, name) do |*arg|
-      unless arg.size == param_count
-        raise ArgumentError.new(
+  if RUBY_VERSION > "1.7.0"
+    def add_method_interface(name, param_count)
+      ::SOAP::Mapping.define_singleton_method(self, name) do |*arg|
+        unless arg.size == param_count
+          raise ArgumentError.new(
           "wrong number of arguments (#{arg.size} for #{param_count})")
+        end
+        call(name, *arg)
       end
-      call(name, *arg)
+      self.method(name)
     end
-    self.method(name)
+  else
+    def add_method_interface(name, param_count)
+      instance_eval <<-EOS
+        def #{name}(*arg)
+          unless arg.size == #{param_count}
+            raise ArgumentError.new(
+              "wrong number of arguments (\#{arg.size} for #{param_count})")
+          end
+          call(#{name.dump}, *arg)
+        end
+      EOS
+      self.method(name)
+    end
   end
 end
 

@@ -115,10 +115,26 @@ class Object; include Marshallable
 
 private
 
-  def __define_attr_accessor(qname)
-    Mapping.define_attr_accessor(self, qname.name,
-      proc { self[qname] },
-      proc { |value| self[qname] = value })
+  if RUBY_VERSION > "1.7.0"
+    def __define_attr_accessor(qname)
+      name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
+      Mapping.define_attr_accessor(self, name,
+        proc { self[qname] },
+        proc { |value| self[qname] = value })
+    end
+  else
+    def __define_attr_accessor(qname)
+      name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
+      instance_eval <<-EOS
+        def #{name}
+          self[#{qname.dump}]
+        end
+
+        def #{name}=(value)
+          self[#{qname.dump}] = value
+        end
+      EOS
+    end
   end
 
   def __set_xmlele_value(key, org, value)
@@ -147,15 +163,12 @@ class Registry
       @registry = registry
     end
 
-    def obj2soap(obj, type_qname = nil)
+    def obj2soap(obj)
       klass = obj.class
       if map = @obj2soap[klass]
         map.each do |soap_class, factory, info|
           ret = factory.obj2soap(soap_class, obj, info, @registry)
-          if ret
-            ret.elename = type_qname if type_qname
-            return ret
-          end
+          return ret if ret
         end
       end
       ancestors = klass.ancestors
@@ -167,10 +180,7 @@ class Registry
           map.each do |soap_class, factory, info|
             if info[:derived_class]
               ret = factory.obj2soap(soap_class, obj, info, @registry)
-              if ret
-                ret.elename = type_qname if type_qname
-                return ret
-              end
+              return ret if ret
             end
           end
         end
@@ -389,8 +399,9 @@ class Registry
   end
   alias set add
 
+  # general Registry ignores type_qname
   def obj2soap(obj, type_qname = nil)
-    soap = _obj2soap(obj, type_qname)
+    soap = _obj2soap(obj)
     if @allow_original_mapping
       addextend2soap(soap, obj)
     end
@@ -416,7 +427,7 @@ class Registry
 
 private
 
-  def _obj2soap(obj, type_qname)
+  def _obj2soap(obj)
     ret = nil
     if obj.is_a?(SOAPStruct) or obj.is_a?(SOAPArray)
       obj.replace do |ele|
@@ -427,7 +438,7 @@ private
       return obj
     end
     begin 
-      ret = @map.obj2soap(obj, type_qname) ||
+      ret = @map.obj2soap(obj) ||
         @default_factory.obj2soap(nil, obj, nil, self)
       return ret if ret
     rescue MappingError
