@@ -160,22 +160,14 @@ class DateTimeFactory_ < Factory
   end
 
   def soap2obj(obj_class, node, info, map)
-    obj = nil
-    if obj_class == Time
-      obj = node.to_time
-      if obj.nil?
-        # Is out of range as a Time
-        return false
-      end
-    elsif obj_class == Date
-      obj = node.to_date
-    elsif obj_class == DateTime
-      obj = node.data
+    if node.respond_to?(:to_obj)
+      obj = node.to_obj(obj_class)
+      return false if obj.nil?
+      mark_unmarshalled_obj(node, obj)
+      return true, obj
     else
       return false
     end
-    mark_unmarshalled_obj(node, obj)
-    return true, obj
   end
 end
 
