@@ -495,6 +495,18 @@ require 'date'
 module XSDDateTimeImpl
   SecInDay = 86400	# 24 * 60 * 60
 
+  def to_obj(klass)
+    if klass == Time
+      to_time
+    elsif klass == Date
+      to_date
+    elsif klass == DateTime
+      data
+    else
+      nil
+    end
+  end
+
   def to_time
     begin
       if @data.offset * SecInDay == Time.now.utc_offset
