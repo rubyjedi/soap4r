@@ -539,7 +539,10 @@ module XSDDateTimeImpl
   end
 
   def screen_data(t)
-    if t.is_a?(DateTime)
+    # convert t to a DateTime as an internal representation.
+    # in XML Schema Datatypes, year == 0 is not allowed so be careful with
+    # negative year representation.  XSDDateTime.year(-1) == DateTime.year(0)
+    if t.is_a?(DateTime) and t.year > 0
       t
     elsif t.is_a?(Time)
       sec, min, hour, mday, month, year = t.to_a[0..5]
