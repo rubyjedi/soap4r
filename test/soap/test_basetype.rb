@@ -382,6 +382,7 @@ class TestSOAP < Test::Unit::TestCase
     ]
     targets.each do |data, expected|
       assert_equal(expected, SOAP::SOAPDateTime.new(data).to_s)
+      assert_equal(expected, SOAP::SOAPDateTime.new(DateTime.parse(data)).to_s)
     end
 
     targets = [
@@ -481,6 +482,7 @@ class TestSOAP < Test::Unit::TestCase
     ]
     targets.each do |data, expected|
       assert_equal(expected, SOAP::SOAPDate.new(data).to_s)
+      assert_equal(expected, SOAP::SOAPDate.new(Date.parse(data)).to_s)
     end
   end
 
