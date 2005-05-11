@@ -539,9 +539,9 @@ module XSDDateTimeImpl
   end
 
   def screen_data(t)
-    if (t.is_a?(Date))
+    if t.is_a?(DateTime)
       t
-    elsif (t.is_a?(Time))
+    elsif t.is_a?(Time)
       sec, min, hour, mday, month, year = t.to_a[0..5]
       diffday = t.usec.to_r / 1000000 / SecInDay
       of = t.utc_offset.to_r / SecInDay

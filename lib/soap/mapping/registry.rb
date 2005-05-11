@@ -248,7 +248,6 @@ class Registry
     [::String,       ::SOAP::SOAPString,     StringFactory],
     [::DateTime,     ::SOAP::SOAPDateTime,   DateTimeFactory],
     [::Date,         ::SOAP::SOAPDateTime,   DateTimeFactory],
-    [::Date,         ::SOAP::SOAPDate,       DateTimeFactory],
     [::Time,         ::SOAP::SOAPDateTime,   DateTimeFactory],
     [::Time,         ::SOAP::SOAPTime,       DateTimeFactory],
     [::Float,        ::SOAP::SOAPDouble,     BasetypeFactory,
