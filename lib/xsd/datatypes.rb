@@ -511,6 +511,10 @@ module XSDDateTimeImpl
     end
   end
 
+  def to_date
+    Date.new0(@data.class.jd_to_ajd(@data.jd, 0, 0), 0, @data.sg)
+  end
+
   def tz2of(str)
     /^(?:Z|(?:([+\-])(\d\d):(\d\d))?)$/ =~ str
     sign = $1

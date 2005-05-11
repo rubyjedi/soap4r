@@ -168,6 +168,8 @@ class DateTimeFactory_ < Factory
         return false
       end
     elsif obj_class == Date
+      obj = node.to_date
+    elsif obj_class == DateTime
       obj = node.data
     else
       return false
