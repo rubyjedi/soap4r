@@ -92,13 +92,13 @@ module_function
   end
 
   def ssl_config_int(value)
-    if value.nil? or value.empty?
+    if value.nil? or value.to_s.empty?
       nil
     else
       begin
         Integer(value)
       rescue ArgumentError
-        ::SOAP::Property::Util.const_from_name(value)
+        ::SOAP::Property::Util.const_from_name(value.to_s)
       end
     end
   end
