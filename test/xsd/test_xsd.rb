@@ -414,7 +414,9 @@ class TestXSD < Test::Unit::TestCase
     ]
     targets.each do |data, expected|
       assert_equal(expected, XSD::XSDDateTime.new(data).to_s)
-      assert_equal(expected, XSD::XSDDateTime.new(DateTime.parse(data)).to_s)
+      d = DateTime.parse(data)
+      d >>= 12 if d.year < 0    # XSDDateTime.year(-1) == DateTime.year(0)
+      assert_equal(expected, XSD::XSDDateTime.new(d).to_s)
     end
 
     targets = [
@@ -514,7 +516,9 @@ class TestXSD < Test::Unit::TestCase
     ]
     targets.each do |data, expected|
       assert_equal(expected, XSD::XSDDate.new(data).to_s)
-      assert_equal(expected, XSD::XSDDate.new(Date.parse(data)).to_s)
+      d = Date.parse(data)
+      d >>= 12 if d.year < 0    # XSDDate.year(-1) == Date.year(0)
+      assert_equal(expected, XSD::XSDDate.new(d).to_s)
     end
   end
 end
