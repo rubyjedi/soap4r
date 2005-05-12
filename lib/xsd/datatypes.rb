@@ -501,7 +501,7 @@ module XSDDateTimeImpl
     elsif klass == Date
       to_date
     elsif klass == DateTime
-      data
+      to_datetime
     else
       nil
     end
@@ -525,6 +525,10 @@ module XSDDateTimeImpl
 
   def to_date
     Date.new0(@data.class.jd_to_ajd(@data.jd, 0, 0), 0, @data.sg)
+  end
+
+  def to_datetime
+    data
   end
 
   def tz2of(str)
@@ -556,10 +560,16 @@ module XSDDateTimeImpl
 
   def screen_data(t)
     # convert t to a DateTime as an internal representation.
-    # in XML Schema Datatypes, year == 0 is not allowed so be careful with
-    # negative year representation.  XSDDateTime.year(-1) == DateTime.year(0)
-    if t.is_a?(DateTime) and t.year > 0
+    if t.is_a?(DateTime)
       t
+    elsif t.is_a?(Date)
+      if t.respond_to?(:to_datetime)    # from 1.9
+        t.to_datetime
+      else
+        t = screen_data_str(t)
+        t <<= 12 if t.year < 0
+        t
+      end
     elsif t.is_a?(Time)
       sec, min, hour, mday, month, year = t.to_a[0..5]
       diffday = t.usec.to_r / 1000000 / SecInDay
