@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: December 25, 2003<br />
+Last modified: May 17, 2005<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.5.2
+Target SOAP4R version: SOAP4R/1.5.4
 </p>
 
 <ol>
@@ -53,106 +53,193 @@ Target SOAP4R version: SOAP4R/1.5.2
 <h2 id="changes" name="changes"><span class="content">1. Changes</span></h2>
 
 <p>
-Important news:  Soap4r library is included in ruby distribution after
-ruby/1.8.1.  You might not be need to install this package under ruby/1.8.
-The files this package includes and are not included in ruby/1.8 distribution
-are; some experimental code, application program (bin/wsdl2ruby) and some test
-codes.  Consider to get this package if,
+This is version 1.5.4.
+Version 1.5.3 is the module which is included in ruby-1.8.2,
+and not released independently.
+Following changes consist from 2 parts; Changes from 1.5.3 to 1.5.4,
+and from 1.5.2 to 1.5.3.
 </p>
-
-<ul>
-  <li>You want to use soap4r under ruby/1.6</li>
-  <li>You need to do SOAP Messages with Attachments (SwA)</li>
-  <li>You need the WSDL to ruby (reads a WSDL file and generates stubs and Ruby class definitions) application</li>
-</ul>
 
 <p>
-Changes from 1.5.1.2.
+Changes in 1.5.4 from 1.5.3
 </p>
 
 <ul>
-  <li>License;
-  <ul>
-    <li>Changed license from GPL2 to Ruby's.</li>
-  </ul></li>
-
-  <li>Features;
-  <ul>
-    <li>Add SOAP Messages with Attachments (SwA) support.
-    Patched by Jamie Herre.
-    &quot;SOAP Messages with Attachments&quot; is the W3C Note which defines a
-    binding for a SOAP 1.1 message to be carried within a MIME
-    multipart/related message.  <a href="http://www.w3.org/TR/SOAP-attachments">http://www.w3.org/TR/SOAP-attachments</a>
-    This feature is still experimental.  Interop testing is going on.</li>
-
-    <li>HTTPS support even when you use net/http (not http-access2).
-    Patched by Oliver M. Bolzer.</li>
-
-    <li>Property file support.  SOAP and WSDL client reads &quot;soap/property&quot;
-    file located at somewhere in $: (ruby libray locations).  For
-    example, save these lines to
-    &quot;$rubylibdir/site_ruby/1.8/soap/property&quot;.
-<pre>
-      client.protocol.http.proxy = http://myproxy:8080
-      client.protocol.http.no_proxy = 192.168.71.71,192.168.71.72
-</pre>
-    Then all HTTP connections should use these proxy and no_proxy
-    definition.</li>
-
-    <li>Do not trust "HTTP_PROXY" environment variable by default to
-    avoid security problem.  cf.
+  <li>SOAP client and server
     <ul>
-      <li><a href="http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0072.html">http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0072.html</a></li>
-      <li><a href="http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0241.html">http://ftp.ics.uci.edu/pub/websoft/libwww-perl/archive/2001h1/0241.html</a></li>
-      <li><a href="http://curl.haxx.se/mail/archive-2001-12/0034.html">http://curl.haxx.se/mail/archive-2001-12/0034.html</a></li> 
+      <li>for both client side and server side
+        <ul>
+          <li>improved document/literal service support.  style(rpc, document)/use(encoding, literal) combination are all supported.  for the detail about combination, see test/soap/test_style.rb.</li>
+          <li>let WSDLEncodedRegistry#soap2obj map SOAP/OM to Ruby according to WSDL as well as obj2soap.</li>
+          <li>let SOAP::Mapping::Object handle XML attribute for doc/lit service.  you can set/get XML attribute via accessor methods which as a name 'xmlattr_' prefixed (&lt;foo name="bar"/&gt; -&gt; Foo#xmlattr_name).</li>
+        </ul>
+      </li>
+      <li>client side
+        <ul>
+          <li>WSDLDriver capitalized name operation bug fixed.  from 1.5.3-ruby1.8.2, operation which has capitalized name (such as KeywordSearchRequest in AWS) is defined as a method having uncapitalized name. (converted with GenSupport.safemethodname to handle operation name 'foo-bar').  it introduced serious incompatibility; in the past, it was defined as a capitalized.  define capitalized method as well under that circumstance.</li>
+          <li>added new factory interface 'WSDLDriverFactory#create_rpc_driver' to create RPC::Driver, not WSDLDriver (RPC::Driver and WSDLDriver are merged).  'WSDLDriverFactory#create_driver' still creates WSDLDriver for compatibility but it warns that the method is deprecated.  please use create_rpc_driver instead of create_driver.</li>
+          <li>allow to use an URI object as an endpoint_url even with net/http, not http-access2.</li>
+        </ul>
+      </li>
+      <li>server side
+        <ul>
+          <li>added mod_ruby support to SOAP::CGIStub.  rename a CGI script server.cgi to server.rb and let mod_ruby's RubyHandler handles the script.  CGIStub detects if it's running under mod_ruby environment or not.</li>
+          <li>added fcgi support to SOAP::CGIStub.  see the sample at sample/soap/calc/server.fcgi.  (almost same as server.cgi but has fcgi handler at the bottom.)</li>
+          <li>allow to return a SOAPFault object to respond customized SOAP fault.</li>
+          <li>added the interface 'generate_explicit_type' for server side (CGIStub, HTTPServer).  call 'self.generate_explicit_type = true' if you want to return simplified XML even if it's rpc/encoded service.</li>
+        </ul>
+      </li>
     </ul>
-    To use HTTP_PROXY and NO_PROXY environment variable, you must set
-    SOAP_USE_PROXY environment variable 'on', too.
-<pre>
-      bash$ soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
-      csh$  env soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
-</pre></li>
+  </li>
 
-    <li>Add SOAP::RPC::Driver#mandatorycharset= and
-    SOAP::WSDLDriver#mandatorycharset= interface to force using
-    charset when parsing response from buggy server such as AWS.</li>
+  <li>WSDL
+    <ul>
+      <li>WSDL definition
+        <ul>
+          <li>improved XML Schema support such as extension, restriction, simpleType, complexType + simpleContent, ref, length, import, include.</li>
+          <li>reduced "unknown element/attribute" warnings (warn only 1 time for each QName).</li>
+          <li>importing XSD file at schemaLocation with xsd:import.</li>
+        </ul>
+      </li>
+      <li>code generation from WSDL
+        <ul>
+          <li>generator crashed when there's '-' in defined element/attribute name.</li>
+          <li>added ApacheMap WSDL definition.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
 
-    <li>Support a halfway-typed multi-ref array that Axis dumps.</li>
-
-    <li>Added a interface XSD::Charset.encoding= to control internal
-    encoding scheme.  Internal encoding scheme was fixed to 'utf-8'
-    when iconv or uconv was installed.  You can set 'euc-jp', etc.
-    to avoid encoding scheme conversion if you know what encoding
-    scheme the server uses.</li>
-  </ul></li>
-
-  <li>Bug fixes;
-  <ul>
-    <li>SOAP::Marshal.unmarshal: raise an exception if parse fails.
-    (returned nil)</li>
-
-    <li>SOAP::WSDLDriver: decode unknown element according to self-defined
-    type even if WSDL was given.</li>
-
-    <li> SOAP::Mapping::Factory#create_empty_object: fix Class#allocate
-    emulation code for ruby/1.6.  no effective change under ruby/1.8.</li>
-
-    <li>SOAP::RPC::SOAPMethodResponse: element name of response message
-    could have the name other than 'return'.</li>
-
-    <li>SOAP::RPC::StandaloneServer: add methods 'shutdown' and 'status'
-    as delegates to WEBrick.</li>
-
-    <li>WSDL::SOAP::ClassDefCreator: WSDL/1.1 allows plural fault
-    definition in a operation.</li>
-
-    <li>XSD::Charset.init: use cp932 under emx.
-    Patched by Siena. / SHINAGAWA, Norihide.</li>
-  </ul></li>
+  <li>Samples
+    <ul>
+      <li>added XML &lt;-&gt; Ruby mapping utility.  XSD::Mapping#xml2obj maps an XML to a tree of SOAP::Mapping::Object.  XSD::Mapping#obj2xml is for reverse direction conversion.  see a sample in sample/wsdl/noaa/client.rb</li>
+      <li>added a sample for weather.gov's NDFD services.</li>
+      <li>add a sample of googleAdWords.  CAUTION: I don't have an account of AdWords so the sample code is NOT tested.  Please tell me (nahi@ruby-lang.org) if you will get good/bad result in communicating with AdWords Server.</li>
+      <li>add a sample of AWSECommerce.  CAUTION: I don't have an account of AWSECommerce so the sample code is NOT tested.  Please tell me (nahi@ruby-lang.org) if you will get good/bad result in communicating with AWSECommerce Server.</li>
+    </ul>
+  </li>
 </ul>
 
 <p>
-Thanks to all of soap4r users for their support.
+Changes in 1.5.3 from 1.5.2
+</p>
+
+<ul>
+  <li>SOAP client and server
+    <ul>
+      <li>for both client side and server side
+        <ul>
+          <li>added a header handler class for simple SOAPHeader handling.  see samples in sample/soap/authheader/*.</li>
+          <li>SSL support (both client side and server side).  check sample/soap/ssl/*</li>
+          <li>gzipped content encoding support.  see sample/soap/helloworld/hw_{c,s}_gzip.rb.</li>
+        </ul>
+      </li>
+      <li>client side
+        <ul>
+          <li>HTTP-Cookies support under soap4r + http-access2.  not supported under soap4r + net/http.</li>
+          <li>added a method (SOAP::RPC::Driver#test_loopback_response) for loopback test with the specified response.</li>
+          <li>added SOAP::RPC::Driver#loadproperty interface to load property file.</li>
+          <li>let SOAP::RPC::Driver#add_method returns Method object.  you can invoke a service like; drv.add_method(&#34;hello&#34;).call(&#34;world&#34;)</li>
+          <li>added http options to get/set timeout seconds.
+            <ul>
+              <li>for http-access2:
+                <ul>
+                  <li>driver.options[&#34;protocol.http.connect_timeout&#34;]</li>
+                  <li>driver.options[&#34;protocol.http.send_timeout&#34;]</li>
+                  <li>driver.options[&#34;protocol.http.receive_timeout&#34;]</li>
+                </ul>
+              </li>
+              <li>for net/http:
+                <ul>
+                  <li>driver.options[&#34;protocol.http.connect_timeout&#34;]</li>
+                  <li>driver.options[&#34;protocol.http.receive_timeout&#34;]</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>raise NotImplementedError when net/http + basic_auth.</li>
+        </ul>
+      </li>
+      <li>server side
+        <ul>
+          <li>introduced the new server class SOAP::RPC::HTTPServer which takes WEBrick's HTTPServer compatible config parameter.</li>
+          <li>added a debug log of SOAP request/response.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li>SOAP core part
+    <ul>
+      <li>added XMLSchema derived type support; byte, nonPositiveInteger, negativeInteger, nonNegativeInteger, positiveInteger, unsignedLong, unsignedInt, unsignedShort, unsignedByte.</li>
+      <li>'eval' cleanup.  I hope it allows soap4r to work under mod_ruby environment.</li>
+      <li>SOAPProperty raise RuntimeError under ruby-1.9 when accessing locked property.  still raises TypeError under ruby-1.8 or earlier.  the change is from ruby's behaviour change about an exception when accessing a frozen object.</li>
+      <li>make SOAPHeader a child of SOAPStruct, not SOAPArray.</li>
+      <li>SOAPProperty does not eval whole string.  \\, \t, \r, \n, \f escaping chars are supported like Java's Properties.</li>
+      <li>URI object was not mapped correctly so that URI object was not interoperable under some situation.  fixed.</li>
+      <li>SOAP::Mapping::Object: handle multiple value as an array.
+<pre>
+&lt;foo&gt;
+  &lt;bar&gt;1&lt;/bar&gt;
+  &lt;bar&gt;2&lt;/bar&gt;
+  &lt;bar&gt;3&lt;/bar&gt;
+  &lt;baz&gt;4&lt;/baz&gt;
+&lt;/foo&gt;
+  -&gt;
+foo.bar =&gt; [1, 2, 3]
+foo.baz =&gt; 4
+</pre>
+      </li>
+      <li>raise an exception while dumping singleton class. [ruby-dev:22588]
+<pre>
+e.g. c = class &lt;&lt; Object.new
+       class C; self; end
+     end
+     SOAPMarshal.dump(c)
+</pre>
+      </li>
+    </ul>
+  </li>
+
+  <li>WSDL
+    <ul>
+      <li>WSDL definition
+        <ul>
+          <li>added &lt;xsd:simpleContent&gt; support.</li>
+          <li>initial (means &#34;far from complete&#34;) simpleType support.</li>
+          <li>support parts attribute of soap:body element.</li>
+          <li>xmlSchema's 'any' element support; for parsing, just treat the element as an element which has a name 'any'.</li>
+          <li>add mustUnderstand attribute support.</li>
+          <li>a special well-known type: ApacheMap support.</li>
+        </ul>
+      </li>
+
+      <li>code generation from WSDL
+        <ul>
+          <li>added simple code generation utils (lib/xsd/codegen)</li>
+          <li>dump attribute definition in XMLSchema as 'attr_*' attribute. [experimental]</li>
+          <li>wsdl2ruby.rb: add document/literal service support.  see sample/wsdl/documentliteral/*</li>
+          <li>untyped element should be treated as xsd:anyType.</li>
+          <li>added a tool xsd2ruby.rb for generating classdef from xsd file.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li>Samples
+    <ul>
+      <li>added RAA/2.4 sample client</li>
+      <li>added sample for Application/Request scope use.  Session scope (with Cookies) feature is not yet exists.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>
+For details, see ChangeLog.
+</p>
+
+<p>
+Thanks to all of soap4r ML members and soap4r users for their support.
 </p>
 
 <h2 id="install" name="install"><span class="content">2. Install</span></h2>
@@ -171,7 +258,7 @@ Necessary files will be installed to suitable directory.
 </p>
 
 <p>
-Files in lib/soap directory are SOAP4R library program itself.
+Files and directories in lib directory are SOAP4R library program itself.
 </p>
 
 <dl>
@@ -183,8 +270,7 @@ Files in lib/soap directory are SOAP4R library program itself.
 See <a href="#samples">Samples</a> section.</dd>
 
 <dt class="path">test/</dt>
-<dd>Some tests.
-Unit test MUST cover all lines of code, but far from enough so far...
+<dd>Tests.  It also contains useful sample scripts for servers and clients.
 <br/>
 test/interopR2/ directory includes Clients/Server for
 <a href="http://www.xmethods.net/ilab/">`SOAPBuilders Interoperability Lab.'</a>
@@ -225,6 +311,13 @@ aims to use with Ruby application.
 You have to install Ruby itself.
 Ruby/1.6 series or later is required.
 </p>
+<ul>
+  <li>ruby-1.8.2</li>
+  <li>ruby-1.8.1</li>
+  <li>ruby-1.6.8</li>
+  <li>developing version of ruby-1.9.x at Ruby's CVS repository(HEAD)</li>
+  <li>developing version of ruby-1.8.x at Ruby's CVS repository(ruby_1_8)</li>
+</ul>
 
 <p>
 SOAP4R depends on following Ruby modules in
@@ -232,39 +325,53 @@ SOAP4R depends on following Ruby modules in
 You also have to install these modules to use SOAP4R.
 </p>
 
+<h3>for ruby-1.8.2, ruby-1.8.1, developing versions of ruby-1.9.x and ruby-1.8.x</h3>
+
+<dl>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/http-access2/">[RAA:http-access2]</a> (2.0.5) (required for SSL)</dt>
+<dd>Yet another HTTP client implementation by NaHi.
+It's not required when you don't use SSL, but it's recommended to use.
+The author always runs and checks soap4r with http-access2.</dd>
+
+<dt class="path"><a href="http://raa.ruby-lang.org/project/uconv/">[RAA:uconv]</a> (0.4.10) (not required but needed if your Ruby doesn't have iconv module and you need UTF-8 encoded Japanese chars)</dt>
+<dd>by Yoshida Masato.
+It is requred when you want automatic CES conversion between
+SJIS &lt;-&gt; UTF8 and EUC &lt;-&gt; UTF8.
+Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
+</dd>
+
+</dl>
+
+<h3>for ruby-1.6.8</h3>
+
 <dl>
 <dt class="path">XML processor</dt>
 <dd>SOAP4R requires a XML processor package installed.
-Note: ruby/1.8 includes REXML so you don't have to install extra XML parser library.<br/>
 For now, one of following XML processor must be installed
 (SOAP4R automatically detects it in runtime).
 <ul>
-<li><a href="http://raa.ruby-lang.org/list.rhtml?name=xmlscan">[RAA:xmlscan]</a> (0.2.3, 0.3.x)</li>
-<li><a href="http://raa.ruby-lang.org/list.rhtml?name=rexml">[RAA:REXML]</a> (2.7.1)</li>
-<li><a href="http://raa.ruby-lang.org/list.rhtml?name=rexml-stable">[RAA:REXML-stable]</a> (2.4.8)</li>
-<li><a href="http://raa.ruby-lang.org/list.rhtml?name=xmlparser">[RAA:XMLParser]</a> (0.6.5)</li>
+<li><a href="http://raa.ruby-lang.org/project/xmlscan/">[RAA:xmlscan]</a> (0.2.3, 0.3.x)</li>
+<li><a href="http://raa.ruby-lang.org/project/rexml/">[RAA:REXML]</a> (2.7.1)</li>
+<li><a href="http://raa.ruby-lang.org/project/rexml-stable/">[RAA:REXML-stable]</a> (2.4.8)</li>
+<li><a href="http://raa.ruby-lang.org/project/xmlparser/">[RAA:XMLParser]</a> (0.6.5)</li>
 </ul></dd>
 
-<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=webrick">[RAA:webrick]</a> (1.3.1)</dt>
-<dd>TCP server toolkit by Gotoyuzo.
-ruby/1.8 includes WEBrick in standard distribution library.</dd>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/webrick/">[RAA:webrick]</a> (1.3.1)</dt>
+<dd>TCP server toolkit by Gotoyuzo.</dd>
 
-<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=http-access2">[RAA:http-access2]</a> (2.0.0) (recommended for SOAP client)</dt>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/http-access2/">[RAA:http-access2]</a> (2.0.5)</dt>
 <dd>Yet another HTTP client implementation by NaHi.</dd>
 
-<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=devel-logger">[RAA:devel-logger]</a> (1.1.0) (required under ruby/1.6)</dt>
-<dd>Logging utility by NaHi.  ruby/1.8 includes this library so you don't have to re-install it.</dd>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/devel-logger/">[RAA:devel-logger]</a> (1.1.0)</dt>
+<dd>Logging utility by NaHi.</dd>
 
-<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=date2">[RAA:date2]</a> (3.2) (required under ruby/1.6)</dt>
-<dd>Date and DateTime implementation by Todayoshi Funaba.
-Note: From ruby/1.8, this module is included in standard distribution.
-You don't have to install it if you are using ruby/1.8 or later.</dd>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/date2/">[RAA:date2]</a> (3.2)</dt>
+<dd>Date and DateTime implementation by Todayoshi Funaba.</dd>
 
-<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=uconv">[RAA:uconv]</a> (0.4.10) (required for UTF-8 handling under ruby/1.6 or under ruby/1.8 without iconv)</dt>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/uconv/">[RAA:uconv]</a> (0.4.10) (required for UTF-8 handling)</dt>
 <dd>by Yoshida Masato.
-It is requred when you use ruby/1.6 and want automatic CES conversion between
+It is requred when you want automatic CES conversion between
 SJIS &lt;-&gt; UTF8 and EUC &lt;-&gt; UTF8.
-Under ruby/1.8, soap4r uses iconv in standard distribution library (if you installed it).
 Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
 </dd>
 
@@ -287,249 +394,263 @@ $ setenv HTTP_PROXY http://myproxyserver:8080
 </pre>
 
 <dl>
-<dt class="path">babelfish.rb</dt>
-<dd>A client for
-<a href="http://www.xmethods.com/ve2/ViewListing.po?serviceid=14">BabelFish</a>
-which namespace URI is 'urn:xmethodsBabelFish'.
-<pre class="path">
-$ ./babelfish.rb "Text to translate" [ translation pattern like 'en_fr' ]
-</pre>
-</dd>
-
-<dt class="path">whois.rb</dt>
-<dd>A client for
-<a href="http://www.xmethods.com/ve2/ViewListing.po?serviceid=34">SQLData's WHOIS</a>
-which namespace URI is 'http://www.SoapClient.com/xml/SQLDataSoap.xsd'.
-<pre class="path">
-$ ./whois.rb ruby-lang.org
-</pre>
-CAUTION: This WhoIs server does not handle non-ascii characters correctly.
-Querying domain which entry contains Japanese or so will hang.  Gee.
-</dd>
-
-<dt class="path">digraph.rb</dt>
-<dd>A sample of SOAP marshalling/unmarshalling.
-It creates a digraph that contains multi-ref-ed nodes at first
-and marshals this object to get serialized XML instance.
-Then reads and unmarshals this XML instance to recover a object
-which has the same links among nodes in the digraph.
-</dd>
-
-<dt class="path">apacheClient.rb</dt>
-<dd>SOAP-RPC client sample which connects with demonstration server;
-stockquote and addressbook in Apache-SOAP.
-You have to install Apache-SOAP and deploy demostration programs.<br />
-To execute;
-<pre class="path">
-$ ./apacheClient.rb http://localhsot:2020/xml-soap/rpcrouter/rpcrouter.jsp
-</pre>
-</dd>
-
-<dt class="path">GoogleSearch/</dt>
-<dd>A sample client to search with <a href="http://www.google.com/apis/">Google Web API</a> using WSDL.
-You need to get a developer's key to use it.
-See wsdlDriver.rb.
-</dd>
-
-<dt class="path">Amazon/</dt>
-<dd>A sample client to connect with <a href="http://associates.amazon.com/exec/panama/associates/ntg/browse/-/1067662/086-5207681-4585409">AmazonWebServices</a> using WSDL.
-See wsdlDriver.rb.
-</dd>
-
-<dt class="path">Calc/</dt>
-<dd>Calc service contains 2 servers and 2 clients.
-calc.rb is hosted by server.rb, calc2.rb is hosted by server2.rb.
-client.rb is for server.rb, client2.rb is for server2.rb.
-<dl>
-<dt>calc.rb</dt>
-<dd>Calc server definition using module and module methods.
-This module responds 'add', 'sub', 'multi' and 'div'.</dd>
-<dt>server.rb</dt>
-<dd>Standalone server.
-It requires calc.rb and serve module methods of this module.
-To run this server;
+  <dt class="path">soap/</dt>
+  <dd>
+    <dl>
+      <dt class="path">calc/</dt>
+      <dd>Calc service contains 2 servers and 2 clients.
+        calc.rb is hosted by server.rb, calc2.rb is hosted by server2.rb.
+        client.rb is for server.rb, client2.rb is for server2.rb.
+        <dl>
+          <dt>calc.rb</dt>
+          <dd>Calc server definition using module and module methods.
+            This module responds 'add', 'sub', 'multi' and 'div'.
+          </dd>
+          <dt>server.rb</dt>
+          <dd>Standalone server.
+            It requires calc.rb and serve module methods of this module.
+            To run this server;
 <pre class="path">
 $ ./server.rb
 </pre>
-</dd>
-<dt>server.cgi</dt>
-<dd>CGI version.
-To run this server, copy server.cgi and calc.rb to suitable directory
-of your WWW server.
-</dd>
-<dt>client.rb</dt>
-<dd>It connects to server.rb or server.cgi,
-and hit methods served by calc.rb.
-To run the client;
+          </dd>
+          <dt>server.cgi</dt>
+          <dd>CGI version.
+            To run this server, copy server.cgi and calc.rb to suitable
+            directory of your WWW server.
+          </dd>
+          <dt>client.rb</dt>
+          <dd>It connects to server.rb or server.cgi,
+            and hit methods served by calc.rb.
+            To run the client;
 <pre class="path">
 $ ./client.rb
 </pre>
-Is it stacked?  Did you run the server.rb?<br/>
-Turn logger and wireDumpDev in its source on to see logs and wire dumps of
-SOAP transport.</dd>
+            Is it stacked?  Did you run the server.rb?<br/>
+            Turn logger and wireDumpDev in its source on to see logs and wire
+            dumps of SOAP transport.
+          </dd>
+          <dt>calc2.rb</dt>
+          <dd>Calc server definition using class and instance methods.
+            An instance of this class holds its value.  Methods 'set' and 'get'
+            is to set/get the value.
+            It also responds to '+', '-', '*', and '/'.
+          </dd>
+          <dt>server2.rb</dt>
+          <dd>It requires calc2.rb and creates an instance of CalcService2
+            that responds all SOAP requests.
+            Since '+', '-' and so on of calc2.rb are not valid name as an
+            element in XML instance, this sample register the method '+' as
+            'add', '-' as 'sub', and so on.
+          </dd>
+          <dt>server2.cgi</dt>
+          <dd>CGI version.
+            To run this server, copy server2.cgi and calc2.rb to suitable
+            directory of your WWW server.
+          </dd>
+          <dt>client2.rb</dt>
+          <dd>It connects to server2.rb or server2.cgi.
+            Set a value at first and call methods like 'puts objAtServer + 2'.
+          </dd>
+        </dl>
+      </dd>
 
-<dt>calc2.rb</dt>
-<dd>Calc server definition using class and instance methods.
-An instance of this class holds its value.  Methods 'set' and 'get' is to
-set/get the value.
-It also responds to '+', '-', '*', and '/'.
-</dd>
-<dt>server2.rb</dt>
-<dd>It requires calc2.rb and creates an instance of CalcService2
-that responds all SOAP requests.
-Since '+', '-' and so on of calc2.rb are not valid name as an element
-in XML instance,
-this sample register the method '+' as 'add', '-' as 'sub', and so on.
-</dd>
-<dt>server2.cgi</dt>
-<dd>CGI version.
-To run this server, copy server2.cgi and calc2.rb to suitable directory
-of your WWW server.
-</dd>
-<dt>client2.rb</dt>
-<dd>It connects to server2.rb or server2.cgi.
-Set a value at first and call methods like 'puts objAtServer + 2'.</dd>
-</dl>
-</dd>
-
-<dt class="path">Exchange/</dt>
-<dd>A sample to retrieve the currency rate from public SOAP service.</dd>
-<dl>
-<dt>iExchange.rb</dt>
-<dd>It includes common definitions for client and server of
-Exchange service.
-Including only a definition of namespace URI of this service.</dd>
-<dt>exchange.rb</dt>
-<dd>Definition of servant class ExchangeService which returns the currency rate
-after connecting to another site by SOAP to get the real rate.
-So that this class is the SOAP server for local client and 
-is also a SOAP client for public server.
-An instance of this class is hosted by server.rb.
-The instance responds to only 'getRate' which receives two country code
-such as 'USA' and 'Japan'.</dd>
-<dt>server.rb</dt>
-<dd>It requires exchange.rb and creates an instance of ExchangeService
-that responds all SOAP requests.
-To run this server;
+      <dt class="path">exchange/</dt>
+      <dd>A sample to retrieve the currency rate from public SOAP service.
+        <dl>
+          <dt>iExchange.rb</dt>
+          <dd>It includes common definitions for client and server of
+            Exchange service.  Including only a definition of namespace URI of
+            this service.</dd>
+          <dt>exchange.rb</dt>
+          <dd>Definition of servant class ExchangeService which returns the
+            currency rate after connecting to another site by SOAP to get the
+            real rate.
+            So that this class is the SOAP server for local client and 
+            is also a SOAP client for public server.
+            An instance of this class is hosted by server.rb.
+            The instance responds to only 'getRate' which receives two country
+            code such as 'USA' and 'Japan'.</dd>
+          <dt>server.rb</dt>
+          <dd>It requires exchange.rb and creates an instance of
+            ExchangeService that responds all SOAP requests.
+            To run this server;
 <pre class="path">
 $ ./server.rb
 </pre>
-</dd>
-<dt>server.cgi</dt>
-<dd>CGI version.
-To run this server, copy server.cgi and exchange.rb to suitable directory
-of your WWW server.
-</dd>
-<dt>client.rb</dt>
-<dd>It connects to server.rb.
-Turn logger and wireDumpDev in its source on to see logs and wire dumps of
-SOAP transport.
-To run the client;
+          </dd>
+          <dt>server.cgi</dt>
+          <dd>CGI version.  To run this server, copy server.cgi and exchange.rb
+            to suitable directory of your WWW server.</dd>
+          <dt>client.rb</dt>
+          <dd>It connects to server.rb.  Turn logger and wireDumpDev in its
+            source on to see logs and wire dumps of SOAP transport.
+            To run the client;
 <pre class="path">
 $ ./client.rb
 </pre>
-</dd>
-</dl>
-</dd>
+          </dd>
+        </dl>
+      </dd>
 
-<dt class="path">SampleStruct/</dt>
-<dd>A sample to transmit complex structured object which has recursive
-object reference.
-<dl>
-<dt>iSampleStruct.rb</dt>
-<dd>It includes common definitions for client and server of
-SampleStruct service.
-Definition of SampleStruct class and namespace URI of this service.</dd>
-<dt>sampleStruct.rb</dt>
-<dd>Definition of servant class SampleStructService.
-An instance of this class is hosted by server.rb.
-The instance responds to only 'hi' which receives a SampleStruct and wraps
-it in the new instance of SampleStruct to return .</dd>
-<dt>server.rb</dt>
-<dd>It requires sampleStruct.rb and creates an instance of SampleStructService
-that responds all SOAP requests.
-To run this server;
+      <dt class="path">authheader/</dt>
+      <dd>It contains a sample to utilize SOAP Header handler.  Send
+        userid/passwd and receive sessionid via SOAP Header</dd>
+
+      <dt class="path">raa2.4/</dt>
+      <dd>sample/soap/raa2.4/sample.rb is a sample client to retrieve project
+        information on RAA.  It uses raaDriver.rb which is generated by
+        wsdl2ruby.rb from WSDL at
+        <a href="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/">http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/</a>.
+        You'll find wsdlDriver.rb in sample/wsdl/raa2.4/wsdlDriver.rb which
+        loads the WSDL at runtime to connect.</dd>
+
+      <dt class="path">scopesample/</dt>
+      <dd>SOAP server sample which shows a different behavior of SOAP server scope settings; Request scope vs Application scope.
+        sample/soap/scopesample/servant.rb is a servant which holds push-ed
+        object that can be pop-ed afterward.
+        See sample/soap/scopesample/server.rb how to define a servant as
+        a Request scope servant or an Application scope servant.
+        Application scope servant works as we expected because the servant
+        object is living from beginning to the time server terminated.
+        In contrast, request scope servant(s) does not work because a servant
+        object is created for each request.
+      </dd>
+
+      <dt class="path">ssl/</dt>
+      <dd>SSL SOAP server and client samples.
+        <dl>
+          <dt class="path">sslserver.rb</dt>
+          <dd>SSL server sample which hosts "hello world" service.
+            This server uses SSL server certificate in files/ directory
+            (SSL client should check this certificate for SSL server
+            authentication).</dd>
+          <dt class="path">sslserver_noauth.rb</dt>
+          <dd>This server generates SSL server certificate
+            at runtime.  No security.</dd>
+          <dt class="path">sslserver_require_clientauth.rb</dt>
+          <dd>This server users SSL server certificate in files/ directory
+            and requires SSL client authentication (clients must
+            have SSL client certificate and send it to the server).</dd>
+          <dt class="path">sslclient.rb</dt>
+          <dd>SSL client sample which calls "hello world" service via HTTPS.
+            This client checks SSL server certificate sent from SSL server.</dd>
+          <dt class="path">sslclient_require_noserverauth.rb</dt>
+          <dd>This client does not check SSL server certificate.
+            No security.</dd>
+          <dt class="path">sslclient_with_clientauth.rb</dt>
+          <dd>This client sends SSL client certificate in files/ directory
+            and checks SSL server certificate.</dd>
+        </dl>
+      </dd>
+
+      <dt class="path">swa/</dt>
+      <dd>SOAP server and client sample of SwA (SOAP with Attachments).</dd>
+
+      <dt class="path">digraph.rb</dt>
+      <dd>A sample of SOAP marshalling/unmarshalling.
+        It creates a digraph that contains multi-ref-ed nodes at first
+        and marshals this object to get serialized XML instance.
+        Then reads and unmarshals this XML instance to recover a object
+        which has the same links among nodes in the digraph.
+      </dd>
+
+      <dt class="path">sampleStruct/</dt>
+      <dd>A sample to transmit complex structured object which has recursive
+        object reference.
+        <dl>
+          <dt>iSampleStruct.rb</dt>
+          <dd>It includes common definitions for client and server of
+            SampleStruct service.  Definition of SampleStruct class and
+            namespace URI of this service.</dd>
+          <dt>sampleStruct.rb</dt>
+          <dd>Definition of servant class SampleStructService.
+            An instance of this class is hosted by server.rb.
+            The instance responds to only 'hi' which receives a SampleStruct
+            and wraps it in the new instance of SampleStruct to return .</dd>
+          <dt>server.rb</dt>
+          <dd>It requires sampleStruct.rb and creates an instance of
+            SampleStructService that responds all SOAP requests.
+            To run this server;
 <pre class="path">
 $ ./server.rb
 </pre>
-</dd>
-<dt>server.cgi</dt>
-<dd>CGI version.
-To run this server, copy server.cgi and sampleStruct.rb to suitable directory
-of your WWW server.
-</dd>
-<dt>client.rb</dt>
-<dd>It connects to server.rb.
-Turn logger and wireDumpDev in its source on to see logs and wire dumps of
-SOAP transport.
-To run the client;
+          </dd>
+          <dt>server.cgi</dt>
+          <dd>CGI version.  To run this server, copy server.cgi and
+            sampleStruct.rb to suitable directory of your WWW server.</dd>
+          <dt>client.rb</dt>
+          <dd>It connects to server.rb.  Turn logger and wireDumpDev in its
+            source on to see logs and wire dumps of SOAP transport.
+            To run the client;
 <pre class="path">
 $ ./client.rb
 </pre>
-</dd>
-</dl>
-</dd>
+          </dd>
+        </dl>
+      </dd>
 
-<dt class="path">RAA/</dt>
-<dd>SOAP-RPC client samples.
-These programs connect to RAA SOAP Interface on www.ruby-lang.org.
-<ul>
-<li>soap4r.rb: Ruby program using SOAP4R</li>
-<li>xmlrpc4r.rb: Ruby program using xmlrpc4r</li>
-<li>pocketSOAP.js: JScript program using pocketSOAP</li>
-<li>SOAP::Lite.pl: Perl program using SOAP::Lite for Perl</li>
-</ul>
-Since the server is (still) under testing phase so stable operation is not expected.</dd>
-
-<li>SampleStructService
-<dl>
-<dt>sampleStruct.rb</dt>
-<dd>A server class definition which wraps a given struct
-and returns it.
-An instance of this class is instanciated in httpd.rb and this instance
-respond to each HTTP request.</dd>
-<dt>sampleStructClient.rb</dt>
-<dd>A client to connect soaplet.rb via SOAP/HTTP to call sampleStruct.rb</dd>
-<dt>iSampleStruct.rb</dt>
-<dd>Common class(type) definitions for server and client.</dd>
-</dl></li>
-</ul>
-Run the server;
-<pre class="path">
-$ ruby httpd.rb
-</pre>
-Then, run clients;
-<pre class="path">
-$ ruby sampleStruct.rb
-$ ruby exchangeClient.rb
-</pre>
-Set 'logger' and 'wireDumpDev' in clients to see log and wiredumps of SOAP.
-</dd>
-
-<dt class="path">ICD</dt>
-<dd>A client for
-<a href="http://www.iwebmethod.net/">Insider's Computer Dictionary Web Service</a>.
-This service is implemented with ASP.NET so that it's also a sample of
-a client which connects to ASP.NET.
-CAUTION: this sample contains non-ascii chars in its source and dumped results.
-<dl>
-<dt>IICD.rb</dt>
-<dd>Class(type) definitions for this server.</dd>
-<dt>icd.rb</dt>
-<dd>Client implementation.  To run the client;
+      <dt class="path">icd/</dt>
+      <dd>A client for
+        <a href="http://www.iwebmethod.net/">Insider's Computer Dictionary Web Service</a>.
+        This service is implemented with ASP.NET so that it's also a sample of
+        a client which connects to ASP.NET.
+        CAUTION: this sample contains non-ascii chars in its source and dumped
+        results.
+        <dl>
+          <dt>IICD.rb</dt>
+          <dd>Class(type) definitions for this server.</dd>
+          <dt>icd.rb</dt>
+          <dd>Client implementation.  To run the client;
 <pre class="path">
 $ ./icd.rb
 </pre>
-</dd>
+          </dd>
+        </dl>
+      </dd>
+    </dl>
+  </dd>
+
+  <dt class="path">wsdl/</dt>
+  <dd>
+    <dl>
+      <dt class="path">googleSearch/</dt>
+      <dd>Sample client to search with <a href="http://www.google.com/apis/">Google Web API</a> using WSDL.  You need to get a developer's key to use it.  See wsdlDriver.rb.</dd>
+
+      <dt class="path">amazon/</dt>
+      <dd>Sample client to connect with <a href="http://associates.amazon.com/exec/panama/associates/ntg/browse/-/1067662/086-5207681-4585409">AmazonWebServices</a> using WSDL.  See wsdlDriver.rb.</dd>
+
+      <dt class="path">documentliteral/</dt>
+      <dd>Sample client and server of document/literal service.  See README.txt in this directory to run this sample.</dd>
+
+      <dt class="path">noaa/</dt>
+      <dd>Sample client of National Weather Service digital weather forecast data service at http://weather.gov/</dd>
+
+      <dt class="path">raa2.4/</dt>
+      <dd>sample/wsdl/raa2.4/wsdlDriver.rb is a sample client to retrieve
+        project information on RAA.  It loads WSDL file 
+        <a href="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/">http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/</a>
+        at <strong>runtime</strong>.
+        You'll find a sample client at sample/soap/raa2.4/sample.rb
+        which connects RAA using pre-generated service definitions
+        (not loads WSDL at runtime).</dd>
+
+      <dt class="path">googleAdwords/</dt>
+      <dd>Sample client of Google AdWords service.  
+        CAUTION: I don't have an account of AdWords so the sample code is NOT
+        tested.  Please tell me (nahi@ruby-lang.org) if you will get good/bad
+        result in communicating with AdWords Server.</dd>
+
+      <dt class="path">amazonEC/</dt>
+      <dd>Sample client of AWSECommerce service.
+        CAUTION: I don't have an account of AWSECommerce so the sample code is
+        NOT tested.  Please tell me (nahi@ruby-lang.org) if you will get
+        good/bad result in communicating with AWSECommerce Server.</dd>
+    </dl>
+  </dd>
+
 </dl>
 </dd>
-
-<dt class="path">WSDemo</dt>
-<dd>A sample of messaging client.  Server side sample does not exist now...</dd>
-
-<dt class="path">RWiki</dt>
-<dd>A sample CGI server which receives a request via SOAP and dispatches it
-to RWiki server via dRuby.  Naive SOAP/dRuby bridge implementation.</dd>
 
 </dl>
 
@@ -556,29 +677,208 @@ spec are <strong>NOT</strong> currently supported:
 <h2 id="resources" name="resources"><span class="content">8. Resources</span></h2>
 
 <dl>
-<dt class="path"><a href="http://raa.ruby-lang.org/list.rhtml?name=soap4r">[RAA:soap4r]</a></dt>
-<dd>I will post a new release to RAA.
-Check RAA to get a new stable (I hope) version.</dd>
+<dt class="path"><a href="http://dev.ctor.org/soap4r">soap4r project page</a></dt>
+<dd>You can get the latest information and the latest development version of soap4r here.</dd>
 
-<dt class="path"><a href="http://www.ruby-lang.org/cgi-bin/cvsweb.cgi/lib/soap4r/">CVS</a></dt>
-<dd>There is the SOAP4R CVS repository in cvs.ruby-lang.org.
-(Thanks to knu, the maintainer of cvs.ruby-lang.org.)
-Check here to get most recent (but could be unstable) version.</dd>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/soap4r">[RAA:soap4r]</a></dt>
+<dd>RAA meta information</dd>
 
-<dt class="path"><a href="http://rrr.jin.gr.jp/rwiki?cmd=view&name=soap4r">SOAP4R Wiki</a></dt>
-<dd>There is a wiki for SOAP4R, running under
-<a href="http://www.ruby-lang.org/raa/list.rhtml?name=rwiki">[RAA:RWiki]</a>.
-Feel free to add your comment there.
-Any comments are welcomed. (as always)</dd>
+<dt class="path"><a href="http://groups-beta.google.com/group/soap4r">soap4r Mailing List on Google Groups</a></dt>
+<dd>Feel free to join the list to ask any question and comment about soap4r.
+  You can browse messages archive.  Bear in mind that Google Groups is still
+  in [beta] stage.</dd>
 
-<dt class="path"><a href="http://rrr.jin.gr.jp/soap4r?cmd=view;name=InteropResults">InteropResults</a></dt>
-<dd>Test results of <a href="http://www.whitemesa.com/interop.htm">SOAPBuilders Interoperability Lab &quot;Round 2&quot;</a>.</dd>
-
+<dt class="path">Subversion repository</dt>
+<dd>Soap4r's svn repository is here: http://dev.ctor.org/svn/soap4r/ .
+  To checkout the latest soap4r module, try
+<pre>
+svn checkout http://dev.ctor.org/svn/soap4r/trunk soap4r
+</pre>
+  CVS repository of soap4r which was located at cvs.ruby-lang.org is pending since 2004-05-27. </dd>
 </dl>
 
 <h2 id="history" name="history"><span class="content">9. History</span></h2>
 
 <dl>
+<dt>1.5.4 - May 13, 2005</dt>
+<dd>This is version 1.5.4.
+Version 1.5.3 is the module which is included in ruby-1.8.2,
+and not released independently.
+Following changes consist from 2 parts; Changes from 1.5.3 to 1.5.4,
+and from 1.5.2 to 1.5.3.
+<br/><br/>
+Changes in 1.5.4 from 1.5.3
+<br/><br/>
+<ul>
+  <li>SOAP client and server
+    <ul>
+      <li>for both client side and server side
+        <ul>
+          <li>improved document/literal service support.  style(rpc, document)/use(encoding, literal) combination are all supported.  for the detail about combination, see test/soap/test_style.rb.</li>
+          <li>let WSDLEncodedRegistry#soap2obj map SOAP/OM to Ruby according to WSDL as well as obj2soap.</li>
+          <li>let SOAP::Mapping::Object handle XML attribute for doc/lit service.  you can set/get XML attribute via accessor methods which as a name 'xmlattr_' prefixed (&lt;foo name="bar"/&gt; -&gt; Foo#xmlattr_name).</li>
+        </ul>
+      </li>
+      <li>client side
+        <ul>
+          <li>WSDLDriver capitalized name operation bug fixed.  from 1.5.3-ruby1.8.2, operation which has capitalized name (such as KeywordSearchRequest in AWS) is defined as a method having uncapitalized name. (converted with GenSupport.safemethodname to handle operation name 'foo-bar').  it introduced serious incompatibility; in the past, it was defined as a capitalized.  define capitalized method as well under that circumstance.</li>
+
+          <li>added new factory interface 'WSDLDriverFactory#create_rpc_driver' to create RPC::Driver, not WSDLDriver (RPC::Driver and WSDLDriver are merged).  'WSDLDriverFactory#create_driver' still creates WSDLDriver for compatibility but it warns that the method is deprecated.  please use create_rpc_driver instead of create_driver.</li>
+          <li>allow to use an URI object as an endpoint_url even with net/http, not http-access2.</li>
+        </ul>
+      </li>
+      <li>server side
+        <ul>
+          <li>added mod_ruby support to SOAP::CGIStub.  rename a CGI script server.cgi to server.rb and let mod_ruby's RubyHandler handles the script.  CGIStub detects if it's running under mod_ruby environment or not.</li>
+          <li>added fcgi support to SOAP::CGIStub.  see the sample at sample/soap/calc/server.fcgi.  (almost same as server.cgi but has fcgi handler at the bottom.)</li>
+          <li>allow to return a SOAPFault object to respond customized SOAP fault.</li>
+          <li>added the interface 'generate_explicit_type' for server side (CGIStub, HTTPServer).  call 'self.generate_explicit_type = true' if you want to return simplified XML even if it's rpc/encoded service.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li>WSDL
+    <ul>
+      <li>WSDL definition
+        <ul>
+          <li>improved XML Schema support such as extension, restriction, simpleType, complexType + simpleContent, ref, length, import, include.</li>
+          <li>reduced "unknown element/attribute" warnings (warn only 1 time for each QName).</li>
+          <li>importing XSD file at schemaLocation with xsd:import.</li>
+        </ul>
+      </li>
+      <li>code generation from WSDL
+        <ul>
+          <li>generator crashed when there's '-' in defined element/attribute name.</li>
+          <li>added ApacheMap WSDL definition.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li>Samples
+    <ul>
+      <li>added XML &lt;-&gt; Ruby mapping utility.  XSD::Mapping#xml2obj maps an XML to a tree of SOAP::Mapping::Object.  XSD::Mapping#obj2xml is for reverse direction conversion.  see a sample in sample/wsdl/noaa/client.rb</li>
+      <li>added a sample for weather.gov's NDFD services.</li>
+      <li>add a sample of googleAdWords.  CAUTION: I don't have an account of AdWords so the sample code is NOT tested.  Please tell me (nahi@ruby-lang.org) if you will get good/bad result in communicating with AdWords Server.</li>
+      <li>add a sample of AWSECommerce.  CAUTION: I don't have an account of AWSECommerce so the sample code is NOT tested.  Please tell me (nahi@ruby-lang.org) if you will get good/bad result in communicating with AWSECommerce Server.</li>
+    </ul>
+  </li>
+</ul>
+<br/>
+Changes in 1.5.3 from 1.5.2
+<br/><br/>
+<ul>
+  <li>SOAP client and server
+    <ul>
+      <li>for both client side and server side
+        <ul>
+          <li>added a header handler class for simple SOAPHeader handling.  see samples in sample/soap/authheader/*.</li>
+          <li>SSL support (both client side and server side).  check sample/soap/ssl/*</li>
+          <li>gzipped content encoding support.  see sample/soap/helloworld/hw_{c,s}_gzip.rb.</li>
+        </ul>
+      </li>
+      <li>client side
+        <ul>
+          <li>HTTP-Cookies support under soap4r + http-access2.  not supported under soap4r + net/http.</li>
+          <li>added a method (SOAP::RPC::Driver#test_loopback_response) for loopback test with the specified response.</li>
+          <li>added SOAP::RPC::Driver#loadproperty interface to load property file.</li>
+          <li>let SOAP::RPC::Driver#add_method returns Method object.  you can invoke a service like; drv.add_method(&#34;hello&#34;).call(&#34;world&#34;)</li>
+          <li>added http options to get/set timeout seconds.
+            <ul>
+              <li>for http-access2:
+                <ul>
+                  <li>driver.options[&#34;protocol.http.connect_timeout&#34;]</li>
+                  <li>driver.options[&#34;protocol.http.send_timeout&#34;]</li>
+                  <li>driver.options[&#34;protocol.http.receive_timeout&#34;]</li>
+                </ul>
+              </li>
+              <li>for net/http:
+                <ul>
+                  <li>driver.options[&#34;protocol.http.connect_timeout&#34;]</li>
+                  <li>driver.options[&#34;protocol.http.receive_timeout&#34;]</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>raise NotImplementedError when net/http + basic_auth.</li>
+        </ul>
+      </li>
+      <li>server side
+        <ul>
+          <li>introduced the new server class SOAP::RPC::HTTPServer which takes WEBrick's HTTPServer compatible config parameter.</li>
+          <li>added a debug log of SOAP request/response.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li>SOAP core part
+    <ul>
+      <li>added XMLSchema derived type support; byte, nonPositiveInteger, negativeInteger, nonNegativeInteger, positiveInteger, unsignedLong, unsignedInt, unsignedShort, unsignedByte.</li>
+      <li>'eval' cleanup.  I hope it allows soap4r to work under mod_ruby environment.</li>
+      <li>SOAPProperty raise RuntimeError under ruby-1.9 when accessing locked property.  still raises TypeError under ruby-1.8 or earlier.  the change is from ruby's behaviour change about an exception when accessing a frozen object.</li>
+      <li>make SOAPHeader a child of SOAPStruct, not SOAPArray.</li>
+      <li>SOAPProperty does not eval whole string.  \\, \t, \r, \n, \f escaping chars are supported like Java's Properties.</li>
+      <li>URI object was not mapped correctly so that URI object was not interoperable under some situation.  fixed.</li>
+      <li>SOAP::Mapping::Object: handle multiple value as an array.
+<pre>
+&lt;foo&gt;
+  &lt;bar&gt;1&lt;/bar&gt;
+  &lt;bar&gt;2&lt;/bar&gt;
+  &lt;bar&gt;3&lt;/bar&gt;
+  &lt;baz&gt;4&lt;/baz&gt;
+&lt;/foo&gt;
+  -&gt;
+foo.bar =&gt; [1, 2, 3]
+foo.baz =&gt; 4
+</pre>
+      </li>
+      <li>raise an exception while dumping singleton class. [ruby-dev:22588]
+<pre>
+e.g. c = class &lt;&lt; Object.new
+       class C; self; end
+     end
+     SOAPMarshal.dump(c)
+</pre>
+      </li>
+    </ul>
+  </li>
+
+  <li>WSDL
+    <ul>
+      <li>WSDL definition
+        <ul>
+          <li>added &lt;xsd:simpleContent&gt; support.</li>
+          <li>initial (means &#34;far from complete&#34;) simpleType support.</li>
+          <li>support parts attribute of soap:body element.</li>
+          <li>xmlSchema's 'any' element support; for parsing, just treat the element as an element which has a name 'any'.</li>
+          <li>add mustUnderstand attribute support.</li>
+          <li>a special well-known type: ApacheMap support.</li>
+        </ul>
+      </li>
+
+      <li>code generation from WSDL
+        <ul>
+          <li>added simple code generation utils (lib/xsd/codegen)</li>
+          <li>dump attribute definition in XMLSchema as 'attr_*' attribute. [experimental]</li>
+          <li>wsdl2ruby.rb: add document/literal service support.  see sample/wsdl/documentliteral/*</li>
+          <li>untyped element should be treated as xsd:anyType.</li>
+          <li>added a tool xsd2ruby.rb for generating classdef from xsd file.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li>Samples
+    <ul>
+      <li>added RAA/2.4 sample client</li>
+      <li>added sample for Application/Request scope use.  Session scope (with Cookies) feature is not yet exists.</li>
+    </ul>
+  </li>
+</ul>
+</dd>
+
 <dt>1.5.2 - December 25, 2003</dt>
 <dd>
 <ul>
@@ -604,8 +904,8 @@ Any comments are welcomed. (as always)</dd>
     example, save these lines to
     &quot;$rubylibdir/site_ruby/1.8/soap/property&quot;.
 <pre>
-      client.protocol.http.proxy = http://myproxy:8080
-      client.protocol.http.no_proxy = 192.168.71.71,192.168.71.72
+client.protocol.http.proxy = http://myproxy:8080
+client.protocol.http.no_proxy = 192.168.71.71,192.168.71.72
 </pre>
     Then all HTTP connections should use these proxy and no_proxy
     definition.</li>
@@ -620,8 +920,8 @@ Any comments are welcomed. (as always)</dd>
     To use HTTP_PROXY and NO_PROXY environment variable, you must set
     SOAP_USE_PROXY environment variable 'on', too.
 <pre>
-      bash$ soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
-      csh$  env soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
+bash$ soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
+csh$  env soap_use_proxy=on http_proxy=http://myproxy:8080 ruby ...
 </pre></li>
 
     <li>Add SOAP::RPC::Driver#mandatorycharset= and
@@ -800,7 +1100,7 @@ This version has these enhancements and bug fixes;
 <ul>
 <li>Includes WSDL4R initial release.
 <ul>
-<li>Bare in mind this is an alpha level code.
+<li>Bear in mind this is an alpha level code.
 I wrote it halfway at half and a year ago,
 and wrote the rest part in half and a day.
 No comprehensive test, no strict syntax check, unfriendly error message, etc.
@@ -1379,7 +1679,7 @@ Feel free sending mail to
 <dt>1.0.1 - July 27, 2000</dt>
 <dd>Handles SOAP/1.1 arrays.
 1.0.0 cannot handles SOAP/1.1 arrays...
-Bare in mind there still be many
+Bear in mind there still be many
 <a href="#restrictions">restrictions</a>
 around SOAP arrays.</dd>
 
@@ -1400,8 +1700,8 @@ around SOAP arrays.</dd>
 <h2 id="copyright" name="copyright"><span class="content">11. Copyright</span></h2>
 
 <p style="text-align: center;">
-SOAP4R, WSDL4R and XSD4R<br />
-Copyright &copy; 2000-2003 NAKAMURA, Hiroshi &lt;nahi@ruby-lang.org&gt;.
+SOAP4R<br />
+Copyright &copy; 2000-2005 NAKAMURA, Hiroshi &lt;nahi@ruby-lang.org&gt;.
 </p>
 
 <p>
@@ -1418,7 +1718,7 @@ version.
 <div class="footer">
 <address>
 <a href="http://rrr.jin.gr.jp/rwiki?cmd=view&name=soap4r">SOAP4R</a>.<br />
-Copyright &copy; 2000, 2001, 2002, 2003
+Copyright &copy; 2000, 2001, 2002, 2003, 2004, 2005
 <a href="http://www.jin.gr.jp/~nahi/">NAKAMURA, Hiroshi</a>.
 </address>
 </div>
