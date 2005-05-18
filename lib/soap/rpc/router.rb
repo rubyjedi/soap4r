@@ -115,29 +115,37 @@ class Router
   end
 
   def add_document_operation(receiver, soapaction, name, param_def, opt = {})
-    unless soapaction
-      raise RPCRoutingError.new("soapaction is a must for document method")
-    end
+    #
+    # adopt workaround for doc/lit wrapper method
+    # (you should consider to simply use rpc/lit service)
+    #
+    #unless soapaction
+    #  raise RPCRoutingError.new("soapaction is a must for document method")
+    #end
     ensure_styleuse_option(opt, :document, :literal)
     op = ApplicationScopeOperation.new(soapaction, receiver, name, param_def,
       opt)
     if opt[:request_style] != :document
       raise RPCRoutingError.new("illegal request_style given")
     end
-    assign_operation(soapaction, nil, op)
+    assign_operation(soapaction, first_input_part_qname(param_def), op)
   end
   alias add_document_method add_document_operation
 
   def add_document_request_operation(factory, soapaction, name, param_def, opt = {})
-    unless soapaction
-      raise RPCRoutingError.new("soapaction is a must for document method")
-    end
+    #
+    # adopt workaround for doc/lit wrapper method
+    # (you should consider to simply use rpc/lit service)
+    #
+    #unless soapaction
+    #  raise RPCRoutingError.new("soapaction is a must for document method")
+    #end
     ensure_styleuse_option(opt, :document, :literal)
     op = RequestScopeOperation.new(soapaction, receiver, name, param_def, opt)
     if opt[:request_style] != :document
       raise RPCRoutingError.new("illegal request_style given")
     end
-    assign_operation(soapaction, nil, op)
+    assign_operation(soapaction, first_input_part_qname(param_def), op)
   end
 
   def route(conn_data)
@@ -183,6 +191,16 @@ class Router
   end
 
 private
+
+  def first_input_part_qname(param_def)
+    param_def.each do |inout, paramname, typeinfo|
+      if inout == SOAPMethod::IN
+        klass, nsdef, namedef = typeinfo
+        return XSD::QName.new(nsdef, namedef)
+      end
+    end
+    nil
+  end
 
   def create_styleuse_option(style, use)
     opt = {}
