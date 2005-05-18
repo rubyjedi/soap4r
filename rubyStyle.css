@@ -1,10 +1,5 @@
-/*
- * style.css: CSS style definition file for `Rubyavailable'.
- * (<URL:http://www.jin.gr.jp/~nahi/Ruby/*>)
- */
-
 body {
-    background: white;
+    background: #fff;
     color: black;
     margin-left: 2%;
     margin-right: 2%;
@@ -28,16 +23,13 @@ h1 {
     color: #666;
     background: white;
     text-align: right;
-    font-family: "comic sans ms", verdana, sans-serif; 
     margin-top: 1em;
-    margin-right: 10%;
 }
 
-h2, h3, h4, h5, h6 {
+h2 {
     color: #666;
     background: white;
-    margin-top: 1em;
-    font-family: "Impact", verdana, sans-serif;
+    margin-top: 2em;
 }
 
 h2 span.content {
@@ -45,7 +37,12 @@ h2 span.content {
     border-width: 0px 0px 1px 20px;
     border-color: #666;
     padding-left: 1ex;
-    padding-right: 5ex;
+}
+
+h3 {
+    color: #666;
+    background: white;
+    margin-top: 0ex;
 }
 
 h3 span.content {
@@ -55,19 +52,34 @@ h3 span.content {
     padding-left: 1ex;
 }
 
-
-div.header p.status { text-align: right; }
-div.header p.last-modified { text-align: left; }
-
 dt {
     font-weight: bold;
     margin-top: 2ex;
     margin-left: 1em;
 }
 
+ul {
+    margin-bottom: 0.5em;
+}
+
+li {
+    margin-bottom: 0.1em;
+}
+
+table {
+    border-collapse: collapse;
+    empty-cells: show;
+    border-style: solid;
+    border-color: black;
+}
+
+table td {
+    border-style: solid;
+}
+
 address {
     color: gray;
-    background: white;
+    background: #fff;
     text-align: right;
     font-family: Times, serif;
     font-style: normal;
@@ -75,12 +87,18 @@ address {
     font-weight: normal;
 }
 
-span.download {
-    font-weight: normal;
-    color: blue;
-    background: #EEEEEE;
-}
-
-.path {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+pre {
+    font-size: 80%;
+    border-style: inset;
+    border-width: 1px;
+    border-color: #666;
+    padding-right: 1ex;
+    padding-top: 0.5em;
+    padding-left: 1ex;
+    padding-bottom: 0.5em;
+    margin-left: 1em;
+    margin-right: 2em;
+    white-space: pre;
+    background: #e6e6e6;
+    color: black;
 }
