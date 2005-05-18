@@ -14,7 +14,7 @@ begin
   require 'stringio'
   require 'zlib'
 rescue LoadError
-  STDERR.puts "Loading stringio or zlib failed.  No gzipped response supported." if $DEBUG
+  warn("Loading stringio or zlib failed.  No gzipped response supported.") if $DEBUG
 end
 
 

@@ -12,7 +12,7 @@ begin
   require 'stringio'
   require 'zlib'
 rescue LoadError
-  STDERR.puts "Loading stringio or zlib failed.  No gzipped response support." if $DEBUG
+  warn("Loading stringio or zlib failed.  No gzipped response support.") if $DEBUG
 end
 
 
@@ -27,7 +27,7 @@ class StreamHandler
       end
       HTTPAccess2::Client
     rescue LoadError
-      STDERR.puts "Loading http-access2 failed.  Net/http is used." if $DEBUG
+      warn("Loading http-access2 failed.  Net/http is used.") if $DEBUG
       require 'soap/netHttpClient'
       SOAP::NetHttpClient
     end

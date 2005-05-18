@@ -127,7 +127,7 @@ private
       end
       unless o
         unless @ignored.key?(elename)
-          STDERR.puts("ignored element: #{elename}")
+          warn("ignored element: #{elename}")
           @ignored[elename] = elename
         end
 	o = Documentation.new	# which accepts any element.
@@ -142,7 +142,7 @@ private
       value_ele.source = value  # for recovery; value may not be a QName
       unless o.parse_attr(attr_ele, value_ele)
         unless @ignored.key?(attr_ele)
-          STDERR.puts("ignored attr: #{attr_ele}")
+          warn("ignored attr: #{attr_ele}")
           @ignored[attr_ele] = attr_ele
         end
       end

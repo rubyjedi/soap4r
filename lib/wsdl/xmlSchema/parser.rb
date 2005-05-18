@@ -125,7 +125,7 @@ private
       end
       unless o
         unless @ignored.key?(elename)
-          STDERR.puts("ignored element: #{elename} of #{parent.class}")
+          warn("ignored element: #{elename} of #{parent.class}")
           @ignored[elename] = elename
         end
 	o = Documentation.new	# which accepts any element.
@@ -143,7 +143,7 @@ private
       else
         unless o.parse_attr(attr_ele, value_ele)
           unless @ignored.key?(attr_ele)
-            STDERR.puts("ignored attr: #{attr_ele}")
+            warn("ignored attr: #{attr_ele}")
             @ignored[attr_ele] = attr_ele
           end
         end
