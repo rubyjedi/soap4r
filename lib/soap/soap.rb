@@ -128,3 +128,12 @@ unless Object.respond_to?(:instance_variable_get)
     end
   end
 end
+
+
+unless Kernel.respond_to?(:warn)
+  module Kernel
+    def warn(msg)
+      STDERR.puts(msg + "\n") unless $VERBOSE.nil?
+    end
+  end
+end

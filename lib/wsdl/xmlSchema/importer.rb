@@ -43,7 +43,7 @@ private
   end
 
   def fetch(location)
-    STDERR.puts("importing: #{location}") if $DEBUG
+    warn("importing: #{location}") if $DEBUG
     content = nil
     if location.scheme == 'file' or
         (location.relative? and FileTest.exist?(location.path))
@@ -68,7 +68,7 @@ private
 	end
 	HTTPAccess2::Client
       rescue LoadError
-	STDERR.puts "Loading http-access2 failed.  Net/http is used." if $DEBUG
+	warn("Loading http-access2 failed.  Net/http is used.") if $DEBUG
 	require 'soap/netHttpClient'
 	::SOAP::NetHttpClient
       end

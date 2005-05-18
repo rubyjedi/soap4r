@@ -43,8 +43,7 @@ class WSDLDriverFactory
 
   # depricated old interface
   def create_driver(servicename = nil, portname = nil)
-    STDERR.puts "WSDLDriverFactory#create_driver is depricated." +
-      "  Use create_rpc_driver instead."
+    warn("WSDLDriverFactory#create_driver is depricated.  Use create_rpc_driver instead.")
     port = find_port(servicename, portname)
     WSDLDriver.new(@wsdl, port, @logdev)
   end
