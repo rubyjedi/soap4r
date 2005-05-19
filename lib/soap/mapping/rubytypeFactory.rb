@@ -383,7 +383,8 @@ private
       obj = klass.new
       mark_unmarshalled_obj(node, obj)
       node.each do |name, value|
-        obj[XSD::QName.new(nil, name)] = Mapping._soap2obj(value, map)
+        obj.__add_xmlele_value(XSD::QName.new(nil, name),
+          Mapping._soap2obj(value, map))
       end
       unless node.extraattr.empty?
         obj.instance_variable_set('@__xmlattr', node.extraattr)
