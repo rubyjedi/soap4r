@@ -127,6 +127,10 @@ private
         else
           raise MappingError.new("nil not allowed: #{child_ele.name.name}")
         end
+      elsif child_ele.map_as_array?
+        child.each do |item|
+          o.add(_obj2soap(item, child_ele))
+        end
       else
         o.add(_obj2soap(child, child_ele))
       end
@@ -193,13 +197,15 @@ private
     if elements
       elements.each do |elename, type|
         child = Mapping.get_attribute(obj, elename)
-        name = XSD::QName.new(nil, elename)
-        if as_array.include?(type)
-          child.each do |item|
-            ele.add(obj2soap(item, name))
+        unless child.nil?
+          name = XSD::QName.new(nil, elename)
+          if as_array.include?(type)
+            child.each do |item|
+              ele.add(obj2soap(item, name))
+            end
+          else
+            ele.add(obj2soap(child, name))
           end
-        else
-          ele.add(obj2soap(child, name))
         end
       end
     end
@@ -320,7 +326,7 @@ private
 
   def add_elements2undefinedobj(node, obj)
     node.each do |name, value|
-      obj[XSD::QName.new(nil, name)] = soapele2obj(value)
+      obj.__add_xmlele_value(XSD::QName.new(nil, name), soapele2obj(value))
     end
   end
 
