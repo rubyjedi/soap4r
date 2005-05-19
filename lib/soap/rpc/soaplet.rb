@@ -18,6 +18,22 @@ rescue LoadError
 end
 
 
+warn("Overriding WEBrick::Log#debug") if $DEBUG
+require 'webrick/log'
+module WEBrick
+  class Log < BasicLog
+    alias __debug debug
+    def debug(msg = nil)
+      if block_given? and msg.nil?
+        __debug(yield)
+      else
+        __debug(msg)
+      end
+    end
+  end
+end
+
+
 module SOAP
 module RPC
 
@@ -26,8 +42,8 @@ class SOAPlet < WEBrick::HTTPServlet::AbstractServlet
 public
   attr_reader :options
 
-  def initialize(router)
-    @router = router
+  def initialize(router = nil)
+    @router = router || ::SOAP::RPC::Router.new(self.class.name)
     @options = {}
     @config = {}
   end
@@ -35,6 +51,11 @@ public
   # for backward compatibility
   def app_scope_router
     @router
+  end
+
+  # for backward compatibility
+  def add_servant(obj, namespace)
+    @router.add_rpc_servant(obj, namespace)
   end
 
   def allow_content_encoding_gzip=(allow)
