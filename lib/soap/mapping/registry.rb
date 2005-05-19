@@ -97,6 +97,21 @@ class Object; include Marshallable
       qname = XSD::QName.new(nil, qname)
     end
     found = false
+    @__xmlele.each do |pair|
+      if pair[0] == qname
+        found = true
+        pair[1] = value
+      end
+    end
+    unless found
+      __define_attr_accessor(qname)
+      @__xmlele << [qname, value]
+    end
+    @__xmlele_type[qname] = :single
+  end
+
+  def __add_xmlele_value(qname, value)
+    found = false
     @__xmlele.map! do |k, v|
       if k == qname
         found = true
