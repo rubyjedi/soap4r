@@ -29,28 +29,27 @@ class WSDLLiteralRegistry < Registry
     @definedelements = definedelements
     @excn_handler_obj2soap = nil
     @excn_handler_soap2obj = nil
-    @rubytype_factory = RubytypeFactory.new(:allow_original_mapping => false)
     @schema_element_cache = {}
     @schema_attribute_cache = {}
   end
 
   def obj2soap(obj, qname)
-    ret = nil
+    soap_obj = nil
     if ele = @definedelements[qname]
-      ret = _obj2soap(obj, ele)
+      soap_obj = obj2elesoap(obj, ele)
     elsif type = @definedtypes[qname]
-      ret = obj2type(obj, type)
+      soap_obj = obj2typesoap(obj, type)
     else
-      ret = unknownobj2soap(obj, qname)
+      soap_obj = any2soap(obj, qname)
     end
-    return ret if ret
+    return soap_obj if soap_obj
     if @excn_handler_obj2soap
-      ret = @excn_handler_obj2soap.call(obj) { |yield_obj|
+      soap_obj = @excn_handler_obj2soap.call(obj) { |yield_obj|
         Mapping._obj2soap(yield_obj, self)
       }
-      return ret if ret
+      return soap_obj if soap_obj
     end
-    raise MappingError.new("cannot map #{obj.class.name} to SOAP/OM")
+    raise MappingError.new("cannot map #{obj.class.name} as #{qname}")
   end
 
   # node should be a SOAPElement
@@ -59,7 +58,7 @@ class WSDLLiteralRegistry < Registry
       raise MappingError.new("must not reach here")
     end
     begin
-      return soapele2obj(node)
+      return any2obj(node)
     rescue MappingError
     end
     if @excn_handler_soap2obj
@@ -75,11 +74,11 @@ class WSDLLiteralRegistry < Registry
 
 private
 
-  def _obj2soap(obj, ele)
+  def obj2elesoap(obj, ele)
     o = nil
     if ele.type
       if type = @definedtypes[ele.type]
-        o = obj2type(obj, type)
+        o = obj2typesoap(obj, type)
       elsif type = TypeMap[ele.type]
         o = base2soap(obj, type)
       else
@@ -87,11 +86,11 @@ private
       end
       o.elename = ele.name
     elsif ele.local_complextype
-      o = obj2type(obj, ele.local_complextype)
+      o = obj2typesoap(obj, ele.local_complextype)
       o.elename = ele.name
       add_attributes2soap(obj, o)
     elsif ele.local_simpletype
-      o = obj2type(obj, ele.local_simpletype)
+      o = obj2typesoap(obj, ele.local_simpletype)
       o.elename = ele.name
     else
       raise MappingError.new('illegal schema?')
@@ -99,21 +98,22 @@ private
     o
   end
 
-  def obj2type(obj, type)
+  def obj2typesoap(obj, type)
     if type.is_a?(::WSDL::XMLSchema::SimpleType)
-      simple2soap(obj, type)
+      simpleobj2soap(obj, type)
     else
-      complex2soap(obj, type)
+      complexobj2soap(obj, type)
     end
   end
 
-  def simple2soap(obj, type)
-    o = base2soap(obj, TypeMap[type.base])
+  def simpleobj2soap(obj, type)
     type.check_lexical_format(obj)
+    return SOAPNil.new if obj.nil?      # ToDo: check nillable.
+    o = base2soap(obj, TypeMap[type.base])
     o
   end
 
-  def complex2soap(obj, type)
+  def complexobj2soap(obj, type)
     o = SOAPElement.new(type.name)
     type.each_element do |child_ele|
       child = Mapping.get_attribute(obj, child_ele.name.name)
@@ -121,7 +121,7 @@ private
         if child_ele.nillable
           # ToDo: test
           # add empty element
-          o.add(_obj2soap(nil))
+          o.add(obj2elesoap(nil))
         elsif Integer(child_ele.minoccurs) == 0
           # nothing to do
         else
@@ -129,35 +129,35 @@ private
         end
       elsif child_ele.map_as_array?
         child.each do |item|
-          o.add(_obj2soap(item, child_ele))
+          o.add(obj2elesoap(item, child_ele))
         end
       else
-        o.add(_obj2soap(child, child_ele))
+        o.add(obj2elesoap(child, child_ele))
       end
     end
     o
   end
 
-  def unknownobj2soap(obj, name)
+  def any2soap(obj, qname)
     if obj.is_a?(SOAPElement)
       obj
     elsif obj.class.class_variables.include?('@@schema_element')
-      unknownobj2definedsoap(obj, name)
+      stubobj2soap(obj, qname)
     elsif obj.is_a?(SOAP::Mapping::Object)
-      mappingobj2soap(obj, name)
+      mappingobj2soap(obj, qname)
     elsif obj.is_a?(Hash)
       ele = SOAPElement.from_obj(obj)
-      ele.elename = name
+      ele.elename = qname
       ele
     else
       # expected to be a basetype or an anyType.
       # SOAPStruct, etc. is used instead of SOAPElement.
       begin
         ele = Mapping.obj2soap(obj)
-        ele.elename = name
+        ele.elename = qname
         ele
       rescue MappingError
-        ele = SOAPElement.new(name, obj.to_s)
+        ele = SOAPElement.new(qname, obj.to_s)
       end
       if obj.respond_to?(:__xmlattr)
         obj.__xmlattr.each do |key, value|
@@ -168,15 +168,15 @@ private
     end
   end
 
-  def unknownobj2definedsoap(obj, name)
-    ele = SOAPElement.new(name)
+  def stubobj2soap(obj, qname)
+    ele = SOAPElement.new(qname)
     add_elements2soap(obj, ele)
     add_attributes2soap(obj, ele)
     ele
   end
 
-  def mappingobj2soap(obj, name)
-    ele = SOAPElement.new(name)
+  def mappingobj2soap(obj, qname)
+    ele = SOAPElement.new(qname)
     obj.__xmlele.each do |key, value|
       if value.is_a?(::Array)
         value.each do |item|
@@ -226,8 +226,7 @@ private
     soap_obj = nil
     if type <= XSD::XSDString
       soap_obj = type.new(XSD::Charset.is_ces(obj, $KCODE) ?
-        XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding) :
-        obj)
+        XSD::Charset.encoding_conv(obj, $KCODE, XSD::Charset.encoding) : obj)
     else
       soap_obj = type.new(obj)
     end
@@ -243,40 +242,38 @@ private
     obj
   end
 
-  def soapele2obj(node, obj_class = nil)
+  def any2obj(node, obj_class = nil)
     unless obj_class
       typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
       obj_class = Mapping.class_from_name(typestr)
     end
     if obj_class and obj_class.class_variables.include?('@@schema_element')
-      soapele2definedobj(node, obj_class)
+      soapele2stubobj(node, obj_class)
     elsif node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
         # SOAPArray for literal?
-      soapele2undefinedobj(node)
+      soapele2plainobj(node)
     else
-      result, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
-      if result
-        add_attributes2undefinedobj(node, obj)
-      end
+      obj = Mapping._soap2obj(node, Mapping::DefaultRegistry, obj_class)
+      add_attributes2plainobj(node, obj)
       obj
     end
   end
 
-  def soapele2definedobj(node, obj_class)
+  def soapele2stubobj(node, obj_class)
     obj = Mapping.create_empty_object(obj_class)
-    add_elements2obj(node, obj)
-    add_attributes2obj(node, obj)
+    add_elements2stubobj(node, obj)
+    add_attributes2stubobj(node, obj)
     obj
   end
 
-  def soapele2undefinedobj(node)
+  def soapele2plainobj(node)
     obj = anytype2obj(node)
-    add_elements2undefinedobj(node, obj)
-    add_attributes2undefinedobj(node, obj)
+    add_elements2plainobj(node, obj)
+    add_attributes2plainobj(node, obj)
     obj
   end
 
-  def add_elements2obj(node, obj)
+  def add_elements2stubobj(node, obj)
     elements, as_array = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
@@ -289,13 +286,13 @@ private
               child = klass.new(nil).data
             end
           else
-            child = soapele2obj(value, klass)
+            child = any2obj(value, klass)
           end
         else
           raise MappingError.new("unknown class: #{class_name}")
         end
       else      # untyped element is treated as anyType.
-        child = soapele2obj(value)
+        child = any2obj(value)
       end
       if as_array.include?(class_name)
         (vars[name] ||= []) << child
@@ -306,7 +303,7 @@ private
     Mapping.set_attributes(obj, vars)
   end
 
-  def add_attributes2obj(node, obj)
+  def add_attributes2stubobj(node, obj)
     if attributes = schema_attribute_definition(obj.class)
       define_xmlattr(obj)
       attributes.each do |qname, class_name|
@@ -324,13 +321,13 @@ private
     end
   end
 
-  def add_elements2undefinedobj(node, obj)
+  def add_elements2plainobj(node, obj)
     node.each do |name, value|
-      obj.__add_xmlele_value(XSD::QName.new(nil, name), soapele2obj(value))
+      obj.__add_xmlele_value(XSD::QName.new(nil, name), any2obj(value))
     end
   end
 
-  def add_attributes2undefinedobj(node, obj)
+  def add_attributes2plainobj(node, obj)
     return if node.extraattr.empty?
     define_xmlattr(obj)
     node.extraattr.each do |qname, value|

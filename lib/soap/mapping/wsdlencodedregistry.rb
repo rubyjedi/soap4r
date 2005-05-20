@@ -38,18 +38,12 @@ class WSDLEncodedRegistry < Registry
     @schema_element_cache = {}
   end
 
-  def obj2soap(obj, type_qname = nil)
+  def obj2soap(obj, qname = nil)
     soap_obj = nil
-    if type = @definedtypes[type_qname]
-      soap_obj = obj2type(obj, type)
-    elsif obj.nil?
-      soap_obj = SOAPNil.new
-    elsif type_qname.nil? or type_qname == XSD::AnyTypeName
-      soap_obj = @rubytype_factory.obj2soap(nil, obj, nil, self)
-    elsif obj.is_a?(XSD::NSDBase)
-      soap_obj = soap2soap(obj, type_qname)
-    elsif (type = TypeMap[type_qname])
-      soap_obj = base2soap(obj, type)
+    if type = @definedtypes[qname]
+      soap_obj = obj2typesoap(obj, type)
+    else
+      soap_obj = any2soap(obj, qname)
     end
     return soap_obj if soap_obj
     if @excn_handler_obj2soap
@@ -58,8 +52,8 @@ class WSDLEncodedRegistry < Registry
       }
       return soap_obj if soap_obj
     end
-    if type_qname
-      raise MappingError.new("cannot map #{obj.class.name} as #{type_qname}")
+    if qname
+      raise MappingError.new("cannot map #{obj.class.name} as #{qname}")
     else
       raise MappingError.new("cannot map #{obj.class.name} to SOAP/OM")
     end
@@ -68,7 +62,7 @@ class WSDLEncodedRegistry < Registry
   # map anything for now: must refer WSDL while mapping.  [ToDo]
   def soap2obj(node, obj_class = nil)
     begin
-      return _soap2obj(node, obj_class)
+      return any2obj(node, obj_class)
     rescue MappingError
     end
     if @excn_handler_soap2obj
@@ -83,6 +77,20 @@ class WSDLEncodedRegistry < Registry
   end
 
 private
+
+  def any2soap(obj, qname)
+    if obj.nil?
+      SOAPNil.new
+    elsif qname.nil? or qname == XSD::AnyTypeName
+      @rubytype_factory.obj2soap(nil, obj, nil, self)
+    elsif obj.is_a?(XSD::NSDBase)
+      soap2soap(obj, qname)
+    elsif (type = TypeMap[qname])
+      base2soap(obj, type)
+    else
+      nil
+    end
+  end
 
   def soap2soap(obj, type_qname)
     if obj.is_a?(SOAPBasetype)
@@ -105,22 +113,22 @@ private
     end
   end
 
-  def obj2type(obj, type)
+  def obj2typesoap(obj, type)
     if type.is_a?(::WSDL::XMLSchema::SimpleType)
-      simple2soap(obj, type)
+      simpleobj2soap(obj, type)
     else
-      complex2soap(obj, type)
+      complexobj2soap(obj, type)
     end
   end
 
-  def simple2soap(obj, type)
+  def simpleobj2soap(obj, type)
     type.check_lexical_format(obj)
     return SOAPNil.new if obj.nil?      # ToDo: check nillable.
     o = base2soap(obj, TypeMap[type.base])
     o
   end
 
-  def complex2soap(obj, type)
+  def complexobj2soap(obj, type)
     case type.compoundtype
     when :TYPE_STRUCT
       struct2soap(obj, type.name, type)
@@ -129,7 +137,7 @@ private
     when :TYPE_MAP
       map2soap(obj, type.name, type)
     when :TYPE_SIMPLE
-      simple2soap(obj, type.simplecontent)
+      simpleobj2soap(obj, type.simplecontent)
     when :TYPE_EMPTY
       raise MappingError.new("should be empty") unless obj.nil?
       SOAPNil.new
@@ -202,27 +210,27 @@ private
     end
   end
 
-  def _soap2obj(node, obj_class)
+  def any2obj(node, obj_class)
     unless obj_class
       typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
       obj_class = Mapping.class_from_name(typestr)
     end
     if obj_class and obj_class.class_variables.include?('@@schema_element')
-      soap2definedobj(node, obj_class)
+      soap2stubobj(node, obj_class)
     else
-      Mapping.soap2obj(node, nil, obj_class)
+      Mapping._soap2obj(node, Mapping::DefaultRegistry, obj_class)
     end
   end
 
-  def soap2definedobj(node, obj_class)
+  def soap2stubobj(node, obj_class)
     obj = Mapping.create_empty_object(obj_class)
     unless node.is_a?(SOAPNil)
-      add_elements2obj(node, obj)
+      add_elements2stubobj(node, obj)
     end
     obj
   end
 
-  def add_elements2obj(node, obj)
+  def add_elements2stubobj(node, obj)
     elements, as_array = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
