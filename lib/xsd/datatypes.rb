@@ -524,7 +524,7 @@ module XSDDateTimeImpl
   end
 
   def to_date
-    Date.new0(@data.class.jd_to_ajd(@data.jd, 0, 0), 0, @data.sg)
+    Date.new0(@data.class.jd_to_ajd(@data.jd, 0, 0), 0, @data.start)
   end
 
   def to_datetime
