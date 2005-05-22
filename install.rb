@@ -17,36 +17,48 @@ def install(from, to)
   end
 end
 
-def install_dir(*path)
-  from_path = File.join(SRCPATH, *path)
+def install_dir(srcbase, *path)
+  from_path = File.join(srcbase, *path)
   unless FileTest.directory?(from_path)
     raise RuntimeError.new("'#{ from_path }' not found.")
   end
   to_path_rubylib = File.join(RUBYLIBDIR, *path)
   to_path_sitelib = File.join(SITELIBDIR, *path)
-  Dir[File.join(from_path, '*.rb')].each do |name|
-    basename = File.basename(name)
-    if File.exist?(File.join(to_path_rubylib, basename))
-      install(name, to_path_rubylib)
+  Dir[File.join(from_path, '*.rb')].each do |from_file|
+    basename = File.basename(from_file)
+    to_file_rubylib = File.join(to_path_rubylib, basename)
+    to_file_sitelib = File.join(to_path_sitelib, basename)
+    if File.exist?(to_file_rubylib)
+      if File.exist?(to_file_sitelib)
+        raise RuntimeError.new(
+          "trying to install '#{ to_file_rubylib }' but '#{ to_file_sitelib }' exists.  please remove '#{ to_file_sitelib }' first to avoid versioning problem and run installer again.")
+      end
+      install(from_file, to_path_rubylib)
     else
       File.mkpath(to_path_sitelib, true)
-      install(name, to_path_sitelib)
+      install(from_file, to_path_sitelib)
     end
   end
 end
 
 begin
-  install_dir('soap')
-  install_dir('soap', 'rpc')
-  install_dir('soap', 'mapping')
-  install_dir('soap', 'encodingstyle')
-  install_dir('soap', 'header')
-  install_dir('wsdl')
-  install_dir('wsdl', 'xmlSchema')
-  install_dir('wsdl', 'soap')
-  install_dir('xsd')
-  install_dir('xsd', 'codegen')
-  install_dir('xsd', 'xmlparser')
+  install_dir(SRCPATH, 'soap')
+  install_dir(SRCPATH, 'soap', 'rpc')
+  install_dir(SRCPATH, 'soap', 'mapping')
+  install_dir(SRCPATH, 'soap', 'encodingstyle')
+  install_dir(SRCPATH, 'soap', 'header')
+  install_dir(SRCPATH, 'wsdl')
+  install_dir(SRCPATH, 'wsdl', 'xmlSchema')
+  install_dir(SRCPATH, 'wsdl', 'soap')
+  install_dir(SRCPATH, 'xsd')
+  install_dir(SRCPATH, 'xsd', 'codegen')
+  install_dir(SRCPATH, 'xsd', 'xmlparser')
+
+  # xmlscan
+  xmlscansrcdir = File.join('redist', 'xmlscan', 'xmlscan-20050522', 'lib')
+  if File.exists?(xmlscansrcdir)
+    install_dir(xmlscansrcdir, 'xmlscan')
+  end
 
   puts "install succeed!"
 
