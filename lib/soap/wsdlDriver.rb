@@ -45,7 +45,7 @@ class WSDLDriverFactory
   def create_driver(servicename = nil, portname = nil)
     warn("WSDLDriverFactory#create_driver is depricated.  Use create_rpc_driver instead.")
     port = find_port(servicename, portname)
-    WSDLDriver.new(@wsdl, port, @logdev)
+    WSDLDriver.new(@wsdl, port, nil)
   end
 
   # Backward compatibility.
@@ -66,11 +66,14 @@ private
     end
     if portname
       port = service.ports[XSD::QName.new(@wsdl.targetnamespace, portname)]
+      if port.nil?
+        raise FactoryError.new("port #{portname} not found in WSDL")
+      end
     else
-      port = service.ports[0]
-    end
-    if port.nil?
-      raise FactoryError.new("port #{portname} not found in WSDL")
+      port = service.ports.find { |port| !port.soap_address.nil? }
+      if port.nil?
+        raise FactoryError.new("no ports have soap:address")
+      end
     end
     if port.soap_address.nil?
       raise FactoryError.new("soap:address element not found in WSDL")
@@ -153,9 +156,6 @@ end
 
 class WSDLDriver
   class << self
-    def __attr_proxy(symbol, assignable = false)
-    end
-
     if RUBY_VERSION >= "1.7.0"
       def __attr_proxy(symbol, assignable = false)
         name = symbol.to_s
