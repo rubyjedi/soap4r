@@ -115,8 +115,10 @@ public
     )
     reqopt = create_options({
       :soapaction => op_info.soapaction || @soapaction,
+      :envelopenamespace => @options["soap.envelope.requestnamespace"],
       :default_encodingstyle => op_info.request_default_encodingstyle})
     resopt = create_options({
+      :envelopenamespace => @options["soap.envelope.responsenamespace"],
       :default_encodingstyle => op_info.response_default_encodingstyle})
     env = route(req_header, req_body, reqopt, resopt)
     raise EmptyResponseError unless env
@@ -130,7 +132,10 @@ public
   end
 
   def route(req_header, req_body, reqopt, resopt)
-    req_env = SOAPEnvelope.new(req_header, req_body)
+    req_env = ::SOAP::SOAPEnvelope.new(req_header, req_body)
+    unless reqopt[:envelopenamespace].nil?
+      set_envelopenamespace(req_env, reqopt[:envelopenamespace])
+    end
     reqopt[:external_content] = nil
     conn_data = marshal(req_env, reqopt)
     if ext = reqopt[:external_content]
@@ -158,6 +163,12 @@ public
   end
 
 private
+
+  def set_envelopenamespace(env, namespace)
+    env.elename.namespace = namespace
+    env.header.elename.namespace = namespace if env.header
+    env.body.elename.namespace = namespace if env.body
+  end
 
   def create_request_header
     headers = @headerhandler.on_outbound
@@ -200,6 +211,10 @@ private
       opt[:charset] = @mandatorycharset ||
 	::SOAP::StreamHandler.parse_media_type(contenttype)
       env = Processor.unmarshal(conn_data.receive_string, opt)
+    end
+    unless env.is_a?(::SOAP::SOAPEnvelope)
+      raise ResponseFormatError.new(
+        "response is not a SOAP envelope: #{conn_data.receive_string}")
     end
     env
   end

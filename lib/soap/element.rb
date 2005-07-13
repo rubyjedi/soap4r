@@ -239,7 +239,7 @@ class SOAPEnvelope < XSD::NSDBase
   end
 
   def encode(generator, ns, attrs = {})
-    SOAPGenerator.assign_ns(attrs, ns, EnvelopeNamespace, SOAPNamespaceTag)
+    SOAPGenerator.assign_ns(attrs, ns, elename.namespace, SOAPNamespaceTag)
     name = ns.name(@elename)
     generator.encode_tag(name, attrs)
 
