@@ -15,19 +15,21 @@ class Echo_version_port_type
   )
 
   Methods = [
-    ["echo_version", "echo_version",
-      [
-        ["in", "version", ["::SOAP::SOAPString"]],
-        ["retval", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]]
-      ],
-      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
+    [ XSD::QName.new("urn:example.com:simpletype-rpc", "echo_version"),
+      "urn:example.com:simpletype-rpc",
+      "echo_version",
+      [ ["in", "version", ["::SOAP::SOAPString"]],
+        ["retval", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
     ],
-    ["echo_version_r", "echo_version_r",
-      [
-        ["in", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
-        ["retval", "version", ["::SOAP::SOAPString"]]
-      ],
-      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
+    [ XSD::QName.new("urn:example.com:simpletype-rpc", "echo_version_r"),
+      "urn:example.com:simpletype-rpc",
+      "echo_version_r",
+      [ ["in", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
+        ["retval", "version", ["::SOAP::SOAPString"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
     ]
   ]
 end
@@ -36,12 +38,12 @@ class Echo_version_port_typeApp < ::SOAP::RPC::CGIStub
   def initialize(*arg)
     super(*arg)
     servant = Echo_version_port_type.new
-    Echo_version_port_type::Methods.each do |name_as, name, param_def, soapaction, namespace, style|
-      if style == :document
-        @router.add_document_operation(servant, soapaction, name, param_def)
+    Echo_version_port_type::Methods.each do |definitions|
+      opt = definitions.last
+      if opt[:request_style] == :document
+        @router.add_document_operation(servant, *definitions)
       else
-        qname = XSD::QName.new(namespace, name_as)
-        @router.add_rpc_operation(servant, qname, soapaction, name, param_def)
+        @router.add_rpc_operation(servant, *definitions)
       end
     end
     self.mapping_registry = Echo_version_port_type::MappingRegistry

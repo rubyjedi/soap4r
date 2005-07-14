@@ -101,8 +101,8 @@ private
       param_def = create_param_def(op_bind)
       opt = {}
       opt[:request_style] = opt[:response_style] = op_bind.soapoperation_style
-      opt[:request_use] = (op_bind.input.soapbody.use || 'literal').intern
-      opt[:response_use] = (op_bind.output.soapbody.use || 'literal').intern
+      opt[:request_use] = op_bind.input.soapbody_use
+      opt[:response_use] = op_bind.output.soapbody_use
       if op_bind.soapoperation_style == :rpc
         drv.add_rpc_operation(op_name, soapaction, name, param_def, opt)
       else

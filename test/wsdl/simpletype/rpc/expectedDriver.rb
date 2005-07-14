@@ -14,19 +14,21 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
   )
 
   Methods = [
-    ["echo_version", "echo_version",
-      [
-        ["in", "version", ["::SOAP::SOAPString"]],
-        ["retval", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]]
-      ],
-      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
+    [ XSD::QName.new("urn:example.com:simpletype-rpc", "echo_version"),
+      "urn:example.com:simpletype-rpc",
+      "echo_version",
+      [ ["in", "version", ["::SOAP::SOAPString"]],
+        ["retval", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
     ],
-    ["echo_version_r", "echo_version_r",
-      [
-        ["in", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
-        ["retval", "version", ["::SOAP::SOAPString"]]
-      ],
-      "urn:example.com:simpletype-rpc", "urn:example.com:simpletype-rpc", :rpc
+    [ XSD::QName.new("urn:example.com:simpletype-rpc", "echo_version_r"),
+      "urn:example.com:simpletype-rpc",
+      "echo_version_r",
+      [ ["in", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
+        ["retval", "version", ["::SOAP::SOAPString"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
     ]
   ]
 
@@ -40,18 +42,18 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
 private
 
   def init_methods
-    Methods.each do |name_as, name, params, soapaction, namespace, style|
-      qname = XSD::QName.new(namespace, name_as)
-      if style == :document
-        @proxy.add_document_method(soapaction, name, params)
-        add_document_method_interface(name, params)
+    Methods.each do |definitions|
+      opt = definitions.last
+      if opt[:request_style] == :document
+        add_document_operation(*definitions)
       else
-        @proxy.add_rpc_method(qname, soapaction, name, params)
-        add_rpc_method_interface(name, params)
-      end
-      if name_as != name and name_as.capitalize == name.capitalize
-        ::SOAP::Mapping.define_singleton_method(self, name_as) do |*arg|
-          __send__(name, *arg)
+        add_rpc_operation(*definitions)
+        qname = definitions[0]
+        name = definitions[2]
+        if qname.name != name and qname.name.capitalize == name.capitalize
+          ::SOAP::Mapping.define_singleton_method(self, qname.name) do |*arg|
+            __send__(name, *arg)
+          end
         end
       end
     end

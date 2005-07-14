@@ -48,6 +48,7 @@ class TestRPCLIT < Test::Unit::TestCase
   def teardown
     teardown_server
     File.unlink(pathname('RPC-Literal-TestDefinitions.rb'))
+    File.unlink(pathname('RPC-Literal-TestDefinitionsDriver.rb'))
     @client.reset_stream if @client
   end
 
@@ -63,9 +64,11 @@ class TestRPCLIT < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
     require pathname('RPC-Literal-TestDefinitions.rb')
+    require pathname('RPC-Literal-TestDefinitionsDriver.rb')
   end
 
   def teardown_server
@@ -92,6 +95,12 @@ class TestRPCLIT < Test::Unit::TestCase
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
     assert_equal(["a", "b", "c"], @client.echoStringArray(["a", "b", "c"]).item)
+  end
+
+  def test_stub
+    drv = SoapTestPortTypeRpc.new("http://localhost:#{Port}/")
+    drv.wiredump_dev = STDOUT if $DEBUG
+    assert_equal(["a", "b", "c"], drv.echoStringArray(["a", "b", "c"]))
   end
 end
 

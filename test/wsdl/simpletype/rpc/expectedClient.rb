@@ -4,8 +4,8 @@ require 'echo_versionDriver.rb'
 endpoint_url = ARGV.shift
 obj = Echo_version_port_type.new(endpoint_url)
 
-# Uncomment the below line to see SOAP wiredumps.
-# obj.wiredump_dev = STDERR
+# run ruby with -d to see SOAP wiredumps.
+obj.wiredump_dev = STDERR if $DEBUG
 
 # SYNOPSIS
 #   echo_version(version)
