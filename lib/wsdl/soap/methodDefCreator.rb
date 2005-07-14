@@ -82,23 +82,38 @@ private
     name = safemethodname(operation.name.name)
     name_as = operation.name.name
     style = binding.soapoperation_style
+    inputuse = binding.input.soapbody_use
+    outputuse = binding.output.soapbody_use
     namespace = binding.input.soapbody.namespace
     if style == :rpc
+      qname = XSD::QName.new(namespace, name_as)
       paramstr = param2str(collect_rpcparameter(operation))
     else
+      qname = nil
       paramstr = param2str(collect_documentparameter(operation))
     end
     if paramstr.empty?
       paramstr = '[]'
     else
-      paramstr = "[\n" << paramstr.gsub(/^/, '    ') << "\n  ]"
+      paramstr = "[ " << paramstr.split(/\r?\n/).join("\n    ") << " ]"
     end
-    return <<__EOD__
-[#{dq(name_as)}, #{dq(name)},
+    definitions = <<__EOD__
+#{ndq(binding.soapaction)},
+  #{dq(name)},
   #{paramstr},
-  #{ndq(binding.soapaction)}, #{ndq(namespace)}, #{sym(style.id2name)}
-]
+  { :request_style =>  #{sym(style.id2name)}, :request_use =>  #{sym(inputuse.id2name)},
+    :response_style => #{sym(style.id2name)}, :response_use => #{sym(outputuse.id2name)} }
 __EOD__
+    if style == :rpc
+      return <<__EOD__
+[ #{qname.dump},
+  #{definitions}]
+__EOD__
+    else
+      return <<__EOD__
+[ #{definitions}]
+__EOD__
+    end
   end
 
   def rpcdefinedtype(part)

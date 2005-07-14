@@ -2,7 +2,7 @@ require 'http-access2'
 require 'soap/rpc/driver'
 
 # setup driver
-url = "https://localhost:17443/"
+url = ARGV.shift || "https://localhost:17443/"
 client = SOAP::RPC::Driver.new(url, 'urn:sslhelloworld')
 client.add_method("hello_world", "from")
 # load SSL properties
