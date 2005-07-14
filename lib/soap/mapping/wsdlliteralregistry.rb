@@ -69,7 +69,11 @@ class WSDLLiteralRegistry < Registry
       rescue Exception
       end
     end
-    raise MappingError.new("cannot map #{node.type.name} to Ruby object")
+    if node.respond_to?(:type)
+      raise MappingError.new("cannot map #{node.type.name} to Ruby object")
+    else
+      raise MappingError.new("cannot map #{node.elename.name} to Ruby object")
+    end
   end
 
 private
@@ -279,6 +283,7 @@ private
     node.each do |name, value|
       if class_name = elements[name]
         if klass = Mapping.class_from_name(class_name)
+          # klass must be a SOAPBasetype or a class
           if klass.ancestors.include?(::SOAP::SOAPBasetype)
             if value.respond_to?(:data)
               child = klass.new(value.data).data
@@ -288,8 +293,16 @@ private
           else
             child = any2obj(value, klass)
           end
+        elsif klass = Mapping.module_from_name(class_name)
+          # simpletype
+          if value.respond_to?(:data)
+            child = value.data
+          else
+            raise MappingError.new(
+              "cannot map to a module value: #{class_name}")
+          end
         else
-          raise MappingError.new("unknown class: #{class_name}")
+          raise MappingError.new("unknown class/module: #{class_name}")
         end
       else      # untyped element is treated as anyType.
         child = any2obj(value)
