@@ -165,9 +165,13 @@ public
 private
 
   def set_envelopenamespace(env, namespace)
-    env.elename.namespace = namespace
-    env.header.elename.namespace = namespace if env.header
-    env.body.elename.namespace = namespace if env.body
+    env.elename = XSD::QName.new(namespace, env.elename.name)
+    if env.header
+      env.header.elename = XSD::QName.new(namespace, env.header.elename.name)
+    end
+    if env.body
+      env.body.elename = XSD::QName.new(namespace, env.body.elename.name)
+    end
   end
 
   def create_request_header
