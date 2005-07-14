@@ -246,6 +246,14 @@ private
           else
             child = Mapping._soap2obj(value, self, klass)
           end
+        elsif klass = Mapping.module_from_name(class_name)
+          # simpletype
+          if value.respond_to?(:data)
+            child = value.data
+          else
+            raise MappingError.new(
+              "cannot map to a module value: #{class_name}")
+          end
         else
           raise MappingError.new("unknown class: #{class_name}")
         end
