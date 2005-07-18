@@ -57,7 +57,8 @@ private
   def dump_element
     @elements.collect { |ele|
       if ele.local_complextype
-        dump_classdef(ele.name, ele.local_complextype)
+        dump_classdef(ele.name, ele.local_complextype,
+          ele.elementform == 'qualified')
       elsif ele.local_simpletype
         dump_simpletypedef(ele.name, ele.local_simpletype)
       else
@@ -117,7 +118,7 @@ private
     c.dump
   end
 
-  def dump_classdef(qname, typedef)
+  def dump_classdef(qname, typedef, qualified = false)
     if @faulttypes and @faulttypes.index(qname)
       c = XSD::CodeGen::ClassDef.new(create_class_name(qname),
         '::StandardError')
@@ -127,6 +128,7 @@ private
     c.comment = "#{qname}"
     c.def_classvar('schema_type', ndq(qname.name))
     c.def_classvar('schema_ns', ndq(qname.namespace))
+    c.def_classvar('schema_qualified', dq('true')) if qualified
     schema_element = []
     init_lines = ''
     params = []

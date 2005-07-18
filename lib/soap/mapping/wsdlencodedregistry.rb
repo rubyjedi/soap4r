@@ -234,7 +234,9 @@ private
     elements, as_array = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
-      if class_name = elements[name]
+      item = elements.find { |k, v| k == name }
+      if item
+        class_name = item[1]
         if klass = Mapping.class_from_name(class_name)
           # klass must be a SOAPBasetype or a class
           if klass.ancestors.include?(::SOAP::SOAPBasetype)

@@ -303,7 +303,7 @@ module Mapping
 
   def self.schema_element_definition(klass)
     return nil unless klass.class_variables.include?('@@schema_element')
-    elements = {}
+    elements = []
     as_array = []
     klass.class_eval('@@schema_element').each do |varname, definition|
       class_name, name = definition
@@ -311,7 +311,7 @@ module Mapping
         class_name = class_name.sub(/\[\]$/, '')
         as_array << class_name
       end
-      elements[name ? name.name : varname] = class_name
+      elements << [name ? name.name : varname, class_name]
     end
     [elements, as_array]
   end

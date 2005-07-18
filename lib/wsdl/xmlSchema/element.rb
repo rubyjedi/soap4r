@@ -36,6 +36,7 @@ class Element < Info
   end
 
   attr_writer :name	# required
+  attr_writer :form
   attr_writer :type
   attr_writer :local_simpletype
   attr_writer :local_complextype
@@ -45,6 +46,7 @@ class Element < Info
   attr_writer :nillable
 
   attr_reader_ref :name
+  attr_reader_ref :form
   attr_reader_ref :type
   attr_reader_ref :local_simpletype
   attr_reader_ref :local_complextype
@@ -58,6 +60,7 @@ class Element < Info
   def initialize(name = nil, type = nil)
     super()
     @name = name
+    @form = nil
     @type = type
     @local_simpletype = @local_complextype = nil
     @constraint = nil
@@ -76,9 +79,12 @@ class Element < Info
     parent.targetnamespace
   end
 
-  def elementform
-    # ToDo: must be overwritten.
+  def elementformdefault
     parent.elementformdefault
+  end
+
+  def elementform
+    self.form.nil? ? parent.elementformdefault : self.form
   end
 
   def parse_element(element)
@@ -102,6 +108,8 @@ class Element < Info
     case attr
     when NameAttrName
       @name = XSD::QName.new(targetnamespace, value.source)
+    when FormAttrName
+      @form = value.source
     when TypeAttrName
       @type = value
     when RefAttrName

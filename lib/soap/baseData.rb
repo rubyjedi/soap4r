@@ -529,7 +529,7 @@ class SOAPElement
     @position = nil
     @extraattr = {}
 
-    @qualified = false
+    @qualified = nil
 
     @array = []
     @data = []

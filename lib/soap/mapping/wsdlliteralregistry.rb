@@ -38,7 +38,7 @@ class WSDLLiteralRegistry < Registry
     if ele = @definedelements[qname]
       soap_obj = obj2elesoap(obj, ele)
     elsif type = @definedtypes[qname]
-      soap_obj = obj2typesoap(obj, type)
+      soap_obj = obj2typesoap(obj, type, true)
     else
       soap_obj = any2soap(obj, qname)
     end
@@ -80,33 +80,32 @@ private
 
   def obj2elesoap(obj, ele)
     o = nil
+    qualified = (ele.elementform == 'qualified')
     if ele.type
       if type = @definedtypes[ele.type]
-        o = obj2typesoap(obj, type)
+        o = obj2typesoap(obj, type, qualified)
       elsif type = TypeMap[ele.type]
         o = base2soap(obj, type)
       else
         raise MappingError.new("cannot find type #{ele.type}")
       end
-      o.elename = ele.name
     elsif ele.local_complextype
-      o = obj2typesoap(obj, ele.local_complextype)
-      o.elename = ele.name
+      o = obj2typesoap(obj, ele.local_complextype, qualified)
       add_attributes2soap(obj, o)
     elsif ele.local_simpletype
-      o = obj2typesoap(obj, ele.local_simpletype)
-      o.elename = ele.name
+      o = obj2typesoap(obj, ele.local_simpletype, qualified)
     else
       raise MappingError.new('illegal schema?')
     end
+    o.elename = ele.name
     o
   end
 
-  def obj2typesoap(obj, type)
+  def obj2typesoap(obj, type, qualified)
     if type.is_a?(::WSDL::XMLSchema::SimpleType)
       simpleobj2soap(obj, type)
     else
-      complexobj2soap(obj, type)
+      complexobj2soap(obj, type, qualified)
     end
   end
 
@@ -117,15 +116,18 @@ private
     o
   end
 
-  def complexobj2soap(obj, type)
+  def complexobj2soap(obj, type, qualified)
     o = SOAPElement.new(type.name)
+    o.qualified = qualified
     type.each_element do |child_ele|
       child = Mapping.get_attribute(obj, child_ele.name.name)
       if child.nil?
         if child_ele.nillable
           # ToDo: test
           # add empty element
-          o.add(obj2elesoap(nil))
+          child_soap = obj2elesoap(nil, child_ele)
+          child_soap.elename.namespace = nil unless qualified
+          o.add(child_soap)
         elsif Integer(child_ele.minoccurs) == 0
           # nothing to do
         else
@@ -133,10 +135,14 @@ private
         end
       elsif child_ele.map_as_array?
         child.each do |item|
-          o.add(obj2elesoap(item, child_ele))
+          child_soap = obj2elesoap(item, child_ele)
+          child_soap.elename.namespace = nil unless qualified
+          o.add(child_soap)
         end
       else
-        o.add(obj2elesoap(child, child_ele))
+        child_soap = obj2elesoap(child, child_ele)
+        child_soap.elename.namespace = nil unless qualified
+        o.add(child_soap)
       end
     end
     o
@@ -174,6 +180,9 @@ private
 
   def stubobj2soap(obj, qname)
     ele = SOAPElement.new(qname)
+    ele.qualified =
+      (obj.class.class_variables.include?('@@schema_qualified') and
+      obj.class.class_eval('@@schema_qualified'))
     add_elements2soap(obj, ele)
     add_attributes2soap(obj, ele)
     ele
@@ -281,7 +290,9 @@ private
     elements, as_array = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
-      if class_name = elements[name]
+      item = elements.find { |k, v| k == name }
+      if item
+        class_name = item[1]
         if klass = Mapping.class_from_name(class_name)
           # klass must be a SOAPBasetype or a class
           if klass.ancestors.include?(::SOAP::SOAPBasetype)
