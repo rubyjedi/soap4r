@@ -161,7 +161,7 @@ private
     send_string = conn_data.send_string
     @wiredump_dev << "Wire dump:\n\n" if @wiredump_dev
     begin
-      res = @client.post(endpoint_url, send_string, extra)
+      res = @client.post_content(endpoint_url, send_string, extra)
     rescue
       @client.reset(endpoint_url)
       raise

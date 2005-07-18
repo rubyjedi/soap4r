@@ -99,10 +99,14 @@ private
       orgname = op_name.name
       name = XSD::CodeGen::GenSupport.safemethodname(orgname)
       param_def = create_param_def(op_bind)
-      opt = {}
-      opt[:request_style] = opt[:response_style] = op_bind.soapoperation_style
-      opt[:request_use] = op_bind.input.soapbody_use
-      opt[:response_use] = op_bind.output.soapbody_use
+      opt = {
+        :request_style => op_bind.soapoperation_style,
+        :response_style => op_bind.soapoperation_style,
+        :request_use => op_bind.input.soapbody_use,
+        :response_use => op_bind.output.soapbody_use,
+        :elementformdefault => false,
+        :attributeformdefault => false
+      }
       if op_bind.soapoperation_style == :rpc
         drv.add_rpc_operation(op_name, soapaction, name, param_def, opt)
       else
@@ -129,7 +133,7 @@ private
     end
     # the first element of typedef in param_def is a String like
     # "::SOAP::SOAPStruct".  turn this String to a class.
-    param_def.collect { |io, typedef, name|
+    param_def.collect { |io, name, typedef|
       typedef[0] = Mapping.class_from_name(typedef[0])
       [io, name, typedef]
     }

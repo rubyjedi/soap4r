@@ -46,18 +46,18 @@ class MethodDefCreator
   def collect_rpcparameter(operation)
     result = operation.inputparts.collect { |part|
       collect_type(part.type)
-      param_set(::SOAP::RPC::SOAPMethod::IN, rpcdefinedtype(part), part.name)
+      param_set(::SOAP::RPC::SOAPMethod::IN, part.name, rpcdefinedtype(part))
     }
     outparts = operation.outputparts
     if outparts.size > 0
       retval = outparts[0]
       collect_type(retval.type)
-      result << param_set(::SOAP::RPC::SOAPMethod::RETVAL,
-        rpcdefinedtype(retval), retval.name)
+      result << param_set(::SOAP::RPC::SOAPMethod::RETVAL, retval.name,
+        rpcdefinedtype(retval))
       cdr(outparts).each { |part|
 	collect_type(part.type)
-	result << param_set(::SOAP::RPC::SOAPMethod::OUT, rpcdefinedtype(part),
-          part.name)
+	result << param_set(::SOAP::RPC::SOAPMethod::OUT, part.name,
+          rpcdefinedtype(part))
       }
     end
     result
@@ -66,12 +66,12 @@ class MethodDefCreator
   def collect_documentparameter(operation)
     param = []
     operation.inputparts.each do |input|
-      param << param_set(::SOAP::RPC::SOAPMethod::IN,
-        documentdefinedtype(input), input.name)
+      param << param_set(::SOAP::RPC::SOAPMethod::IN, input.name,
+        documentdefinedtype(input), documentdefinedelement(input))
     end
     operation.outputparts.each do |output|
-      param << param_set(::SOAP::RPC::SOAPMethod::OUT,
-        documentdefinedtype(output), output.name)
+      param << param_set(::SOAP::RPC::SOAPMethod::OUT, output.name,
+        documentdefinedtype(output), documentdefinedelement(output))
     end
     param
   end
@@ -159,8 +159,22 @@ __EOD__
     end
   end
 
-  def param_set(io_type, type, name)
-    [io_type, type, name]
+  def documentdefinedelement(part)
+    if mapped = basetype_mapped_class(part.type)
+      false
+    elsif definedtype = @simpletypes[part.type]
+      false
+    elsif definedtype = @elements[part.element]
+      definedtype.elementform == 'qualified'
+    elsif definedtype = @complextypes[part.type]
+      false
+    else
+      raise RuntimeError.new("part: #{part.name} cannot be resolved")
+    end
+  end
+
+  def param_set(io_type, name, type, ele = nil)
+    [io_type, name, type, ele]
   end
 
   def collect_type(type)
@@ -176,7 +190,12 @@ __EOD__
 
   def param2str(params)
     params.collect { |param|
-      "[#{dq(param[0])}, #{dq(param[2])}, #{type2str(param[1])}]"
+      io, name, type, ele = param
+      unless ele.nil?
+        "[#{dq(io)}, #{dq(name)}, #{type2str(type)}, #{ele2str(ele)}]"
+      else
+        "[#{dq(io)}, #{dq(name)}, #{type2str(type)}]"
+      end
     }.join(",\n")
   end
 
@@ -185,6 +204,15 @@ __EOD__
       "[#{dq(type[0])}]" 
     else
       "[#{dq(type[0])}, #{ndq(type[1])}, #{dq(type[2])}]" 
+    end
+  end
+
+  def ele2str(ele)
+    qualified = ele
+    if qualified
+      "true"
+    else
+      "false"
     end
   end
 

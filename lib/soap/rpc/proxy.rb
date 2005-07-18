@@ -92,6 +92,14 @@ public
     opt[:response_style] ||= :document
     opt[:request_use] ||= :literal
     opt[:response_use] ||= :literal
+    # default values of these values are unqualified in XML Schema.
+    # set true for backward compatibility.
+    unless opt.key?(:elementformdefault)
+      opt[:elementformdefault] = true
+    end
+    unless opt.key?(:attributeformdefault)
+      opt[:attributeformdefault] = true
+    end
     @operation[name] = Operation.new(soapaction, param_def, opt)
   end
 
@@ -113,13 +121,19 @@ public
     req_body = SOAPBody.new(
       op_info.request_body(params, @mapping_registry, @literal_mapping_registry)
     )
-    reqopt = create_options({
+    reqopt = create_options(
       :soapaction => op_info.soapaction || @soapaction,
       :envelopenamespace => @options["soap.envelope.requestnamespace"],
-      :default_encodingstyle => op_info.request_default_encodingstyle})
-    resopt = create_options({
+      :default_encodingstyle => op_info.request_default_encodingstyle,
+      :elementformdefault => op_info.elementformdefault,
+      :attributeformdefault => op_info.attributeformdefault
+    )
+    resopt = create_options(
       :envelopenamespace => @options["soap.envelope.responsenamespace"],
-      :default_encodingstyle => op_info.response_default_encodingstyle})
+      :default_encodingstyle => op_info.response_default_encodingstyle,
+      :elementformdefault => op_info.elementformdefault,
+      :attributeformdefault => op_info.attributeformdefault
+    )
     env = route(req_header, req_body, reqopt, resopt)
     raise EmptyResponseError unless env
     receive_headers(env.header)
@@ -246,6 +260,8 @@ private
     attr_reader :response_style
     attr_reader :request_use
     attr_reader :response_use
+    attr_reader :elementformdefault
+    attr_reader :attributeformdefault
 
     def initialize(soapaction, param_def, opt)
       @soapaction = soapaction
@@ -253,6 +269,9 @@ private
       @response_style = opt[:response_style]
       @request_use = opt[:request_use]
       @response_use = opt[:response_use]
+      # set nil(unqualified) by default
+      @elementformdefault = opt[:elementformdefault]
+      @attributeformdefault = opt[:attributeformdefault]
       check_style(@request_style)
       check_style(@response_style)
       check_use(@request_use)
@@ -266,17 +285,22 @@ private
           RPC::SOAPMethodRequest.new(@rpc_request_qname, param_def, @soapaction)
       else
         @doc_request_qnames = []
+        @doc_request_qualified = []
         @doc_response_qnames = []
-        param_def.each do |inout, paramname, typeinfo|
+        @doc_response_qualified = []
+        param_def.each do |inout, paramname, typeinfo, eleinfo|
           klass_not_used, nsdef, namedef = typeinfo
+          qualified = eleinfo
           if namedef.nil?
             raise MethodDefinitionError.new("qname must be given")
           end
           case inout
           when SOAPMethod::IN
             @doc_request_qnames << XSD::QName.new(nsdef, namedef)
+            @doc_request_qualified << qualified
           when SOAPMethod::OUT
             @doc_response_qnames << XSD::QName.new(nsdef, namedef)
+            @doc_response_qualified << qualified
           else
             raise MethodDefinitionError.new(
               "illegal inout definition for document style: #{inout}")
@@ -373,6 +397,9 @@ private
       (0...values.size).collect { |idx|
         ele = Mapping.obj2soap(values[idx], mapping_registry)
         ele.elename = @doc_request_qnames[idx]
+        if ele.respond_to?(:qualified)
+          ele.qualified = @doc_request_qualified[idx]
+        end
         ele
       }
     end
@@ -382,6 +409,9 @@ private
         ele = Mapping.obj2soap(values[idx], mapping_registry,
           @doc_request_qnames[idx])
         ele.encodingstyle = LiteralNamespace
+        if ele.respond_to?(:qualified)
+          ele.qualified = @doc_request_qualified[idx]
+        end
         ele
       }
     end
