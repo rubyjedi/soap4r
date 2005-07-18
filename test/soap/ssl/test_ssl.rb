@@ -201,7 +201,7 @@ private
 
   def setup_server
     svrcmd = "#{q(RUBY)} "
-    svrcmd << "-d " if $DEBUG
+    #svrcmd << "-d " if $DEBUG
     svrcmd << File.join(DIR, "sslsvr.rb")
     svrout = IO.popen(svrcmd)
     @serverpid = Integer(svrout.gets.chomp)
