@@ -1,5 +1,4 @@
 require 'test/unit'
-require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
@@ -31,7 +30,8 @@ class TestRPCLIT < Test::Unit::TestCase
     end
   
     def echoStringArray(strings)
-      strings
+      # strings.stringItem => Array
+      ArrayOfstring[*strings.stringItem]
     end
   end
 
@@ -47,8 +47,10 @@ class TestRPCLIT < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('RPC-Literal-TestDefinitions.rb'))
-    File.unlink(pathname('RPC-Literal-TestDefinitionsDriver.rb'))
+    unless $DEBUG
+      File.unlink(pathname('RPC-Literal-TestDefinitions.rb'))
+      File.unlink(pathname('RPC-Literal-TestDefinitionsDriver.rb'))
+    end
     @client.reset_stream if @client
   end
 
@@ -67,8 +69,14 @@ class TestRPCLIT < Test::Unit::TestCase
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
-    require pathname('RPC-Literal-TestDefinitions.rb')
-    require pathname('RPC-Literal-TestDefinitionsDriver.rb')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require pathname('RPC-Literal-TestDefinitions.rb')
+      require pathname('RPC-Literal-TestDefinitionsDriver.rb')
+    ensure
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server
@@ -90,17 +98,20 @@ class TestRPCLIT < Test::Unit::TestCase
   end
 
   def test_wsdl
-    wsdl = File.join(DIR, 'test-rpc-lit.wsdl')
+    wsdl = pathname('test-rpc-lit.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
-    assert_equal(["a", "b", "c"], @client.echoStringArray(["a", "b", "c"]).item)
+    # response contains only 1 part.
+    result = @client.echoStringArray(ArrayOfstring["a", "b", "c"])[0]
+    assert_equal(["a", "b", "c"], result.stringItem)
   end
 
   def test_stub
     drv = SoapTestPortTypeRpc.new("http://localhost:#{Port}/")
     drv.wiredump_dev = STDOUT if $DEBUG
-    assert_equal(["a", "b", "c"], drv.echoStringArray(["a", "b", "c"]))
+    result = drv.echoStringArray(ArrayOfstring["a", "b", "c"])[0]
+    assert_equal(["a", "b", "c"], result.stringItem)
   end
 end
 

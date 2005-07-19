@@ -114,10 +114,25 @@ class ComplexType < Info
     raise RuntimeError.new("Assert: Unknown array definition.")
   end
 
+  def find_aryelement
+    unless compoundtype == :TYPE_ARRAY
+      raise RuntimeError.new("Assert: not for array")
+    end
+    if complexcontent
+      if check_array_content(complexcontent.content)
+        return complexcontent.content.elements[0]
+      end
+    elsif check_array_content(content)
+      return content.elements[0]
+    end
+    nil # use default item name
+  end
+
 private
 
   def check_array_content(content)
-    content.elements.size == 1 and content.elements[0].maxoccurs != '1'
+    content and content.elements.size == 1 and
+      content.elements[0].maxoccurs != '1'
   end
 
   def content_arytype

@@ -3,7 +3,6 @@
 <definitions name="RPC-Literal-TestDefinitions"
 	targetNamespace="http://whitemesa.net/wsdl/rpc-lit-test"
 	xmlns="http://schemas.xmlsoap.org/wsdl/"
-	xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
 	xmlns:soap11="http://schemas.xmlsoap.org/wsdl/soap/"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:tns="http://whitemesa.net/wsdl/rpc-lit-test"
@@ -326,126 +325,8 @@
 
 	</binding>
 
-	<binding name="Soap12TestRpcLitBinding" type="tns:SoapTestPortTypeRpc">
-		<soap12:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
-
-		<!-- echoStruct rpc operation -->
-		<operation name="echoStruct">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!--  echoStructArray rpc operation -->
-		<operation name="echoStructArray">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!-- echoStructAsSimpleTypes rpc operation -->
-		<operation name="echoStructAsSimpleTypes">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!-- echoSimpleTypesAsStruct rpc operation -->
-		<operation name="echoSimpleTypesAsStruct">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!-- echoNestedStruct rpc operation -->
-		<operation name="echoNestedStruct">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!-- echoNestedArray rpc operation -->
-		<operation name="echoNestedArray">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!-- echoStringArray rpc operation -->
-		<operation name="echoStringArray">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!-- echoIntegerArray rpc operation -->
-		<operation name="echoIntegerArray">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!-- echoBoolean rpc operation -->
-		<operation name="echoBoolean">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-		<!-- echoString rpc operation -->
-		<operation name="echoString">
-			<soap12:operation/>
-			<input>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</input>
-			<output>
-				<soap12:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
-			</output>
-		</operation>
-
-	</binding>
-
 	<service name="WhiteMesaSoapRpcLitTestSvc">
 
-  		<port name="Soap12TestRpcLitPort" binding="tns:Soap12TestRpcLitBinding">
-    			<soap12:address location="http://www.whitemesa.net/soap12/test-rpc-lit"/>
-  		</port>
   		<port name="Soap11TestRpcLitPort" binding="tns:Soap11TestRpcLitBinding">
     			<soap11:address location="http://www.whitemesa.net/test-rpc-lit"/>
   		</port>

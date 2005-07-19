@@ -44,9 +44,6 @@ class ASPDotNetHandler < Handler
     when SOAPStruct
       generator.encode_tag(name, attrs)
       data.each do |key, value|
-	if !value.elename.namespace
-          value.elename.namespace = data.elename.namespace 
-        end
         generator.encode_child(ns, value, data)
       end
     when SOAPArray

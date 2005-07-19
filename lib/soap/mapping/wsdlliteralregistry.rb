@@ -209,15 +209,17 @@ private
     elements, as_array = schema_element_definition(obj.class)
     if elements
       elements.each do |elename, type|
-        child = Mapping.get_attribute(obj, elename)
-        unless child.nil?
-          name = XSD::QName.new(nil, elename)
-          if as_array.include?(type)
+        if child = Mapping.get_attribute(obj, elename.name)
+          if as_array.include?(elename.name)
             child.each do |item|
-              ele.add(obj2soap(item, name))
+              ele.add(obj2soap(item, elename))
             end
           else
-            ele.add(obj2soap(child, name))
+            ele.add(obj2soap(child, elename))
+          end
+        elsif obj.is_a?(::Array) and as_array.include?(elename.name)
+          obj.each do |item|
+            ele.add(obj2soap(item, elename))
           end
         end
       end
@@ -290,9 +292,9 @@ private
     elements, as_array = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
-      item = elements.find { |k, v| k == name }
+      item = elements.find { |k, v| k.name == name }
       if item
-        class_name = item[1]
+        elename, class_name = item
         if klass = Mapping.class_from_name(class_name)
           # klass must be a SOAPBasetype or a class
           if klass.ancestors.include?(::SOAP::SOAPBasetype)
@@ -318,7 +320,7 @@ private
       else      # untyped element is treated as anyType.
         child = any2obj(value)
       end
-      if as_array.include?(class_name)
+      if as_array.include?(elename.name)
         (vars[name] ||= []) << child
       else
         vars[name] = child
@@ -347,7 +349,7 @@ private
 
   def add_elements2plainobj(node, obj)
     node.each do |name, value|
-      obj.__add_xmlele_value(XSD::QName.new(nil, name), any2obj(value))
+      obj.__add_xmlele_value(value.elename, any2obj(value))
     end
   end
 

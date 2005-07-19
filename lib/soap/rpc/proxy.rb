@@ -397,9 +397,6 @@ private
       (0...values.size).collect { |idx|
         ele = Mapping.obj2soap(values[idx], mapping_registry)
         ele.elename = @doc_request_qnames[idx]
-        if ele.respond_to?(:qualified)
-          ele.qualified = @doc_request_qualified[idx]
-        end
         ele
       }
     end
