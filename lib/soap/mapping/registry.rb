@@ -88,6 +88,10 @@ class Object; include Marshallable
     @__xmlele.each do |k, v|
       return v if k == qname
     end
+    # fallback
+    @__xmlele.each do |k, v|
+      return v if k.name == qname.name
+    end
     nil
   end
 

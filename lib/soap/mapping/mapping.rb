@@ -309,9 +309,9 @@ module Mapping
       class_name, name = definition
       if /\[\]$/ =~ class_name
         class_name = class_name.sub(/\[\]$/, '')
-        as_array << class_name
+        as_array << (name ? name.name : varname)
       end
-      elements << [name ? name.name : varname, class_name]
+      elements << [name || XSD::QName.new(nil, varname), class_name]
     end
     [elements, as_array]
   end
