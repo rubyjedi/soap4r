@@ -106,10 +106,10 @@ class ComplexType < Info
 	end
       end
       if check_array_content(complexcontent.content)
-        return complexcontent.content.elements[0].type
+        return element_simpletype(complexcontent.content.elements[0])
       end
     elsif check_array_content(content)
-      return content.elements[0].type
+      return element_simpletype(content.elements[0])
     end
     raise RuntimeError.new("Assert: Unknown array definition.")
   end
@@ -129,6 +129,16 @@ class ComplexType < Info
   end
 
 private
+
+  def element_simpletype(element)
+    if element.type
+      element.type 
+    elsif element.local_simpletype
+      element.local_simpletype.base
+    else
+      nil
+    end
+  end
 
   def check_array_content(content)
     content and content.elements.size == 1 and
