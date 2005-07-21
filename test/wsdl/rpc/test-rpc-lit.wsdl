@@ -18,6 +18,12 @@
 				</sequence>
 			</complexType>
 
+			<complexType name="ArrayOfstringInline">
+				<sequence>
+					<element name="stringItem" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+				</sequence>
+			</complexType>
+
 			<complexType name="ArrayOfint">
 				<sequence>
 					<element name="integer" type="xsd:int" minOccurs="0" maxOccurs="unbounded"/>
@@ -121,6 +127,13 @@
 		<part name="return" type="types:ArrayOfstring"/>
 	</message>
 
+	<message name="echoStringArrayInlineRequest">
+		<part name="inputStringArray" type="types:ArrayOfstringInline"/>
+	</message>
+	<message name="echoStringArrayInlineResponse">
+		<part name="return" type="types:ArrayOfstringInline"/>
+	</message>
+
 	<!-- echoIntegerArray rpc operation -->
 	<message name="echoIntegerArrayRequest">
 		<part name="inputIntegerArray" type="types:ArrayOfint"/>
@@ -188,6 +201,11 @@
 		<operation name="echoStringArray" parameterOrder="inputStringArray">
 			<input message="tns:echoStringArrayRequest"/>
 			<output message="tns:echoStringArrayResponse"/>
+		</operation>
+
+		<operation name="echoStringArrayInline" parameterOrder="inputStringArray">
+			<input message="tns:echoStringArrayInlineRequest"/>
+			<output message="tns:echoStringArrayInlineResponse"/>
 		</operation>
 
 		<!-- echoIntegerArray rpc operation -->
@@ -281,6 +299,16 @@
 
 		<!-- echoStringArray rpc operation -->
 		<operation name="echoStringArray">
+			<soap11:operation soapAction="http://soapinterop.org/"/>
+			<input>
+				<soap11:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
+			</input>
+			<output>
+				<soap11:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />
+			</output>
+		</operation>
+
+		<operation name="echoStringArrayInline">
 			<soap11:operation soapAction="http://soapinterop.org/"/>
 			<input>
 				<soap11:body use="literal" namespace="http://soapbuilders.org/rpc-lit-test" />

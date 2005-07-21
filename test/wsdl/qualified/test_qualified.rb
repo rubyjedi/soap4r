@@ -19,13 +19,6 @@ class TestQualified < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'login'),
         XSD::QName.new(Namespace, 'loginResponse')
       )
-      add_document_method(
-        self,
-        Namespace + ':login',
-        'login',
-        XSD::QName.new(Namespace, 'login2'),
-        XSD::QName.new(Namespace, 'loginResponse')
-      )
     end
   
     def login(arg)
@@ -98,38 +91,10 @@ class TestQualified < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:login xmlns:n1="urn:lp">
-      <n1:username>NaHi</n1:username>
-      <n1:password>passwd</n1:password>
-      <n1:timezone>JST</n1:timezone>
+      <username>NaHi</username>
+      <password>passwd</password>
+      <timezone>JST</timezone>
     </n1:login>
-  </env:Body>
-</env:Envelope>]
-
-  LOGIN_REQUEST_QUALIFIED_DEFAULT =
-%q[<?xml version="1.0" encoding="utf-8" ?>
-<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <env:Body>
-    <login xmlns="urn:lp">
-      <username>NaHi</username>
-      <password>passwd</password>
-      <timezone>JST</timezone>
-    </login>
-  </env:Body>
-</env:Envelope>]
-
-    LOGIN_REQUEST_UNQUALIFIED =
-%q[<?xml version="1.0" encoding="utf-8" ?>
-<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <env:Body>
-    <n1:login2 xmlns:n1="urn:lp">
-      <username>NaHi</username>
-      <password>passwd</password>
-      <timezone>JST</timezone>
-    </n1:login2>
   </env:Body>
 </env:Envelope>]
 
@@ -148,11 +113,6 @@ class TestQualified < Test::Unit::TestCase
     @client.login(:timezone => 'JST', :password => 'passwd',
       :username => 'NaHi')
     assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str))
-
-    @client.wiredump_dev = str = ''
-    @client.login2(:timezone => 'JST', :password => 'passwd',
-      :username => 'NaHi')
-    assert_equal(LOGIN_REQUEST_UNQUALIFIED, parse_requestxml(str))
   end
 
   include ::SOAP
@@ -168,11 +128,7 @@ class TestQualified < Test::Unit::TestCase
 
     @client.wiredump_dev = str = ''
     @client.login(Login.new('NaHi', 'passwd', 'JST'))
-    assert_equal(LOGIN_REQUEST_QUALIFIED_DEFAULT, parse_requestxml(str))
-
-    @client.wiredump_dev = str = ''
-    @client.login2(Login.new('NaHi', 'passwd', 'JST'))
-    assert_equal(LOGIN_REQUEST_UNQUALIFIED, parse_requestxml(str))
+    assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str))
   end
 
   def parse_requestxml(str)

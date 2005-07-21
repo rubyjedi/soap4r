@@ -305,13 +305,14 @@ module Mapping
     return nil unless klass.class_variables.include?('@@schema_element')
     elements = []
     as_array = []
+    schema_ns = klass.class_eval('@@schema_ns')
     klass.class_eval('@@schema_element').each do |varname, definition|
       class_name, name = definition
       if /\[\]$/ =~ class_name
         class_name = class_name.sub(/\[\]$/, '')
         as_array << (name ? name.name : varname)
       end
-      elements << [name || XSD::QName.new(nil, varname), class_name]
+      elements << [name || XSD::QName.new(schema_ns, varname), class_name]
     end
     [elements, as_array]
   end

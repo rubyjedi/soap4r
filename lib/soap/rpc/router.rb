@@ -240,7 +240,8 @@ private
       return op
     end
     if soapaction
-      raise RPCRoutingError.new("operation: #{soapaction} not supported")
+      raise RPCRoutingError.new(
+        "operation: #{soapaction} #{qname} not supported")
     else
       raise RPCRoutingError.new("operation: #{qname} not supported")
     end

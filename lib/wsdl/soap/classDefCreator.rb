@@ -160,7 +160,10 @@ private
       else
         params << "#{varname} = nil"
       end
-      eleqname = (varname == name) ? nil : element.name
+      # nil means @@schema_ns + varname
+      eleqname =
+        (varname == name && element.name.namespace == qname.namespace) ?
+        nil : element.name
       schema_element << [varname, eleqname, type]
     end
     unless typedef.attributes.empty?
