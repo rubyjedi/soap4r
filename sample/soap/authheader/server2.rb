@@ -34,7 +34,7 @@ class AuthHeaderPortServer < SOAP::RPC::StandaloneServer
     add_rpc_servant(AuthHeaderService.new(authmgr), Name)
     ServerAuthHeaderHandler.init(authmgr)
     # header handler must be a per request handler.
-    add_rpc_request_headerhandler(ServerAuthHeaderHandler)
+    add_request_headerhandler(ServerAuthHeaderHandler)
   end
 
   class ServerAuthHeaderHandler < SOAP::Header::SimpleHandler
