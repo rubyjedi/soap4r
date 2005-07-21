@@ -8,8 +8,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:element name="login" type="lp:login" form="qualified"/> <!-- qualified -->
-  <xs:element name="login2" type="lp:login"/> <!-- unqualified -->
+  <xs:element name="login" type="lp:login"/>
 
   <xs:complexType name="loginResponse">
     <xs:sequence>

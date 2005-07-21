@@ -107,7 +107,8 @@ class Element < Info
   def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new(targetnamespace, value.source)
+      namespace = directelement? ? targetnamespace : nil
+      @name = XSD::QName.new(namespace, value.source)
     when FormAttrName
       @form = value.source
     when TypeAttrName
@@ -117,14 +118,16 @@ class Element < Info
     when MaxOccursAttrName
       if parent.is_a?(All)
 	if value.source != '1'
-	  raise Parser::AttrConstraintError.new("cannot parse #{value} for #{attr}")
+	  raise Parser::AttrConstraintError.new(
+            "cannot parse #{value} for #{attr}")
 	end
       end
       @maxoccurs = value.source
     when MinOccursAttrName
       if parent.is_a?(All)
 	unless ['0', '1'].include?(value.source)
-	  raise Parser::AttrConstraintError.new("cannot parse #{value} for #{attr}")
+	  raise Parser::AttrConstraintError.new(
+            "cannot parse #{value} for #{attr}")
 	end
       end
       @minoccurs = value.source
@@ -133,6 +136,12 @@ class Element < Info
     else
       nil
     end
+  end
+
+private
+
+  def directelement?
+    parent.is_a?(Schema)
   end
 end
 

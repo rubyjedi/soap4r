@@ -5,7 +5,7 @@ class Echoele
   @@schema_type = "echoele"
   @@schema_ns = "urn:docrpc"
   @@schema_attribute = {XSD::QName.new(nil, "attr_string") => "SOAP::SOAPString", XSD::QName.new(nil, "attr-int") => "SOAP::SOAPInt"}
-  @@schema_element = [["struct1", "Echo_struct"], ["struct_2", ["Echo_struct", XSD::QName.new(nil, "struct-2")]]]
+  @@schema_element = [["struct1", ["Echo_struct", XSD::QName.new(nil, "struct1")]], ["struct_2", ["Echo_struct", XSD::QName.new(nil, "struct-2")]]]
 
   attr_accessor :struct1
   attr_accessor :struct_2
@@ -38,7 +38,7 @@ class Echo_response
   @@schema_type = "echo_response"
   @@schema_ns = "urn:docrpc"
   @@schema_attribute = {XSD::QName.new(nil, "attr_string") => "SOAP::SOAPString", XSD::QName.new(nil, "attr-int") => "SOAP::SOAPInt"}
-  @@schema_element = [["struct1", "Echo_struct"], ["struct_2", ["Echo_struct", XSD::QName.new(nil, "struct-2")]]]
+  @@schema_element = [["struct1", ["Echo_struct", XSD::QName.new(nil, "struct1")]], ["struct_2", ["Echo_struct", XSD::QName.new(nil, "struct-2")]]]
 
   attr_accessor :struct1
   attr_accessor :struct_2
@@ -71,7 +71,7 @@ class Echo_struct
   @@schema_type = "echo_struct"
   @@schema_ns = "urn:docrpc"
   @@schema_attribute = {XSD::QName.new("urn:docrpc", "m_attr") => "SOAP::SOAPString"}
-  @@schema_element = [["m_string", "SOAP::SOAPString"], ["m_datetime", "SOAP::SOAPDateTime"]]
+  @@schema_element = [["m_string", ["SOAP::SOAPString", XSD::QName.new(nil, "m_string")]], ["m_datetime", ["SOAP::SOAPDateTime", XSD::QName.new(nil, "m_datetime")]]]
 
   attr_accessor :m_string
   attr_accessor :m_datetime

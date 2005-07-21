@@ -65,6 +65,12 @@ class LiteralHandler < Handler
         generator.encode_child(ns, child, data)
       end
     when SOAPElement
+      # passes 2 times for simplifying namespace definition
+      data.each do |key, value|
+        if value.elename.namespace
+          SOAPGenerator.assign_ns(attrs, ns, value.elename.namespace)
+        end
+      end
       generator.encode_tag(name, attrs)
       generator.encode_rawstring(data.text) if data.text
       data.each do |key, value|

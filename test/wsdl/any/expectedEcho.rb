@@ -4,7 +4,7 @@ require 'xsd/qname'
 class FooBar
   @@schema_type = "foo.bar"
   @@schema_ns = "urn:example.com:echo-type"
-  @@schema_element = [["any", nil]]
+  @@schema_element = [["any", [nil, XSD::QName.new(nil, "any")]]]
 
   attr_accessor :any
 
