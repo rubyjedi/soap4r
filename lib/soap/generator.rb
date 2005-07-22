@@ -38,6 +38,7 @@ public
       opt.key?(:generate_explicit_type) ? opt[:generate_explicit_type] : true
     @elementformdefault = opt[:elementformdefault]
     @attributeformdefault = opt[:attributeformdefault]
+    @indentstr = opt[:no_indent] ? '' : '  '
     @buf = @indent = @curr = nil
   end
 
@@ -99,7 +100,7 @@ public
   end
 
   def encode_child(ns, child, parent)
-    indent_backup, @indent = @indent, @indent + '  '
+    indent_backup, @indent = @indent, @indent + @indentstr
     encode_data(ns.clone_ns, child, parent)
     @indent = indent_backup
   end
@@ -109,7 +110,7 @@ public
     if obj.is_a?(SOAPBody)
       @reftarget = obj
       obj.encode(self, ns, attrs) do |child|
-	indent_backup, @indent = @indent, @indent + '  '
+	indent_backup, @indent = @indent, @indent + @indentstr
         encode_data(ns.clone_ns, child, obj)
 	@indent = indent_backup
       end
@@ -124,7 +125,7 @@ public
         end
       end
       obj.encode(self, ns, attrs) do |child|
-	indent_backup, @indent = @indent, @indent + '  '
+	indent_backup, @indent = @indent, @indent + @indentstr
         encode_data(ns.clone_ns, child, obj)
 	@indent = indent_backup
       end
@@ -162,7 +163,7 @@ public
       @buf << "\n#{ @indent }<#{ elename } " <<
         attrs.collect { |key, value|
           %Q[#{ key }="#{ value }"]
-        }.join("\n#{ @indent }    ") <<
+        }.join("\n#{ @indent }#{ @indentstr * 2 }") <<
 	'>'
     end
   end
