@@ -250,6 +250,7 @@ private
     opt[:default_encodingstyle] = @default_encodingstyle
     opt[:allow_unqualified_element] = @allow_unqualified_element
     opt[:generate_explicit_type] = @generate_explicit_type
+    opt[:no_indent] = @options["soap.envelope.no_indent"]
     opt.update(hash) if hash
     opt
   end
