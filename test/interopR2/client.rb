@@ -113,11 +113,8 @@ class SOAPBuildersTest < Test::Unit::TestCase
 
     def do_method_def(drv, defs, soap_action = nil)
       defs.each do |name, *params|
-	if soap_action
-	  drv.add_method_with_soapaction(name, soap_action + name, params)
-	else
-	  drv.add_method(name, params)
-	end
+        drv.add_rpc_operation(
+          XSD::QName.new(InterfaceNS, name), soap_action, name, params)
       end
     end
 
