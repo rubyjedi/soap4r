@@ -10,12 +10,14 @@ include SOAP
 include SOAPBuildersInterop
 
 $soapAction = 'http://soapinterop.org/'
-# $testResultServer = 'http://rrr.jin.gr.jp/soapsrv'
+=begin
+$testResultServer = 'http://rrr.jin.gr.jp/soapsrv'
 $testResultDrv = SOAP::RPC::Driver.new($testResultServer, SOAPBuildersInteropResult::InterfaceNS)
 
 SOAPBuildersInteropResult::Methods.each do |name, *params|
   $testResultDrv.add_method(name, params)
 end
+=end
 
 client = SOAPBuildersInteropResult::Endpoint.new
 client.processorName = 'SOAP4R'
@@ -46,16 +48,16 @@ def methodDef(drv)
 end
 
 def methodDefBase(drv)
-  drv.soapaction = $soapAction
   SOAPBuildersInterop::MethodsBase.each do |name, *params|
-    drv.add_method(name, params)
+    drv.add_rpc_operation(
+      XSD::QName.new(InterfaceNS, name), $soapAction, name, params)
   end
 end
 
 def methodDefGroupB(drv)
-  drv.soapaction = $soapAction
   SOAPBuildersInterop::MethodsGroupB.each do |name, *params|
-    drv.add_method(name, params)
+    drv.add_rpc_operation(
+      XSD::QName.new(InterfaceNS, name), $soapAction, name, params)
   end
 end
 
@@ -141,8 +143,8 @@ def dumpResult(title, result, resultStr)
       result,
       resultStr,
       $wireDumpDev.dup
-   )
- )
+    )
+  )
   $wireDumpLogFile << "Result: #{ resultStr || 'OK' }\n\n"
   $wireDumpLogFile << $wireDumpDev
   $wireDumpLogFile << "\n"
@@ -150,9 +152,16 @@ def dumpResult(title, result, resultStr)
   $wireDumpDev.replace('')
 end
 
+require 'yaml'
 def submitTestResult
-  load 'soap/XMLSchemaDatatypes.rb'
-  $testResultDrv.addResults($testResults)
+  #load 'soap/XMLSchemaDatatypes.rb'
+  #$testResultDrv.addResults($testResults)
+  filename = File.join(
+    File.dirname($0),
+    'result_' + File.basename($0).sub(/\.rb/, '.txt'))
+  File.open(filename, 'w') do |f|
+    f << YAML.dump($testResults)
+  end
 end
 
 class FakeFloat < SOAP::SOAPFloat
