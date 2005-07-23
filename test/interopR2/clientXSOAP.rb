@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'XSOAP 1.2'
+$serverName = 'XSOAP1.2'
 
 $server = 'http://www.wingfoot.com/servlet/wserver'
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Apache SOAP 2.2'
+$serverName = 'ApacheSOAP2.2'
 $serverBase = 'http://nagoya.apache.org:5049/soap/servlet/rpcrouter'
 $serverGroupB = 'None'
 

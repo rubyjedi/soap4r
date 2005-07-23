@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Wingfoot SOAP Server'
+$serverName = 'WingfootSOAPServer'
 
 $server = 'http://www.wingfoot.com/servlet/wserver'
 $noEchoMap = true

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Spheon JSOAP'
+$serverName = 'SpheonJSOAP'
 $server = 'http://soap.fmui.de/RPC'
 
 require 'clientBase'

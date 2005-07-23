@@ -10,14 +10,15 @@ include SOAP
 include SOAPBuildersInterop
 
 $soapAction = 'http://soapinterop.org/'
-=begin
-$testResultServer = 'http://rrr.jin.gr.jp/soapsrv'
-$testResultDrv = SOAP::RPC::Driver.new($testResultServer, SOAPBuildersInteropResult::InterfaceNS)
+$testResultServer = 'http://dev.ctor.org/soapsrv'
+$testResultDrv = SOAP::RPC::Driver.new($testResultServer,
+  SOAPBuildersInteropResult::InterfaceNS)
 
 SOAPBuildersInteropResult::Methods.each do |name, *params|
-  $testResultDrv.add_method(name, params)
+  $testResultDrv.add_rpc_operation(
+      XSD::QName.new(SOAPBuildersInteropResult::InterfaceNS, name),
+      nil, name, params)
 end
-=end
 
 client = SOAPBuildersInteropResult::Endpoint.new
 client.processorName = 'SOAP4R'
@@ -152,16 +153,8 @@ def dumpResult(title, result, resultStr)
   $wireDumpDev.replace('')
 end
 
-require 'yaml'
 def submitTestResult
-  #load 'soap/XMLSchemaDatatypes.rb'
-  #$testResultDrv.addResults($testResults)
-  filename = File.join(
-    File.dirname($0),
-    'result_' + File.basename($0).sub(/\.rb/, '.txt'))
-  File.open(filename, 'w') do |f|
-    f << YAML.dump($testResults)
-  end
+  $testResultDrv.addResults($testResults)
 end
 
 class FakeFloat < SOAP::SOAPFloat

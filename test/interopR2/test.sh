@@ -8,7 +8,7 @@ ruby clientApacheAxis.rb
 ruby clientApacheSOAP.rb
 ruby clientASP.NET.rb
 ruby clientBEAWebLogic.rb
-#ruby clientCapeConnect.rb
+ruby clientCapeConnect.rb
 ruby clientDelphi.rb
 ruby clientEasySoap.rb
 ruby clienteSOAP.rb
@@ -23,12 +23,12 @@ ruby client.NetRemoting.rb
 ruby clientMSSOAPToolkit2.0.rb
 ruby clientMSSOAPToolkit3.0.rb
 ruby clientNuSOAP.rb
-#ruby clientNuWave.rb
+ruby clientNuWave.rb
 ruby clientOpenLink.rb
 ruby clientOracle.rb
 ruby clientPEAR.rb
 ruby clientPhalanx.rb
-#ruby clientSilverStream.rb
+ruby clientSilverStream.rb
 ruby clientSIMACE.rb
 ruby clientSOAP::Lite.rb
 ruby clientJSOAP.rb

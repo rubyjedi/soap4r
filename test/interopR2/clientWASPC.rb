@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'WASP for C++'
+$serverName = 'WASPforC++'
 
 $serverBase = 'http://soap.systinet.net:6070/InteropService/'
 $serverGroupB = 'http://soap.systinet.net:6070/InteropBService/'

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Spray 2001'
+$serverName = 'Spray2001'
 $serverBase = 'http://www.dolphinharbor.org/services/interop2001'
 $serverGroupB = 'http://www.dolphinharbor.org/services/interopB2001'
 

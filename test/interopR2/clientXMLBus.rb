@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'IONA XMLBus'
+$serverName = 'IONAXMLBus'
 
 $serverBase = 'http://interop.xmlbus.com:7002/xmlbus/container/InteropTest/BaseService/BasePort'
 $serverGroupB = 'http://interop.xmlbus.com:7002/xmlbus/container/InteropTest/GroupBService/GroupBPort'

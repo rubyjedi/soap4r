@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Apache Axis'
+$serverName = 'ApacheAxis'
 $server = 'http://nagoya.apache.org:5049/axis/services/echo'
 
 require 'clientBase'

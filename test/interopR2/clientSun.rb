@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Sun Microsystems'
+$serverName = 'SunMicrosystems'
 
 $serverBase = 'http://soapinterop.java.sun.com:80/round2/base'
 $serverGroupB = 'http://soapinterop.java.sun.com:80/round2/groupb'

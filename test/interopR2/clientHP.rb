@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'HP SOAP'
+$serverName = 'HPSOAP'
 $server = 'http://soap.bluestone.com/hpws/soap/EchoService'
 
 require 'clientBase'

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'BEA WebLogic 8.1'
+$serverName = 'BEAWebLogic8.1'
 $serverBase = 'http://webservice.bea.com:7001/base/SoapInteropBaseService'
 $serverGroupB = 'http://webservice.bea.com:7001/groupb/SoapInteropGroupBService'
 
