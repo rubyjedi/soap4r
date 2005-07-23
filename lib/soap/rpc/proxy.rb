@@ -438,7 +438,7 @@ private
       end
       if body.outparams
         outparams = body.outparams.collect { |outparam|
-          Mapping.soap2obj(outparam, mapping_regisry)
+          Mapping.soap2obj(outparam, mapping_registry)
         }
         [ret].concat(outparams)
       else
