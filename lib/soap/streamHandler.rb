@@ -34,6 +34,8 @@ class StreamHandler
 
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
 
+  RETRYABLE = (Client == HTTPAccess2::Client)
+
   class ConnectionData
     attr_accessor :send_string
     attr_accessor :send_contenttype
@@ -161,7 +163,20 @@ private
     send_string = conn_data.send_string
     @wiredump_dev << "Wire dump:\n\n" if @wiredump_dev
     begin
-      res = @client.post(endpoint_url, send_string, extra)
+      retry_count = 0
+      while true
+        res = @client.post(endpoint_url, send_string, extra)
+        if RETRYABLE and HTTP::Status.redirect?(res.status)
+          retry_count += 1
+          if retry_count >= 10
+            raise HTTPStreamError.new("redirect count exceeded")
+          end
+          endpoint_url = res.header["location"][0]
+          puts "redirected to #{endpoint_url}" if $DEBUG
+        else
+          break
+        end
+      end
     rescue
       @client.reset(endpoint_url)
       raise
