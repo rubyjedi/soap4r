@@ -114,7 +114,9 @@ module Mapping
   end
 
   def self._soap2obj(node, registry, klass = nil)
-    if node.is_a?(SOAPReference)
+    if node.nil?
+      return nil
+    elsif node.is_a?(SOAPReference)
       target = node.__getobj__
       # target.id is not Object#id but SOAPReference#id
       if referent = Thread.current[:SOAPMarshalDataKey][target.id]
