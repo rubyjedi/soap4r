@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'VW OpentalkSoap'
+$serverName = 'VWOpentalkSoap'
 
 $server = 'http://www.cincomsmalltalk.com/soap/interop'
 $serverGroupB = 'http://www.cincomsmalltalk.com/r2groupb/interop'

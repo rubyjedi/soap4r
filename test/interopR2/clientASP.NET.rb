@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'MS ASP .NET Web Services'
+$serverName = 'MSASPdotNETWebServices'
 $serverBase = 'http://www.mssoapinterop.org/asmx/simple.asmx'
 $serverGroupB = 'http://www.mssoapinterop.org/asmx/simpleB.asmx'
 

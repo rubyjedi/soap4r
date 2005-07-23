@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'White Mesa SOAP Server'
+$serverName = 'WhiteMesaSOAPServer'
 $serverBase = 'http://www.whitemesa.net/interop/std'
 $serverGroupB = 'http://www.whitemesa.net/interop/std/groupB'
 

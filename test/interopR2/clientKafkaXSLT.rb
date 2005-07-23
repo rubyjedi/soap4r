@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Kafka XSLT SOAP'
+$serverName = 'KafkaXSLTSOAP'
 
 $server = 'http://www.thoughtpost.com/services/interop.asmx'
 $noEchoMap = true

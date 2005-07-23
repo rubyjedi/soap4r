@@ -5,7 +5,6 @@ module SOAPBuildersInteropResult
 extend SOAP
 
 
-Server = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/rwikiInteropServer.cgi'
 InterfaceNS = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInteropResult/0.0.1'
 TypeNS = 'http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInteropResult/type/0.0.1'
 
@@ -27,7 +26,7 @@ class Endpoint
     if @endpointName
       @endpointName
     elsif @processorVersion
-      "#{ @processorName }/#{ @processorVersion }"
+      "#{ @processorName }-#{ @processorVersion }"
     else
       "#{ @processorName }"
     end

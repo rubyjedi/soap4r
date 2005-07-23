@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'SQLData SOAP Server'
+$serverName = 'SQLDataSOAPServer'
 $serverBase = 'http://soapclient.com/interop/sqldatainterop.wsdl'
 $serverGroupB = 'http://soapclient.com/interop/InteropB.wsdl'
 $noEchoMap = true

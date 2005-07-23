@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = 'Microsoft Soap Toolkit V2'
+$serverName = 'MicrosoftSoapToolkitV2'
 $serverBase = 'http://mssoapinterop.org/stk/InteropB.wsdl'
 $serverGroupB = 'http://mssoapinterop.org/stk/InteropBtyped.wsdl'
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$serverName = '.Net Remoting Web Services'
+$serverName = 'dotNetRemotingWebServices'
 $serverBase = 'http://www.mssoapinterop.org/remoting/ServiceA.soap'
 $serverGroupB = 'http://www.mssoapinterop.org/remoting/ServiceB.soap'
 

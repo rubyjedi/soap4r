@@ -2,7 +2,8 @@
 
 $serverName = 'SOAP4R'
 
-$server = 'http://rrr.jin.gr.jp/soapsrv'
+$server = 'http://dev.ctor.org/soapsrv'
+#$server = 'http://rrr.jin.gr.jp/soapsrv'
 #$server = 'http://localhost:10080'
 #require 'xsd/datatypes1999'
 
