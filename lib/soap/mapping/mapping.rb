@@ -20,7 +20,9 @@ module Mapping
   ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
 
 
-  # TraverseSupport breaks Thread.current[:SOAPMarshalDataKey].
+  # TraverseSupport breaks following thread variables.
+  #   Thread.current[:SOAPMarshalDataKey]
+  #   Thread.current[:SOAPExternalCES]
   module TraverseSupport
     def mark_marshalled_obj(obj, soap_obj)
       raise if obj.nil?
@@ -35,41 +37,70 @@ module Mapping
   end
 
 
-  def self.obj2soap(obj, registry = nil, type = nil)
+  EMPTY_OPT = {}
+  def self.obj2soap(obj, registry = nil, type = nil, opt = EMPTY_OPT)
     registry ||= Mapping::DefaultRegistry
-    Thread.current[:SOAPMarshalDataKey] = {}
-    soap_obj = _obj2soap(obj, registry, type)
-    Thread.current[:SOAPMarshalDataKey] = nil
+    prekey = Thread.current[:SOAPMarshalDataKey]
+    preces = Thread.current[:SOAPExternalCES]
+    begin
+      Thread.current[:SOAPMarshalDataKey] = {}
+      Thread.current[:SOAPExternalCES] = opt[:external_ces] || $KCODE
+      soap_obj = _obj2soap(obj, registry, type)
+    ensure
+      Thread.current[:SOAPMarshalDataKey] = prekey
+      Thread.current[:SOAPExternalCES] = preces
+    end
     soap_obj
   end
 
-  def self.soap2obj(node, registry = nil, klass = nil)
+  def self.soap2obj(node, registry = nil, klass = nil, opt = EMPTY_OPT)
     registry ||= Mapping::DefaultRegistry
-    Thread.current[:SOAPMarshalDataKey] = {}
-    obj = _soap2obj(node, registry, klass)
-    Thread.current[:SOAPMarshalDataKey] = nil
+    prekey = Thread.current[:SOAPMarshalDataKey]
+    preces = Thread.current[:SOAPExternalCES]
+    begin
+      Thread.current[:SOAPMarshalDataKey] = {}
+      Thread.current[:SOAPExternalCES] = opt[:external_ces] || $KCODE
+      obj = _soap2obj(node, registry, klass)
+    ensure
+      Thread.current[:SOAPMarshalDataKey] = prekey
+      Thread.current[:SOAPExternalCES] = preces
+    end
     obj
   end
 
-  def self.ary2soap(ary, type_ns = XSD::Namespace, typename = XSD::AnyTypeLiteral, registry = nil)
+  def self.ary2soap(ary, type_ns = XSD::Namespace, typename = XSD::AnyTypeLiteral, registry = nil, opt = EMPTY_OPT)
     registry ||= Mapping::DefaultRegistry
     type = XSD::QName.new(type_ns, typename)
     soap_ary = SOAPArray.new(ValueArrayName, 1, type)
-    Thread.current[:SOAPMarshalDataKey] = {}
-    ary.each do |ele|
-      soap_ary.add(_obj2soap(ele, registry, type))
+    prekey = Thread.current[:SOAPMarshalDataKey]
+    preces = Thread.current[:SOAPExternalCES]
+    begin
+      Thread.current[:SOAPMarshalDataKey] = {}
+      Thread.current[:SOAPExternalCES] = opt[:external_ces] || $KCODE
+      ary.each do |ele|
+        soap_ary.add(_obj2soap(ele, registry, type))
+      end
+    ensure
+      Thread.current[:SOAPMarshalDataKey] = prekey
+      Thread.current[:SOAPExternalCES] = preces
     end
-    Thread.current[:SOAPMarshalDataKey] = nil
     soap_ary
   end
 
-  def self.ary2md(ary, rank, type_ns = XSD::Namespace, typename = XSD::AnyTypeLiteral, registry = nil)
+  def self.ary2md(ary, rank, type_ns = XSD::Namespace, typename = XSD::AnyTypeLiteral, registry = nil, opt = EMPTY_OPT)
     registry ||= Mapping::DefaultRegistry
     type = XSD::QName.new(type_ns, typename)
     md_ary = SOAPArray.new(ValueArrayName, rank, type)
-    Thread.current[:SOAPMarshalDataKey] = {}
-    add_md_ary(md_ary, ary, [], registry)
-    Thread.current[:SOAPMarshalDataKey] = nil
+    prekey = Thread.current[:SOAPMarshalDataKey]
+    preces = Thread.current[:SOAPExternalCES]
+    begin
+      Thread.current[:SOAPMarshalDataKey] = {}
+      Thread.current[:SOAPExternalCES] = opt[:external_ces] || $KCODE
+      add_md_ary(md_ary, ary, [], registry)
+    ensure
+      Thread.current[:SOAPMarshalDataKey] = prekey
+      Thread.current[:SOAPExternalCES] = preces
+    end
     md_ary
   end
 
