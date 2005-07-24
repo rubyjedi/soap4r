@@ -32,7 +32,7 @@ public
   def initialize(opt = {})
     @reftarget = nil
     @handlers = {}
-    @charset = opt[:charset] || XSD::Charset.encoding_label
+    @charset = opt[:charset] || XSD::Charset.xml_encoding_label
     @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
     @generate_explicit_type =
       opt.key?(:generate_explicit_type) ? opt[:generate_explicit_type] : true

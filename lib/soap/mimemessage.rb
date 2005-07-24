@@ -197,7 +197,7 @@ class MIMEMessage
   def add_part(content)
     part = Part.new
     part.headers.add("Content-Type",
-      "text/xml; charset=" + XSD::Charset.encoding_label)
+      "text/xml; charset=" + XSD::Charset.xml_encoding_label)
     part.headers.add("Content-ID", Attachment.contentid(part))
     part.body = content
     @parts.unshift(part)

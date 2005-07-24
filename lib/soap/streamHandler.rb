@@ -121,7 +121,7 @@ private
 
   def set_options
     HTTPConfigLoader.set_options(@client, @options)
-    @charset = @options["charset"] || XSD::Charset.encoding_label
+    @charset = @options["charset"] || XSD::Charset.xml_encoding_label
     @options.add_hook("charset") do |key, value|
       @charset = value
     end

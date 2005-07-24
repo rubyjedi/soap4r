@@ -84,7 +84,7 @@ public
     @internal_encoding = encoding
   end
 
-  def Charset.encoding_label
+  def Charset.xml_encoding_label
     charset_label(@internal_encoding)
   end
 
