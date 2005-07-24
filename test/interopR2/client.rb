@@ -253,6 +253,20 @@ class SOAPBuildersTest < Test::Unit::TestCase
     assert_equal(arg, var)
   end
 
+  def test_echoString_SJIS_encoded
+    log_test
+    arg = "Hello (日本語Japanese) こんにちは"
+    require 'nkf'
+    arg = NKF.nkf("-sm0", arg)
+    drv.options["soap.mapping.external_ces"] = 'SJIS'
+    begin
+      var = drv.echoString(arg)
+      assert_equal(arg, var)
+    ensure
+      drv.options["soap.mapping.external_ces"] = nil
+    end
+  end
+
   def test_echoString_empty
     log_test
     arg = ''

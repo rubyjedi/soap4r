@@ -179,9 +179,8 @@ __EOP__
     cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "ca.cert")
     cfg["protocol.http.ssl_config.ca_file"] = File.join(DIR, "subca.cert")
     #cfg.timeout = 123
-    assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
-    #
     cfg["protocol.http.ssl_config.ciphers"] = "!ALL"
+    #
     begin
       @client.hello_world("ssl client")
       assert(false)
