@@ -24,6 +24,10 @@ public
   #
   EncodingConvertMap = {}
   def Charset.init
+    EncodingConvertMap[['UTF8', 'X_ISO8859_1']] =
+      Proc.new { |str| str.unpack('U*').pack('C*') }
+    EncodingConvertMap[['X_ISO8859_1', 'UTF8']] =
+      Proc.new { |str| str.unpack('C*').pack('U*') }
     begin
       require 'xsd/iconvcharset'
       @internal_encoding = 'UTF8'
@@ -69,6 +73,8 @@ public
     'EUC' => 'euc-jp',
     'SJIS' => 'shift_jis',
     'UTF8' => 'utf-8',
+    'X_ISO_8859_1' => 'iso-8859-1',
+    'X_UNKNOWN' => nil,
   }
 
 
@@ -113,9 +119,9 @@ public
 
   def Charset.charset_str(label)
     if CharsetMap.respond_to?(:key)
-      CharsetMap.key(label.downcase)
+      CharsetMap.key(label.downcase) || 'X_UNKNOWN'
     else
-      CharsetMap.index(label.downcase)
+      CharsetMap.index(label.downcase) || 'X_UNKNOWN'
     end
   end
 
