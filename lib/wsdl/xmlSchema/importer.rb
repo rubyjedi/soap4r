@@ -48,6 +48,11 @@ private
     if location.scheme == 'file' or
         (location.relative? and FileTest.exist?(location.path))
       content = File.open(location.path).read
+    elsif location.scheme and location.scheme.size == 1 and
+        FileTest.exist?(location.to_s)
+      # ToDo: remove this ugly workaround for a path with drive letter
+      # (D://foo/bar)
+      content = File.open(location.to_s).read
     else
       client = web_client.new(nil, "WSDL4R")
       client.proxy = ::SOAP::Env::HTTP_PROXY
