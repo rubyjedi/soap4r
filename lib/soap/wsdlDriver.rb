@@ -288,7 +288,9 @@ class WSDLDriver
       # Convert a map which key is QName, to a Hash which key is String.
       @operation = {}
       @port.inputoperation_map.each do |op_name, op_info|
-	@operation[op_name.name] = op_info
+        orgname = op_name.name
+        name = XSD::CodeGen::GenSupport.safemethodname(orgname)
+	@operation[name] = @operation[orgname] = op_info
 	add_method_interface(op_info)
       end
       @proxy = ::SOAP::RPC::Proxy.new(endpoint_url, @soapaction, @options)
@@ -357,8 +359,10 @@ class WSDLDriver
     # req_body: SOAPBasetype/SOAPCompoundtype
     def document_send(name, header_obj, body_obj)
       set_wiredump_file_base(name)
-      op_info = @operation[name]
-      req_header = header_from_obj(header_obj, op_info)
+      unless op_info = @operation[name]
+        raise RuntimeError, "method: #{name} not defined"
+      end
+      req_header = header_obj ? header_from_obj(header_obj, op_info) : nil
       req_body = body_from_obj(body_obj, op_info)
       opt = create_options({
         :soapaction => op_info.soapaction || @soapaction,
@@ -469,7 +473,7 @@ class WSDLDriver
       elsif obj.is_a?(SOAPHeaderItem)
 	obj
       else
-	@doc_mapper.obj2soap(obj, name)
+        Mapping.obj2soap(obj, @doc_mapper, name)
       end
     end
 
@@ -503,7 +507,7 @@ class WSDLDriver
       elsif obj.is_a?(SOAPElement)
 	obj
       else
-	@doc_mapper.obj2soap(obj, name)
+        Mapping.obj2soap(obj, @doc_mapper, name)
       end
     end
 
@@ -539,7 +543,7 @@ class WSDLDriver
     end
 
     def add_document_method_interface(name, parts_names)
-      ::SOAP::Mapping.define_singleton_method(@host, name) do |*arg|
+      ::SOAP::Mapping.define_singleton_method(@host, name) do |h, b|
         @servant.document_send(name, h, b)
       end
       @host.method(name)
