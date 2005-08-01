@@ -112,6 +112,7 @@ class MIMEMessage
       @headers = Headers.new
       @headers.add("Content-Transfer-Encoding", "8bit")
       @body = nil
+      @contentid = nil
     end
 
     def self.parse(str)
@@ -147,6 +148,7 @@ class MIMEMessage
   def initialize
     @parts = []
     @headers = Headers.new
+    @root = nil
   end
 
   def self.parse(head, str)
