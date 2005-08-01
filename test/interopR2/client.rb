@@ -81,11 +81,9 @@ class SOAPBuildersTest < Test::Unit::TestCase
     def setup(name, location)
       setup_log(name)
       setup_drv(location)
-      setup_result_drv(name, location)
     end
 
     def teardown
-      submit_test_result
     end
 
   private
@@ -116,33 +114,6 @@ class SOAPBuildersTest < Test::Unit::TestCase
         drv.add_rpc_operation(
           XSD::QName.new(InterfaceNS, name), soap_action, name, params)
       end
-    end
-
-    def setup_result_drv(name, location)
-      @@result_drv = RPC::Driver.new(SOAPBuildersInteropResult::Server,
-	SOAPBuildersInteropResult::InterfaceNS)
-      SOAPBuildersInteropResult::Methods.each do |method, *params|
-	@@result_drv.add_method(method, params)
-      end
-
-      client = SOAPBuildersInteropResult::Endpoint.new
-      client.processorName = 'SOAP4R'
-      client.processorVersion = '1.4'
-      client.uri = '210.233.24.119:*'
-      client.wsdl = 'Not used.'
-
-      server = SOAPBuildersInteropResult::Endpoint.new
-      server.endpointName = name
-      server.uri = location
-      server.wsdl = 'Not used.'
-
-      @@test_result = SOAPBuildersInteropResult::InteropResults.new(
-	client, server)
-    end
-
-    def submit_test_result
-      load 'soap/XMLSchemaDatatypes.rb'
-      @@result_drv.addResults(@@test_result)
     end
   end
 
