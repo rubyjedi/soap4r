@@ -255,8 +255,8 @@ private
   end
 
   def encode_attrs(generator, ns, data, parent)
-    return {} if data.is_a?(SOAPReference)
     attrs = {}
+    return attrs if data.is_a?(SOAPReference)
 
     if !parent || parent.encodingstyle != EncodingNamespace
       if @generate_explicit_type

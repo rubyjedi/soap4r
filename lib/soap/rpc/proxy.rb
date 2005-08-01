@@ -478,8 +478,10 @@ private
 
     def create_request_obj(names, params)
       o = Object.new
-      for idx in 0 ... params.length
+      idx = 0
+      while idx < params.length
         o.instance_variable_set('@' + names[idx], params[idx])
+        idx += 1
       end
       o
     end

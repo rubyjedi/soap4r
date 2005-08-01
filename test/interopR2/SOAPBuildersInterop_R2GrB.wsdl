@@ -12,8 +12,7 @@
 <service name="SOAP4R_SOAPBuildersInteropTest_R2GroupB">
   <port name="InteropTestSoapPort"
       binding="tns:InteropTestSoapBindingB">
-    <soap:address
-	location="http://www.jin.gr.jp/~nahi/Ruby/SOAP4R/SOAPBuildersInterop/"/>
+    <soap:address location="http://dev.ctor.org/soapsrv"/>
   </port>
 </service>
 
