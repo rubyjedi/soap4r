@@ -45,7 +45,7 @@ class WSDLLiteralRegistry < Registry
     return soap_obj if soap_obj
     if @excn_handler_obj2soap
       soap_obj = @excn_handler_obj2soap.call(obj) { |yield_obj|
-        Mapping._obj2soap(yield_obj, self)
+        Mapping.obj2soap(yield_obj, nil, nil, MAPPING_OPT)
       }
       return soap_obj if soap_obj
     end
@@ -62,7 +62,7 @@ class WSDLLiteralRegistry < Registry
     if @excn_handler_soap2obj
       begin
         return @excn_handler_soap2obj.call(node) { |yield_node|
-	    Mapping._soap2obj(yield_node, self)
+	    Mapping.soap2obj(yield_node, nil, nil, MAPPING_OPT)
 	  }
       rescue Exception
       end
@@ -75,6 +75,8 @@ class WSDLLiteralRegistry < Registry
   end
 
 private
+
+  MAPPING_OPT = { :no_reference => true }
 
   def obj2elesoap(obj, ele)
     o = nil
@@ -161,7 +163,7 @@ private
       # expected to be a basetype or an anyType.
       # SOAPStruct, etc. is used instead of SOAPElement.
       begin
-        ele = Mapping.obj2soap(obj)
+        ele = Mapping.obj2soap(obj, nil, nil, MAPPING_OPT)
         ele.elename = qname
         ele
       rescue MappingError
@@ -267,7 +269,7 @@ private
         # SOAPArray for literal?
       soapele2plainobj(node)
     else
-      obj = Mapping._soap2obj(node, Mapping::DefaultRegistry, obj_class)
+      obj = Mapping.soap2obj(node, nil, obj_class, MAPPING_OPT)
       add_attributes2plainobj(node, obj)
       obj
     end

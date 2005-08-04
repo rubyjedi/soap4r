@@ -44,9 +44,9 @@ module SOAPType
   attr_accessor :definedtype
 
   def initialize(*arg)
-    super(*arg)
+    super
     @encodingstyle = nil
-    @elename = XSD::QName.new
+    @elename = XSD::QName::EMPTY
     @id = nil
     @precedents = []
     @root = false
@@ -82,7 +82,7 @@ module SOAPBasetype
   include SOAP
 
   def initialize(*arg)
-    super(*arg)
+    super
   end
 end
 
@@ -95,7 +95,7 @@ module SOAPCompoundtype
   include SOAP
 
   def initialize(*arg)
-    super(*arg)
+    super
   end
 end
 
@@ -114,7 +114,7 @@ public
   # Override the definition in SOAPBasetype.
   def initialize(obj = nil)
     super()
-    @type = XSD::QName.new
+    @type = XSD::QName::EMPTY
     @refid = nil
     @obj = nil
     __setobj__(obj) if obj
@@ -178,7 +178,7 @@ class SOAPExternalReference < XSD::NSDBase
 
   def initialize
     super()
-    @type = XSD::QName.new
+    @type = XSD::QName::EMPTY
   end
 
   def referred
@@ -399,7 +399,7 @@ public
 
   def initialize(type = nil)
     super()
-    @type = type || XSD::QName.new
+    @type = type || XSD::QName::EMPTY
     @array = []
     @data = []
   end
@@ -753,17 +753,13 @@ public
     data[idxary.last] = value
 
     if value.is_a?(SOAPType)
-      value.elename = value.elename.dup_name('item')
-      
+      value.elename = ITEM_NAME
       # Sync type
       unless @type.name
 	@type = XSD::QName.new(value.type.namespace,
 	  SOAPArray.create_arytype(value.type.name, @rank))
       end
-
-      unless value.type
-	value.type = @type
-      end
+      value.type ||= @type
     end
 
     @offset = idxary
@@ -793,7 +789,7 @@ public
 	deep_map(ele, &block)
       else
 	new_obj = block.call(ele)
-	new_obj.elename = new_obj.elename.dup_name('item')
+	new_obj.elename = ITEM_NAME
 	new_obj
       end
     end
@@ -844,6 +840,8 @@ public
   end
 
 private
+
+  ITEM_NAME = XSD::QName.new(nil, 'item')
 
   def retrieve(idxary)
     data = @data
