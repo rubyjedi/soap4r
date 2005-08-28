@@ -2,7 +2,7 @@ require 'soap/wsdlDriver'
 include SOAP
 
 wsdl = ARGV.shift || 'SoapBoxWebServiceWithRawXML.wsdl'
-driver = SOAP::WSDLDriverFactory.new(wsdl).create_driver
+driver = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
 driver.wiredump_dev = STDOUT
 
 =begin

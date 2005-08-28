@@ -35,7 +35,7 @@ devtag = nil
 
 # v2: AMAZON_WSDL = 'http://soap.amazon.com/schemas2/AmazonWebServices.wsdl'
 AMAZON_WSDL = 'http://soap.amazon.com/schemas3/AmazonWebServices.wsdl'
-amazon = SOAP::WSDLDriverFactory.new(AMAZON_WSDL).create_driver
+amazon = SOAP::WSDLDriverFactory.new(AMAZON_WSDL).create_rpc_driver
 p "WSDL loaded"
 amazon.generate_explicit_type = true
 amazon.mandatorycharset = 'utf-8'	# AWS should fix this bug.

@@ -2,7 +2,7 @@
 
 require 'soap/wsdlDriver'
 wsdl = 'hash.wsdl'
-driver = SOAP::WSDLDriverFactory.new(wsdl).create_driver
+driver = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
 driver.generate_explicit_type = true
 
 backup = driver.wsdl_mapping_registry

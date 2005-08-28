@@ -13,11 +13,12 @@ def html2rd(str)
 end
 
 
-google = SOAP::WSDLDriverFactory.new(GOOGLE_WSDL).create_driver
-#google.wiredump_dev = STDERR
+google = SOAP::WSDLDriverFactory.new(GOOGLE_WSDL).create_rpc_driver
+google.wiredump_dev = STDOUT if $DEBUG
+google.mandatorycharset = 'utf-8'
 result = google.doGoogleSearch( key, word, 0, 10, false, "", false, "", 'utf-8', 'utf-8' )
 result.resultElements.each do |ele|
-  puts "== #{html2rd(ele.title)}: #{ele.URL}"
+  puts "== #{html2rd(ele.title)}: #{ele["URL"]}"
   puts html2rd(ele.snippet)
   puts
 end

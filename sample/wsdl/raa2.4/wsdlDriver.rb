@@ -8,7 +8,7 @@ require 'pp'
 
 RAA_WSDL = 'http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/'
 
-raa = SOAP::WSDLDriverFactory.new(RAA_WSDL).create_driver
+raa = SOAP::WSDLDriverFactory.new(RAA_WSDL).create_rpc_driver
 raa.generate_explicit_type = true
 # raa.wiredump_dev = STDERR
 

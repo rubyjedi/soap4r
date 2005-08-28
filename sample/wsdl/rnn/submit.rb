@@ -1,6 +1,6 @@
 require 'soap/wsdlDriver'
 wsdl = 'http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/*checkout*/rnn/rnn/app/rnn-hash.wsdl'
-rnn = SOAP::WSDLDriverFactory.new(wsdl).create_driver
+rnn = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
 rnn.generate_explicit_type = true
 rnn.wiredump_dev = STDOUT
 
@@ -38,7 +38,7 @@ soap4r/1.4.8.1がリリースされた。
     key = File.open(File.expand_path("~/.google_key")).read.chomp
     GOOGLE_WSDL = 'http://api.google.com/GoogleSearch.wsdl'
     # Load WSDL and create driver.
-    google = SOAP::WSDLDriverFactory.new(GOOGLE_WSDL).createDriver
+    google = SOAP::WSDLDriverFactory.new(GOOGLE_WSDL).create_rpc_driver
     # Just invoke!
     result = google.doGoogleSearch(key, searchWord, 0, 10, false, "", false, "", 'utf-8', 'utf-8')
     result.resultElements.each do |ele|
