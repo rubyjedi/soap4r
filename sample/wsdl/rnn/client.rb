@@ -11,7 +11,7 @@
 require 'soap/wsdlDriver'
 #wsdl = 'http://cvs.sourceforge.jp/cgi-bin/viewcvs.cgi/*checkout*/rnn/rnn/app/rnn-hash.wsdl'
 wsdl = 'rnn-hash.wsdl'
-rnn = SOAP::WSDLDriverFactory.new(wsdl).create_driver
+rnn = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
 rnn.generate_explicit_type = true
 rnn.wiredump_dev = STDOUT
 
