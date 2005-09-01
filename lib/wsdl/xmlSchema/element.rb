@@ -18,10 +18,10 @@ class Element < Info
     if RUBY_VERSION > "1.7.0"
       def attr_reader_ref(symbol)
         name = symbol.to_s
-        self.__send__(:define_method, name, proc {
+        define_method(name) {
           instance_variable_get("@#{name}") ||
             (refelement ? refelement.__send__(name) : nil)
-        })
+        }
       end
     else
       def attr_reader_ref(symbol)

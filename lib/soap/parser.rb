@@ -136,10 +136,7 @@ public
     lastframe = @parsestack.last
     if lastframe
       # Need not to be cloned because character does not have attr.
-      ns = lastframe.ns
-      parent = lastframe.node
-      encodingstyle = lastframe.encodingstyle
-      decode_text(ns, text, encodingstyle)
+      decode_text(lastframe.ns, text, lastframe.encodingstyle)
     else
       # Ignore Text outside of SOAP Envelope.
       p text if $DEBUG
