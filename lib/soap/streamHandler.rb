@@ -142,6 +142,7 @@ private
   end
 
   def set_cookie_store_file(value)
+    value = nil if value and value.empty?
     @cookie_store = value
     @client.set_cookie_store(@cookie_store) if @cookie_store
   end
