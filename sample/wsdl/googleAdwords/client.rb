@@ -1,7 +1,9 @@
+# To generate default.rb, do like this;
+# % wsdl2ruby.rb --wsdl "https://adwords.google.com/api/adwords/v2/CampaignService?WSDL" --classdef --force
+
 require 'soap/wsdlDriver'
 require 'soap/header/simplehandler'
-
-wsdl = 'https://adwords.google.com/api/adwords/v2/CampaignService?WSDL'
+require 'default'
 
 class HeaderHandler < SOAP::Header::SimpleHandler
   def initialize(tag, value)
@@ -11,18 +13,28 @@ class HeaderHandler < SOAP::Header::SimpleHandler
   end
 
   def on_simple_outbound
-    {@tag => @value}
+    @value
   end
 end
 
-# To generate deafult.rb, do like this;
-# % wsdl2ruby.rb --wsdl "https://adwords.google.com/api/adwords/v2/CampaignService?WSDL" --classdef --force
-require 'default'
+wsdl = 'https://adwords.google.com/api/adwords/v2/CampaignService?WSDL'
 
-# I don't have an account of AdWords so the following code is not tested.
-# Please tell me (nahi@ruby-lang.org) if you will get good/bad result in
-# communicating with AdWords Server...
-drv = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
-drv.headerhandler << HeaderHandler.new('email', 'nakahiro@gmail.com')
-drv.headerhandler << HeaderHandler.new('useragent', 'test')
-p drv.getCampaign(GetCampaign.new(123))
+client = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
+
+client.wiredump_dev = STDOUT  # Log high-level activity
+client.wiredump_file_base = "log"  # Log SOAP request and response
+
+# My Client Center manager account
+client.headerhandler << HeaderHandler.new('email', 'email@example.com')
+
+client.headerhandler << HeaderHandler.new('password', 'mypassword')
+client.headerhandler << HeaderHandler.new('useragent', 'soap4r test')
+client.headerhandler << HeaderHandler.new('token', 'XYZ1234567890')
+
+# (Optional) Any client account you manage
+client.headerhandler << HeaderHandler.new('clientEmail', 'abc@mail.com')
+
+camplist = client.call("getAllAdWordsCampaigns",
+  GetAllAdWordsCampaigns.new(123))
+
+p camplist 
