@@ -3,6 +3,7 @@ require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
 
+if defined?(HTTPAccess2) and defined?(OpenSSL)
 
 module WSDL; module RPC
 
@@ -394,3 +395,5 @@ end
 
 
 end; end
+
+end
