@@ -3,6 +3,7 @@ require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
 
+if defined?(HTTPAccess2)
 
 module WSDL
 
@@ -136,5 +137,7 @@ class TestQualified < Test::Unit::TestCase
   end
 end
 
+
+end
 
 end

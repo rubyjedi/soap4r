@@ -2,6 +2,7 @@ require 'test/unit'
 require 'soap/rpc/standaloneServer'
 require 'soap/rpc/driver'
 
+if defined?(HTTPAccess2)
 
 module SOAP
 
@@ -79,5 +80,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   end
 end
 
+
+end
 
 end

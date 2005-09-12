@@ -2,6 +2,7 @@ require 'test/unit'
 require 'soap/httpconfigloader'
 require 'soap/rpc/driver'
 
+if defined?(HTTPAccess2)
 
 module SOAP
 
@@ -32,5 +33,7 @@ __EOP__
   end
 end
 
+
+end
 
 end
