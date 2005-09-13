@@ -126,9 +126,6 @@ private
           # ToDo: test
           # add empty element
           child_soap = obj2elesoap(nil, child_ele)
-          unless qualified
-            child_soap.elename.namespace = nil
-          end
           o.add(child_soap)
         elsif Integer(child_ele.minoccurs) == 0
           # nothing to do
@@ -138,16 +135,10 @@ private
       elsif child_ele.map_as_array?
         child.each do |item|
           child_soap = obj2elesoap(item, child_ele)
-          unless qualified
-            child_soap.elename.namespace = nil
-          end
           o.add(child_soap)
         end
       else
         child_soap = obj2elesoap(child, child_ele)
-        unless qualified
-          child_soap.elename.namespace = nil
-        end
         o.add(child_soap)
       end
     end
@@ -246,8 +237,8 @@ private
   def base2soap(obj, type)
     soap_obj = nil
     if type <= XSD::XSDString
-      str = XSD::Charset.encoding_conv(obj, Thread.current[:SOAPExternalCES],
-        XSD::Charset.encoding)
+      str = XSD::Charset.encoding_conv(obj.to_s,
+        Thread.current[:SOAPExternalCES], XSD::Charset.encoding)
       soap_obj = type.new(str)
     else
       soap_obj = type.new(obj)
