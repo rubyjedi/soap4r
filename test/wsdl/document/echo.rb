@@ -70,18 +70,18 @@ end
 class Echo_struct
   @@schema_type = "echo_struct"
   @@schema_ns = "urn:docrpc"
-  @@schema_attribute = {XSD::QName.new("urn:docrpc", "m_attr") => "SOAP::SOAPString"}
+  @@schema_attribute = {XSD::QName.new(nil, "m_attr") => "SOAP::SOAPString"}
   @@schema_element = [["m_string", ["SOAP::SOAPString", XSD::QName.new(nil, "m_string")]], ["m_datetime", ["SOAP::SOAPDateTime", XSD::QName.new(nil, "m_datetime")]]]
 
   attr_accessor :m_string
   attr_accessor :m_datetime
 
   def xmlattr_m_attr
-    (@__xmlattr ||= {})[XSD::QName.new("urn:docrpc", "m_attr")]
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "m_attr")]
   end
 
   def xmlattr_m_attr=(value)
-    (@__xmlattr ||= {})[XSD::QName.new("urn:docrpc", "m_attr")] = value
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "m_attr")] = value
   end
 
   def initialize(m_string = nil, m_datetime = nil)
