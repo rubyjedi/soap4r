@@ -254,6 +254,8 @@ private
     opt[:allow_unqualified_element] = @allow_unqualified_element
     opt[:generate_explicit_type] = @generate_explicit_type
     opt[:no_indent] = @options["soap.envelope.no_indent"]
+    opt[:use_numeric_character_reference] =
+      @options["soap.envelope.use_numeric_character_reference"]
     opt.update(hash) if hash
     opt
   end
