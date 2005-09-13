@@ -72,7 +72,7 @@ class Element < Info
   end
 
   def refelement
-    @refelement ||= root.collect_elements[@ref]
+    @refelement ||= (@ref ? root.collect_elements[@ref] : nil)
   end
 
   def targetnamespace
@@ -107,8 +107,12 @@ class Element < Info
   def parse_attr(attr, value)
     case attr
     when NameAttrName
-      namespace = directelement? ? targetnamespace : nil
-      @name = XSD::QName.new(namespace, value.source)
+      # namespace may be nil
+      if directelement? or elementform == 'qualified'
+        @name = XSD::QName.new(targetnamespace, value.source)
+      else
+        @name = XSD::QName.new(nil, value.source)
+      end
     when FormAttrName
       @form = value.source
     when TypeAttrName

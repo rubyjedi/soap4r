@@ -84,11 +84,6 @@ public
     opt[:response_style] ||= :rpc
     opt[:request_use] ||= :encoded
     opt[:response_use] ||= :encoded
-    # default values of these values are unqualified in XML Schema.
-    # set true for backward compatibility.
-    unless opt.key?(:elementformdefault)
-      opt[:elementformdefault] = true
-    end
     @operation[name] = Operation.new(soapaction, param_def, opt)
   end
 
