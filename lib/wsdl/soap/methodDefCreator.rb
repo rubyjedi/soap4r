@@ -67,11 +67,11 @@ class MethodDefCreator
     param = []
     operation.inputparts.each do |input|
       param << param_set(::SOAP::RPC::SOAPMethod::IN, input.name,
-        documentdefinedtype(input), documentdefinedelement(input))
+        documentdefinedtype(input), elementqualified(input))
     end
     operation.outputparts.each do |output|
       param << param_set(::SOAP::RPC::SOAPMethod::OUT, output.name,
-        documentdefinedtype(output), documentdefinedelement(output))
+        documentdefinedtype(output), elementqualified(output))
     end
     param
   end
@@ -159,7 +159,7 @@ __EOD__
     end
   end
 
-  def documentdefinedelement(part)
+  def elementqualified(part)
     if mapped = basetype_mapped_class(part.type)
       false
     elsif definedtype = @simpletypes[part.type]

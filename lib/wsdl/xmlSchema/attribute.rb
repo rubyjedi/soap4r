@@ -93,7 +93,11 @@ class Attribute < Info
     when FormAttrName
       @form = value.source
     when NameAttrName
-      @name = XSD::QName.new(targetnamespace, value.source)
+      if directelement?
+        @name = XSD::QName.new(targetnamespace, value.source)
+      else
+        @name = XSD::QName.new(nil, value.source)
+      end
     when TypeAttrName
       @type = value
     when DefaultAttrName
@@ -109,6 +113,12 @@ class Attribute < Info
     else
       nil
     end
+  end
+
+private
+
+  def directelement?
+    parent.is_a?(Schema)
   end
 end
 

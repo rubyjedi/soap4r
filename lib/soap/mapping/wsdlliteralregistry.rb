@@ -126,7 +126,9 @@ private
           # ToDo: test
           # add empty element
           child_soap = obj2elesoap(nil, child_ele)
-          child_soap.elename.namespace = nil unless qualified
+          unless qualified
+            child_soap.elename.namespace = nil
+          end
           o.add(child_soap)
         elsif Integer(child_ele.minoccurs) == 0
           # nothing to do
@@ -136,12 +138,16 @@ private
       elsif child_ele.map_as_array?
         child.each do |item|
           child_soap = obj2elesoap(item, child_ele)
-          child_soap.elename.namespace = nil unless qualified
+          unless qualified
+            child_soap.elename.namespace = nil
+          end
           o.add(child_soap)
         end
       else
         child_soap = obj2elesoap(child, child_ele)
-        child_soap.elename.namespace = nil unless qualified
+        unless qualified
+          child_soap.elename.namespace = nil
+        end
         o.add(child_soap)
       end
     end
