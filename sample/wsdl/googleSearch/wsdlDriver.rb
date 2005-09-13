@@ -15,10 +15,9 @@ end
 
 google = SOAP::WSDLDriverFactory.new(GOOGLE_WSDL).create_rpc_driver
 google.wiredump_dev = STDOUT if $DEBUG
-google.generate_explicit_type = false
+#google.generate_explicit_type = false
 
-#result = google.doGoogleSearch( key, word, 0, 10, false, "", false, "", 'utf-8', 'utf-8' )
-result = google.doGoogleSearch( key, word, 0, 10, false, 'countryJP', false, 'lang_ja', 'utf-8', 'cw-8' )
+result = google.doGoogleSearch( key, word, 0, 10, false, "", false, "", 'utf-8', 'utf-8' )
 
 exit
 
