@@ -28,6 +28,7 @@ public
   attr_accessor :charset
   attr_accessor :default_encodingstyle
   attr_accessor :generate_explicit_type
+  attr_accessor :use_numeric_character_reference
 
   def initialize(opt = {})
     @reftarget = nil
@@ -38,6 +39,7 @@ public
       opt.key?(:generate_explicit_type) ? opt[:generate_explicit_type] : true
     @elementformdefault = opt[:elementformdefault]
     @attributeformdefault = opt[:attributeformdefault]
+    @use_numeric_character_reference = opt[:use_numeric_character_reference]
     @indentstr = opt[:no_indent] ? '' : '  '
     @buf = @indent = @curr = nil
   end
@@ -190,7 +192,18 @@ public
   }
   EncodeCharRegexp = Regexp.new("[#{EncodeMap.keys.join}]")
   def encode_string(str)
-    @buf << str.gsub(EncodeCharRegexp) { |c| EncodeMap[c] }
+    if @use_numeric_character_reference and !XSD::Charset.is_us_ascii(str)
+      str.gsub!(EncodeCharRegexp) { |c| EncodeMap[c] }
+      @buf << str.unpack("U*").collect { |c|
+        if c == 0x9 or c == 0xa or c == 0xd or (c >= 0x20 and c <= 0x7f)
+          c.chr
+        else
+          sprintf("&#x%x;", c)
+        end
+      }.join
+    else
+      @buf << str.gsub(EncodeCharRegexp) { |c| EncodeMap[c] }
+    end
   end
 
   def element_local?(element)

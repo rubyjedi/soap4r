@@ -14,6 +14,7 @@ end
 
 
 google = SOAP::WSDLDriverFactory.new(GOOGLE_WSDL).create_rpc_driver
+google.options["soap.envelope.use_numeric_character_reference"] = true
 google.wiredump_dev = STDOUT if $DEBUG
 #google.generate_explicit_type = false
 

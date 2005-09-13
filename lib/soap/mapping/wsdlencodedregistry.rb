@@ -149,8 +149,8 @@ private
   def base2soap(obj, type)
     soap_obj = nil
     if type <= XSD::XSDString
-      str = XSD::Charset.encoding_conv(obj, Thread.current[:SOAPExternalCES],
-        XSD::Charset.encoding)
+      str = XSD::Charset.encoding_conv(obj.to_s,
+        Thread.current[:SOAPExternalCES], XSD::Charset.encoding)
       soap_obj = type.new(str)
       mark_marshalled_obj(obj, soap_obj)
     else
