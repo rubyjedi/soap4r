@@ -29,6 +29,12 @@ class ASPDotNetHandler < Handler
   #
   def encode_data(generator, ns, data, parent)
     attrs = {}
+    # ASPDotNetHandler is intended to be used for accessing an ASP.NET doc/lit
+    # service as an rpc/encoded service.  in the situation, local elements
+    # should be qualified.  propagate parent's namespace to children.
+    if data.elename.namespace.nil?
+      data.elename.namespace = parent.elename.namespace
+    end
     name = generator.encode_name(ns, data, attrs)
     case data
     when SOAPRawString

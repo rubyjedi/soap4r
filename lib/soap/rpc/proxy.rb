@@ -126,13 +126,15 @@ public
     reqopt = create_encoding_opt(
       :soapaction => op_info.soapaction || @soapaction,
       :envelopenamespace => @options["soap.envelope.requestnamespace"],
-      :default_encodingstyle => op_info.request_default_encodingstyle,
+      :default_encodingstyle =>
+        @default_encodingstyle || op_info.request_default_encodingstyle,
       :elementformdefault => op_info.elementformdefault,
       :attributeformdefault => op_info.attributeformdefault
     )
     resopt = create_encoding_opt(
       :envelopenamespace => @options["soap.envelope.responsenamespace"],
-      :default_encodingstyle => op_info.response_default_encodingstyle,
+      :default_encodingstyle =>
+        @default_encodingstyle || op_info.response_default_encodingstyle,
       :elementformdefault => op_info.elementformdefault,
       :attributeformdefault => op_info.attributeformdefault
     )
