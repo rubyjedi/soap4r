@@ -4,8 +4,8 @@ require 'defaultDriver.rb'
 endpoint_url = ARGV.shift
 obj = Soap.new(endpoint_url)
 
-# Uncomment the below line to see SOAP wiredumps.
-# obj.wiredump_dev = STDERR
+# run ruby with -d to see SOAP wiredumps.
+obj.wiredump_dev = STDERR if $DEBUG
 
 # SYNOPSIS
 #   login(parameters)
