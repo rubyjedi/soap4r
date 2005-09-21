@@ -318,7 +318,7 @@ private
       else      # untyped element is treated as anyType.
         child = any2obj(value)
       end
-      if as_array.include?(elename.name)
+      if item and as_array.include?(elename.name)
         (vars[name] ||= []) << child
       else
         vars[name] = child
