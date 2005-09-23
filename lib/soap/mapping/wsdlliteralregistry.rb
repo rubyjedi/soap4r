@@ -120,29 +120,42 @@ private
     o = SOAPElement.new(type.name)
     o.qualified = qualified
     type.each_element do |child_ele|
-      child = Mapping.get_attribute(obj, child_ele.name.name)
-      if child.nil?
-        if child_ele.nillable
-          # ToDo: test
-          # add empty element
-          child_soap = obj2elesoap(nil, child_ele)
-          o.add(child_soap)
-        elsif Integer(child_ele.minoccurs) == 0
-          # nothing to do
-        else
-          raise MappingError.new("nil not allowed: #{child_ele.name.name}")
+      if child_ele.map_as_array?
+        child = Mapping.get_attribute(obj, child_ele.name.name)
+        if child.nil? and obj.is_a?(::Array)
+          child = obj
         end
-      elsif child_ele.map_as_array?
-        child.each do |item|
-          child_soap = obj2elesoap(item, child_ele)
-          o.add(child_soap)
+        if child.nil?
+          child_soap = nil2soap(child_ele)
+          o.add(child_soap) if child_soap
+        else
+          child.each do |item|
+            child_soap = obj2elesoap(item, child_ele)
+            o.add(child_soap)
+          end
         end
       else
-        child_soap = obj2elesoap(child, child_ele)
-        o.add(child_soap)
+        child = Mapping.get_attribute(obj, child_ele.name.name)
+        if child.nil?
+          child_soap = nil2soap(child_ele)
+          o.add(child_soap) if child_soap
+        else
+          child_soap = obj2elesoap(child, child_ele)
+          o.add(child_soap)
+        end
       end
     end
     o
+  end
+
+  def nil2soap(ele)
+    if ele.nillable
+      obj2elesoap(nil, ele)     # add an empty element
+    elsif Integer(ele.minoccurs) == 0
+      nil       # intends no element
+    else
+      raise MappingError.new("nil not allowed: #{ele.name.name}")
+    end
   end
 
   def any2soap(obj, qname)
