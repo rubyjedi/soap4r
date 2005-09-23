@@ -31,14 +31,13 @@ class MethodDefCreator
   def dump(porttype)
     @types.clear
     result = ""
-    operations = @definitions.porttype(porttype).operations
-    binding = @definitions.porttype_binding(porttype)
-    operations.each do |operation|
-      op_bind = binding.operations[operation.name]
+    port = @definitions.porttype(porttype)
+    port.find_binding.operations.each do |op_bind|
+      op = op_bind.find_operation
       next unless op_bind # no binding is defined
       next unless op_bind.soapoperation # not a SOAP operation binding
       result << ",\n" unless result.empty?
-      result << dump_method(operation, op_bind).chomp
+      result << dump_method(op, op_bind).chomp
     end
     return result, @types
   end
