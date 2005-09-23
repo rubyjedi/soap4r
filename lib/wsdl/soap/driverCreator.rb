@@ -41,13 +41,13 @@ class DriverCreator
 
 private
 
-  def dump_porttype(name)
-    class_name = create_class_name(name)
-    methoddef, types = MethodDefCreator.new(@definitions).dump(name)
+  def dump_porttype(porttype)
+    class_name = create_class_name(porttype)
+    methoddef, types = MethodDefCreator.new(@definitions).dump(porttype)
     mr_creator = MappingRegistryCreator.new(@definitions)
-    binding = @definitions.bindings.find { |item| item.type == name }
+    binding = @definitions.bindings.find { |item| item.type == porttype }
     return '' unless binding.soapbinding        # not a SOAP binding
-    address = @definitions.porttype(name).locations[0]
+    address = @definitions.porttype(porttype).locations[0]
 
     c = XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
     c.def_require("soap/rpc/driver")
