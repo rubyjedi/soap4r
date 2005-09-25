@@ -539,7 +539,9 @@ class SOAPElement
   end
 
   def inspect
-    sprintf("#<%s:0x%x %s>", self.class.name, __id__, self.elename)
+    sprintf("#<%s:0x%x %s>", self.class.name, __id__, self.elename) +
+      (@text ? " #{@text.inspect}" : '') +
+      @data.collect { |ele| "\n#{ele.inspect}" }.join.gsub(/^/, '  ')
   end
 
   # Text interface.
@@ -617,7 +619,7 @@ class SOAPElement
     case obj
     when nil
       o.text = nil
-    when Hash
+    when Hash, Array
       obj.each do |elename, value|
         if value.is_a?(Array)
           value.each do |subvalue|
