@@ -169,6 +169,10 @@ private
       ele = SOAPElement.from_obj(obj)
       ele.elename = qname
       ele
+    elsif obj.is_a?(XSD::QName)
+      ele = SOAPElement.new(qname)
+      ele.text = obj
+      ele
     else
       # expected to be a basetype or an anyType.
       # SOAPStruct, etc. is used instead of SOAPElement.

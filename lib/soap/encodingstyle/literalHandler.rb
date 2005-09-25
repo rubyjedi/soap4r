@@ -71,8 +71,18 @@ class LiteralHandler < Handler
           SOAPGenerator.assign_ns(attrs, ns, value.elename.namespace)
         end
       end
+      if data.text and data.text.is_a?(XSD::QName)
+        SOAPGenerator.assign_ns(attrs, ns, data.text.namespace)
+      end
       generator.encode_tag(name, attrs)
-      generator.encode_rawstring(data.text) if data.text
+      if data.text
+        if data.text.is_a?(XSD::QName)
+          text = ns.name(data.text)
+        else
+          text = data.text
+        end
+        generator.encode_rawstring(text)
+      end
       data.each do |key, value|
         generator.encode_child(ns, value, data)
       end
