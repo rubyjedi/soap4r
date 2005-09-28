@@ -341,7 +341,13 @@ private
         vars[name] = child
       end
     end
-    Mapping.set_attributes(obj, vars)
+    if obj.is_a?(::Array)
+      vars.values.flatten.each do |item|
+        obj << item
+      end
+    else
+      Mapping.set_attributes(obj, vars)
+    end
   end
 
   def add_attributes2stubobj(node, obj)
