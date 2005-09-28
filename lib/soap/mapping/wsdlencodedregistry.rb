@@ -265,7 +265,13 @@ private
       end
       vars[name] = child
     end
-    Mapping.set_attributes(obj, vars)
+    if obj.is_a?(::Array)
+      vars.values.flatten.each do |item|
+        obj << item
+      end
+    else
+      Mapping.set_attributes(obj, vars)
+    end
   end
 
   # it caches @@schema_element.  this means that @@schema_element must not be

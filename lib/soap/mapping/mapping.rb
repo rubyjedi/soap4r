@@ -286,7 +286,8 @@ module Mapping
   end
 
   def self.set_attributes(obj, values)
-    if obj.is_a?(::SOAP::Mapping::Object)
+    case obj
+    when ::SOAP::Mapping::Object
       values.each do |attr_name, value|
         obj.__add_xmlele_value(attr_name, value)
       end
