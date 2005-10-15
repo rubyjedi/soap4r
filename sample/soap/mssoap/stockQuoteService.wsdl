@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name = "stockQuote"
+targetNamespace="urn:xmltoday-delayed-quotes"
+                  xmlns="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:impl="urn:xmltoday-delayed-quotes-impl"
+                  xmlns:intf="urn:xmltoday-delayed-quotes"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+   <wsdl:message name="getQuoteResponse">
+      <wsdl:part name="getQuoteResult" type="xsd:float"/>
+   </wsdl:message>
+   <wsdl:message name="getQuoteRequest">
+      <wsdl:part name="arg0" type="xsd:string"/>
+   </wsdl:message>
+   <wsdl:portType name="stockQuoteServicePortType">
+      <wsdl:operation name="getQuote">
+         <wsdl:input message="intf:getQuoteRequest"/>
+         <wsdl:output message="intf:getQuoteResponse"/>
+      </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="stockQuoteServiceSoapBinding"
+                 type="intf:stockQuoteServicePortType">
+      <soap:binding style="rpc"
+                    transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdl:operation name="getQuote">
+         <soap:operation soapAction="" style="rpc"/>
+         <wsdl:input>
+            <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       namespace="urn:xmltoday-delayed-quotes"
+                       use="encoded"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       namespace="urn:xmltoday-delayed-quotes"
+                       use="encoded"/>
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+   <wsdl:service name="stockQuoteService">
+      <wsdl:port binding="intf:stockQuoteServiceSoapBinding"
+                 name="stockQuoteServicePort">
+         <soap:address location="http://localhost/cgi-bin/stockQuoteService.cgi"/>
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>
