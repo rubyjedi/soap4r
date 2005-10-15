@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<definitions xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
+xmlns:tns="http://localhost:2000/wsdl/hws.wsdl"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" 
+xmlns:si="http://soapinterop.org/xsd" 
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+xmlns="http://schemas.xmlsoap.org/wsdl/" 
+targetNamespace="http://localhost:2000/wsdl/hws.wsdl">
+<message name="getTermRequest">
+   <part name="from" type="xsd:string"/>
+</message>
+
+<message name="hello_worldResponse">
+   <part name="from" type="xsd:string"/>
+</message>
+
+<portType name="hwsPort">
+  <operation name="hello_world">
+      <input message="getTermRequest"/>
+      <output message="hello_worldResponse"/>
+  </operation>
+</portType>
+<binding name="hwsBinding" type="tns:hwsPort">
+   <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+   <operation name="hello_world">
+       <soap:operation soapAction="http://localhost:2000/wsdl/hws.wsdl#hello_world" style="rpc"/>
+      <input>
+         <soap:body use="encoded" namespace="http://localhost:2000/wsdl/hws.wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+         <soap:body use="encoded" namespace="http://localhost:2000/wsdl/hws.wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+   </operation>
+ </binding>
+ <service name="hws">
+    <documentation>The service simply says hello world from something supplied</documentation>
+ 
+    <port name="hwsPort" binding="tns:hwsBinding">
+       <soap:address location="http://localhost:2000/"/>
+    </port>
+</service>
+
+</definitions>
