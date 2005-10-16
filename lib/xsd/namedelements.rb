@@ -65,7 +65,9 @@ class NamedElements
   end
   
   def delete(rhs)
-    @elements.delete(rhs)
+    rv = @elements.delete(rhs)
+    @cache.clear
+    rv
   end
 
   def +(rhs)
@@ -76,7 +78,18 @@ class NamedElements
 
   def concat(rhs)
     @elements.concat(rhs.elements)
+    @cache.clear
     self
+  end
+
+  def uniq
+    o = NamedElements.new
+    o.elements = @elements.uniq
+    o
+  end
+
+  def uniq!
+    @elements.uniq!
   end
 
   Empty = NamedElements.new.freeze
