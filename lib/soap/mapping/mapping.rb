@@ -273,16 +273,23 @@ module Mapping
 
   def self.get_attribute(obj, attr_name)
     if obj.is_a?(::Hash)
-      obj[attr_name] || obj[attr_name.intern]
-    else
-      name = XSD::CodeGen::GenSupport.safevarname(attr_name)
-      if obj.instance_variables.include?('@' + name)
-        obj.instance_variable_get('@' + name)
-      elsif ((obj.is_a?(::Struct) or obj.is_a?(Marshallable)) and
-          obj.respond_to?(name))
-        obj.__send__(name)
+      return obj[attr_name] || obj[attr_name.intern]
+    end
+    iv = obj.instance_variables
+    name = XSD::CodeGen::GenSupport.safevarname(attr_name)
+    if iv.include?("@#{name}")
+      return obj.instance_variable_get("@#{name}")
+    elsif iv.include?("@#{attr_name}")
+      return obj.instance_variable_get("@#{attr_name}")
+    end
+    if obj.is_a?(::Struct) or obj.is_a?(Marshallable)
+      if obj.respond_to?(name)
+        return obj.__send__(name)
+      elsif obj.respond_to?(attr_name)
+        return obj.__send__(attr_name)
       end
     end
+    nil
   end
 
   def self.set_attributes(obj, values)
