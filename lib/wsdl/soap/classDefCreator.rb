@@ -20,8 +20,11 @@ class ClassDefCreator
 
   def initialize(definitions)
     @elements = definitions.collect_elements
+    @elements.uniq!
     @simpletypes = definitions.collect_simpletypes
+    @simpletypes.uniq!
     @complextypes = definitions.collect_complextypes
+    @complextypes.uniq!
     @faulttypes = nil
     if definitions.respond_to?(:collect_faulttypes)
       @faulttypes = definitions.collect_faulttypes
