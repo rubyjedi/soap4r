@@ -82,7 +82,9 @@ class TestEcho < Test::Unit::TestCase
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
-    assert_instance_of(Echo, @client.echo(Echo.new(Derived.new)))
+    d = Derived.new
+    d.Name = "NaHi"
+    assert_instance_of(Echo, @client.echo(Echo.new(d)))
   end
 end
 

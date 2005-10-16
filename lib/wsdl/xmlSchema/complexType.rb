@@ -23,7 +23,6 @@ class ComplexType < Info
   attr_reader :content
   attr_accessor :final
   attr_accessor :mixed
-  attr_reader :attributes
 
   def initialize(name = nil)
     super()
@@ -45,11 +44,24 @@ class ComplexType < Info
   def elementformdefault
     parent.elementformdefault
   end
+
+  def elements
+    c = @complexcontent || @content
+    c ? c.elements : nil
+  end
+
+  def attributes
+    if @complexcontent
+      @complexcontent.attributes
+    else
+      @attributes
+    end
+  end
  
   AnyAsElement = Element.new(XSD::QName.new(nil, 'any'), XSD::AnyTypeName)
   def each_element
-    if content
-      content.elements.each do |element|
+    if e = elements
+      e.each do |element|
         if element.is_a?(Any)
           yield(AnyAsElement)
         else
@@ -60,8 +72,8 @@ class ComplexType < Info
   end
 
   def find_element(name)
-    if content
-      content.elements.each do |element|
+    if e = elements
+      e.each do |element|
         if element.is_a?(Any)
           return AnyAsElement if name == AnyAsElement.name
         else
@@ -73,8 +85,8 @@ class ComplexType < Info
   end
 
   def find_element_by_name(name)
-    if content
-      content.elements.each do |element|
+    if e = elements
+      e.each do |element|
         if element.is_a?(Any)
           return AnyAsElement if name == AnyAsElement.name.name
         else

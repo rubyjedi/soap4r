@@ -15,18 +15,13 @@ module XMLSchema
 
 
 class ComplexContent < Info
-  attr_accessor :base
-  attr_reader :derivetype
-  attr_reader :content
-  attr_reader :attributes
+  attr_accessor :restriction
+  attr_accessor :extension
 
   def initialize
     super
-    @base = nil
-    @derivetype = nil
-    @content = nil
-    @attributes = XSD::NamedElements.new
-    @basetype = nil
+    @restriction = nil
+    @extension = nil
   end
 
   def targetnamespace
@@ -37,53 +32,39 @@ class ComplexContent < Info
     parent.elementformdefault
   end
 
-  def basetype
-    @basetype ||= root.collect_complextypes[@base]
+  def content
+    @extension || @restriction
+  end
+
+  def elements
+    content.elements
+  end
+
+  def attributes
+    content.attributes
+  end
+
+  def check_type
+    if content
+      content.check_type
+    else
+      raise ArgumentError.new("incomplete complexContent")
+    end
   end
 
   def parse_element(element)
     case element
-    when RestrictionName, ExtensionName
-      @derivetype = element.name
-      self
-    when AllName
-      if @derivetype.nil?
-	raise Parser::ElementConstraintError.new("base attr not found.")
-      end
-      @content = All.new
-      @content
-    when SequenceName
-      if @derivetype.nil?
-	raise Parser::ElementConstraintError.new("base attr not found.")
-      end
-      @content = Sequence.new
-      @content
-    when ChoiceName
-      if @derivetype.nil?
-	raise Parser::ElementConstraintError.new("base attr not found.")
-      end
-      @content = Choice.new
-      @content
-    when AttributeName
-      if @derivetype.nil?
-	raise Parser::ElementConstraintError.new("base attr not found.")
-      end
-      o = Attribute.new
-      @attributes << o
-      o
+    when RestrictionName
+      raise ArgumentError.new("incomplete complexContent") if content
+      @restriction = ComplexRestriction.new
+    when ExtensionName
+      raise ArgumentError.new("incomplete complexContent") if content
+      @extension = ComplexExtension.new
     end
   end
 
   def parse_attr(attr, value)
-    if @derivetype.nil?
-      return nil
-    end
-    case attr
-    when BaseAttrName
-      @base = value
-    else
-      nil
-    end
+    nil
   end
 end
 
