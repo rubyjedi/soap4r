@@ -1,5 +1,5 @@
 # WSDL4R - XMLSchema complexType definition for WSDL.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -22,7 +22,7 @@ class Sequence < Info
     super()
     @minoccurs = '1'
     @maxoccurs = '1'
-    @elements = []
+    @elements = XSD::NamedElements.new
   end
 
   def targetnamespace

@@ -26,13 +26,14 @@ class Definitions < Info
   def self.array_complextype
     type = XMLSchema::ComplexType.new(::SOAP::ValueArrayName)
     type.complexcontent = XMLSchema::ComplexContent.new
-    type.complexcontent.base = ::SOAP::ValueArrayName
+    type.complexcontent.restriction = XMLSchema::ComplexRestriction.new
+    type.complexcontent.restriction.base = ::SOAP::ValueArrayName
     attr = XMLSchema::Attribute.new
     attr.ref = ::SOAP::AttrArrayTypeName
     anytype = XSD::AnyTypeName.dup
     anytype.name += '[]'
     attr.arytype = anytype
-    type.complexcontent.attributes << attr
+    type.complexcontent.restriction.attributes << attr
     type
   end
 

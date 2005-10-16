@@ -21,8 +21,8 @@ class ComplexType < Info
 
   def check_type
     if content
-      if attributes.empty? and
-          content.elements.size == 1 and content.elements[0].maxoccurs != '1'
+      e = elements
+      if attributes.empty? and e.size == 1 and e[0].maxoccurs != '1'
         if name == ::SOAP::Mapping::MapQName
           :TYPE_MAP
         else
@@ -32,11 +32,7 @@ class ComplexType < Info
 	:TYPE_STRUCT
       end
     elsif complexcontent
-      if complexcontent.base == ::SOAP::ValueArrayName
-        :TYPE_ARRAY
-      else
-        complexcontent.basetype.check_type
-      end
+      complexcontent.check_type
     elsif simplecontent
       :TYPE_SIMPLE
     elsif !attributes.empty?
@@ -81,8 +77,9 @@ class ComplexType < Info
    	end
       end
     when :TYPE_ARRAY
-      if content.elements.size == 1
-	ele = content.elements[0]
+      e = elements
+      if e.size == 1
+	ele = e[0]
       else
 	raise RuntimeError.new("Assert: must not reach.")
       end
@@ -100,16 +97,16 @@ class ComplexType < Info
       raise RuntimeError.new("Assert: not for array")
     end
     if complexcontent
-      complexcontent.attributes.each do |attribute|
-	if attribute.ref == ::SOAP::AttrArrayTypeName
-	  return attribute.arytype
-	end
+      if complexcontent.restriction
+        complexcontent.restriction.attributes.each do |attribute|
+          if attribute.ref == ::SOAP::AttrArrayTypeName
+            return attribute.arytype
+          end
+        end
       end
-      if check_array_content(complexcontent.content)
-        return element_simpletype(complexcontent.content.elements[0])
-      end
-    elsif check_array_content(content)
-      return element_simpletype(content.elements[0])
+    end
+    if check_array_content
+      return element_simpletype(elements[0])
     end
     raise RuntimeError.new("Assert: Unknown array definition.")
   end
@@ -118,12 +115,8 @@ class ComplexType < Info
     unless compoundtype == :TYPE_ARRAY
       raise RuntimeError.new("Assert: not for array")
     end
-    if complexcontent
-      if check_array_content(complexcontent.content)
-        return complexcontent.content.elements[0]
-      end
-    elsif check_array_content(content)
-      return content.elements[0]
+    if check_array_content
+      return elements[0]
     end
     nil # use default item name
   end
@@ -140,9 +133,11 @@ private
     end
   end
 
-  def check_array_content(content)
-    content and content.elements.size == 1 and
-      content.elements[0].maxoccurs != '1'
+  def check_array_content
+    e = elements
+    e.size == 1 and e[0].maxoccurs != '1'
+    # content and content.elements.size == 1 and
+    #   content.elements[0].maxoccurs != '1'
   end
 
   def content_arytype

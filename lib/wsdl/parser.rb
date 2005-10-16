@@ -125,7 +125,7 @@ private
       else
         o = parent.parse_element(elename)
       end
-      unless o
+      if o.nil?
         unless @ignored.key?(elename)
           warn("ignored element: #{elename}")
           @ignored[elename] = elename
@@ -140,7 +140,7 @@ private
       attr_ele = ns.parse(key, true)
       value_ele = ns.parse(value, true)
       value_ele.source = value  # for recovery; value may not be a QName
-      unless o.parse_attr(attr_ele, value_ele)
+      if o.parse_attr(attr_ele, value_ele).nil?
         unless @ignored.key?(attr_ele)
           warn("ignored attr: #{attr_ele}")
           @ignored[attr_ele] = attr_ele

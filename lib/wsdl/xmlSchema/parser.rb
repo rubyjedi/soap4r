@@ -123,7 +123,7 @@ private
       else
         o = parent.parse_element(elename)
       end
-      unless o
+      if o.nil?
         unless @ignored.key?(elename)
           warn("ignored element: #{elename} of #{parent.class}")
           @ignored[elename] = elename
@@ -141,7 +141,7 @@ private
       if attr_ele == IdAttrName
 	o.id = value_ele
       else
-        unless o.parse_attr(attr_ele, value_ele)
+        if o.parse_attr(attr_ele, value_ele).nil?
           unless @ignored.key?(attr_ele)
             warn("ignored attr: #{attr_ele}")
             @ignored[attr_ele] = attr_ele
