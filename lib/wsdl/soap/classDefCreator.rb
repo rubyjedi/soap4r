@@ -164,9 +164,12 @@ private
         params << "#{varname} = nil"
       end
       # nil means @@schema_ns + varname
-      eleqname =
-        (varname == name && element.name.namespace == qname.namespace) ?
-        nil : element.name
+      if element.name && varname == name &&
+          element.name.namespace == qname.namespace
+        eleqname = nil
+      else
+        eleqname = element.name
+      end
       schema_element << [varname, eleqname, type]
     end
     unless typedef.attributes.empty?
