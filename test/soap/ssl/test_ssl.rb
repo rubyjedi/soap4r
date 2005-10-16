@@ -201,7 +201,6 @@ private
 
   def setup_server
     svrcmd = "#{q(RUBY)} "
-    #svrcmd << "-d " if $DEBUG
     svrcmd << File.join(DIR, "sslsvr.rb")
     svrout = IO.popen(svrcmd)
     @serverpid = Integer(svrout.gets.chomp)
@@ -227,6 +226,16 @@ private
     @verify_callback_called = true
     p ["client", ok, cert] if $DEBUG
     ok
+  end
+
+  def silent
+    back = $VERBOSE
+    $VERBOSE = nil
+    begin
+      yield
+    ensure
+      $VERBOSE = back
+    end
   end
 end
 
