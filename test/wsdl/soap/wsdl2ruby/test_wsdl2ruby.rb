@@ -1,5 +1,6 @@
 require 'test/unit'
 require 'wsdl/parser'
+require 'wsdl/soap/wsdl2ruby'
 module WSDL; module SOAP
 
 
@@ -7,7 +8,26 @@ class TestWSDL2Ruby < Test::Unit::TestCase
   DIR = File.dirname(File.expand_path(__FILE__))
 
   def setup
-    system("cd #{DIR} && ruby #{pathname("../../../../bin/wsdl2ruby.rb")} --wsdl #{pathname("rpc.wsdl")} --classdef --client_skelton --servant_skelton --cgi_stub --standalone_server_stub --driver --force --quiet")
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      gen = WSDL::SOAP::WSDL2Ruby.new
+      gen.location = pathname("rpc.wsdl")
+      gen.basedir = DIR
+      gen.logger.level = Logger::FATAL
+      gen.opt['classdef'] = nil
+      gen.opt['client_skelton'] = nil
+      gen.opt['servant_skelton'] = nil
+      gen.opt['cgi_stub'] = nil
+      gen.opt['standalone_server_stub'] = nil
+      gen.opt['driver'] = nil
+      gen.opt['force'] = true
+      silent do
+        gen.run
+      end
+    ensure
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown
@@ -47,6 +67,16 @@ private
 
   def loadfile(file)
     File.open(pathname(file)) { |f| f.read }
+  end
+
+  def silent
+    back = $VERBOSE
+    $VERBOSE = nil
+    begin
+      yield
+    ensure
+      $VERBOSE = back
+    end
   end
 end
 
