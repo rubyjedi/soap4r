@@ -8,7 +8,7 @@ require 'soap/wsdlDriver'
 module WSDL; module RPC
 
 
-class TestRPC < Test::Unit::TestCase
+class TestSOAPTYPE < Test::Unit::TestCase
   include ::SOAP
 
   class Server < ::SOAP::RPC::StandaloneServer
@@ -137,7 +137,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     @client.add_method('echo', 'arg')
     @client.wiredump_dev = str = ''
 
-    arg = Struct.new(:short, :long, :double).new
+    arg = ::Struct.new(:short, :long, :double).new
     arg.short = SOAPShort.new(123)
     arg.long = SOAPLong.new(456)
     arg.double = SOAPDouble.new(789)
