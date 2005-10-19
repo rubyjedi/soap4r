@@ -122,7 +122,7 @@ class Element < Info
     when MaxOccursAttrName
       if parent.is_a?(All)
 	if value.source != '1'
-	  raise Parser::AttrConstraintError.new(
+	  raise Parser::AttributeConstraintError.new(
             "cannot parse #{value} for #{attr}")
 	end
       end
@@ -130,7 +130,7 @@ class Element < Info
     when MinOccursAttrName
       if parent.is_a?(All)
 	unless ['0', '1'].include?(value.source)
-	  raise Parser::AttrConstraintError.new(
+	  raise Parser::AttributeConstraintError.new(
             "cannot parse #{value} for #{attr}")
 	end
       end
