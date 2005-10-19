@@ -589,11 +589,11 @@ end
 class SObject
   @@schema_type = "sObject"
   @@schema_ns = "urn:sobject.partner.soap.sforce.com"
-  @@schema_element = [["type", "SOAP::SOAPString"], ["fieldsToNull", "SOAP::SOAPString[]"], ["id", ["SOAP::SOAPString", XSD::QName.new("urn:sobject.partner.soap.sforce.com", "Id")]], ["any", [nil, XSD::QName.new(nil, "any")]]]
+  @@schema_element = [["type", "SOAP::SOAPString"], ["fieldsToNull", "SOAP::SOAPString[]"], ["id", ["SOAP::SOAPString", XSD::QName.new("urn:sobject.partner.soap.sforce.com", "Id")]], ["any", [nil, XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType")]]]
 
   attr_accessor :type
   attr_accessor :fieldsToNull
-  attr_accessor :any
+  attr_reader :__xmlele_any
 
   def Id
     @id
@@ -603,11 +603,15 @@ class SObject
     @id = value
   end
 
-  def initialize(type = nil, fieldsToNull = [], id = nil, any = nil)
+  def set_any(elements)
+    @__xmlele_any = elements
+  end
+
+  def initialize(type = nil, fieldsToNull = [], id = nil)
     @type = type
     @fieldsToNull = fieldsToNull
     @id = id
-    @any = any
+    @__xmlele_any = nil
   end
 end
 
@@ -1191,9 +1195,14 @@ end
 class LoginFault
   @@schema_type = "LoginFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 
@@ -1201,9 +1210,14 @@ end
 class InvalidSObjectFault
   @@schema_type = "InvalidSObjectFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 
@@ -1211,9 +1225,14 @@ end
 class InvalidFieldFault
   @@schema_type = "InvalidFieldFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 
@@ -1221,9 +1240,14 @@ end
 class MalformedQueryFault
   @@schema_type = "MalformedQueryFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 
@@ -1231,9 +1255,14 @@ end
 class InvalidQueryLocatorFault
   @@schema_type = "InvalidQueryLocatorFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 
@@ -1241,9 +1270,14 @@ end
 class MalformedSearchFault
   @@schema_type = "MalformedSearchFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 
@@ -1251,9 +1285,14 @@ end
 class InvalidNewPasswordFault
   @@schema_type = "InvalidNewPasswordFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 
@@ -1261,9 +1300,14 @@ end
 class InvalidIdFault
   @@schema_type = "InvalidIdFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 
@@ -1271,9 +1315,14 @@ end
 class UnexpectedErrorFault
   @@schema_type = "UnexpectedErrorFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = []
+  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
 
-  def initialize
+  attr_accessor :exceptionCode
+  attr_accessor :exceptionMessage
+
+  def initialize(exceptionCode = nil, exceptionMessage = nil)
+    @exceptionCode = exceptionCode
+    @exceptionMessage = exceptionMessage
   end
 end
 

@@ -164,10 +164,12 @@ private
       obj.__xmlele_any
     else
       any = Mapping.get_attributes(obj)
-      elements.each do |child_ele|
-        child = Mapping.get_attribute(obj, child_ele.name.name)
-        if k = any.key(child)
-          any.delete(k)
+      if elements
+        elements.each do |child_ele|
+          child = Mapping.get_attribute(obj, child_ele.name.name)
+          if k = any.key(child)
+            any.delete(k)
+          end
         end
       end
       any
@@ -246,10 +248,20 @@ private
   end
 
   def add_elements2soap(obj, ele)
-    elements, as_array = schema_element_definition(obj.class)
+    elements, as_array, have_any = schema_element_definition(obj.class)
+    any = nil
+    if have_any
+      any = scan_any(obj, elements)
+    end
     if elements
       elements.each do |elename, type|
-        if child = Mapping.get_attribute(obj, elename.name)
+        if elename == XSD::AnyTypeName
+          if any
+            SOAPElement.from_objs(any).each do |child|
+              ele.add(child)
+            end
+          end
+        elsif child = Mapping.get_attribute(obj, elename.name)
           if as_array.include?(elename.name)
             child.each do |item|
               ele.add(obj2soap(item, elename))
@@ -454,11 +466,13 @@ private
   # it caches @@schema_element.  this means that @@schema_element must not be
   # changed while a lifetime of a WSDLLiteralRegistry.
   def schema_element_definition(klass)
-    @schema_element_cache[klass] ||= Mapping.schema_element_definition(klass)
+    @schema_element_cache[klass] ||=
+      Mapping.schema_element_definition(klass)
   end
 
   def schema_attribute_definition(klass)
-    @schema_attribute_cache[klass] ||= Mapping.schema_attribute_definition(klass)
+    @schema_attribute_cache[klass] ||=
+      Mapping.schema_attribute_definition(klass)
   end
 end
 

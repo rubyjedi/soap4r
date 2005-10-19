@@ -147,6 +147,10 @@ private
           '@__xmlele_any = elements'
         end
         init_lines << "@__xmlele_any = nil\n"
+        varname = 'any' # not used
+        eleqname = XSD::AnyTypeName
+        type = nil
+        schema_element << [varname, eleqname, type]
         next
       end
       if element.type == XSD::AnyTypeName
