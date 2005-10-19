@@ -36,6 +36,10 @@ class ComplexContent < Info
     @extension || @restriction
   end
 
+  def have_any?
+    content ? content.have_any? : nil
+  end
+
   def elements
     content.elements
   end

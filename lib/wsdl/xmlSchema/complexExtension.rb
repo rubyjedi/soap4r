@@ -35,6 +35,10 @@ class ComplexExtension < Info
     parent.elementformdefault
   end
 
+  def have_any?
+    basetype.have_any? or @content.have_any?
+  end
+
   def elements
     result = XSD::NamedElements.new
     result.concat(basetype.elements)

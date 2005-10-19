@@ -17,12 +17,14 @@ class Sequence < Info
   attr_reader :minoccurs
   attr_reader :maxoccurs
   attr_reader :elements
+  attr_reader :any
 
   def initialize
     super()
     @minoccurs = '1'
     @maxoccurs = '1'
     @elements = XSD::NamedElements.new
+    @any = nil
   end
 
   def targetnamespace
@@ -33,6 +35,10 @@ class Sequence < Info
     parent.elementformdefault
   end
 
+  def have_any?
+    !!@any
+  end
+
   def <<(element)
     @elements << element
   end
@@ -40,9 +46,10 @@ class Sequence < Info
   def parse_element(element)
     case element
     when AnyName
-      o = Any.new
-      @elements << o
-      o
+      raise ElementConstraintError.new("duplicated element: any") if @any
+      @any = Any.new
+      @elements << ComplexType::AnyElement
+      @any
     when ElementName
       o = Element.new
       @elements << o

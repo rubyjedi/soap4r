@@ -10,14 +10,17 @@
     <xsd:schema targetNamespace="urn:example.com:echo-type">
       <xsd:complexType name="foo.bar">
         <xsd:sequence>
-          <xsd:any />
+          <xsd:element name="before" type="xsd:string"/>
+          <xsd:any/>
+          <xsd:element name="after" type="xsd:string"/>
         </xsd:sequence>
       </xsd:complexType>
+      <xsd:element name="foo.bar" type="txd:foo.bar"/>
     </xsd:schema>
   </types>
 
   <message name="msg_echoitem">
-    <part name="echoitem" type="txd:foo.bar"/>
+    <part name="parameters" element="txd:foo.bar"/>
   </message>
 
   <portType name="echo_port_type">
@@ -28,16 +31,14 @@
   </portType>
 
   <binding name="echo_binding" type="tns:echo_port_type">
-    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
     <operation name="echo">
       <soap:operation soapAction="urn:example.com:echo"/>
       <input>
-        <soap:body use="encoded" namespace="urn:example.com:echo"
-	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+        <soap:body use="literal"/>
       </input>
       <output>
-        <soap:body use="encoded" namespace="urn:example.com:echo"
-	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+        <soap:body use="literal"/>
       </output>
     </operation>
   </binding>

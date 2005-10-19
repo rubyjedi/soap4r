@@ -33,6 +33,11 @@ class ComplexRestriction < Info
     parent.elementformdefault
   end
 
+  def have_any?
+    # TODO
+    false
+  end
+
   def elements
     result = XSD::NamedElements.new
     # TODO: ?

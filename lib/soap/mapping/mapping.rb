@@ -271,6 +271,18 @@ module Mapping
     }
   end
 
+  def self.get_attributes(obj)
+    if obj.is_a?(::Hash)
+      obj
+    else
+      rs = {}
+      obj.instance_variables.each do |ele|
+        rs[ele.sub(/^@/, '')] = obj.instance_variable_get(ele)
+      end
+      rs
+    end
+  end
+
   def self.get_attribute(obj, attr_name)
     if obj.is_a?(::Hash)
       return obj[attr_name] || obj[attr_name.intern]

@@ -7,7 +7,6 @@
 
 
 require 'wsdl/info'
-require 'wsdl/xmlSchema/content'
 require 'wsdl/xmlSchema/element'
 require 'xsd/namedelements'
 
@@ -45,9 +44,22 @@ class ComplexType < Info
     parent.elementformdefault
   end
 
+  AnyElement = Element.new(XSD::QName.new, XSD::AnyTypeName)
+
+  def have_any?
+    if c = @complexcontent || @content
+      c.have_any?
+    else
+      false
+    end
+  end
+
   def elements
-    c = @complexcontent || @content
-    c ? c.elements : nil
+    if c = @complexcontent || @content
+      c.elements
+    else
+      XSD::NamedElements::Empty
+    end
   end
 
   def attributes
@@ -57,42 +69,19 @@ class ComplexType < Info
       @attributes
     end
   end
- 
-  AnyAsElement = Element.new(XSD::QName.new(nil, 'any'), XSD::AnyTypeName)
-  def each_element
-    if e = elements
-      e.each do |element|
-        if element.is_a?(Any)
-          yield(AnyAsElement)
-        else
-          yield(element)
-        end
-      end
-    end
-  end
 
   def find_element(name)
-    if e = elements
-      e.each do |element|
-        if element.is_a?(Any)
-          return AnyAsElement if name == AnyAsElement.name
-        else
-          return element if name == element.name
-        end
-      end
+    return nil if name.nil?
+    elements.each do |element|
+      return element if name == element.name
     end
     nil
   end
 
   def find_element_by_name(name)
-    if e = elements
-      e.each do |element|
-        if element.is_a?(Any)
-          return AnyAsElement if name == AnyAsElement.name.name
-        else
-          return element if name == element.name.name
-        end
-      end
+    return nil if name.nil?
+    elements.each do |element|
+      return element if name == element.name.name
     end
     nil
   end

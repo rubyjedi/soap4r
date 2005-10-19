@@ -182,7 +182,7 @@ __EOD__
     return if @types.include?(type)
     @types << type
     return unless @complextypes[type]
-    @complextypes[type].each_element do |element|
+    @complextypes[type].elements.each do |element|
       collect_type(element.type)
     end
   end

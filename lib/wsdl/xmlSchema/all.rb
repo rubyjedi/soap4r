@@ -33,16 +33,16 @@ class All < Info
     parent.elementformdefault
   end
 
+  def have_any?
+    false
+  end
+
   def <<(element)
     @elements << element
   end
 
   def parse_element(element)
     case element
-    when AnyName
-      o = Any.new
-      @elements << o
-      o
     when ElementName
       o = Element.new
       @elements << o
