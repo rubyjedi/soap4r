@@ -119,8 +119,19 @@ private
   def complexobj2soap(obj, type, qualified)
     o = SOAPElement.new(type.name)
     o.qualified = qualified
-    type.each_element do |child_ele|
-      if child_ele.map_as_array?
+    elements = type.elements
+    any = nil
+    if type.have_any?
+      any = scan_any(obj, elements)
+    end
+    elements.each do |child_ele|
+      if child_ele == WSDL::XMLSchema::ComplexType::AnyElement
+        if any
+          SOAPElement.from_objs(any).each do |child|
+            o.add(child)
+          end
+        end
+      elsif child_ele.map_as_array?
         child = Mapping.get_attribute(obj, child_ele.name.name)
         if child.nil? and obj.is_a?(::Array)
           child = obj
@@ -146,6 +157,21 @@ private
       end
     end
     o
+  end
+
+  def scan_any(obj, elements)
+    if obj.respond_to?(:__xmlele_any)
+      obj.__xmlele_any
+    else
+      any = Mapping.get_attributes(obj)
+      elements.each do |child_ele|
+        child = Mapping.get_attribute(obj, child_ele.name.name)
+        if k = any.key(child)
+          any.delete(k)
+        end
+      end
+      any
+    end
   end
 
   def nil2soap(ele)

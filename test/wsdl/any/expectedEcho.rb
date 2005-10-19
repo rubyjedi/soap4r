@@ -4,11 +4,15 @@ require 'xsd/qname'
 class FooBar
   @@schema_type = "foo.bar"
   @@schema_ns = "urn:example.com:echo-type"
-  @@schema_element = [["any", [nil, XSD::QName.new(nil, "any")]]]
+  @@schema_element = []
 
-  attr_accessor :any
+  attr_reader :__xmlele_any
 
-  def initialize(any = nil)
-    @any = any
+  def set_any(elements)
+    @__xmlele_any = elements
+  end
+
+  def initialize
+    @__xmlele_any = nil
   end
 end

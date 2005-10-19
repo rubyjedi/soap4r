@@ -7,21 +7,13 @@ require 'soap/mapping/registry'
 class Echo_port_type
   MappingRegistry = ::SOAP::Mapping::Registry.new
 
-  MappingRegistry.set(
-    FooBar,
-    ::SOAP::SOAPStruct,
-    ::SOAP::Mapping::Registry::TypedStructFactory,
-    { :type => XSD::QName.new("urn:example.com:echo-type", "foo.bar") }
-  )
-
   Methods = [
-    [ XSD::QName.new("urn:example.com:echo", "echo"),
-      "urn:example.com:echo",
+    [ "urn:example.com:echo",
       "echo",
-      [ ["in", "echoitem", ["FooBar", "urn:example.com:echo-type", "foo.bar"]],
-        ["retval", "echoitem", ["FooBar", "urn:example.com:echo-type", "foo.bar"]] ],
-      { :request_style =>  :rpc, :request_use =>  :encoded,
-        :response_style => :rpc, :response_use => :encoded }
+      [ ["in", "parameters", ["::SOAP::SOAPElement", "urn:example.com:echo-type", "foo.bar"], false],
+        ["out", "parameters", ["::SOAP::SOAPElement", "urn:example.com:echo-type", "foo.bar"], false] ],
+      { :request_style =>  :document, :request_use =>  :literal,
+        :response_style => :document, :response_use => :literal }
     ]
   ]
 end

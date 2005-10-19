@@ -614,6 +614,19 @@ class SOAPElement
     o
   end
 
+  def self.from_objs(objs)
+    objs.collect { |value|
+      if value.is_a?(SOAPElement)
+        value
+      else
+        k, v = value
+        ele = from_obj(value)
+        ele.name = XSD::QName.new(nil, k)
+        ele
+      end
+    }
+  end
+
   def self.from_obj(obj, namespace = nil)
     o = SOAPElement.new(nil)
     case obj

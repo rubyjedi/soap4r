@@ -135,7 +135,20 @@ private
     schema_element = []
     init_lines = ''
     params = []
-    typedef.each_element do |element|
+    any = false
+    typedef.elements.each do |element|
+      if element == WSDL::XMLSchema::ComplexType::AnyElement
+        # only 1 <any/> is allowed for now.
+        raise RuntimeError.new("duplicated 'any'") if any
+        any = true
+        attrname = '__xmlele_any'
+        c.def_attr(attrname, false, attrname)
+        c.def_method('set_any', 'elements') do
+          '@__xmlele_any = elements'
+        end
+        init_lines << "@__xmlele_any = nil\n"
+        next
+      end
       if element.type == XSD::AnyTypeName
         type = nil
       elsif klass = element_basetype(element)
