@@ -620,8 +620,8 @@ class SOAPElement
         value
       else
         k, v = value
-        ele = from_obj(value)
-        ele.name = XSD::QName.new(nil, k)
+        ele = from_obj(v)
+        ele.elename = XSD::QName.new(nil, k)
         ele
       end
     }

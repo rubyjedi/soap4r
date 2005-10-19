@@ -153,7 +153,11 @@ class TestAny < Test::Unit::TestCase
         ::SOAP::SOAPElement.new("baz", "qux")
       ]
     )
-    p @client.echo(arg)
+    res = @client.echo(arg)
+    assert_equal(arg.before, res.before)
+    assert_equal("bar", res.foo)
+    assert_equal("qux", res.baz)
+    assert_equal(arg.after, res.after)
   end
 end
 

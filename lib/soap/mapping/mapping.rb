@@ -344,19 +344,25 @@ module Mapping
   end
 
   def self.schema_element_definition(klass)
-    schema_element = class_schema_variable(:schema_element, klass) or return nil
+    schema_element = class_schema_variable(:schema_element, klass)
+    return nil unless schema_element
     schema_ns = schema_ns_definition(klass)
     elements = []
     as_array = []
+    have_any = false
     schema_element.each do |varname, definition|
       class_name, name = definition
       if /\[\]$/ =~ class_name
         class_name = class_name.sub(/\[\]$/, '')
         as_array << (name ? name.name : varname)
       end
-      elements << [name || XSD::QName.new(schema_ns, varname), class_name]
+      if name == XSD::AnyTypeName
+        have_any = true
+      end
+      elements <<
+        [name || XSD::QName.new(schema_ns, varname), class_name]
     end
-    [elements, as_array]
+    [elements, as_array, have_any]
   end
 
   def self.schema_attribute_definition(klass)
