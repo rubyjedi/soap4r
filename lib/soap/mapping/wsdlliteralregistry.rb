@@ -111,7 +111,7 @@ private
 
   def simpleobj2soap(obj, type)
     type.check_lexical_format(obj)
-    return SOAPNil.new if obj.nil?      # ToDo: check nillable.
+    return SOAPNil.new if obj.nil?      # TODO: check nillable.
     o = base2soap(obj, TypeMap[type.base])
     o
   end
@@ -301,6 +301,37 @@ private
     soap_obj
   end
 
+  def any2obj(node, obj_class = nil)
+    unless obj_class
+      typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
+      obj_class = Mapping.class_from_name(typestr)
+    end
+    if obj_class and obj_class.class_variables.include?('@@schema_element')
+      elesoap2stubobj(node, obj_class)
+    elsif node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
+        # SOAPArray for literal?
+      elesoap2plainobj(node)
+    else
+      obj = Mapping.soap2obj(node, nil, obj_class, MAPPING_OPT)
+      add_attributes2obj(node, obj)
+      obj
+    end
+  end
+
+  def elesoap2stubobj(node, obj_class)
+    obj = Mapping.create_empty_object(obj_class)
+    add_elesoap2stubobj(node, obj)
+    add_attributes2stubobj(node, obj)
+    obj
+  end
+
+  def elesoap2plainobj(node)
+    obj = anytype2obj(node)
+    add_elesoap2plainobj(node, obj)
+    add_attributes2obj(node, obj)
+    obj
+  end
+
   def anytype2obj(node)
     if node.is_a?(::SOAP::SOAPBasetype)
       return node.data
@@ -310,38 +341,7 @@ private
     obj
   end
 
-  def any2obj(node, obj_class = nil)
-    unless obj_class
-      typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
-      obj_class = Mapping.class_from_name(typestr)
-    end
-    if obj_class and obj_class.class_variables.include?('@@schema_element')
-      soapele2stubobj(node, obj_class)
-    elsif node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
-        # SOAPArray for literal?
-      soapele2plainobj(node)
-    else
-      obj = Mapping.soap2obj(node, nil, obj_class, MAPPING_OPT)
-      add_attributes2plainobj(node, obj)
-      obj
-    end
-  end
-
-  def soapele2stubobj(node, obj_class)
-    obj = Mapping.create_empty_object(obj_class)
-    add_elements2stubobj(node, obj)
-    add_attributes2stubobj(node, obj)
-    obj
-  end
-
-  def soapele2plainobj(node)
-    obj = anytype2obj(node)
-    add_elements2plainobj(node, obj)
-    add_attributes2plainobj(node, obj)
-    obj
-  end
-
-  def add_elements2stubobj(node, obj)
+  def add_elesoap2stubobj(node, obj)
     elements, as_array = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
@@ -406,13 +406,13 @@ private
     end
   end
 
-  def add_elements2plainobj(node, obj)
+  def add_elesoap2plainobj(node, obj)
     node.each do |name, value|
       obj.__add_xmlele_value(value.elename, any2obj(value))
     end
   end
 
-  def add_attributes2plainobj(node, obj)
+  def add_attributes2obj(node, obj)
     return if node.extraattr.empty?
     define_xmlattr(obj)
     node.extraattr.each do |qname, value|
