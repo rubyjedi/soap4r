@@ -11,6 +11,7 @@ module SOAP
 
 TypeMap = {
   XSD::XSDAnySimpleType::Type => SOAPAnySimpleType,
+
   XSD::XSDString::Type => SOAPString,
   XSD::XSDBoolean::Type => SOAPBoolean,
   XSD::XSDDecimal::Type => SOAPDecimal,
@@ -43,7 +44,38 @@ TypeMap = {
   XSD::XSDUnsignedByte::Type => SOAPUnsignedByte,
   XSD::XSDPositiveInteger::Type => SOAPPositiveInteger,
 
-  SOAP::SOAPBase64::Type => SOAPBase64,
+  # soap4r does not use soapenc types actively but it should be accepted.
+  SOAP::SOAPString::SOAPENCType => SOAPString,
+  SOAP::SOAPBoolean::SOAPENCType => SOAPBoolean,
+  SOAP::SOAPDecimal::SOAPENCType => SOAPDecimal,
+  SOAP::SOAPFloat::SOAPENCType => SOAPFloat,
+  SOAP::SOAPDouble::SOAPENCType => SOAPDouble,
+  SOAP::SOAPDuration::SOAPENCType => SOAPDuration,
+  SOAP::SOAPDateTime::SOAPENCType => SOAPDateTime,
+  SOAP::SOAPTime::SOAPENCType => SOAPTime,
+  SOAP::SOAPDate::SOAPENCType => SOAPDate,
+  SOAP::SOAPGYearMonth::SOAPENCType => SOAPGYearMonth,
+  SOAP::SOAPGYear::SOAPENCType => SOAPGYear,
+  SOAP::SOAPGMonthDay::SOAPENCType => SOAPGMonthDay,
+  SOAP::SOAPGDay::SOAPENCType => SOAPGDay,
+  SOAP::SOAPGMonth::SOAPENCType => SOAPGMonth,
+  SOAP::SOAPHexBinary::SOAPENCType => SOAPHexBinary,
+  SOAP::SOAPBase64::SOAPENCType => SOAPBase64,
+  SOAP::SOAPAnyURI::SOAPENCType => SOAPAnyURI,
+  SOAP::SOAPQName::SOAPENCType => SOAPQName,
+  SOAP::SOAPInteger::SOAPENCType => SOAPInteger,
+  SOAP::SOAPNonPositiveInteger::SOAPENCType => SOAPNonPositiveInteger,
+  SOAP::SOAPNegativeInteger::SOAPENCType => SOAPNegativeInteger,
+  SOAP::SOAPLong::SOAPENCType => SOAPLong,
+  SOAP::SOAPInt::SOAPENCType => SOAPInt,
+  SOAP::SOAPShort::SOAPENCType => SOAPShort,
+  SOAP::SOAPByte::SOAPENCType => SOAPByte,
+  SOAP::SOAPNonNegativeInteger::SOAPENCType => SOAPNonNegativeInteger,
+  SOAP::SOAPUnsignedLong::SOAPENCType => SOAPUnsignedLong,
+  SOAP::SOAPUnsignedInt::SOAPENCType => SOAPUnsignedInt,
+  SOAP::SOAPUnsignedShort::SOAPENCType => SOAPUnsignedShort,
+  SOAP::SOAPUnsignedByte::SOAPENCType => SOAPUnsignedByte,
+  SOAP::SOAPPositiveInteger::SOAPENCType => SOAPPositiveInteger,
 }
 
 
