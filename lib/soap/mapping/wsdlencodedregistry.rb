@@ -85,7 +85,7 @@ private
       @rubytype_factory.obj2soap(nil, obj, nil, self)
     elsif obj.is_a?(XSD::NSDBase)
       soap2soap(obj, qname)
-    elsif (type = TypeMap[qname])
+    elsif type = TypeMap[qname]
       base2soap(obj, type)
     else
       nil

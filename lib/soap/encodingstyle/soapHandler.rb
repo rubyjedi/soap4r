@@ -438,7 +438,7 @@ private
       type = elename
     end
 
-    if (klass = TypeMap[type])
+    if klass = TypeMap[type]
       node = decode_basetype(klass, elename)
       node.extraattr.update(extraattr)
       return node

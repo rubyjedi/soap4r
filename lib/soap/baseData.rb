@@ -222,82 +222,97 @@ end
 class SOAPString < XSD::XSDString
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, StringLiteral)
 end
 
 class SOAPBoolean < XSD::XSDBoolean
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, BooleanLiteral)
 end
 
 class SOAPDecimal < XSD::XSDDecimal
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, DecimalLiteral)
 end
 
 class SOAPFloat < XSD::XSDFloat
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, FloatLiteral)
 end
 
 class SOAPDouble < XSD::XSDDouble
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, DoubleLiteral)
 end
 
 class SOAPDuration < XSD::XSDDuration
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, DurationLiteral)
 end
 
 class SOAPDateTime < XSD::XSDDateTime
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, DateTimeLiteral)
 end
 
 class SOAPTime < XSD::XSDTime
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, TimeLiteral)
 end
 
 class SOAPDate < XSD::XSDDate
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, DateLiteral)
 end
 
 class SOAPGYearMonth < XSD::XSDGYearMonth
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, GYearMonthLiteral)
 end
 
 class SOAPGYear < XSD::XSDGYear
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, GYearLiteral)
 end
 
 class SOAPGMonthDay < XSD::XSDGMonthDay
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, GMonthDayLiteral)
 end
 
 class SOAPGDay < XSD::XSDGDay
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, GDayLiteral)
 end
 
 class SOAPGMonth < XSD::XSDGMonth
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, GMonthLiteral)
 end
 
 class SOAPHexBinary < XSD::XSDHexBinary
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, HexBinaryLiteral)
 end
 
 class SOAPBase64 < XSD::XSDBase64Binary
   include SOAPBasetype
   extend SOAPModuleUtils
-  Type = QName.new(EncodingNamespace, Base64Literal)
+  Type = SOAPENCType = QName.new(EncodingNamespace, Base64Literal)
 
 public
   # Override the definition in SOAPBasetype.
@@ -314,77 +329,92 @@ end
 class SOAPAnyURI < XSD::XSDAnyURI
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, AnyURILiteral)
 end
 
 class SOAPQName < XSD::XSDQName
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, QNameLiteral)
 end
 
 
 class SOAPInteger < XSD::XSDInteger
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, IntegerLiteral)
 end
 
 class SOAPNonPositiveInteger < XSD::XSDNonPositiveInteger
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, NonPositiveIntegerLiteral)
 end
 
 class SOAPNegativeInteger < XSD::XSDNegativeInteger
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, NegativeIntegerLiteral)
 end
 
 class SOAPLong < XSD::XSDLong
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, LongLiteral)
 end
 
 class SOAPInt < XSD::XSDInt
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, IntLiteral)
 end
 
 class SOAPShort < XSD::XSDShort
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, ShortLiteral)
 end
 
 class SOAPByte < XSD::XSDByte
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, ByteLiteral)
 end
 
 class SOAPNonNegativeInteger < XSD::XSDNonNegativeInteger
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, NonNegativeIntegerLiteral)
 end
 
 class SOAPUnsignedLong < XSD::XSDUnsignedLong
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, UnsignedLongLiteral)
 end
 
 class SOAPUnsignedInt < XSD::XSDUnsignedInt
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, UnsignedIntLiteral)
 end
 
 class SOAPUnsignedShort < XSD::XSDUnsignedShort
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, UnsignedShortLiteral)
 end
 
 class SOAPUnsignedByte < XSD::XSDUnsignedByte
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, UnsignedByteLiteral)
 end
 
 class SOAPPositiveInteger < XSD::XSDPositiveInteger
   include SOAPBasetype
   extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, PositiveIntegerLiteral)
 end
 
 
