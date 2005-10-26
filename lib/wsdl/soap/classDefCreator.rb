@@ -132,12 +132,60 @@ private
     c.def_classvar('schema_type', ndq(qname.name))
     c.def_classvar('schema_ns', ndq(qname.namespace))
     c.def_classvar('schema_qualified', dq('true')) if qualified
+    schema_element, init_lines, init_params =
+      parse_elements(c, typedef.elements, qname.namespace)
+    unless typedef.attributes.empty?
+      define_attribute(c, typedef.attributes)
+      init_lines << "@__xmlattr = {}"
+    end
+    c.def_classvar('schema_element',
+      "[\n  " +
+        schema_element.collect { |definition|
+          dump_schema_element_definition(definition)
+        }.join(", \n  ") +
+      "\n]"
+    )
+    c.def_method('initialize', *init_params) do
+      init_lines.join("\n")
+    end
+    c.dump
+  end
+
+  def dump_schema_element(schema_element)
+    schema_element.collect { |definition|
+      dump_schema_element_definition(definition)
+    }.join(', ')
+  end
+
+  def dump_schema_element_definition(definition)
+    if definition[0] == :sequence
+      definition.shift
+      '[ :sequence, ' + dump_schema_element(definition) + ']'
+    elsif definition[0] == :choice
+      definition.shift
+      '[ :choice, ' + dump_schema_element(definition) + ']'
+    else
+      varname, name, type = definition
+      '[' +
+        (
+          if name
+            varname.dump + ', [' + ndq(type) + ', ' + dqname(name) + ']'
+          else
+            varname.dump + ', ' + ndq(type)
+          end
+        ) +
+      ']'
+    end
+  end
+
+  def parse_elements(c, elements, base_namespace)
     schema_element = []
-    init_lines = ''
-    params = []
+    init_lines = []
+    init_params = []
     any = false
-    typedef.elements.each do |element|
-      if element == WSDL::XMLSchema::ComplexType::AnyElement
+    elements.each do |element|
+      case element
+      when XMLSchema::Any
         # only 1 <any/> is allowed for now.
         raise RuntimeError.new("duplicated 'any'") if any
         any = true
@@ -146,72 +194,64 @@ private
         c.def_method('set_any', 'elements') do
           '@__xmlele_any = elements'
         end
-        init_lines << "@__xmlele_any = nil\n"
+        init_lines << "@__xmlele_any = nil"
         varname = 'any' # not used
         eleqname = XSD::AnyTypeName
         type = nil
         schema_element << [varname, eleqname, type]
-        next
-      end
-      if element.type == XSD::AnyTypeName
-        type = nil
-      elsif klass = element_basetype(element)
-        type = klass.name
-      elsif element.type
-        type = create_class_name(element.type)
+      when XMLSchema::Element
+        if element.type == XSD::AnyTypeName
+          type = nil
+        elsif klass = element_basetype(element)
+          type = klass.name
+        elsif element.type
+          type = create_class_name(element.type)
+        else
+          type = nil      # means anyType.
+          # do we define a class for local complexType from it's name?
+          #   type = create_class_name(element.name)
+          # <element>
+          #   <complexType>
+          #     <seq...>
+          #   </complexType>
+          # </element>
+        end
+        name = name_element(element).name
+        attrname = safemethodname?(name) ? name : safemethodname(name)
+        varname = safevarname(name)
+        c.def_attr(attrname, true, varname)
+        init_lines << "@#{varname} = #{varname}"
+        if element.map_as_array?
+          init_params << "#{varname} = []"
+          type << '[]' if type
+        else
+          init_params << "#{varname} = nil"
+        end
+        # nil means @@schema_ns + varname
+        if element.name && varname == name &&
+            element.name.namespace == base_namespace
+          eleqname = nil
+        else
+          eleqname = element.name
+        end
+        schema_element << [varname, eleqname, type]
+      when WSDL::XMLSchema::Sequence
+        child_schema_element, child_init_lines, child_init_params =
+          parse_elements(c, element.elements, base_namespace)
+        schema_element << [:sequence].concat(child_schema_element)
+        init_lines.concat(child_init_lines)
+        init_params.concat(child_init_params)
+      when WSDL::XMLSchema::Choice
+        child_schema_element, child_init_lines, child_init_params =
+          parse_elements(c, element.elements, base_namespace)
+        schema_element << [:choice].concat(child_schema_element)
+        init_lines.concat(child_init_lines)
+        init_params.concat(child_init_params)
       else
-        type = nil      # means anyType.
-        # do we define a class for local complexType from it's name?
-        #   type = create_class_name(element.name)
-        # <element>
-        #   <complexType>
-        #     <seq...>
-        #   </complexType>
-        # </element>
+        raise RuntimeError.new("unknown type: #{element}")
       end
-      name = name_element(element).name
-      attrname = safemethodname?(name) ? name : safemethodname(name)
-      varname = safevarname(name)
-      c.def_attr(attrname, true, varname)
-      init_lines << "@#{varname} = #{varname}\n"
-      if element.map_as_array?
-        params << "#{varname} = []"
-        type << '[]' if type
-      else
-        params << "#{varname} = nil"
-      end
-      # nil means @@schema_ns + varname
-      if element.name && varname == name &&
-          element.name.namespace == qname.namespace
-        eleqname = nil
-      else
-        eleqname = element.name
-      end
-      schema_element << [varname, eleqname, type]
     end
-    unless typedef.attributes.empty?
-      define_attribute(c, typedef.attributes)
-      init_lines << "@__xmlattr = {}\n"
-    end
-    c.def_classvar('schema_element',
-      '[' +
-        schema_element.collect { |varname, name, type|
-          '[' +
-            (
-              if name
-                varname.dump + ', [' + ndq(type) + ', ' + dqname(name) + ']'
-              else
-                varname.dump + ', ' + ndq(type)
-              end
-            ) +
-          ']'
-        }.join(', ') +
-      ']'
-    )
-    c.def_method('initialize', *params) do
-      init_lines
-    end
-    c.dump
+    [schema_element, init_lines, init_params]
   end
 
   def element_basetype(ele)

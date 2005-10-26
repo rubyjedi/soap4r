@@ -1,5 +1,5 @@
-# WSDL4R - XMLSchema complexType definition for WSDL.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# WSDL4R - XMLSchema content base definition for WSDL.
+# Copyright (C) 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -14,50 +14,42 @@ module XMLSchema
 
 
 class Content < Info
-  attr_accessor :final
-  attr_accessor :mixed
-  attr_accessor :type
-  attr_reader :contents
+  attr_reader :minoccurs
+  attr_reader :maxoccurs
   attr_reader :elements
 
   def initialize
     super()
-    @final = nil
-    @mixed = false
-    @type = nil
-    @contents = []
-    @elements = []
+    @minoccurs = '1'
+    @maxoccurs = '1'
+    @elements = XSD::NamedElements.new
   end
 
   def targetnamespace
     parent.targetnamespace
   end
 
-  def <<(content)
-    @contents << content
-    update_elements
+  def elementformdefault
+    parent.elementformdefault
   end
 
-  def each
-    @contents.each do |content|
-      yield content
-    end
+  def have_any?
+    false
+  end
+
+  def choice?
+    false
+  end
+
+  def <<(element)
+    @elements << element
   end
 
   def parse_element(element)
     case element
-    when AllName, SequenceName, ChoiceName
-      o = Content.new
-      o.type = element.name
-      @contents << o
-      o
-    when AnyName
-      o = Any.new
-      @contents << o
-      o
     when ElementName
       o = Element.new
-      @contents << o
+      @elements << o
       o
     else
       nil
@@ -66,27 +58,12 @@ class Content < Info
 
   def parse_attr(attr, value)
     case attr
-    when FinalAttrName
-      @final = value.source
-    when MixedAttrName
-      @mixed = (value.source == 'true')
+    when MaxOccursAttrName
+      @maxoccurs = value.source
+    when MinOccursAttrName
+      @minoccurs = value.source
     else
       nil
-    end
-  end
-
-  def parse_epilogue
-    update_elements
-  end
-
-private
-
-  def update_elements
-    @elements = []
-    @contents.each do |content|
-      if content.is_a?(Element)
-	@elements << [content.name, content]
-      end
     end
   end
 end

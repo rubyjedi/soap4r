@@ -38,8 +38,8 @@ class TestUnqualified < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('lp.rb'))
-    File.unlink(pathname('lpDriver.rb'))
+    File.unlink(pathname('lp.rb')) unless $DEBUG
+    File.unlink(pathname('lpDriver.rb')) unless $DEBUG
     @client.reset_stream if @client
   end
 

@@ -40,7 +40,7 @@ class TestSOAPTYPE < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('echo.rb'))
+    File.unlink(pathname('echo.rb')) unless $DEBUG
     @client.reset_stream if @client
   end
 

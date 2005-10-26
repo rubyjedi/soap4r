@@ -6,61 +6,16 @@
 # either the dual license version in 2003, or any later version.
 
 
-require 'wsdl/info'
+require 'wsdl/xmlSchema/content'
 
 
 module WSDL
 module XMLSchema
 
 
-class All < Info
-  attr_reader :minoccurs
-  attr_reader :maxoccurs
-  attr_reader :elements
-
+class All < Content
   def initialize
     super()
-    @minoccurs = '1'
-    @maxoccurs = '1'
-    @elements = XSD::NamedElements.new
-  end
-
-  def targetnamespace
-    parent.targetnamespace
-  end
-
-  def elementformdefault
-    parent.elementformdefault
-  end
-
-  def have_any?
-    false
-  end
-
-  def <<(element)
-    @elements << element
-  end
-
-  def parse_element(element)
-    case element
-    when ElementName
-      o = Element.new
-      @elements << o
-      o
-    else
-      nil
-    end
-  end
-
-  def parse_attr(attr, value)
-    case attr
-    when MaxOccursAttrName
-      @maxoccurs = value.source
-    when MinOccursAttrName
-      @minoccurs = value.source
-    else
-      nil
-    end
   end
 end
 

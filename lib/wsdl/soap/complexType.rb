@@ -20,7 +20,9 @@ class ComplexType < Info
   end
 
   def check_type
-    if content
+    if have_any?
+      :TYPE_STRUCT
+    elsif content
       e = elements
       if attributes.empty? and e.size == 1 and e[0].maxoccurs != '1'
         if name == ::SOAP::Mapping::MapQName
@@ -124,10 +126,15 @@ class ComplexType < Info
 private
 
   def element_simpletype(element)
-    if element.type
-      element.type 
-    elsif element.local_simpletype
-      element.local_simpletype.base
+    case element
+    when XMLSchema::Element
+      if element.type
+        element.type 
+      elsif element.local_simpletype
+        element.local_simpletype.base
+      end
+    when XMLSchema::Any
+      XSD::AnyTypeName
     else
       nil
     end

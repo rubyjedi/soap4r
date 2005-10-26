@@ -182,8 +182,21 @@ __EOD__
     return if @types.include?(type)
     @types << type
     return unless @complextypes[type]
-    @complextypes[type].elements.each do |element|
-      collect_type(element.type)
+    collect_elements_type(@complextypes[type].elements)
+  end
+
+  def collect_elements_type(elements)
+    elements.each do |element|
+      case element
+      when WSDL::XMLSchema::Any
+        # nothing to do
+      when WSDL::XMLSchema::Element
+        collect_type(element.type)
+      when WSDL::XMLSchema::Sequence, WSDL::XMLSchema::Choice
+        collect_elements_type(element.elements)
+      else
+        raise RuntimeError.new("unknown type: #{element}")
+      end
     end
   end
 

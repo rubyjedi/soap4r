@@ -18,7 +18,7 @@ params = {:maxt => false, :mint => false, :temp => true, :dew => true,
 wsdl = "http://weather.gov/forecasts/xml/DWMLgen/wsdl/ndfdXML.wsdl"
 drv = SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
 drv.wiredump_dev = STDOUT if $DEBUG
-dwml = drv.NDFDgen(lattitude, longitude, 'time-series', starter, ender, params)
+dwml = drv.nDFDgen(lattitude, longitude, 'time-series', starter, ender, params)
 puts dwml
 
 require 'xsd/mapping'

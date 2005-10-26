@@ -117,46 +117,87 @@ private
   end
 
   def complexobj2soap(obj, type, qualified)
-    o = SOAPElement.new(type.name)
-    o.qualified = qualified
+    ele = SOAPElement.new(type.name)
+    ele.qualified = qualified
+    if type.choice?
+      complexobj2choicesoap(obj, ele, type)
+    else
+      complexobj2sequencesoap(obj, ele, type)
+    end
+  end
+
+  def complexobj2sequencesoap(obj, ele, type)
     elements = type.elements
     any = nil
     if type.have_any?
       any = scan_any(obj, elements)
     end
     elements.each do |child_ele|
-      if child_ele == WSDL::XMLSchema::ComplexType::AnyElement
+      case child_ele
+      when WSDL::XMLSchema::Any
         if any
           SOAPElement.from_objs(any).each do |child|
-            o.add(child)
+            ele.add(child)
           end
         end
-      elsif child_ele.map_as_array?
-        child = Mapping.get_attribute(obj, child_ele.name.name)
-        if child.nil? and obj.is_a?(::Array)
-          child = obj
-        end
-        if child.nil?
-          child_soap = nil2soap(child_ele)
-          o.add(child_soap) if child_soap
-        else
-          child.each do |item|
-            child_soap = obj2elesoap(item, child_ele)
-            o.add(child_soap)
-          end
-        end
+      when WSDL::XMLSchema::Element
+        complexobj2soapchildren(obj, ele, child_ele)
+      when WSDL::XMLSchema::Sequence
+        complexobj2sequencesoap(obj, child_ele, type)
+      when WSDL::XMLSchema::Choice
+        complexobj2choicesoap(obj, child_ele, type)
       else
-        child = Mapping.get_attribute(obj, child_ele.name.name)
-        if child.nil?
-          child_soap = nil2soap(child_ele)
-          o.add(child_soap) if child_soap
-        else
-          child_soap = obj2elesoap(child, child_ele)
-          o.add(child_soap)
-        end
+        raise MappingError.new("unknown type: #{child_ele}")
       end
     end
-    o
+    ele
+  end
+
+  def complexobj2choicesoap(obj, ele, type)
+    elements = type.elements
+    any = nil
+    if type.have_any?
+      raise MappingError.new(
+        "<any/> in <choice/> is not supported: #{ele.name.name}")
+    end
+    elements.each do |child_ele|
+      break if complexobj2soapchildren(obj, ele, child_ele)
+    end
+    ele
+  end
+
+  def complexobj2soapchildren(obj, ele, child_ele)
+    if child_ele.map_as_array?
+      child = Mapping.get_attribute(obj, child_ele.name.name)
+      if child.nil? and obj.is_a?(::Array)
+        child = obj
+      end
+      if child.nil?
+        if child_soap = nil2soap(child_ele)
+          ele.add(child_soap)
+        else
+          return false
+        end
+      else
+        child.each do |item|
+          child_soap = obj2elesoap(item, child_ele)
+          ele.add(child_soap)
+        end
+      end
+    else
+      child = Mapping.get_attribute(obj, child_ele.name.name)
+      if child.nil?
+        if child_soap = nil2soap(child_ele)
+          ele.add(child_soap)
+        else
+          return false
+        end
+      else
+        child_soap = obj2elesoap(child, child_ele)
+        ele.add(child_soap)
+      end
+    end
+    true
   end
 
   def scan_any(obj, elements)

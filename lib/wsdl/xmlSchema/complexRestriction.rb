@@ -16,12 +16,14 @@ module XMLSchema
 
 class ComplexRestriction < Info
   attr_accessor :base
+  attr_reader :content
   attr_reader :attributes
 
   def initialize
     super
     @base = nil
     @basetype = nil
+    @content = nil
     @attributes = XSD::NamedElements.new
   end
 
@@ -34,14 +36,15 @@ class ComplexRestriction < Info
   end
 
   def have_any?
-    # TODO
-    false
+    @content and @content.have_any?
+  end
+
+  def choice?
+    @content and @content.choice?
   end
 
   def elements
-    result = XSD::NamedElements.new
-    # TODO: ?
-    result
+    @content ? @content.elements : XSD::NamedElements::Empty
   end
 
   def check_type
@@ -54,6 +57,15 @@ class ComplexRestriction < Info
   
   def parse_element(element)
     case element
+    when AllName
+      @content = All.new
+      @content
+    when SequenceName
+      @content = Sequence.new
+      @content
+    when ChoiceName
+      @content = Choice.new
+      @content
     when AttributeName
       o = Attribute.new
       @attributes << o
