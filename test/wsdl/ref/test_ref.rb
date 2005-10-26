@@ -23,7 +23,7 @@ class TestRef < Test::Unit::TestCase
       gen.run
     end
     compare("expectedProduct.rb", "product.rb")
-    File.unlink(pathname('product.rb'))
+    File.unlink(pathname('product.rb')) unless $DEBUG
   end
 
   def compare(expected, actual)

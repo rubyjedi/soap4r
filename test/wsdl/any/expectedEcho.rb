@@ -4,7 +4,11 @@ require 'xsd/qname'
 class FooBar
   @@schema_type = "foo.bar"
   @@schema_ns = "urn:example.com:echo-type"
-  @@schema_element = [["before", ["SOAP::SOAPString", XSD::QName.new(nil, "before")]], ["any", [nil, XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType")]], ["after", ["SOAP::SOAPString", XSD::QName.new(nil, "after")]]]
+  @@schema_element = [
+    ["before", ["SOAP::SOAPString", XSD::QName.new(nil, "before")]], 
+    ["any", [nil, XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType")]], 
+    ["after", ["SOAP::SOAPString", XSD::QName.new(nil, "after")]]
+  ]
 
   attr_accessor :before
   attr_reader :__xmlele_any

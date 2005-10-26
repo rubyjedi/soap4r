@@ -44,11 +44,17 @@ class ComplexType < Info
     parent.elementformdefault
   end
 
-  AnyElement = Element.new(XSD::QName.new, XSD::AnyTypeName)
-
   def have_any?
     if c = @complexcontent || @content
       c.have_any?
+    else
+      false
+    end
+  end
+
+  def choice?
+    if c = @complexcontent || @content
+      c.choice?
     else
       false
     end

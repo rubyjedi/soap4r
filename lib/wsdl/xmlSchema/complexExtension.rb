@@ -36,13 +36,17 @@ class ComplexExtension < Info
   end
 
   def have_any?
-    basetype.have_any? or @content.have_any?
+    basetype.have_any? or (@content and @content.have_any?)
+  end
+
+  def choice?
+    @content and @content.choice?
   end
 
   def elements
     result = XSD::NamedElements.new
     result.concat(basetype.elements)
-    result.concat(content.elements) if content
+    result.concat(@content.elements) if @content
     result
   end
 

@@ -6,67 +6,46 @@
 # either the dual license version in 2003, or any later version.
 
 
-require 'wsdl/info'
+require 'wsdl/xmlSchema/content'
 
 
 module WSDL
 module XMLSchema
 
 
-class Choice < Info
-  attr_reader :minoccurs
-  attr_reader :maxoccurs
-  attr_reader :elements
+class Choice < Content
   attr_reader :any
 
   def initialize
     super()
-    @minoccurs = '1'
-    @maxoccurs = '1'
-    @elements = XSD::NamedElements.new
     @any = nil
-  end
-
-  def targetnamespace
-    parent.targetnamespace
-  end
-
-  def elementformdefault
-    parent.elementformdefault
   end
 
   def have_any?
     !!@any
   end
 
-  def <<(element)
-    @elements << element
+  def choice?
+    true
   end
 
   def parse_element(element)
     case element
+    when SequenceName
+      o = Sequence.new
+      @elements << o
+      o
+    when ChoiceName
+      o = Choice.new
+      @elements << o
+      o
     when AnyName
       raise ElementConstraintError.new("duplicated element: any") if @any
       @any = Any.new
-      @elements << Complextype::AnyElement
+      @elements << @any
       @any
-    when ElementName
-      o = Element.new
-      @elements << o
-      o
     else
-      nil
-    end
-  end
-
-  def parse_attr(attr, value)
-    case attr
-    when MaxOccursAttrName
-      @maxoccurs = value.source
-    when MinOccursAttrName
-      @minoccurs = value.source
-    else
-      nil
+      super(element)
     end
   end
 end

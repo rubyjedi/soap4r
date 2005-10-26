@@ -4,7 +4,13 @@ require 'xsd/qname'
 class Person
   @@schema_type = "Person"
   @@schema_ns = "http://www.jin.gr.jp/~nahi/xmlns/sample/Person"
-  @@schema_element = [["familyname", ["SOAP::SOAPString", XSD::QName.new(nil, "familyname")]], ["givenname", ["SOAP::SOAPString", XSD::QName.new(nil, "givenname")]], ["var1", ["SOAP::SOAPInt", XSD::QName.new(nil, "var1")]], ["var2", ["SOAP::SOAPDouble", XSD::QName.new(nil, "var2")]], ["var3", ["SOAP::SOAPString", XSD::QName.new(nil, "var3")]]]
+  @@schema_element = [
+    ["familyname", ["SOAP::SOAPString", XSD::QName.new(nil, "familyname")]], 
+    ["givenname", ["SOAP::SOAPString", XSD::QName.new(nil, "givenname")]], 
+    ["var1", ["SOAP::SOAPInt", XSD::QName.new(nil, "var1")]], 
+    ["var2", ["SOAP::SOAPDouble", XSD::QName.new(nil, "var2")]], 
+    ["var3", ["SOAP::SOAPString", XSD::QName.new(nil, "var3")]]
+  ]
 
   attr_accessor :familyname
   attr_accessor :givenname

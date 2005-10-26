@@ -40,8 +40,12 @@ class ComplexContent < Info
     content ? content.have_any? : nil
   end
 
+  def choice?
+    content ? content.choice? : nil
+  end
+
   def elements
-    content.elements
+    content ? content.elements : XSD::NamedElements::Empty
   end
 
   def attributes
