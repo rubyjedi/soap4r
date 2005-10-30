@@ -32,7 +32,11 @@ class WSDL2Ruby
       raise RuntimeError, "WSDL location not given"
     end
     @wsdl = import(@location)
-    @name = @wsdl.name ? @wsdl.name.name : 'default'
+    if @opt['classdef']
+      @name = @opt['classdef']
+    else
+      @name = @wsdl.name ? @wsdl.name.name : 'default'
+    end
     create_file
   end
 
