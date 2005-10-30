@@ -232,13 +232,12 @@ private
   end
 
   def add_elements2stubobj(node, obj)
-    elements, as_array = schema_element_definition(obj.class)
+    definition = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
-      item = elements.find { |k, v| k.name == name }
+      item = definition.elements.find { |k, v| k.elename.name == name }
       if item
-        elename, class_name = item
-        if klass = Mapping.class_from_name(class_name)
+        if klass = Mapping.class_from_name(item.type)
           # klass must be a SOAPBasetype or a class
           if klass.ancestors.include?(::SOAP::SOAPBasetype)
             if value.respond_to?(:data)
@@ -249,16 +248,15 @@ private
           else
             child = Mapping._soap2obj(value, self, klass)
           end
-        elsif klass = Mapping.module_from_name(class_name)
+        elsif klass = Mapping.module_from_name(item.type)
           # simpletype
           if value.respond_to?(:data)
             child = value.data
           else
-            raise MappingError.new(
-              "cannot map to a module value: #{class_name}")
+            raise MappingError.new("cannot map to a module value: #{item.type}")
           end
         else
-          raise MappingError.new("unknown class: #{class_name}")
+          raise MappingError.new("unknown class: #{item.type}")
         end
       else      # untyped element is treated as anyType.
         child = Mapping._soap2obj(value, self)
