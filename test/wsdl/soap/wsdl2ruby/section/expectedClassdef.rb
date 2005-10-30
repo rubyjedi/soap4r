@@ -5,8 +5,7 @@ class Question
   @@schema_type = "question"
   @@schema_ns = "urn:mysample"
   @@schema_element = [
-    ["something", ["SOAP::SOAPString", XSD::QName.new(nil, "something")]]
-  ]
+    ["something", ["SOAP::SOAPString", XSD::QName.new(nil, "something")]]]
 
   attr_accessor :something
 
@@ -20,12 +19,11 @@ class Section
   @@schema_type = "section"
   @@schema_ns = "urn:mysample"
   @@schema_element = [
-    ["sectionID", ["SOAP::SOAPInt", XSD::QName.new(nil, "sectionID")]], 
-    ["name", ["SOAP::SOAPString", XSD::QName.new(nil, "name")]], 
-    ["description", ["SOAP::SOAPString", XSD::QName.new(nil, "description")]], 
-    ["index", ["SOAP::SOAPInt", XSD::QName.new(nil, "index")]], 
-    ["firstQuestion", ["Question", XSD::QName.new(nil, "firstQuestion")]]
-  ]
+    ["sectionID", ["SOAP::SOAPInt", XSD::QName.new(nil, "sectionID")]],
+    ["name", ["SOAP::SOAPString", XSD::QName.new(nil, "name")]],
+    ["description", ["SOAP::SOAPString", XSD::QName.new(nil, "description")]],
+    ["index", ["SOAP::SOAPInt", XSD::QName.new(nil, "index")]],
+    ["firstQuestion", ["Question", XSD::QName.new(nil, "firstQuestion")]]]
 
   attr_accessor :sectionID
   attr_accessor :name

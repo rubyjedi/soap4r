@@ -1,5 +1,5 @@
 # WSDL4R - Creating class definition from WSDL
-# Copyright (C) 2002, 2003, 2004  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2004, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -134,16 +134,15 @@ private
     c.def_classvar('schema_qualified', dq('true')) if qualified
     schema_element, init_lines, init_params =
       parse_elements(c, typedef.elements, qname.namespace)
+    if typedef.choice?
+      schema_element.unshift(:choice)
+    end
     unless typedef.attributes.empty?
       define_attribute(c, typedef.attributes)
       init_lines << "@__xmlattr = {}"
     end
     c.def_classvar('schema_element',
-      "[\n  " +
-        schema_element.collect { |definition|
-          dump_schema_element_definition(definition)
-        }.join(", \n  ") +
-      "\n]"
+      dump_schema_element_definition(schema_element, 2)
     )
     c.def_method('initialize', *init_params) do
       init_lines.join("\n")
@@ -151,19 +150,15 @@ private
     c.dump
   end
 
-  def dump_schema_element(schema_element)
-    schema_element.collect { |definition|
-      dump_schema_element_definition(definition)
-    }.join(', ')
-  end
-
-  def dump_schema_element_definition(definition)
-    if definition[0] == :sequence
+  def dump_schema_element_definition(definition, indent = 0)
+    return '[]' if definition.empty?
+    if definition[0] == :choice
       definition.shift
-      '[ :sequence, ' + dump_schema_element(definition) + ']'
-    elsif definition[0] == :choice
-      definition.shift
-      '[ :choice, ' + dump_schema_element(definition) + ']'
+      "[ :choice,\n" + ' ' * indent +
+        dump_schema_element(definition, indent) + ']'
+    elsif definition[0].is_a?(::Array)
+      "[\n" + ' ' * indent +
+        dump_schema_element(definition, indent) + ']'
     else
       varname, name, type = definition
       '[' +
@@ -176,6 +171,13 @@ private
         ) +
       ']'
     end
+  end
+
+  def dump_schema_element(schema_element, indent = 0)
+    delimiter = ",\n" + " " * indent
+    schema_element.collect { |definition|
+      dump_schema_element_definition(definition, indent + 2)
+    }.join(delimiter)
   end
 
   def parse_elements(c, elements, base_namespace)
@@ -206,6 +208,8 @@ private
           type = klass.name
         elsif element.type
           type = create_class_name(element.type)
+        elsif element.ref
+          type = create_class_name(element.ref)
         else
           type = nil      # means anyType.
           # do we define a class for local complexType from it's name?
@@ -228,23 +232,22 @@ private
           init_params << "#{varname} = nil"
         end
         # nil means @@schema_ns + varname
-        if element.name && varname == name &&
-            element.name.namespace == base_namespace
+        eleqname = element.name || element.ref.name
+        if eleqname && varname == name && eleqname.namespace == base_namespace
           eleqname = nil
-        else
-          eleqname = element.name
         end
         schema_element << [varname, eleqname, type]
       when WSDL::XMLSchema::Sequence
         child_schema_element, child_init_lines, child_init_params =
           parse_elements(c, element.elements, base_namespace)
-        schema_element << [:sequence].concat(child_schema_element)
+        schema_element << child_schema_element
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Choice
         child_schema_element, child_init_lines, child_init_params =
           parse_elements(c, element.elements, base_namespace)
-        schema_element << [:choice].concat(child_schema_element)
+        child_schema_element.unshift(:choice)
+        schema_element << child_schema_element
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       else

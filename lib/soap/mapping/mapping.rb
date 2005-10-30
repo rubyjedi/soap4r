@@ -347,22 +347,48 @@ module Mapping
     schema_element = class_schema_variable(:schema_element, klass)
     return nil unless schema_element
     schema_ns = schema_ns_definition(klass)
-    elements = []
-    as_array = []
-    have_any = false
-    schema_element.each do |varname, definition|
-      class_name, name = definition
-      if /\[\]$/ =~ class_name
-        class_name = class_name.sub(/\[\]$/, '')
-        as_array << (name ? name.name : varname)
-      end
-      if name == XSD::AnyTypeName
-        have_any = true
-      end
-      elements <<
-        [name || XSD::QName.new(schema_ns, varname), class_name]
+    parse_schema_element_definition(schema_ns, schema_element)
+  end
+
+  class SchemaElementDefinition
+    attr_reader :elename, :type
+
+    def initialize(elename, type, as_array)
+      @elename = elename
+      @type = type
+      @as_array = as_array
     end
-    [elements, as_array, have_any]
+
+    def as_array?
+      @as_array
+    end
+  end
+
+  class SchemaDefinition
+    attr_reader :elements
+
+    def initialize(*arg)
+      super
+      @elements = []
+      @choice = false
+      @any = false
+    end
+
+    def choice?
+      @choice
+    end
+
+    def have_any?
+      @any
+    end
+
+    def set_choice
+      @choice = true
+    end
+
+    def set_any
+      @any = true
+    end
   end
 
   def self.schema_attribute_definition(klass)
@@ -371,6 +397,29 @@ module Mapping
 
   class << Mapping
   private
+
+    def parse_schema_element_definition(schema_ns, schema_element)
+      definition = SchemaDefinition.new
+      if schema_element[0] == :choice
+        schema_element.shift
+        definition.set_choice
+      end
+      schema_element.each do |element|
+        varname, info = element
+        class_name, name = info
+        as_array = false
+        if /\[\]$/ =~ class_name
+          class_name = class_name.sub(/\[\]$/, '')
+          as_array = true
+        end
+        if name == XSD::AnyTypeName
+          definition.set_any
+        end
+        definition.elements << SchemaElementDefinition.new(
+          name || XSD::QName.new(schema_ns, varname), class_name, as_array)
+      end
+      definition
+    end
 
     def class_schema_variable(sym, klass)
       var = "@@#{sym}"

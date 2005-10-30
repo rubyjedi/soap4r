@@ -161,18 +161,19 @@ private
         "<any/> in <choice/> is not supported: #{ele.name.name}")
     end
     elements.each do |child_ele|
-      break if complexobj2soapchildren(obj, ele, child_ele)
+      break if complexobj2soapchildren(obj, ele, child_ele, true)
     end
     ele
   end
 
-  def complexobj2soapchildren(obj, ele, child_ele)
+  def complexobj2soapchildren(obj, ele, child_ele, allow_nil_value = false)
     if child_ele.map_as_array?
       child = Mapping.get_attribute(obj, child_ele.name.name)
       if child.nil? and obj.is_a?(::Array)
         child = obj
       end
       if child.nil?
+        return false if allow_nil_value
         if child_soap = nil2soap(child_ele)
           ele.add(child_soap)
         else
@@ -187,6 +188,7 @@ private
     else
       child = Mapping.get_attribute(obj, child_ele.name.name)
       if child.nil?
+        return false if allow_nil_value
         if child_soap = nil2soap(child_ele)
           ele.add(child_soap)
         else
@@ -289,31 +291,29 @@ private
   end
 
   def add_elements2soap(obj, ele)
-    elements, as_array, have_any = schema_element_definition(obj.class)
+    definition = schema_element_definition(obj.class)
     any = nil
-    if have_any
-      any = scan_any(obj, elements)
+    if definition.have_any?
+      any = scan_any(obj, definition.elements)
     end
-    if elements
-      elements.each do |elename, type|
-        if elename == XSD::AnyTypeName
-          if any
-            SOAPElement.from_objs(any).each do |child|
-              ele.add(child)
-            end
+    definition.elements.each do |eledef|
+      if eledef.elename == XSD::AnyTypeName
+        if any
+          SOAPElement.from_objs(any).each do |child|
+            ele.add(child)
           end
-        elsif child = Mapping.get_attribute(obj, elename.name)
-          if as_array.include?(elename.name)
-            child.each do |item|
-              ele.add(obj2soap(item, elename))
-            end
-          else
-            ele.add(obj2soap(child, elename))
+        end
+      elsif child = Mapping.get_attribute(obj, eledef.elename.name)
+        if eledef.as_array?
+          child.each do |item|
+            ele.add(obj2soap(item, eledef.elename))
           end
-        elsif obj.is_a?(::Array) and as_array.include?(elename.name)
-          obj.each do |item|
-            ele.add(obj2soap(item, elename))
-          end
+        else
+          ele.add(obj2soap(child, eledef.elename))
+        end
+      elsif obj.is_a?(::Array) and eledef.as_array?
+        obj.each do |item|
+          ele.add(obj2soap(item, eledef.elename))
         end
       end
     end
@@ -383,13 +383,12 @@ private
   end
 
   def add_elesoap2stubobj(node, obj)
-    elements, as_array = schema_element_definition(obj.class)
+    definition = schema_element_definition(obj.class)
     vars = {}
     node.each do |name, value|
-      item = elements.find { |k, v| k.name == name }
+      item = definition.elements.find { |k, v| k.elename.name == name }
       if item
-        elename, class_name = item
-        if klass = Mapping.class_from_name(class_name)
+        if klass = Mapping.class_from_name(item.type)
           # klass must be a SOAPBasetype or a class
           if klass.ancestors.include?(::SOAP::SOAPBasetype)
             if value.respond_to?(:data)
@@ -400,21 +399,20 @@ private
           else
             child = any2obj(value, klass)
           end
-        elsif klass = Mapping.module_from_name(class_name)
+        elsif klass = Mapping.module_from_name(item.type)
           # simpletype
           if value.respond_to?(:data)
             child = value.data
           else
-            raise MappingError.new(
-              "cannot map to a module value: #{class_name}")
+            raise MappingError.new("cannot map to a module value: #{item.type}")
           end
         else
-          raise MappingError.new("unknown class/module: #{class_name}")
+          raise MappingError.new("unknown class/module: #{item.type}")
         end
       else      # untyped element is treated as anyType.
         child = any2obj(value)
       end
-      if item and as_array.include?(elename.name)
+      if item and item.as_array?
         (vars[name] ||= []) << child
       else
         vars[name] = child
@@ -507,8 +505,7 @@ private
   # it caches @@schema_element.  this means that @@schema_element must not be
   # changed while a lifetime of a WSDLLiteralRegistry.
   def schema_element_definition(klass)
-    @schema_element_cache[klass] ||=
-      Mapping.schema_element_definition(klass)
+    @schema_element_cache[klass] ||= Mapping.schema_element_definition(klass)
   end
 
   def schema_attribute_definition(klass)
