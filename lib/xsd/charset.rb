@@ -24,9 +24,9 @@ public
   #
   EncodingConvertMap = {}
   def Charset.init
-    EncodingConvertMap[['UTF8', 'X_ISO8859_1']] =
+    EncodingConvertMap[['UTF8', 'X_ISO_8859_1']] =
       Proc.new { |str| str.unpack('U*').pack('C*') }
-    EncodingConvertMap[['X_ISO8859_1', 'UTF8']] =
+    EncodingConvertMap[['X_ISO_8859_1', 'UTF8']] =
       Proc.new { |str| str.unpack('C*').pack('U*') }
     begin
       require 'xsd/iconvcharset'
