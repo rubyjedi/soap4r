@@ -39,7 +39,7 @@ __EOX__
 
   def test_by_stub
     header, body = ::SOAP::Processor.unmarshal(@xml)
-    ary = ::SOAP::Mapping.soap2obj(body.response)
+    ary = ::SOAP::Mapping.soap2obj(body.response).item
     assert_equal(3, ary.size)
     assert_equal("name1", ary[0].name)
     assert_equal("name2", ary[1].name)
