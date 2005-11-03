@@ -464,7 +464,9 @@ private
     end
     
     def response_doc(result, mapping_registry, literal_mapping_registry, opt)
-      if @doc_response_qnames.size == 1 and !result.is_a?(Array)
+      if @doc_response_qnames.size == 0
+        result = []
+      elsif @doc_response_qnames.size == 1 and !result.is_a?(Array)
         result = [result]
       end
       if result.size != @doc_response_qnames.size
