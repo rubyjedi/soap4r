@@ -119,7 +119,11 @@ __EOD__
     if mapped = basetype_mapped_class(part.type)
       ['::' + mapped.name]
     elsif definedtype = @simpletypes[part.type]
-      ['::' + basetype_mapped_class(definedtype.base).name]
+      if definedtype.base
+        ['::' + basetype_mapped_class(definedtype.base).name]
+      else
+        raise RuntimeError.new("unsupported simpleType: #{definedtype}")
+      end
     elsif definedtype = @elements[part.element]
       #['::SOAP::SOAPStruct', part.element.namespace, part.element.name]
       ['nil', part.element.namespace, part.element.name]
@@ -148,7 +152,11 @@ __EOD__
     if mapped = basetype_mapped_class(part.type)
       ['::' + mapped.name, nil, part.name]
     elsif definedtype = @simpletypes[part.type]
-      ['::' + basetype_mapped_class(definedtype.base).name, nil, part.name]
+      if definedtype.base
+        ['::' + basetype_mapped_class(definedtype.base).name, nil, part.name]
+      else
+        raise RuntimeError.new("unsupported simpleType: #{definedtype}")
+      end
     elsif definedtype = @elements[part.element]
       ['::SOAP::SOAPElement', part.element.namespace, part.element.name]
     elsif definedtype = @complextypes[part.type]

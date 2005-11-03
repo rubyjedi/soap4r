@@ -96,13 +96,47 @@ private
   end
 
   def dump_simpletypedef(qname, simpletype)
-    if !simpletype.restriction or simpletype.restriction.enumeration.empty?
+    if simpletype.restriction
+      dump_simpletypedef_restriction(qname, simpletype.restriction)
+    elsif simpletype.list
+      dump_simpletypedef_list(qname, simpletype.list)
+    else
+      raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
+    end
+  end
+
+  def dump_simpletypedef_restriction(qname, restriction)
+    if restriction.enumeration.empty?
+      # not supported.  minlength?
       return nil
     end
     c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
     c.comment = "#{qname}"
+    define_enum_restriction(c, restriction.enumeration)
+    c.dump
+  end
+
+  def dump_simpletypedef_list(qname, list)
+    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), '::Array')
+    c.comment = "#{qname}"
+    if simpletype = list.local_simpletype
+      if simpletype.restriction.nil?
+        raise RuntimeError.new(
+          "unknown kind of simpletype: #{simpletype}")
+      end
+      define_enum_restriction(c, simpletype.restriction.enumeration)
+      c.comment << "\n  contains list of #{create_class_name(qname)}::*"
+    elsif list.itemtype
+      c.comment << "\n  contains list of #{create_class_name(list.itemtype)}::*"
+    else
+      raise RuntimeError.new("unknown kind of list: #{list}")
+    end
+    c.dump
+  end
+
+  def define_enum_restriction(c, enumeration)
     const = {}
-    simpletype.restriction.enumeration.each do |value|
+    enumeration.each do |value|
       constname = safeconstname(value)
       const[constname] ||= 0
       if (const[constname] += 1) > 1
@@ -110,7 +144,6 @@ private
       end
       c.def_const(constname, ndq(value))
     end
-    c.dump
   end
 
   def dump_simpleclassdef(type_or_element)

@@ -382,9 +382,13 @@ private
   end
 
   def decode_defined_simpletype(elename, typename, typedef, arytypestr)
-    o = decode_basetype(TypeMap[typedef.base], elename)
-    o.definedtype = typedef
-    o
+    if typedef.base
+      o = decode_basetype(TypeMap[typedef.base], elename)
+      o.definedtype = typedef
+      o
+    else
+      raise RuntimeError.new("unsupported simpleType: #{typedef}")
+    end
   end
 
   def decode_defined_complextype(elename, typename, typedef, arytypestr)
