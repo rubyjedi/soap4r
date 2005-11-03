@@ -24,6 +24,7 @@ require 'wsdl/xmlSchema/element'
 require 'wsdl/xmlSchema/all'
 require 'wsdl/xmlSchema/choice'
 require 'wsdl/xmlSchema/sequence'
+require 'wsdl/xmlSchema/list'
 require 'wsdl/xmlSchema/attribute'
 require 'wsdl/xmlSchema/unique'
 require 'wsdl/xmlSchema/enumeration'
@@ -47,6 +48,7 @@ ExtensionName = XSD::QName.new(XSD::Namespace, 'extension')
 ImportName = XSD::QName.new(XSD::Namespace, 'import')
 IncludeName = XSD::QName.new(XSD::Namespace, 'include')
 LengthName = XSD::QName.new(XSD::Namespace, 'length')
+ListName = XSD::QName.new(XSD::Namespace, 'list')
 PatternName = XSD::QName.new(XSD::Namespace, 'pattern')
 RestrictionName = XSD::QName.new(XSD::Namespace, 'restriction')
 SequenceName = XSD::QName.new(XSD::Namespace, 'sequence')
@@ -63,6 +65,7 @@ FinalAttrName = XSD::QName.new(nil, 'final')
 FixedAttrName = XSD::QName.new(nil, 'fixed')
 FormAttrName = XSD::QName.new(nil, 'form')
 IdAttrName = XSD::QName.new(nil, 'id')
+ItemTypeAttrName = XSD::QName.new(nil, 'itemType')
 MaxOccursAttrName = XSD::QName.new(nil, 'maxOccurs')
 MinOccursAttrName = XSD::QName.new(nil, 'minOccurs')
 MixedAttrName = XSD::QName.new(nil, 'mixed')

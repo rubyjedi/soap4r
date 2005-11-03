@@ -163,11 +163,16 @@ class SOAPMethod < SOAPStruct
     req_qnames = [req_qnames] if req_qnames.is_a?(XSD::QName)
     res_qnames = [res_qnames] if res_qnames.is_a?(XSD::QName)
     param_def = []
-    req_qnames.each do |qname|
-      param_def << [IN, qname.name, [nil, qname.namespace, qname.name]]
+    # req_qnames and res_qnames can be nil
+    if req_qnames
+      req_qnames.each do |qname|
+        param_def << [IN, qname.name, [nil, qname.namespace, qname.name]]
+      end
     end
-    res_qnames.each do |qname|
-      param_def << [OUT, qname.name, [nil, qname.namespace, qname.name]]
+    if res_qnames
+      res_qnames.each do |qname|
+        param_def << [OUT, qname.name, [nil, qname.namespace, qname.name]]
+      end
     end
     param_def
   end
