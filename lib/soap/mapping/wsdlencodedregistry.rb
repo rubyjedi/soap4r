@@ -241,7 +241,7 @@ private
     vars = {}
     node.each do |name, value|
       item = definition.elements.find { |k, v| k.elename.name == name }
-      if item
+      if item and item.type
         if klass = Mapping.class_from_name(item.type)
           # klass must be a SOAPBasetype or a class
           if klass.ancestors.include?(::SOAP::SOAPBasetype)

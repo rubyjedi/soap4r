@@ -17,10 +17,13 @@ module SOAP
 
 class ClassDefCreator
   include ClassDefCreatorSupport
+  include XSD::CodeGen
 
   def initialize(definitions)
     @elements = definitions.collect_elements
     @elements.uniq!
+    @attributes = definitions.collect_attributes
+    @attributes.uniq!
     @simpletypes = definitions.collect_simpletypes
     @simpletypes.uniq!
     @complextypes = definitions.collect_complextypes
@@ -37,6 +40,11 @@ class ClassDefCreator
       result = dump_classdef(type.name, type)
     else
       str = dump_element
+      unless str.empty?
+        result << "\n" unless result.empty?
+        result << str
+      end
+      str = dump_attribute
       unless str.empty?
         result << "\n" unless result.empty?
         result << str
@@ -60,12 +68,20 @@ private
   def dump_element
     @elements.collect { |ele|
       if ele.local_complextype
-        dump_classdef(ele.name, ele.local_complextype,
-          ele.elementform == 'qualified')
+        qualified = ele.elementform == 'qualified'
+        dump_complextypedef(ele.name, ele.local_complextype, qualified)
       elsif ele.local_simpletype
         dump_simpletypedef(ele.name, ele.local_simpletype)
       else
         nil
+      end
+    }.compact.join("\n")
+  end
+
+  def dump_attribute
+    @attributes.collect { |attr|
+      if attr.local_simpletype
+        dump_simpletypedef(attr.name, attr.local_simpletype)
       end
     }.compact.join("\n")
   end
@@ -78,20 +94,7 @@ private
 
   def dump_complextype
     @complextypes.collect { |type|
-      case type.compoundtype
-      when :TYPE_STRUCT, :TYPE_EMPTY
-        dump_classdef(type.name, type)
-      when :TYPE_ARRAY
-        dump_arraydef(type)
-      when :TYPE_SIMPLE
-        dump_simpleclassdef(type)
-      when :TYPE_MAP
-        # mapped as a general Hash
-        nil
-      else
-        raise RuntimeError.new(
-          "unknown kind of complexContent: #{type.compoundtype}")
-      end
+      dump_complextypedef(type.name, type)
     }.compact.join("\n")
   end
 
@@ -110,14 +113,14 @@ private
       # not supported.  minlength?
       return nil
     end
-    c = XSD::CodeGen::ModuleDef.new(create_class_name(qname))
+    c = ModuleDef.new(create_class_name(qname))
     c.comment = "#{qname}"
     define_enum_restriction(c, restriction.enumeration)
     c.dump
   end
 
   def dump_simpletypedef_list(qname, list)
-    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), '::Array')
+    c = ClassDef.new(create_class_name(qname), '::Array')
     c.comment = "#{qname}"
     if simpletype = list.local_simpletype
       if simpletype.restriction.nil?
@@ -146,20 +149,41 @@ private
     end
   end
 
-  def dump_simpleclassdef(type_or_element)
-    qname = type_or_element.name
+  def dump_simpleclassdef(qname, type_or_element)
     base = create_class_name(type_or_element.simplecontent.base)
-    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), base)
+    c = ClassDef.new(create_class_name(qname), base)
     c.comment = "#{qname}"
+    unless type_or_element.attributes.empty?
+      define_attribute(c, type_or_element.attributes)
+      c.def_method('initialize', '*arg') do
+        "super\n" + "@__xmlattr = {}"
+      end
+    end
     c.dump
+  end
+
+  def dump_complextypedef(qname, type, qualified = false)
+    case type.compoundtype
+    when :TYPE_STRUCT, :TYPE_EMPTY
+      dump_classdef(qname, type, qualified)
+    when :TYPE_ARRAY
+      dump_arraydef(qname, type)
+    when :TYPE_SIMPLE
+      dump_simpleclassdef(qname, type)
+    when :TYPE_MAP
+      # mapped as a general Hash
+      nil
+    else
+      raise RuntimeError.new(
+        "unknown kind of complexContent: #{type.compoundtype}")
+    end
   end
 
   def dump_classdef(qname, typedef, qualified = false)
     if @faulttypes and @faulttypes.index(qname)
-      c = XSD::CodeGen::ClassDef.new(create_class_name(qname),
-        '::StandardError')
+      c = ClassDef.new(create_class_name(qname), '::StandardError')
     else
-      c = XSD::CodeGen::ClassDef.new(create_class_name(qname))
+      c = ClassDef.new(create_class_name(qname))
     end
     c.comment = "#{qname}"
     c.def_classvar('schema_type', ndq(qname.name))
@@ -254,13 +278,18 @@ private
           # </element>
         end
         name = name_element(element).name
-        attrname = safemethodname?(name) ? name : safemethodname(name)
+        #attrname = safemethodname?(name) ? name : safemethodname(name)
+        attrname = safemethodname(name)
         varname = safevarname(name)
         c.def_attr(attrname, true, varname)
         init_lines << "@#{varname} = #{varname}"
         if element.map_as_array?
           init_params << "#{varname} = []"
-          type << '[]' if type
+          if type
+            type << '[]'
+          else
+            type = '[]'
+          end
         else
           init_params << "#{varname} = nil"
         end
@@ -362,9 +391,8 @@ private
 
   DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
 
-  def dump_arraydef(complextype)
-    qname = complextype.name
-    c = XSD::CodeGen::ClassDef.new(create_class_name(qname), '::Array')
+  def dump_arraydef(qname, complextype)
+    c = ClassDef.new(create_class_name(qname), '::Array')
     c.comment = "#{qname}"
     child_type = complextype.child_type
     c.def_classvar('schema_type', ndq(child_type.name))

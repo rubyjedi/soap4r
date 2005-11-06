@@ -52,6 +52,10 @@ obj.headerhandler << sessionid_handler
 obj.headerhandler << calloptions_handler
 obj.wiredump_dev = STDOUT
 
+p obj.delete(Delete.new([1, 2, 3]))
+p obj.describeSObject(:sObjectType => "hello world")
+p obj.describeSObject(DescribeSObject.new("hello world"))
+
 if false
 require 'soap/wsdlDriver'
 obj = SOAP::WSDLDriverFactory.new("partner.wsdl").create_rpc_driver
