@@ -410,6 +410,9 @@ module Mapping
         as_array = false
         if /\[\]$/ =~ class_name
           class_name = class_name.sub(/\[\]$/, '')
+          if class_name.empty?
+            class_name = nil
+          end
           as_array = true
         end
         if name == XSD::AnyTypeName

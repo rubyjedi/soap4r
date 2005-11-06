@@ -35,8 +35,10 @@ class WSDLLiteralRegistry < Registry
 
   def obj2soap(obj, qname)
     soap_obj = nil
-    if ele = @definedelements[qname]
-      soap_obj = obj2elesoap(obj, ele)
+    if obj.is_a?(SOAPElement)
+      soap_obj = obj
+    elsif eledef = @definedelements[qname]
+      soap_obj = obj2elesoap(obj, eledef)
     elsif type = @definedtypes[qname]
       soap_obj = obj2typesoap(obj, type, true)
     else
@@ -78,47 +80,52 @@ private
 
   MAPPING_OPT = { :no_reference => true }
 
-  def obj2elesoap(obj, ele)
-    o = nil
-    qualified = (ele.elementform == 'qualified')
-    if ele.type
-      if type = @definedtypes[ele.type]
-        o = obj2typesoap(obj, type, qualified)
-      elsif type = TypeMap[ele.type]
-        o = base2soap(obj, type)
+  def obj2elesoap(obj, eledef)
+    ele = nil
+    qualified = (eledef.elementform == 'qualified')
+    if eledef.type
+      if type = @definedtypes[eledef.type]
+        ele = obj2typesoap(obj, type, qualified)
+      elsif type = TypeMap[eledef.type]
+        ele = base2soap(obj, type)
       else
-        raise MappingError.new("cannot find type #{ele.type}")
+        raise MappingError.new("cannot find type #{eledef.type}")
       end
-    elsif ele.local_complextype
-      o = obj2typesoap(obj, ele.local_complextype, qualified)
-      add_attributes2soap(obj, o)
-    elsif ele.local_simpletype
-      o = obj2typesoap(obj, ele.local_simpletype, qualified)
+    elsif eledef.local_complextype
+      ele = obj2typesoap(obj, eledef.local_complextype, qualified)
+    elsif eledef.local_simpletype
+      ele = obj2typesoap(obj, eledef.local_simpletype, qualified)
     else
       raise MappingError.new('illegal schema?')
     end
-    o.elename = ele.name
-    o
+    ele.elename = eledef.name
+    ele
   end
 
   def obj2typesoap(obj, type, qualified)
+    ele = nil
     if type.is_a?(::WSDL::XMLSchema::SimpleType)
-      simpleobj2soap(obj, type)
+      ele = simpleobj2soap(obj, type)
+    elsif type.simplecontent
+      ele = simpleobj2soap(obj, type.simplecontent)
     else
-      complexobj2soap(obj, type, qualified)
+      ele = complexobj2soap(obj, type, qualified)
     end
+    add_attributes2soap(obj, ele)
+    ele
   end
 
   def simpleobj2soap(obj, type)
     type.check_lexical_format(obj)
     return SOAPNil.new if obj.nil?      # TODO: check nillable.
     if type.base
-      base2soap(obj, TypeMap[type.base])
+      ele = base2soap(obj, TypeMap[type.base])
     elsif type.list
-      base2soap(obj.join(" "), SOAP::SOAPString)
+      ele = base2soap(obj.join(" "), SOAP::SOAPString)
     else
       raise MappingError.new("unsupported simpleType: #{type}")
     end
+    ele
   end
 
   def complexobj2soap(obj, type, qualified)
@@ -173,38 +180,59 @@ private
 
   def complexobj2soapchildren(obj, ele, child_ele, allow_nil_value = false)
     if child_ele.map_as_array?
-      child = Mapping.get_attribute(obj, child_ele.name.name)
-      if child.nil? and obj.is_a?(::Array)
-        child = obj
-      end
-      if child.nil?
-        return false if allow_nil_value
-        if child_soap = nil2soap(child_ele)
-          ele.add(child_soap)
-        else
-          return false
-        end
-      else
-        child.each do |item|
-          child_soap = obj2elesoap(item, child_ele)
-          ele.add(child_soap)
-        end
-      end
+      complexobj2soapchildren_array(obj, ele, child_ele, allow_nil_value)
     else
-      child = Mapping.get_attribute(obj, child_ele.name.name)
-      if child.nil?
-        return false if allow_nil_value
-        if child_soap = nil2soap(child_ele)
-          ele.add(child_soap)
-        else
-          return false
-        end
+      complexobj2soapchildren_single(obj, ele, child_ele, allow_nil_value)
+    end
+  end
+
+  def complexobj2soapchildren_array(obj, ele, child_ele, allow_nil_value)
+    child = Mapping.get_attribute(obj, child_ele.name.name)
+    if child.nil? and obj.respond_to?(:each)
+      child = obj
+    end
+    if child.nil?
+      return false if allow_nil_value
+      if child_soap = nil2soap(child_ele)
+        ele.add(child_soap)
+        return true
       else
-        child_soap = obj2elesoap(child, child_ele)
+        return false
+      end
+    end
+    unless child.respond_to?(:each)
+      return false
+    end
+    child.each do |item|
+      if item.is_a?(SOAPElement)
+        ele.add(item)
+      else
+        child_soap = obj2elesoap(item, child_ele)
         ele.add(child_soap)
       end
     end
     true
+  end
+
+  def complexobj2soapchildren_single(obj, ele, child_ele, allow_nil_value)
+    child = Mapping.get_attribute(obj, child_ele.name.name)
+    case child
+    when NilClass
+      return false if allow_nil_value
+      if child_soap = nil2soap(child_ele)
+        ele.add(child_soap)
+        true
+      else
+        false
+      end
+    when SOAPElement
+      ele.add(child)
+      true
+    else
+      child_soap = obj2elesoap(child, child_ele)
+      ele.add(child_soap)
+      true
+    end
   end
 
   def scan_any(obj, elements)
@@ -235,41 +263,32 @@ private
   end
 
   def any2soap(obj, qname)
-    if obj.is_a?(SOAPElement)
-      obj
-    elsif obj.class.class_variables.include?('@@schema_element')
-      stubobj2soap(obj, qname)
+    ele = nil
+    if obj.class.class_variables.include?('@@schema_element')
+      ele = stubobj2soap(obj, qname)
     elsif obj.is_a?(SOAP::Mapping::Object)
-      mappingobj2soap(obj, qname)
+      ele = mappingobj2soap(obj, qname)
     elsif obj.is_a?(Hash)
       ele = SOAPElement.from_obj(obj)
       ele.elename = qname
-      ele
     elsif obj.is_a?(Array)
       # treat as a list of simpletype
       ele = SOAPElement.new(qname, obj.join(" "))
-      ele
     elsif obj.is_a?(XSD::QName)
       ele = SOAPElement.new(qname)
       ele.text = obj
-      ele
     else
       # expected to be a basetype or an anyType.
       # SOAPStruct, etc. is used instead of SOAPElement.
       begin
         ele = Mapping.obj2soap(obj, nil, nil, MAPPING_OPT)
         ele.elename = qname
-        ele
       rescue MappingError
         ele = SOAPElement.new(qname, obj.to_s)
       end
-      if obj.respond_to?(:__xmlattr)
-        obj.__xmlattr.each do |key, value|
-          ele.extraattr[key] = value
-        end
-      end
-      ele
     end
+    add_attributes2soap(obj, ele)
+    ele
   end
 
   def stubobj2soap(obj, qname)
@@ -278,7 +297,6 @@ private
       (obj.class.class_variables.include?('@@schema_qualified') and
       obj.class.class_eval('@@schema_qualified'))
     add_elements2soap(obj, ele)
-    add_attributes2soap(obj, ele)
     ele
   end
 
@@ -292,9 +310,6 @@ private
       else
         ele.add(obj2soap(value, key))
       end
-    end
-    obj.__xmlattr.each do |key, value|
-      ele.extraattr[key] = value
     end
     ele
   end
@@ -320,7 +335,7 @@ private
         else
           ele.add(obj2soap(child, eledef.elename))
         end
-      elsif obj.is_a?(::Array) and eledef.as_array?
+      elsif obj.respond_to?(:each) and eledef.as_array?
         obj.each do |item|
           ele.add(obj2soap(item, eledef.elename))
         end
@@ -332,9 +347,13 @@ private
     attributes = schema_attribute_definition(obj.class)
     if attributes
       attributes.each do |qname, param|
-        attr = obj.__send__('xmlattr_' +
-          XSD::CodeGen::GenSupport.safevarname(qname.name))
+        attr = obj.__send__(
+          XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
         ele.extraattr[qname] = attr
+      end
+    elsif obj.respond_to?(:__xmlattr)
+      obj.__xmlattr.each do |key, value|
+        ele.extraattr[key] = value
       end
     end
   end
@@ -396,7 +415,7 @@ private
     vars = {}
     node.each do |name, value|
       item = definition.elements.find { |k, v| k.elename.name == name }
-      if item
+      if item and item.type
         if klass = Mapping.class_from_name(item.type)
           # klass must be a SOAPBasetype or a class
           if klass.ancestors.include?(::SOAP::SOAPBasetype)
@@ -471,14 +490,14 @@ private
 
   if RUBY_VERSION > "1.7.0"
     def define_xmlattr_accessor(obj, qname)
-      name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
-      Mapping.define_attr_accessor(obj, 'xmlattr_' + name,
+      name = XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name)
+      Mapping.define_attr_accessor(obj, name,
         proc { @__xmlattr[qname] },
         proc { |value| @__xmlattr[qname] = value })
     end
   else
     def define_xmlattr_accessor(obj, qname)
-      name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
+      name = XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name)
       obj.instance_eval <<-EOS
         def #{name}
           @__xmlattr[#{qname.dump}]

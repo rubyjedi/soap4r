@@ -1,90 +1,87 @@
 require 'xsd/qname'
 
-# {urn:product}Rating
+# {urn:ref}Rating
 module Rating
   C_0 = "0"
   C_1 = "+1"
   C_1_2 = "-1"
 end
 
-# {urn:product}Product-Bag
+# {urn:ref}Product-Bag
 class ProductBag
   @@schema_type = "Product-Bag"
-  @@schema_ns = "urn:product"
-  @@schema_attribute = {XSD::QName.new("urn:product", "version") => "SOAP::SOAPString", XSD::QName.new("urn:product", "yesno") => "SOAP::SOAPString"}
+  @@schema_ns = "urn:ref"
+  @@schema_attribute = {XSD::QName.new("urn:ref", "version") => "SOAP::SOAPString", XSD::QName.new("urn:ref", "yesno") => "SOAP::SOAPString"}
   @@schema_element = [
     ["bag", ["Product[]", XSD::QName.new(nil, "bag")]],
-    ["rating", ["SOAP::SOAPString[]", XSD::QName.new("urn:product", "Rating")]],
-    ["product_Bag", ["ProductBag", XSD::QName.new("urn:product", "Product-Bag")]],
-    ["comment_1", [nil, XSD::QName.new(nil, "comment_1")]],
+    ["rating", ["SOAP::SOAPString[]", XSD::QName.new("urn:ref", "Rating")]],
+    ["comment_1", ["[]", XSD::QName.new(nil, "comment_1")]],
     ["comment_2", ["Comment[]", XSD::QName.new(nil, "comment-2")]]]
 
   attr_accessor :bag
-  attr_accessor :product_Bag
+  attr_accessor :rating
   attr_accessor :comment_1
   attr_accessor :comment_2
 
-  def Rating
-    @rating
-  end
-
-  def Rating=(value)
-    @rating = value
-  end
-
   def xmlattr_version
-    (@__xmlattr ||= {})[XSD::QName.new("urn:product", "version")]
+    (@__xmlattr ||= {})[XSD::QName.new("urn:ref", "version")]
   end
 
   def xmlattr_version=(value)
-    (@__xmlattr ||= {})[XSD::QName.new("urn:product", "version")] = value
+    (@__xmlattr ||= {})[XSD::QName.new("urn:ref", "version")] = value
   end
 
   def xmlattr_yesno
-    (@__xmlattr ||= {})[XSD::QName.new("urn:product", "yesno")]
+    (@__xmlattr ||= {})[XSD::QName.new("urn:ref", "yesno")]
   end
 
   def xmlattr_yesno=(value)
-    (@__xmlattr ||= {})[XSD::QName.new("urn:product", "yesno")] = value
+    (@__xmlattr ||= {})[XSD::QName.new("urn:ref", "yesno")] = value
   end
 
-  def initialize(bag = [], rating = [], product_Bag = nil, comment_1 = [], comment_2 = [])
+  def initialize(bag = [], rating = [], comment_1 = [], comment_2 = [])
     @bag = bag
     @rating = rating
-    @product_Bag = product_Bag
     @comment_1 = comment_1
     @comment_2 = comment_2
     @__xmlattr = {}
   end
 end
 
-# {urn:product}Creator
-class Creator
-  @@schema_type = "Creator"
-  @@schema_ns = "urn:product"
-  @@schema_element = []
+# {urn:ref}Creator
+class Creator < String
+  @@schema_attribute = {XSD::QName.new(nil, "Role") => nil}
 
-  def initialize
+  def xmlattr_Role
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "Role")]
+  end
+
+  def xmlattr_Role=(value)
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "Role")] = value
+  end
+
+  def initialize(*arg)
+    super
+    @__xmlattr = {}
   end
 end
 
-# {urn:product}Product
+# {urn:ref}yesno
+module Yesno
+  N = "N"
+  Y = "Y"
+end
+
+# {urn:ref}Product
 class Product
   @@schema_type = "Product"
-  @@schema_ns = "urn:product"
+  @@schema_ns = "urn:ref"
   @@schema_element = [
     ["name", ["SOAP::SOAPString", XSD::QName.new(nil, "name")]],
-    ["rating", ["SOAP::SOAPString", XSD::QName.new("urn:product", "Rating")]]]
+    ["rating", ["SOAP::SOAPString", XSD::QName.new("urn:ref", "Rating")]]]
 
   attr_accessor :name
-
-  def Rating
-    @rating
-  end
-
-  def Rating=(value)
-    @rating = value
-  end
+  attr_accessor :rating
 
   def initialize(name = nil, rating = nil)
     @name = name
@@ -92,6 +89,20 @@ class Product
   end
 end
 
-# {urn:product}Comment
+# {urn:ref}Comment
 class Comment < String
+  @@schema_attribute = {XSD::QName.new(nil, "msgid") => "SOAP::SOAPString"}
+
+  def xmlattr_msgid
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "msgid")]
+  end
+
+  def xmlattr_msgid=(value)
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "msgid")] = value
+  end
+
+  def initialize(*arg)
+    super
+    @__xmlattr = {}
+  end
 end

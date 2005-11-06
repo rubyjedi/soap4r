@@ -83,7 +83,7 @@ class TestEcho < Test::Unit::TestCase
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
     d = Derived.new
-    d.Name = "NaHi"
+    d.name = "NaHi"
     assert_instance_of(Echo, @client.echo(Echo.new(d)))
   end
 end

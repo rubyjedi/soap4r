@@ -46,30 +46,56 @@ class Operation < Info
   end
 
   def input_info
-    typename = input.find_message.name
+    if message = input_message
+      typename = message.name
+    else
+      typename = nil
+    end
     NameInfo.new(@name, typename, inputparts)
   end
 
   def output_info
-    typename = output.find_message.name
+    if message = output_message
+      typename = message.name
+    else
+      typename = nil
+    end
     NameInfo.new(@name, typename, outputparts)
   end
 
+  EMPTY = [].freeze
+
   def inputparts
-    sort_parts(input.find_message.parts)
+    if message = input_message
+      sort_parts(message.parts)
+    else
+      EMPTY
+    end
   end
 
   def inputname
-    XSD::QName.new(targetnamespace, input.name ? input.name.name : @name.name)
+    if input
+      XSD::QName.new(targetnamespace, input.name ? input.name.name : @name.name)
+    else
+      nil
+    end
   end
 
   def outputparts
-    sort_parts(output.find_message.parts)
+    if message = output_message
+      sort_parts(message.parts)
+    else
+      EMPTY
+    end
   end
 
   def outputname
-    XSD::QName.new(targetnamespace,
-      output.name ? output.name.name : @name.name + 'Response')
+    if output
+      XSD::QName.new(targetnamespace,
+        output.name ? output.name.name : @name.name + 'Response')
+    else
+      nil
+    end
   end
 
   def parse_element(element)
@@ -108,6 +134,22 @@ class Operation < Info
   end
 
 private
+
+  def input_message
+    if input and message = input.find_message
+      message
+    else
+      nil
+    end
+  end
+
+  def output_message
+    if output and message = output.find_message
+      message
+    else
+      nil
+    end
+  end
 
   def sort_parts(parts)
     return parts.dup unless parameter_order

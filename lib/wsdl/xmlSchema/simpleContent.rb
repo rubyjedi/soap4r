@@ -32,6 +32,10 @@ class SimpleContent < Info
     content.base
   end
 
+  def attributes
+    content.attributes
+  end
+
   def targetnamespace
     parent.targetnamespace
   end
