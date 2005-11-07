@@ -9,7 +9,8 @@ class Person
     ["givenname", ["SOAP::SOAPString", XSD::QName.new(nil, "givenname")]],
     ["var1", ["SOAP::SOAPInt", XSD::QName.new(nil, "var1")]],
     ["var2", ["SOAP::SOAPDouble", XSD::QName.new(nil, "var2")]],
-    ["var3", ["SOAP::SOAPString", XSD::QName.new(nil, "var3")]]]
+    ["var3", ["SOAP::SOAPString", XSD::QName.new(nil, "var3")]]
+  ]
 
   attr_accessor :familyname
   attr_accessor :givenname

@@ -6,7 +6,8 @@ class Version_struct
   @@schema_ns = "urn:example.com:simpletype-rpc-type"
   @@schema_element = [
     ["version", ["SOAP::SOAPString", XSD::QName.new(nil, "version")]],
-    ["msg", ["SOAP::SOAPString", XSD::QName.new(nil, "msg")]]]
+    ["msg", ["SOAP::SOAPString", XSD::QName.new(nil, "msg")]]
+  ]
 
   attr_accessor :version
   attr_accessor :msg

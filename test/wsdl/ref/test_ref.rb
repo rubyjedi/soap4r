@@ -30,6 +30,8 @@ class TestRef < Test::Unit::TestCase
         arg.bag[0].rating,
         arg.bag[1].name,
         arg.bag[1].rating,
+        arg.xmlattr_version,
+        arg.xmlattr_yesno,
         arg.rating[0],
         arg.rating[1],
         arg.rating[2],
@@ -150,6 +152,8 @@ class TestRef < Test::Unit::TestCase
     p2 = e("bag")
       p2.add(e("name", "bar"))
       p2.add(e(q(Namespace, "Rating"), "+1"))
+    version = "version"
+    yesno = "N"
     r1 = e(q(Namespace, "Rating"), "0")
     r2 = e(q(Namespace, "Rating"), "+1")
     r3 = e(q(Namespace, "Rating"), "-1")
@@ -171,13 +175,14 @@ class TestRef < Test::Unit::TestCase
       bag.add(c12)
       bag.add(c21)
       bag.add(c22)
-    bag.extraattr["version"] = "version"
-    bag.extraattr["yesno"] = "Y"
+    bag.extraattr[q(Namespace, "version")] = version
+    bag.extraattr[q(Namespace, "yesno")] = yesno
     ret = @client.echo(bag)
     assert_equal(
       [
         p1["name"].text, p1["Rating"].text,
         p2["name"].text, p2["Rating"].text,
+        version, yesno,
         r1.text, r2.text, r3.text,
         c11.text, c11.extraattr["msgid"],
         c12.text, c12.extraattr["msgid"],
@@ -196,6 +201,8 @@ class TestRef < Test::Unit::TestCase
     @client.wiredump_dev = STDOUT if $DEBUG
     p1 = Product.new("foo", Rating::C_0)
     p2 = Product.new("bar", Rating::C_1)
+    version = "version"
+    yesno = Yesno::Y
     r1 = Rating::C_0
     r2 = Rating::C_1
     r3 = Rating::C_1_2
@@ -208,13 +215,14 @@ class TestRef < Test::Unit::TestCase
     c22 = Comment.new("comment22")
     c22.xmlattr_msgid = "msgid22"
     bag = ProductBag.new([p1, p2], [r1, r2, r3], [c11, c12], [c21, c22])
-    bag.xmlattr_version = "version"
-    bag.xmlattr_yesno = Yesno::Y
+    bag.xmlattr_version = version
+    bag.xmlattr_yesno = yesno
     ret = @client.echo(bag)
     assert_equal(
       [
         p1.name, p1.rating,
         p2.name, p2.rating,
+        version, yesno,
         r1, r2, r3,
         c11.text, c11.extraattr["msgid"],
         c12.text, c12.extraattr["msgid"],
@@ -231,6 +239,8 @@ class TestRef < Test::Unit::TestCase
     @client.wiredump_dev = STDOUT if $DEBUG
     p1 = Product.new("foo", Rating::C_0)
     p2 = Product.new("bar", Rating::C_1)
+    version = "version"
+    yesno = Yesno::Y
     r1 = Rating::C_0
     r2 = Rating::C_1
     r3 = Rating::C_1_2
@@ -242,14 +252,16 @@ class TestRef < Test::Unit::TestCase
     c21.xmlattr_msgid = "msgid21"
     c22 = Comment.new("comment22")
     c22.xmlattr_msgid = "msgid22"
-    bag = ProductBag.new([p1, p2], [r1, r2, r3], [c11, c12], [c21, c22])
-    bag.xmlattr_version = "version"
-    bag.xmlattr_yesno = Yesno::Y
+    pts = C__point.new("123")
+    bag = ProductBag.new([p1, p2], [r1, r2, r3], [c11, c12], [c21, c22], pts)
+    bag.xmlattr_version = version
+    bag.xmlattr_yesno = yesno
     ret = @client.echo(bag)
     assert_equal(
       [
         p1.name, p1.rating,
         p2.name, p2.rating,
+        version, yesno,
         r1, r2, r3,
         c11.text, c11.extraattr["msgid"],
         c12.text, c12.extraattr["msgid"],
