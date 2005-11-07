@@ -29,6 +29,14 @@
         </simpleContent>
       </complexType>
 
+      <complexType name="_point">
+        <simpleContent>
+          <extension base="xsd:integer">
+            <attribute name="unit" type="xsd:string" use="required"/>
+          </extension>
+        </simpleContent>
+      </complexType>
+
       <attribute name="version" type="tns:non-empty-string"/>
 
       <attribute default="Y" name="yesno">
@@ -65,6 +73,7 @@
               </complexType>
             </element>
             <element name="comment-2" type="tns:Comment" minOccurs="0" maxOccurs="unbounded"/>
+            <element name="__point" type="tns:_point" minOccurs="0" maxOccurs="1"/>
           </sequence>
           <attribute ref="tns:version"/>
           <attribute ref="tns:yesno"/>

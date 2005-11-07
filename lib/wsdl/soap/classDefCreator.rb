@@ -150,14 +150,16 @@ private
   end
 
   def dump_simpleclassdef(qname, type_or_element)
-    base = create_class_name(type_or_element.simplecontent.base)
-    c = ClassDef.new(create_class_name(qname), base)
-    c.comment = "#{qname}"
+    base = basetype_class(type_or_element.simplecontent.base)
+    c = ClassDef.new(create_class_name(qname), '::String')
+    c.comment = "#{qname}\n  contains #{base}"
+    init_lines = []
     unless type_or_element.attributes.empty?
       define_attribute(c, type_or_element.attributes)
-      c.def_method('initialize', '*arg') do
-        "super\n" + "@__xmlattr = {}"
-      end
+      init_lines << "@__xmlattr = {}"
+    end
+    c.def_method('initialize', '*arg') do
+      "super\n" + init_lines.join("\n")
     end
     c.dump
   end
@@ -212,10 +214,10 @@ private
     if definition[0] == :choice
       definition.shift
       "[ :choice,\n" + ' ' * indent +
-        dump_schema_element(definition, indent) + ']'
+        dump_schema_element(definition, indent) + "\n]"
     elsif definition[0].is_a?(::Array)
       "[\n" + ' ' * indent +
-        dump_schema_element(definition, indent) + ']'
+        dump_schema_element(definition, indent) + "\n]"
     else
       varname, name, type = definition
       '[' +
@@ -369,11 +371,11 @@ private
       schema_attribute << [name, type]
     end
     c.def_classvar('schema_attribute',
-      '{' +
+      "{\n  " +
         schema_attribute.collect { |name, type|
           dqname(name) + ' => ' + ndq(type)
-        }.join(', ') +
-      '}'
+        }.join(",\n  ") +
+      "\n}"
     )
   end
 
@@ -418,19 +420,7 @@ private
     end
     schema_element << [child_element_name.name, child_element_name, type]
     c.def_classvar('schema_element',
-      '[' +
-        schema_element.collect { |varname, name, type|
-          '[' +
-            (
-              if name
-                varname.dump + ', [' + ndq(type) + ', ' + dqname(name) + ']'
-              else
-                varname.dump + ', ' + ndq(type)
-              end
-            ) +
-          ']'
-        }.join(', ') +
-      ']'
+      dump_schema_element_definition(schema_element, 2)
     )
     c.dump
   end
