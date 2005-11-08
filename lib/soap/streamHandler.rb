@@ -52,6 +52,30 @@ class StreamHandler
   def self.create_media_type(charset)
     "#{ MediaType }; charset=#{ charset }"
   end
+
+  def send(endpoint_url, conn_data, soapaction = nil, charset = nil)
+    # send a ConnectionData to specified endpoint_url.
+    # return value is a ConnectionData with receive_* property filled.
+    # You can fill values of given conn_data and return it.
+  end
+
+  def reset(endpoint_url = nil)
+    # for initializing connection status if needed.
+    # return value is not expected.
+  end
+
+  def set_wiredump_file_base(wiredump_file_base)
+    # for logging.  return value is not expected.
+    # Override it when you want.
+    raise NotImplementedError
+  end
+
+  def test_loopback_response
+    # for loopback testing.  see HTTPStreamHandler for more detail.
+    # return value is an Array of loopback responses.
+    # Override it when you want.
+    raise NotImplementedError
+  end
 end
 
 
@@ -79,6 +103,10 @@ public
   attr_accessor :wiredump_file_base
   
   MAX_RETRY_COUNT = 10       	# [times]
+
+  def self.create(options)
+    new(options)
+  end
 
   def initialize(options)
     super()
@@ -121,23 +149,24 @@ public
 private
 
   def set_options
-    HTTPConfigLoader.set_options(@client, @options)
-    @charset = @options["charset"] || XSD::Charset.xml_encoding_label
-    @options.add_hook("charset") do |key, value|
+    @options["http"] ||= ::SOAP::Property.new
+    HTTPConfigLoader.set_options(@client, @options["http"])
+    @charset = @options["http.charset"] || XSD::Charset.xml_encoding_label
+    @options.add_hook("http.charset") do |key, value|
       @charset = value
     end
-    @wiredump_dev = @options["wiredump_dev"]
-    @options.add_hook("wiredump_dev") do |key, value|
+    @wiredump_dev = @options["http.wiredump_dev"]
+    @options.add_hook("http.wiredump_dev") do |key, value|
       @wiredump_dev = value
       @client.debug_dev = @wiredump_dev
     end
-    set_cookie_store_file(@options["cookie_store_file"])
-    @options.add_hook("cookie_store_file") do |key, value|
+    set_cookie_store_file(@options["http.cookie_store_file"])
+    @options.add_hook("http.cookie_store_file") do |key, value|
       set_cookie_store_file(value)
     end
-    ssl_config = @options["ssl_config"]
-    basic_auth = @options["basic_auth"]
-    @options.lock(true)
+    ssl_config = @options["http.ssl_config"]
+    basic_auth = @options["http.basic_auth"]
+    @options["http"].lock(true)
     ssl_config.unlock
     basic_auth.unlock
   end

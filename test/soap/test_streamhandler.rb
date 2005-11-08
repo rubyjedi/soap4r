@@ -203,6 +203,39 @@ __EOX__
     r, h = parse_req_header(str)
     assert_equal("text/xml; charset=iso-8859-3", h["content-type"])
   end
+
+  def test_custom_streamhandler
+    @client.options["protocol.streamhandler"] = MyStreamHandler
+    assert_equal("hello", @client.do_server_proc)
+    @client.options["protocol.streamhandler"] = ::SOAP::HTTPStreamHandler
+    assert_nil(@client.do_server_proc)
+    @client.options["protocol.streamhandler"] = MyStreamHandler
+    assert_equal("hello", @client.do_server_proc)
+    @client.options["protocol.streamhandler"] = ::SOAP::HTTPStreamHandler
+    assert_nil(@client.do_server_proc)
+  end
+
+  class MyStreamHandler < SOAP::StreamHandler
+    def self.create(options)
+      new
+    end
+
+    def send(endpoint_url, conn_data, soapaction = nil, charset = nil)
+      conn_data.receive_string = %q[<?xml version="1.0" encoding="utf-8" ?>
+<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <env:Body>
+    <n1:do_server_proc xmlns:n1="urn:foo" env:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+      <return xsi:type="xsd:string">hello</return>
+    </n1:do_server_proc>
+  </env:Body>
+</env:Envelope>]
+      conn_data
+    end
+
+    def reset(endpoint_url = nil)
+      # nothing to do
+    end
+  end
 end
 
 
