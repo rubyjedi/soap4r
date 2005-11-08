@@ -41,8 +41,8 @@ public
     @endpoint_url = endpoint_url
     @soapaction = soapaction
     @options = options
-    @streamhandler = HTTPStreamHandler.new(
-      @options["protocol.http"] ||= ::SOAP::Property.new)
+    @protocol_option = options["protocol"] ||= ::SOAP::Property.new
+    initialize_streamhandler(@protocol_option)
     @operation = {}
     @mandatorycharset = nil
     @allow_unqualified_element = true
@@ -182,6 +182,28 @@ public
   end
 
 private
+
+  def initialize_streamhandler(options)
+    value = options["streamhandler"]
+    if value and !value.empty?
+      factory = Property::Util.const_from_name(value)
+    else
+      factory = HTTPStreamHandler
+    end
+    @streamhandler = factory.create(options)
+    options.add_hook("streamhandler") do |key, value|
+      @streamhandler.reset
+      if value.respond_to?(:create)
+        factory = value
+      elsif value and !value.to_str.empty?
+        factory = Property::Util.const_from_name(value.to_str)
+      else
+        factory = HTTPStreamHandler
+      end
+      options.unlock(true)
+      @streamhandler = factory.create(options)
+    end
+  end
 
   def set_envelopenamespace(env, namespace)
     env.elename = XSD::QName.new(namespace, env.elename.name)

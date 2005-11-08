@@ -87,6 +87,10 @@ private
 
   def basetype
     @basetype ||= root.collect_complextypes[@base]
+    unless @basetype
+      RuntimeError.new("base type definition not found: #{@base}")
+    end
+    @basetype
   end
 end
 
