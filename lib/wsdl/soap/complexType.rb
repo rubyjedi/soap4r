@@ -132,6 +132,9 @@ private
         element.type 
       elsif element.local_simpletype
         element.local_simpletype.base
+      else
+        # untyped
+        element.name
       end
     when XMLSchema::Any
       XSD::AnyTypeName
