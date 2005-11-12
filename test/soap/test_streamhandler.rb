@@ -236,6 +236,26 @@ __EOX__
       # nothing to do
     end
   end
+
+  # not used
+  class ExternalProcessStreamHandler < SOAP::StreamHandler
+    def self.create(options)
+      new
+    end
+
+    def send(endpoint_url, conn_data, soapaction = nil, charset = nil)
+      cmd = "cat" # !!
+      IO.popen(cmd, "w+") do |io|
+        io.write(conn_data.send_string)
+        io.close_write
+        conn_data.receive_string = io.read
+      end
+      conn_data
+    end
+
+    def reset(endpoint_url = nil)
+    end
+  end
 end
 
 
