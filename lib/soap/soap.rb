@@ -80,6 +80,15 @@ class ResponseFormatError < Error; end
 
 class UnhandledMustUnderstandHeaderError < Error; end
 
+
+module FaultCode
+  VersionMismatch = XSD::QName.new(EnvelopeNamespace, 'VersionMismatch').freeze
+  MustUnderstand = XSD::QName.new(EnvelopeNamespace, 'MustUnderstand').freeze
+  Client = XSD::QName.new(EnvelopeNamespace, 'Client').freeze
+  Server = XSD::QName.new(EnvelopeNamespace, 'Server').freeze
+end
+
+
 class FaultError < Error
   attr_reader :faultcode
   attr_reader :faultstring

@@ -133,7 +133,7 @@ private
       elsif element.local_simpletype
         element.local_simpletype.base
       else
-        # untyped
+        # element definition
         element.name
       end
     when XMLSchema::Any

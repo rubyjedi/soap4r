@@ -161,9 +161,9 @@ class Router
     @headerhandlerfactory.each do |f|
       headerhandler.add(f.create)
     end
-    receive_headers(headerhandler, env.header)
     soap_response = default_encodingstyle = nil
     begin
+      receive_headers(headerhandler, env.header)
       soap_response =
         op.call(env.body, @mapping_registry, @literal_mapping_registry,
           create_mapping_opt)
@@ -319,9 +319,15 @@ private
 
   # Create fault response.
   def fault(e)
+    if e.is_a?(UnhandledMustUnderstandHeaderError)
+      faultcode = FaultCode::MustUnderstand
+    else
+      faultcode = FaultCode::Server
+    end
+
     detail = Mapping::SOAPException.new(e)
     SOAPFault.new(
-      SOAPString.new('Server'),
+      SOAPElement.new(nil, faultcode),
       SOAPString.new(e.to_s),
       SOAPString.new(@actor),
       Mapping.obj2soap(detail, @mapping_registry))
