@@ -151,13 +151,15 @@ public
   attr_accessor :element
   attr_accessor :mustunderstand
   attr_accessor :encodingstyle
+  attr_accessor :actor
 
-  def initialize(element, mustunderstand = true, encodingstyle = nil)
+  def initialize(element, mustunderstand = true, encodingstyle = nil, actor = nil)
     super()
     @type = nil
     @element = element
     @mustunderstand = mustunderstand
     @encodingstyle = encodingstyle
+    @actor = actor
     element.parent = self if element
   end
 
@@ -170,7 +172,12 @@ public
     if @encodingstyle
       @element.extraattr[ns.name(AttrEncodingStyleName)] = @encodingstyle
     end
-    @element.encodingstyle = @encodingstyle if !@element.encodingstyle
+    unless @element.encodingstyle
+      @element.encodingstyle = @encodingstyle
+    end
+    if @actor
+      @element.extraattr[ns.name(AttrActorName)] = @actor
+    end
     yield(@element)
   end
 end
@@ -195,9 +202,10 @@ class SOAPHeader < SOAPStruct
   end
 
   def add(name, value)
+    actor = value.extraattr[AttrActorName]
     mu = (value.extraattr[AttrMustUnderstandName] == '1')
     encstyle = value.extraattr[AttrEncodingStyleName]
-    item = SOAPHeaderItem.new(value, mu, encstyle)
+    item = SOAPHeaderItem.new(value, mu, encstyle, actor)
     super(name, item)
   end
 
