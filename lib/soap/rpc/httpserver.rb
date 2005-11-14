@@ -21,13 +21,14 @@ class HTTPServer < Logger::Application
   attr_accessor :default_namespace
 
   def initialize(config)
-    super(config[:SOAPHTTPServerApplicationName] || self.class.name)
+    actor = config[:SOAPHTTPServerApplicationName] || self.class.name
+    super(actor)
     @default_namespace = config[:SOAPDefaultNamespace]
     @webrick_config = config.dup
     self.level = Logger::Severity::ERROR # keep silent by default
     @webrick_config[:Logger] ||= @log
     @log = @webrick_config[:Logger]     # sync logger of App and HTTPServer
-    @router = ::SOAP::RPC::Router.new(self.class.name)
+    @router = ::SOAP::RPC::Router.new(actor)
     @soaplet = ::SOAP::RPC::SOAPlet.new(@router)
     on_init
     @server = WEBrick::HTTPServer.new(@webrick_config)

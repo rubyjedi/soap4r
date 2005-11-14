@@ -264,14 +264,6 @@ private
     env
   end
 
-  def create_header(headers)
-    header = SOAPHeader.new()
-    headers.each do |content, mustunderstand, encodingstyle|
-      header.add(SOAPHeaderItem.new(content, mustunderstand, encodingstyle))
-    end
-    header
-  end
-
   def create_encoding_opt(hash = nil)
     opt = {}
     opt[:default_encodingstyle] = @default_encodingstyle

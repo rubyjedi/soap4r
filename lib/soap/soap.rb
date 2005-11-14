@@ -48,6 +48,7 @@ EleFaultStringName = XSD::QName.new(nil, EleFaultString).freeze
 EleFaultActorName = XSD::QName.new(nil, EleFaultActor).freeze
 EleFaultCodeName = XSD::QName.new(nil, EleFaultCode).freeze
 EleFaultDetailName = XSD::QName.new(nil, EleFaultDetail).freeze
+AttrActorName = XSD::QName.new(EnvelopeNamespace, AttrActor).freeze
 AttrMustUnderstandName = XSD::QName.new(EnvelopeNamespace, AttrMustUnderstand).freeze
 AttrEncodingStyleName = XSD::QName.new(EnvelopeNamespace, AttrEncodingStyle).freeze
 AttrRootName = XSD::QName.new(EncodingNamespace, AttrRoot).freeze

@@ -17,11 +17,13 @@ class Handler
   attr_reader :elename
   attr_reader :mustunderstand
   attr_reader :encodingstyle
+  attr_reader :target_actor
 
   def initialize(elename)
     @elename = elename
     @mustunderstand = false
     @encodingstyle = nil
+    @target_actor = nil
   end
 
   # Should return a SOAP/OM, a SOAPHeaderItem or nil.
@@ -43,7 +45,8 @@ class Handler
       item
     else
       item.elename = @elename
-      ::SOAP::SOAPHeaderItem.new(item, @mustunderstand, @encodingstyle)
+      ::SOAP::SOAPHeaderItem.new(item, @mustunderstand, @encodingstyle,
+        @target_actor)
     end
   end
 

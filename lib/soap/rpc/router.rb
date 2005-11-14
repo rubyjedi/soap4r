@@ -324,7 +324,6 @@ private
     else
       faultcode = FaultCode::Server
     end
-
     detail = Mapping::SOAPException.new(e)
     SOAPFault.new(
       SOAPElement.new(nil, faultcode),
