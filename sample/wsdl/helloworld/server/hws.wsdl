@@ -9,25 +9,24 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
 xmlns="http://schemas.xmlsoap.org/wsdl/" 
 targetNamespace="http://localhost:2000/wsdl/hws.wsdl">
-<message name="getInvoices">
-   <part name="from" type="xsd:date"/>
-   <part name="to" type="xsd:date"/>
+<message name="getTermRequest">
+   <part name="from" type="xsd:string"/>
 </message>
 
-<message name="getInvoiceResponse">
-   <part name="queryInvoiceResponse" type="xsd:string"/>
+<message name="hello_worldResponse">
+   <part name="from" type="xsd:string"/>
 </message>
 
-<portType name="queryPort">
-  <operation name="queryInvoice">
-      <input message="getInvoices"/>
-      <output message="getInvoiceResponse"/>
+<portType name="hwsPort">
+  <operation name="hello_world">
+      <input message="getTermRequest"/>
+      <output message="hello_worldResponse"/>
   </operation>
 </portType>
-<binding name="queryBinding" type="tns:queryPort">
+<binding name="hwsBinding" type="tns:hwsPort">
    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
-   <operation name="queryInvoice">
-       <soap:operation soapaction="http://localhost:2000/wsdl/hws.wsdl#queryInvoice" style="rpc"/>
+   <operation name="hello_world">
+       <soap:operation soapAction="http://localhost:2000/wsdl/hws.wsdl#hello_world" style="rpc"/>
       <input>
          <soap:body use="encoded" namespace="http://localhost:2000/wsdl/hws.wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
       </input>
@@ -37,10 +36,11 @@ targetNamespace="http://localhost:2000/wsdl/hws.wsdl">
    </operation>
  </binding>
  <service name="hws">
-    <documentation>The service returns subscriptions paid by invoice in the period from(date)
-    to to(date)</documentation>
-    <port name="queryPort" binding="tns:queryBinding">
+    <documentation>The service simply says hello world from something supplied</documentation>
+ 
+    <port name="hwsPort" binding="tns:hwsBinding">
        <soap:address location="http://localhost:2000/"/>
     </port>
 </service>
+
 </definitions>
