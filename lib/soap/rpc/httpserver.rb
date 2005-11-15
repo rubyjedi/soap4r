@@ -1,5 +1,5 @@
 # SOAP4R - WEBrick HTTP Server
-# Copyright (C) 2003, 2004 by NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2003, 2004, 2005 by NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -32,6 +32,11 @@ class HTTPServer < Logger::Application
     @soaplet = ::SOAP::RPC::SOAPlet.new(@router)
     on_init
     @server = WEBrick::HTTPServer.new(@webrick_config)
+    @server.mount('/soaprouter', @soaplet)
+    if wsdldir = config[:WSDLDocumentDirectory]
+      @server.mount('/wsdl', WEBrick::HTTPServlet::FileHandler, wsdldir)
+    end
+    # for backward compatibility
     @server.mount('/', @soaplet)
   end
 
