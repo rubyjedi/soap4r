@@ -375,11 +375,13 @@ private
       typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
       obj_class = Mapping.class_from_name(typestr)
     end
-    if obj_class and obj_class.class_variables.include?('@@schema_element')
-      elesoap2stubobj(node, obj_class)
-    elsif node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
+    if node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
+      if obj_class and obj_class.class_variables.include?('@@schema_element')
+        elesoap2stubobj(node, obj_class)
+      else
         # SOAPArray for literal?
-      elesoap2plainobj(node)
+        elesoap2plainobj(node)
+      end
     else
       obj = Mapping.soap2obj(node, nil, obj_class, MAPPING_OPT)
       add_attributes2obj(node, obj)
