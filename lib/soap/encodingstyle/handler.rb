@@ -1,5 +1,5 @@
 # SOAP4R - EncodingStyle handler library
-# Copyright (C) 2001, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2001, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -77,15 +77,15 @@ class Handler
   #
   # Returns SOAP/OM data.
   def decode_tag(ns, name, attrs, parent)
-    raise NotImplementError.new('Method decode_tag must be defined in derived class.')
+    raise NotImplementError
   end
 
   def decode_tag_end(ns, name)
-    raise NotImplementError.new('Method decode_tag_end must be defined in derived class.')
+    raise NotImplementError
   end
 
   def decode_text(ns, text)
-    raise NotImplementError.new('Method decode_text must be defined in derived class.')
+    raise NotImplementError
   end
 
   def decode_prologue
