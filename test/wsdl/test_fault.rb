@@ -18,9 +18,9 @@ class TestFault < Test::Unit::TestCase
   <env:Body>
     <env:Fault xmlns:n1="http://schemas.xmlsoap.org/soap/encoding/"
         env:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-      <faultcode xsi:type="xsd:string">Server</faultcode>
-      <faultstring xsi:type="xsd:string">faultstring</faultstring>
-      <faultactor xsi:type="xsd:string">faultactor</faultactor>
+      <faultcode>Server</faultcode>
+      <faultstring>faultstring</faultstring>
+      <faultactor>faultactor</faultactor>
       <detail xmlns:n2="http://www.ruby-lang.org/xmlns/ruby/type/custom"
           xsi:type="n2:SOAPException">
 	<excn_type_name xsi:type="xsd:string">type</excn_type_name>
@@ -37,12 +37,11 @@ __EOX__
     rpc_decode_typemap = WSDL::Definitions.soap_rpc_complextypes
     opt = {}
     opt[:default_encodingstyle] = ::SOAP::EncodingNamespace
-    opt[:decode_typemap] = rpc_decode_typemap
     header, body = ::SOAP::Processor.unmarshal(@xml, opt)
     fault = ::SOAP::Mapping.soap2obj(body.response)
     assert_equal("Server", fault.faultcode)
     assert_equal("faultstring", fault.faultstring)
-    assert_equal(URI.parse("faultactor"), fault.faultactor)
+    assert_equal("faultactor", fault.faultactor)
     assert_equal(5, fault.detail.cause)
   end
 end
