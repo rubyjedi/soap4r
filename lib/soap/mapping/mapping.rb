@@ -331,7 +331,7 @@ module Mapping
   end
 
   def self.define_attr_accessor(obj, name, getterproc, setterproc = nil)
-    define_singleton_method(obj, name, &getterproc)
+    define_singleton_method(obj, name, &getterproc) if getterproc
     define_singleton_method(obj, name + '=', &setterproc) if setterproc
   end
 
