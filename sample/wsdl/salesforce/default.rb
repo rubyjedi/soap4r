@@ -5,7 +5,10 @@ class Login
   @@schema_type = "login"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["username", "SOAP::SOAPString"], ["password", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["username", "SOAP::SOAPString"],
+    ["password", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :username
   attr_accessor :password
@@ -21,7 +24,9 @@ class LoginResponse
   @@schema_type = "loginResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "LoginResult"]]
+  @@schema_element = [
+    ["result", "LoginResult"]
+  ]
 
   attr_accessor :result
 
@@ -35,7 +40,9 @@ class DescribeSObject
   @@schema_type = "describeSObject"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["sObjectType", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["sObjectType", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :sObjectType
 
@@ -49,7 +56,9 @@ class DescribeSObjectResponse
   @@schema_type = "describeSObjectResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "DescribeSObjectResult"]]
+  @@schema_element = [
+    ["result", "DescribeSObjectResult"]
+  ]
 
   attr_accessor :result
 
@@ -74,7 +83,9 @@ class DescribeGlobalResponse
   @@schema_type = "describeGlobalResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "DescribeGlobalResult"]]
+  @@schema_element = [
+    ["result", "DescribeGlobalResult"]
+  ]
 
   attr_accessor :result
 
@@ -88,7 +99,9 @@ class DescribeLayout
   @@schema_type = "describeLayout"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["sObjectType", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["sObjectType", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :sObjectType
 
@@ -102,7 +115,9 @@ class DescribeLayoutResponse
   @@schema_type = "describeLayoutResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "DescribeLayoutResult"]]
+  @@schema_element = [
+    ["result", "DescribeLayoutResult"]
+  ]
 
   attr_accessor :result
 
@@ -112,87 +127,57 @@ class DescribeLayoutResponse
 end
 
 # {urn:partner.soap.sforce.com}create
-class Create
-  @@schema_type = "create"
-  @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["sObjects", "SObject[]"]]
-
-  attr_accessor :sObjects
-
-  def initialize(sObjects = [])
-    @sObjects = sObjects
-  end
+class Create < ::Array
+  @@schema_type = "sObject"
+  @@schema_ns = "urn:sobject.partner.soap.sforce.com"
+  @@schema_element = [
+    ["sObjects", ["SObject[]", XSD::QName.new("urn:partner.soap.sforce.com", "sObjects")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}createResponse
-class CreateResponse
-  @@schema_type = "createResponse"
+class CreateResponse < ::Array
+  @@schema_type = "SaveResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["result", "SaveResult[]"]]
-
-  attr_accessor :result
-
-  def initialize(result = [])
-    @result = result
-  end
+  @@schema_element = [
+    ["result", ["SaveResult[]", XSD::QName.new("urn:partner.soap.sforce.com", "result")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}update
-class Update
-  @@schema_type = "update"
-  @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["sObjects", "SObject[]"]]
-
-  attr_accessor :sObjects
-
-  def initialize(sObjects = [])
-    @sObjects = sObjects
-  end
+class Update < ::Array
+  @@schema_type = "sObject"
+  @@schema_ns = "urn:sobject.partner.soap.sforce.com"
+  @@schema_element = [
+    ["sObjects", ["SObject[]", XSD::QName.new("urn:partner.soap.sforce.com", "sObjects")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}updateResponse
-class UpdateResponse
-  @@schema_type = "updateResponse"
+class UpdateResponse < ::Array
+  @@schema_type = "SaveResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["result", "SaveResult[]"]]
-
-  attr_accessor :result
-
-  def initialize(result = [])
-    @result = result
-  end
+  @@schema_element = [
+    ["result", ["SaveResult[]", XSD::QName.new("urn:partner.soap.sforce.com", "result")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}delete
-class Delete
-  @@schema_type = "delete"
+class Delete < ::Array
+  @@schema_type = "ID"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["ids", "SOAP::SOAPString[]"]]
-
-  attr_accessor :ids
-
-  def initialize(ids = [])
-    @ids = ids
-  end
+  @@schema_element = [
+    ["ids", ["SOAP::SOAPString[]", XSD::QName.new("urn:partner.soap.sforce.com", "ids")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}deleteResponse
-class DeleteResponse
-  @@schema_type = "deleteResponse"
+class DeleteResponse < ::Array
+  @@schema_type = "DeleteResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["result", "DeleteResult[]"]]
-
-  attr_accessor :result
-
-  def initialize(result = [])
-    @result = result
-  end
+  @@schema_element = [
+    ["result", ["DeleteResult[]", XSD::QName.new("urn:partner.soap.sforce.com", "result")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}retrieve
@@ -200,7 +185,11 @@ class Retrieve
   @@schema_type = "retrieve"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["fieldList", "SOAP::SOAPString"], ["sObjectType", "SOAP::SOAPString"], ["ids", "SOAP::SOAPString[]"]]
+  @@schema_element = [
+    ["fieldList", "SOAP::SOAPString"],
+    ["sObjectType", "SOAP::SOAPString"],
+    ["ids", "SOAP::SOAPString[]"]
+  ]
 
   attr_accessor :fieldList
   attr_accessor :sObjectType
@@ -214,45 +203,30 @@ class Retrieve
 end
 
 # {urn:partner.soap.sforce.com}retrieveResponse
-class RetrieveResponse
-  @@schema_type = "retrieveResponse"
-  @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["result", "SObject[]"]]
-
-  attr_accessor :result
-
-  def initialize(result = [])
-    @result = result
-  end
+class RetrieveResponse < ::Array
+  @@schema_type = "sObject"
+  @@schema_ns = "urn:sobject.partner.soap.sforce.com"
+  @@schema_element = [
+    ["result", ["SObject[]", XSD::QName.new("urn:partner.soap.sforce.com", "result")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}convertLead
-class ConvertLead
-  @@schema_type = "convertLead"
+class ConvertLead < ::Array
+  @@schema_type = "LeadConvert"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["leadConverts", "LeadConvert[]"]]
-
-  attr_accessor :leadConverts
-
-  def initialize(leadConverts = [])
-    @leadConverts = leadConverts
-  end
+  @@schema_element = [
+    ["leadConverts", ["LeadConvert[]", XSD::QName.new("urn:partner.soap.sforce.com", "leadConverts")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}convertLeadResponse
-class ConvertLeadResponse
-  @@schema_type = "convertLeadResponse"
+class ConvertLeadResponse < ::Array
+  @@schema_type = "LeadConvertResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_qualified = "true"
-  @@schema_element = [["result", "LeadConvertResult[]"]]
-
-  attr_accessor :result
-
-  def initialize(result = [])
-    @result = result
-  end
+  @@schema_element = [
+    ["result", ["LeadConvertResult[]", XSD::QName.new("urn:partner.soap.sforce.com", "result")]]
+  ]
 end
 
 # {urn:partner.soap.sforce.com}getUpdated
@@ -260,7 +234,11 @@ class GetUpdated
   @@schema_type = "getUpdated"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["sObjectType", "SOAP::SOAPString"], ["startDate", "SOAP::SOAPDateTime"], ["endDate", "SOAP::SOAPDateTime"]]
+  @@schema_element = [
+    ["sObjectType", "SOAP::SOAPString"],
+    ["startDate", "SOAP::SOAPDateTime"],
+    ["endDate", "SOAP::SOAPDateTime"]
+  ]
 
   attr_accessor :sObjectType
   attr_accessor :startDate
@@ -278,7 +256,9 @@ class GetUpdatedResponse
   @@schema_type = "getUpdatedResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "GetUpdatedResult"]]
+  @@schema_element = [
+    ["result", "GetUpdatedResult"]
+  ]
 
   attr_accessor :result
 
@@ -292,7 +272,11 @@ class GetDeleted
   @@schema_type = "getDeleted"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["sObjectType", "SOAP::SOAPString"], ["startDate", "SOAP::SOAPDateTime"], ["endDate", "SOAP::SOAPDateTime"]]
+  @@schema_element = [
+    ["sObjectType", "SOAP::SOAPString"],
+    ["startDate", "SOAP::SOAPDateTime"],
+    ["endDate", "SOAP::SOAPDateTime"]
+  ]
 
   attr_accessor :sObjectType
   attr_accessor :startDate
@@ -310,7 +294,9 @@ class GetDeletedResponse
   @@schema_type = "getDeletedResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "GetDeletedResult"]]
+  @@schema_element = [
+    ["result", "GetDeletedResult"]
+  ]
 
   attr_accessor :result
 
@@ -324,7 +310,9 @@ class Query
   @@schema_type = "query"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["queryString", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["queryString", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :queryString
 
@@ -338,7 +326,9 @@ class QueryResponse
   @@schema_type = "queryResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "QueryResult"]]
+  @@schema_element = [
+    ["result", "QueryResult"]
+  ]
 
   attr_accessor :result
 
@@ -352,7 +342,9 @@ class QueryMore
   @@schema_type = "queryMore"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["queryLocator", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["queryLocator", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :queryLocator
 
@@ -366,7 +358,9 @@ class QueryMoreResponse
   @@schema_type = "queryMoreResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "QueryResult"]]
+  @@schema_element = [
+    ["result", "QueryResult"]
+  ]
 
   attr_accessor :result
 
@@ -380,7 +374,9 @@ class Search
   @@schema_type = "search"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["searchString", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["searchString", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :searchString
 
@@ -394,7 +390,9 @@ class SearchResponse
   @@schema_type = "searchResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "SearchResult"]]
+  @@schema_element = [
+    ["result", "SearchResult"]
+  ]
 
   attr_accessor :result
 
@@ -419,7 +417,9 @@ class GetServerTimestampResponse
   @@schema_type = "getServerTimestampResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "GetServerTimestampResult"]]
+  @@schema_element = [
+    ["result", "GetServerTimestampResult"]
+  ]
 
   attr_accessor :result
 
@@ -433,7 +433,10 @@ class SetPassword
   @@schema_type = "setPassword"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["userId", "SOAP::SOAPString"], ["password", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["userId", "SOAP::SOAPString"],
+    ["password", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :userId
   attr_accessor :password
@@ -449,7 +452,9 @@ class SetPasswordResponse
   @@schema_type = "setPasswordResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "SetPasswordResult"]]
+  @@schema_element = [
+    ["result", "SetPasswordResult"]
+  ]
 
   attr_accessor :result
 
@@ -463,7 +468,9 @@ class ResetPassword
   @@schema_type = "resetPassword"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["userId", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["userId", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :userId
 
@@ -477,7 +484,9 @@ class ResetPasswordResponse
   @@schema_type = "resetPasswordResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "ResetPasswordResult"]]
+  @@schema_element = [
+    ["result", "ResetPasswordResult"]
+  ]
 
   attr_accessor :result
 
@@ -502,7 +511,9 @@ class GetUserInfoResponse
   @@schema_type = "getUserInfoResponse"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["result", "GetUserInfoResult"]]
+  @@schema_element = [
+    ["result", "GetUserInfoResult"]
+  ]
 
   attr_accessor :result
 
@@ -516,7 +527,9 @@ class SessionHeader
   @@schema_type = "SessionHeader"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["sessionId", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["sessionId", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :sessionId
 
@@ -530,7 +543,9 @@ class CallOptions
   @@schema_type = "CallOptions"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["client", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["client", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :client
 
@@ -544,7 +559,9 @@ class QueryOptions
   @@schema_type = "QueryOptions"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["batchSize", "SOAP::SOAPInt"]]
+  @@schema_element = [
+    ["batchSize", "SOAP::SOAPInt"]
+  ]
 
   attr_accessor :batchSize
 
@@ -558,7 +575,10 @@ class SaveOptions
   @@schema_type = "SaveOptions"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["autoAssign", "SOAP::SOAPBoolean"], ["assignmentRuleId", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["autoAssign", "SOAP::SOAPBoolean"],
+    ["assignmentRuleId", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :autoAssign
   attr_accessor :assignmentRuleId
@@ -574,7 +594,10 @@ class AssignmentRuleHeader
   @@schema_type = "AssignmentRuleHeader"
   @@schema_ns = "urn:partner.soap.sforce.com"
   @@schema_qualified = "true"
-  @@schema_element = [["assignmentRuleId", "SOAP::SOAPString"], ["useDefaultRule", "SOAP::SOAPBoolean"]]
+  @@schema_element = [
+    ["assignmentRuleId", "SOAP::SOAPString"],
+    ["useDefaultRule", "SOAP::SOAPBoolean"]
+  ]
 
   attr_accessor :assignmentRuleId
   attr_accessor :useDefaultRule
@@ -589,19 +612,17 @@ end
 class SObject
   @@schema_type = "sObject"
   @@schema_ns = "urn:sobject.partner.soap.sforce.com"
-  @@schema_element = [["type", "SOAP::SOAPString"], ["fieldsToNull", "SOAP::SOAPString[]"], ["id", ["SOAP::SOAPString", XSD::QName.new("urn:sobject.partner.soap.sforce.com", "Id")]], ["any", [nil, XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType")]]]
+  @@schema_element = [
+    ["type", "SOAP::SOAPString"],
+    ["fieldsToNull", "SOAP::SOAPString[]"],
+    ["id", ["SOAP::SOAPString", XSD::QName.new("urn:sobject.partner.soap.sforce.com", "Id")]],
+    ["any", [nil, XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType")]]
+  ]
 
   attr_accessor :type
   attr_accessor :fieldsToNull
+  attr_accessor :id
   attr_reader :__xmlele_any
-
-  def Id
-    @id
-  end
-
-  def Id=(value)
-    @id = value
-  end
 
   def set_any(elements)
     @__xmlele_any = elements
@@ -619,7 +640,12 @@ end
 class QueryResult
   @@schema_type = "QueryResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["done", "SOAP::SOAPBoolean"], ["queryLocator", "SOAP::SOAPString"], ["records", "SObject[]"], ["size", "SOAP::SOAPInt"]]
+  @@schema_element = [
+    ["done", "SOAP::SOAPBoolean"],
+    ["queryLocator", "SOAP::SOAPString"],
+    ["records", "SObject[]"],
+    ["size", "SOAP::SOAPInt"]
+  ]
 
   attr_accessor :done
   attr_accessor :queryLocator
@@ -638,7 +664,10 @@ end
 class SearchResult
   @@schema_type = "SearchResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["searchRecords", "SearchRecord[]"], ["sforceReserved", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["searchRecords", "SearchRecord[]"],
+    ["sforceReserved", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :searchRecords
   attr_accessor :sforceReserved
@@ -653,7 +682,9 @@ end
 class SearchRecord
   @@schema_type = "SearchRecord"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["record", "SObject"]]
+  @@schema_element = [
+    ["record", "SObject"]
+  ]
 
   attr_accessor :record
 
@@ -666,7 +697,10 @@ end
 class GetUpdatedResult
   @@schema_type = "GetUpdatedResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["ids", "SOAP::SOAPString[]"], ["sforceReserved", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["ids", "SOAP::SOAPString[]"],
+    ["sforceReserved", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :ids
   attr_accessor :sforceReserved
@@ -681,7 +715,10 @@ end
 class GetDeletedResult
   @@schema_type = "GetDeletedResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["deletedRecords", "DeletedRecord[]"], ["sforceReserved", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["deletedRecords", "DeletedRecord[]"],
+    ["sforceReserved", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :deletedRecords
   attr_accessor :sforceReserved
@@ -696,7 +733,10 @@ end
 class DeletedRecord
   @@schema_type = "DeletedRecord"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["deletedDate", "SOAP::SOAPDateTime"], ["id", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["deletedDate", "SOAP::SOAPDateTime"],
+    ["id", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :deletedDate
   attr_accessor :id
@@ -711,7 +751,9 @@ end
 class GetServerTimestampResult
   @@schema_type = "GetServerTimestampResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["timestamp", "SOAP::SOAPDateTime"]]
+  @@schema_element = [
+    ["timestamp", "SOAP::SOAPDateTime"]
+  ]
 
   attr_accessor :timestamp
 
@@ -734,7 +776,9 @@ end
 class ResetPasswordResult
   @@schema_type = "ResetPasswordResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["password", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["password", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :password
 
@@ -747,7 +791,19 @@ end
 class GetUserInfoResult
   @@schema_type = "GetUserInfoResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["currencySymbol", "SOAP::SOAPString"], ["organizationId", "SOAP::SOAPString"], ["organizationMultiCurrency", "SOAP::SOAPBoolean"], ["organizationName", "SOAP::SOAPString"], ["userDefaultCurrencyIsoCode", "SOAP::SOAPString"], ["userEmail", "SOAP::SOAPString"], ["userFullName", "SOAP::SOAPString"], ["userId", "SOAP::SOAPString"], ["userLanguage", "SOAP::SOAPString"], ["userLocale", "SOAP::SOAPString"], ["userTimeZone", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["currencySymbol", "SOAP::SOAPString"],
+    ["organizationId", "SOAP::SOAPString"],
+    ["organizationMultiCurrency", "SOAP::SOAPBoolean"],
+    ["organizationName", "SOAP::SOAPString"],
+    ["userDefaultCurrencyIsoCode", "SOAP::SOAPString"],
+    ["userEmail", "SOAP::SOAPString"],
+    ["userFullName", "SOAP::SOAPString"],
+    ["userId", "SOAP::SOAPString"],
+    ["userLanguage", "SOAP::SOAPString"],
+    ["userLocale", "SOAP::SOAPString"],
+    ["userTimeZone", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :currencySymbol
   attr_accessor :organizationId
@@ -780,7 +836,12 @@ end
 class LoginResult
   @@schema_type = "LoginResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["passwordExpired", "SOAP::SOAPBoolean"], ["serverUrl", "SOAP::SOAPString"], ["sessionId", "SOAP::SOAPString"], ["userId", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["passwordExpired", "SOAP::SOAPBoolean"],
+    ["serverUrl", "SOAP::SOAPString"],
+    ["sessionId", "SOAP::SOAPString"],
+    ["userId", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :passwordExpired
   attr_accessor :serverUrl
@@ -799,7 +860,11 @@ end
 class Error
   @@schema_type = "Error"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["fields", "SOAP::SOAPString[]"], ["message", "SOAP::SOAPString"], ["statusCode", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["fields", "SOAP::SOAPString[]"],
+    ["message", "SOAP::SOAPString"],
+    ["statusCode", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :fields
   attr_accessor :message
@@ -816,7 +881,11 @@ end
 class SaveResult
   @@schema_type = "SaveResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["errors", "Error[]"], ["id", "SOAP::SOAPString"], ["success", "SOAP::SOAPBoolean"]]
+  @@schema_element = [
+    ["errors", "Error[]"],
+    ["id", "SOAP::SOAPString"],
+    ["success", "SOAP::SOAPBoolean"]
+  ]
 
   attr_accessor :errors
   attr_accessor :id
@@ -833,7 +902,11 @@ end
 class DeleteResult
   @@schema_type = "DeleteResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["errors", "Error[]"], ["id", "SOAP::SOAPString"], ["success", "SOAP::SOAPBoolean"]]
+  @@schema_element = [
+    ["errors", "Error[]"],
+    ["id", "SOAP::SOAPString"],
+    ["success", "SOAP::SOAPBoolean"]
+  ]
 
   attr_accessor :errors
   attr_accessor :id
@@ -850,7 +923,17 @@ end
 class LeadConvert
   @@schema_type = "LeadConvert"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["accountId", "SOAP::SOAPString"], ["contactId", "SOAP::SOAPString"], ["convertedStatus", "SOAP::SOAPString"], ["doNotCreateOpportunity", "SOAP::SOAPBoolean"], ["leadId", "SOAP::SOAPString"], ["opportunityName", "SOAP::SOAPString"], ["overwriteLeadSource", "SOAP::SOAPBoolean"], ["ownerId", "SOAP::SOAPString"], ["sendNotificationEmail", "SOAP::SOAPBoolean"]]
+  @@schema_element = [
+    ["accountId", "SOAP::SOAPString"],
+    ["contactId", "SOAP::SOAPString"],
+    ["convertedStatus", "SOAP::SOAPString"],
+    ["doNotCreateOpportunity", "SOAP::SOAPBoolean"],
+    ["leadId", "SOAP::SOAPString"],
+    ["opportunityName", "SOAP::SOAPString"],
+    ["overwriteLeadSource", "SOAP::SOAPBoolean"],
+    ["ownerId", "SOAP::SOAPString"],
+    ["sendNotificationEmail", "SOAP::SOAPBoolean"]
+  ]
 
   attr_accessor :accountId
   attr_accessor :contactId
@@ -879,7 +962,14 @@ end
 class LeadConvertResult
   @@schema_type = "LeadConvertResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["accountId", "SOAP::SOAPString"], ["contactId", "SOAP::SOAPString"], ["errors", "Error[]"], ["leadId", "SOAP::SOAPString"], ["opportunityId", "SOAP::SOAPString"], ["success", "SOAP::SOAPBoolean"]]
+  @@schema_element = [
+    ["accountId", "SOAP::SOAPString"],
+    ["contactId", "SOAP::SOAPString"],
+    ["errors", "Error[]"],
+    ["leadId", "SOAP::SOAPString"],
+    ["opportunityId", "SOAP::SOAPString"],
+    ["success", "SOAP::SOAPBoolean"]
+  ]
 
   attr_accessor :accountId
   attr_accessor :contactId
@@ -902,7 +992,26 @@ end
 class DescribeSObjectResult
   @@schema_type = "DescribeSObjectResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["activateable", "SOAP::SOAPBoolean"], ["createable", "SOAP::SOAPBoolean"], ["custom", "SOAP::SOAPBoolean"], ["deletable", "SOAP::SOAPBoolean"], ["fields", "Field[]"], ["keyPrefix", "SOAP::SOAPString"], ["label", "SOAP::SOAPString"], ["layoutable", "SOAP::SOAPBoolean"], ["name", "SOAP::SOAPString"], ["queryable", "SOAP::SOAPBoolean"], ["replicateable", "SOAP::SOAPBoolean"], ["retrieveable", "SOAP::SOAPBoolean"], ["searchable", "SOAP::SOAPBoolean"], ["undeletable", "SOAP::SOAPBoolean"], ["updateable", "SOAP::SOAPBoolean"], ["urlDetail", "SOAP::SOAPString"], ["urlEdit", "SOAP::SOAPString"], ["urlNew", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["activateable", "SOAP::SOAPBoolean"],
+    ["createable", "SOAP::SOAPBoolean"],
+    ["custom", "SOAP::SOAPBoolean"],
+    ["deletable", "SOAP::SOAPBoolean"],
+    ["fields", "Field[]"],
+    ["keyPrefix", "SOAP::SOAPString"],
+    ["label", "SOAP::SOAPString"],
+    ["layoutable", "SOAP::SOAPBoolean"],
+    ["name", "SOAP::SOAPString"],
+    ["queryable", "SOAP::SOAPBoolean"],
+    ["replicateable", "SOAP::SOAPBoolean"],
+    ["retrieveable", "SOAP::SOAPBoolean"],
+    ["searchable", "SOAP::SOAPBoolean"],
+    ["undeletable", "SOAP::SOAPBoolean"],
+    ["updateable", "SOAP::SOAPBoolean"],
+    ["urlDetail", "SOAP::SOAPString"],
+    ["urlEdit", "SOAP::SOAPString"],
+    ["urlNew", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :activateable
   attr_accessor :createable
@@ -949,7 +1058,11 @@ end
 class DescribeGlobalResult
   @@schema_type = "DescribeGlobalResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["encoding", "SOAP::SOAPString"], ["maxBatchSize", "SOAP::SOAPInt"], ["types", "SOAP::SOAPString[]"]]
+  @@schema_element = [
+    ["encoding", "SOAP::SOAPString"],
+    ["maxBatchSize", "SOAP::SOAPInt"],
+    ["types", "SOAP::SOAPString[]"]
+  ]
 
   attr_accessor :encoding
   attr_accessor :maxBatchSize
@@ -966,7 +1079,28 @@ end
 class Field
   @@schema_type = "Field"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["autoNumber", "SOAP::SOAPBoolean"], ["byteLength", "SOAP::SOAPInt"], ["createable", "SOAP::SOAPBoolean"], ["custom", "SOAP::SOAPBoolean"], ["defaultedOnCreate", "SOAP::SOAPBoolean"], ["digits", "SOAP::SOAPInt"], ["filterable", "SOAP::SOAPBoolean"], ["label", "SOAP::SOAPString"], ["length", "SOAP::SOAPInt"], ["name", "SOAP::SOAPString"], ["nameField", "SOAP::SOAPBoolean"], ["nillable", "SOAP::SOAPBoolean"], ["picklistValues", "PicklistEntry[]"], ["precision", "SOAP::SOAPInt"], ["referenceTo", "SOAP::SOAPString[]"], ["restrictedPicklist", "SOAP::SOAPBoolean"], ["scale", "SOAP::SOAPInt"], ["soapType", "SOAP::SOAPString"], ["type", "SOAP::SOAPString"], ["updateable", "SOAP::SOAPBoolean"]]
+  @@schema_element = [
+    ["autoNumber", "SOAP::SOAPBoolean"],
+    ["byteLength", "SOAP::SOAPInt"],
+    ["createable", "SOAP::SOAPBoolean"],
+    ["custom", "SOAP::SOAPBoolean"],
+    ["defaultedOnCreate", "SOAP::SOAPBoolean"],
+    ["digits", "SOAP::SOAPInt"],
+    ["filterable", "SOAP::SOAPBoolean"],
+    ["label", "SOAP::SOAPString"],
+    ["length", "SOAP::SOAPInt"],
+    ["name", "SOAP::SOAPString"],
+    ["nameField", "SOAP::SOAPBoolean"],
+    ["nillable", "SOAP::SOAPBoolean"],
+    ["picklistValues", "PicklistEntry[]"],
+    ["precision", "SOAP::SOAPInt"],
+    ["referenceTo", "SOAP::SOAPString[]"],
+    ["restrictedPicklist", "SOAP::SOAPBoolean"],
+    ["scale", "SOAP::SOAPInt"],
+    ["soapType", "SOAP::SOAPString"],
+    ["type", "SOAP::SOAPString"],
+    ["updateable", "SOAP::SOAPBoolean"]
+  ]
 
   attr_accessor :autoNumber
   attr_accessor :byteLength
@@ -1017,7 +1151,12 @@ end
 class PicklistEntry
   @@schema_type = "PicklistEntry"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["active", "SOAP::SOAPBoolean"], ["defaultValue", "SOAP::SOAPBoolean"], ["label", "SOAP::SOAPString"], ["value", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["active", "SOAP::SOAPBoolean"],
+    ["defaultValue", "SOAP::SOAPBoolean"],
+    ["label", "SOAP::SOAPString"],
+    ["value", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :active
   attr_accessor :defaultValue
@@ -1036,7 +1175,10 @@ end
 class DescribeLayoutResult
   @@schema_type = "DescribeLayoutResult"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["layouts", "DescribeLayout[]"], ["recordTypeMappings", "RecordTypeMapping[]"]]
+  @@schema_element = [
+    ["layouts", "DescribeLayout[]"],
+    ["recordTypeMappings", "RecordTypeMapping[]"]
+  ]
 
   attr_accessor :layouts
   attr_accessor :recordTypeMappings
@@ -1051,7 +1193,11 @@ end
 class DescribeLayout
   @@schema_type = "DescribeLayout"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["detailLayoutSections", "DescribeLayoutSection[]"], ["editLayoutSections", "DescribeLayoutSection[]"], ["id", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["detailLayoutSections", "DescribeLayoutSection[]"],
+    ["editLayoutSections", "DescribeLayoutSection[]"],
+    ["id", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :detailLayoutSections
   attr_accessor :editLayoutSections
@@ -1068,7 +1214,13 @@ end
 class DescribeLayoutSection
   @@schema_type = "DescribeLayoutSection"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["columns", "SOAP::SOAPInt"], ["heading", "SOAP::SOAPString"], ["layoutRows", "DescribeLayoutRow[]"], ["rows", "SOAP::SOAPInt"], ["useHeading", "SOAP::SOAPBoolean"]]
+  @@schema_element = [
+    ["columns", "SOAP::SOAPInt"],
+    ["heading", "SOAP::SOAPString"],
+    ["layoutRows", "DescribeLayoutRow[]"],
+    ["rows", "SOAP::SOAPInt"],
+    ["useHeading", "SOAP::SOAPBoolean"]
+  ]
 
   attr_accessor :columns
   attr_accessor :heading
@@ -1089,7 +1241,10 @@ end
 class DescribeLayoutRow
   @@schema_type = "DescribeLayoutRow"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["layoutItems", "DescribeLayoutItem[]"], ["numItems", "SOAP::SOAPInt"]]
+  @@schema_element = [
+    ["layoutItems", "DescribeLayoutItem[]"],
+    ["numItems", "SOAP::SOAPInt"]
+  ]
 
   attr_accessor :layoutItems
   attr_accessor :numItems
@@ -1104,7 +1259,13 @@ end
 class DescribeLayoutItem
   @@schema_type = "DescribeLayoutItem"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["editable", "SOAP::SOAPBoolean"], ["label", "SOAP::SOAPString"], ["layoutComponents", "DescribeLayoutComponent[]"], ["placeholder", "SOAP::SOAPBoolean"], ["required", "SOAP::SOAPBoolean"]]
+  @@schema_element = [
+    ["editable", "SOAP::SOAPBoolean"],
+    ["label", "SOAP::SOAPString"],
+    ["layoutComponents", "DescribeLayoutComponent[]"],
+    ["placeholder", "SOAP::SOAPBoolean"],
+    ["required", "SOAP::SOAPBoolean"]
+  ]
 
   attr_accessor :editable
   attr_accessor :label
@@ -1125,7 +1286,11 @@ end
 class DescribeLayoutComponent
   @@schema_type = "DescribeLayoutComponent"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["tabOrder", "SOAP::SOAPInt"], ["type", "SOAP::SOAPString"], ["value", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["tabOrder", "SOAP::SOAPInt"],
+    ["type", "SOAP::SOAPString"],
+    ["value", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :tabOrder
   attr_accessor :type
@@ -1142,7 +1307,14 @@ end
 class RecordTypeMapping
   @@schema_type = "RecordTypeMapping"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["available", "SOAP::SOAPBoolean"], ["defaultRecordTypeMapping", "SOAP::SOAPBoolean"], ["layoutId", "SOAP::SOAPString"], ["name", "SOAP::SOAPString"], ["picklistsForRecordType", "PicklistForRecordType[]"], ["recordTypeId", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["available", "SOAP::SOAPBoolean"],
+    ["defaultRecordTypeMapping", "SOAP::SOAPBoolean"],
+    ["layoutId", "SOAP::SOAPString"],
+    ["name", "SOAP::SOAPString"],
+    ["picklistsForRecordType", "PicklistForRecordType[]"],
+    ["recordTypeId", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :available
   attr_accessor :defaultRecordTypeMapping
@@ -1165,7 +1337,10 @@ end
 class PicklistForRecordType
   @@schema_type = "PicklistForRecordType"
   @@schema_ns = "urn:partner.soap.sforce.com"
-  @@schema_element = [["picklistName", "SOAP::SOAPString"], ["picklistValues", "PicklistEntry[]"]]
+  @@schema_element = [
+    ["picklistName", "SOAP::SOAPString"],
+    ["picklistValues", "PicklistEntry[]"]
+  ]
 
   attr_accessor :picklistName
   attr_accessor :picklistValues
@@ -1180,7 +1355,10 @@ end
 class ApiFault
   @@schema_type = "ApiFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1195,7 +1373,10 @@ end
 class LoginFault
   @@schema_type = "LoginFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1210,7 +1391,10 @@ end
 class InvalidSObjectFault
   @@schema_type = "InvalidSObjectFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1225,7 +1409,10 @@ end
 class InvalidFieldFault
   @@schema_type = "InvalidFieldFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1240,7 +1427,10 @@ end
 class MalformedQueryFault
   @@schema_type = "MalformedQueryFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1255,7 +1445,10 @@ end
 class InvalidQueryLocatorFault
   @@schema_type = "InvalidQueryLocatorFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1270,7 +1463,10 @@ end
 class MalformedSearchFault
   @@schema_type = "MalformedSearchFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1285,7 +1481,10 @@ end
 class InvalidNewPasswordFault
   @@schema_type = "InvalidNewPasswordFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1300,7 +1499,10 @@ end
 class InvalidIdFault
   @@schema_type = "InvalidIdFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
@@ -1315,7 +1517,10 @@ end
 class UnexpectedErrorFault
   @@schema_type = "UnexpectedErrorFault"
   @@schema_ns = "urn:fault.partner.soap.sforce.com"
-  @@schema_element = [["exceptionCode", "SOAP::SOAPString"], ["exceptionMessage", "SOAP::SOAPString"]]
+  @@schema_element = [
+    ["exceptionCode", "SOAP::SOAPString"],
+    ["exceptionMessage", "SOAP::SOAPString"]
+  ]
 
   attr_accessor :exceptionCode
   attr_accessor :exceptionMessage
