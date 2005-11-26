@@ -136,22 +136,32 @@ private
   if RUBY_VERSION > "1.7.0"
     def __define_attr_accessor(qname)
       name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
-      Mapping.define_attr_accessor(self, name,
-        proc { self[qname] },
-        proc { |value| self[qname] = value })
+      getter = setter = nil
+      unless self.respond_to?(name)
+        getter = proc { self[qname] }
+      end
+      unless self.respond_to?(name + "=")
+        setter = proc { |value| self[qname] = value }
+      end
+      Mapping.define_attr_accessor(self, name, getter, setter)
     end
   else
     def __define_attr_accessor(qname)
       name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
-      instance_eval <<-EOS
-        def #{name}
-          self[#{qname.dump}]
-        end
-
-        def #{name}=(value)
-          self[#{qname.dump}] = value
-        end
-      EOS
+      unless self.respond_to?(name)
+        instance_eval <<-EOS
+          def #{name}
+            self[#{qname.dump}]
+          end
+        EOS
+      end
+      unless self.respond_to?(name + "=")
+        instance_eval <<-EOS
+          def #{name}=(value)
+            self[#{qname.dump}] = value
+          end
+        EOS
+      end
     end
   end
 
