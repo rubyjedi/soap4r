@@ -13,9 +13,17 @@
 	  <xsd:element name="family-name" type="xsd:string" />
 	  <xsd:element name="given_name" type="xsd:string" />
 	  <xsd:element name="age" type="xsd:int" />
+          <xsd:element name="gender" type="txd:gender" />
 	  <xsd:element name="link" type="txd:person" />
 	</xsd:all>
       </xsd:complexType>
+
+      <xsd:simpleType name="gender">
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="F"/>
+          <xsd:enumeration value="M"/>
+        </xsd:restriction>
+      </xsd:simpleType>
     </xsd:schema>
   </types>
 

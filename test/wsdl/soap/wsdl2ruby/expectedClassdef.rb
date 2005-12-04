@@ -19,8 +19,11 @@ class Version_struct
 end
 
 # {urn:example.com:simpletype-rpc-type}version
-module Version
-  C_16 = "1.6"
-  C_18 = "1.8"
-  C_19 = "1.9"
+class Version < ::String
+  @@schema_type = "version"
+  @@schema_ns = "urn:example.com:simpletype-rpc-type"
+
+  C_16 = Version.new("1.6")
+  C_18 = Version.new("1.8")
+  C_19 = Version.new("1.9")
 end

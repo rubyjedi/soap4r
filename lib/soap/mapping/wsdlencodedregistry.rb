@@ -125,7 +125,9 @@ private
     type.check_lexical_format(obj)
     return SOAPNil.new if obj.nil?      # ToDo: check nillable.
     if type.base
-      base2soap(obj, TypeMap[type.base])
+      soap_obj = base2soap(obj, TypeMap[type.base])
+      soap_obj.type = type.name
+      soap_obj
     elsif type.list
       base2soap(obj.join(" "), SOAP::SOAPString)
     else
