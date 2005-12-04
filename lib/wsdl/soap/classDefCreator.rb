@@ -113,9 +113,12 @@ private
       # not supported.  minlength?
       return nil
     end
-    c = ModuleDef.new(create_class_name(qname))
+    classname = create_class_name(qname)
+    c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
-    define_enum_restriction(c, restriction.enumeration)
+    c.def_classvar('schema_type', ndq(qname.name))
+    c.def_classvar('schema_ns', ndq(qname.namespace))
+    define_classenum_restriction(c, classname, restriction.enumeration)
     c.dump
   end
 
@@ -127,7 +130,7 @@ private
         raise RuntimeError.new(
           "unknown kind of simpletype: #{simpletype}")
       end
-      define_enum_restriction(c, simpletype.restriction.enumeration)
+      define_stringenum_restriction(c, simpletype.restriction.enumeration)
       c.comment << "\n  contains list of #{create_class_name(qname)}::*"
     elsif list.itemtype
       c.comment << "\n  contains list of #{create_class_name(list.itemtype)}::*"
@@ -137,7 +140,7 @@ private
     c.dump
   end
 
-  def define_enum_restriction(c, enumeration)
+  def define_stringenum_restriction(c, enumeration)
     const = {}
     enumeration.each do |value|
       constname = safeconstname(value)
@@ -146,6 +149,18 @@ private
         constname += "_#{const[constname]}"
       end
       c.def_const(constname, ndq(value))
+    end
+  end
+
+  def define_classenum_restriction(c, classname, enumeration)
+    const = {}
+    enumeration.each do |value|
+      constname = safeconstname(value)
+      const[constname] ||= 0
+      if (const[constname] += 1) > 1
+        constname += "_#{const[constname]}"
+      end
+      c.def_const(constname, "#{classname}.new(#{ndq(value)})")
     end
   end
 
@@ -397,8 +412,6 @@ private
     c = ClassDef.new(create_class_name(qname), '::Array')
     c.comment = "#{qname}"
     child_type = complextype.child_type
-    c.def_classvar('schema_type', ndq(child_type.name))
-    c.def_classvar('schema_ns', ndq(child_type.namespace))
     child_element = complextype.find_aryelement
     schema_element = []
     if child_type == XSD::AnyTypeName

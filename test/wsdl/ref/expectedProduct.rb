@@ -1,10 +1,13 @@
 require 'xsd/qname'
 
 # {urn:ref}Rating
-module Rating
-  C_0 = "0"
-  C_1 = "+1"
-  C_1_2 = "-1"
+class Rating < ::String
+  @@schema_type = "Rating"
+  @@schema_ns = "urn:ref"
+
+  C_0 = Rating.new("0")
+  C_1 = Rating.new("+1")
+  C_1_2 = Rating.new("-1")
 end
 
 # {urn:ref}Product-Bag
@@ -84,9 +87,12 @@ class Creator < ::String
 end
 
 # {urn:ref}yesno
-module Yesno
-  N = "N"
-  Y = "Y"
+class Yesno < ::String
+  @@schema_type = "yesno"
+  @@schema_ns = "urn:ref"
+
+  N = Yesno.new("N")
+  Y = Yesno.new("Y")
 end
 
 # {urn:ref}Product

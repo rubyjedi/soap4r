@@ -44,8 +44,6 @@ end
 
 # {urn:mysample}sectionArray
 class SectionArray < ::Array
-  @@schema_type = "section"
-  @@schema_ns = "urn:mysample"
   @@schema_element = [
     ["item", ["Section", XSD::QName.new(nil, "item")]]
   ]

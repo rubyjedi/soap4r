@@ -49,7 +49,7 @@ class TestRPC < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('echo.rb'))
+    File.unlink(pathname('echo.rb')) unless $DEBUG
     @client.reset_stream if @client
   end
 
@@ -94,19 +94,19 @@ class TestRPC < Test::Unit::TestCase
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
 
-    ret = @client.echo(Person.new("normal", "", 12), Person.new("Hi", "Na", 21))
+    ret = @client.echo(Person.new("normal", "", 12, Gender::F), Person.new("Hi", "Na", 21, Gender::M))
     assert_equal(Person, ret.class)
     assert_equal("Hi", ret.family_name)
     assert_equal("Na", ret.given_name)
     assert_equal(21, ret.age)
 
-    ret = @client.echo(Person.new("dummy", "", 12), Person.new("Hi", "Na", 21))
+    ret = @client.echo(Person.new("dummy", "", 12, Gender::F), Person.new("Hi", "Na", 21, Gender::M))
     assert_equal(Person, ret.class)
     assert_equal("family-name", ret.family_name)
     assert_equal("given_name", ret.given_name)
     assert_equal(nil, ret.age)
 
-    ret = @client.echo_err(Person.new("Na", "Hi"), Person.new("Hi", "Na"))
+    ret = @client.echo_err(Person.new("Na", "Hi", nil, Gender::F), Person.new("Hi", "Na", nil, Gender::M))
     assert_equal(Person, ret.class)
     assert_equal("58", ret.given_name)
     assert_equal(nil, ret.family_name)

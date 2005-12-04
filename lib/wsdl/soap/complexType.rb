@@ -134,7 +134,7 @@ private
         element.local_simpletype.base
       else
         # element definition
-        element.name
+        nil
       end
     when XMLSchema::Any
       XSD::AnyTypeName
