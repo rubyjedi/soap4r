@@ -21,7 +21,7 @@
         <xsd:complexType>
           <xsd:sequence>
             <xsd:element name="sampleMultiValue"
-              minOccurs="0" maxOccurs="*" type="xsd:string" />
+              minOccurs="0" maxOccurs="unbounded" type="xsd:string" />
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
