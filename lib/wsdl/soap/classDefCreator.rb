@@ -311,7 +311,7 @@ private
           init_params << "#{varname} = nil"
         end
         # nil means @@schema_ns + varname
-        eleqname = element.name || element.ref.name
+        eleqname = element.name || element.ref
         if eleqname && varname == name && eleqname.namespace == base_namespace
           eleqname = nil
         end
