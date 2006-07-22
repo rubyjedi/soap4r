@@ -62,7 +62,6 @@ class TestList < Test::Unit::TestCase
     back = $:.dup
     begin
       $:.unshift(pathname('.'))
-      require pathname('list')
       require pathname('listDriver')
     ensure
       $:.replace(back)
