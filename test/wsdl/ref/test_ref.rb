@@ -85,7 +85,6 @@ class TestRef < Test::Unit::TestCase
     begin
       back = $:.dup
       $:.unshift(pathname("."))
-      require pathname('product')
       require pathname('productDriver')
     ensure
       $:.replace(back) if back
