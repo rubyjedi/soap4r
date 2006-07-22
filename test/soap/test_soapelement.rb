@@ -53,14 +53,12 @@ class TestSOAPElement < Test::Unit::TestCase
     assert(obj.key?("abc"))
     assert_same(child, obj["abc"])
     assert_same(child, obj.abc)
-    def obj.foo; 1; end
     child = d("foo")
     obj.add(child)
-    assert_equal(1, obj.foo)
-    assert_equal(child, obj.var_foo)
+    assert_equal(child, obj.foo)
     child = d("_?a?b_")
     obj.add(child)
-    assert_equal(child, obj.__send__('_?a?b_'))
+    assert_equal(child, obj.m___a_b_)
   end
 
   def test_member
