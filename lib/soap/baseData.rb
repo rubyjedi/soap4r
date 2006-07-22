@@ -1,5 +1,5 @@
 # soap/baseData.rb: SOAP4R - Base type library
-# Copyright (C) 2000, 2001, 2003-2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003-2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -702,36 +702,28 @@ private
     value
   end
 
-  if RUBY_VERSION > "1.7.0"
-    def add_accessor(name)
-      methodname = name
-      if self.respond_to?(methodname)
-        methodname = safe_accessor_name(methodname)
-      end
-      Mapping.define_singleton_method(self, methodname) do
-        @data[@array.index(name)]
-      end
-      Mapping.define_singleton_method(self, methodname + '=') do |value|
-        @data[@array.index(name)] = value
-      end
-    end
-  else
-    def add_accessor(name)
-      methodname = safe_accessor_name(name)
+  # Mapping.define_singleton_method calls define_method with proc and it
+  # exhausts much memory for each singleton Object.  just instance_eval instead
+  # of it.
+  def add_accessor(name)
+    # untaint depends GenSupport.safemethodname
+    methodname = XSD::CodeGen::GenSupport.safemethodname(name).untaint
+    # untaint depends String#dump and Array#index
+    namedump = name.dump.untaint
+    unless self.respond_to?(methodname)
       instance_eval <<-EOS
         def #{methodname}
-          @data[@array.index(#{name.dump})]
-        end
-
-        def #{methodname}=(value)
-          @data[@array.index(#{name.dump})] = value
+          @data[@array.index(#{namedump})]
         end
       EOS
     end
-  end
-
-  def safe_accessor_name(name)
-    "var_" << name.gsub(/[^a-zA-Z0-9_]/, '')
+    unless self.respond_to?(methodname + "=")
+      instance_eval <<-EOS
+        def #{methodname}=(value)
+          @data[@array.index(#{namedump})] = value
+        end
+      EOS
+    end
   end
 end
 

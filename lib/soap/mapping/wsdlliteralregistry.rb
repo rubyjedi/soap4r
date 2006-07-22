@@ -490,45 +490,34 @@ private
     end
   end
 
-  if RUBY_VERSION > "1.7.0"
-    def define_xmlattr_accessor(obj, qname)
-      name = XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name)
-      Mapping.define_attr_accessor(obj, name,
-        proc { @__xmlattr[qname] },
-        proc { |value| @__xmlattr[qname] = value })
-    end
-  else
-    def define_xmlattr_accessor(obj, qname)
-      name = XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name)
-      obj.instance_eval <<-EOS
-        def #{name}
-          @__xmlattr[#{qname.dump}]
-        end
+  # Mapping.define_attr_accessor calls define_method with proc and it exhausts
+  # much memory for each singleton Object.  just instance_eval instead of it.
+  def define_xmlattr_accessor(obj, qname)
+    # untaint depends GenSupport.safemethodname
+    name = XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name).untaint
+    # untaint depends QName#dump
+    qnamedump = qname.dump.untaint
+    obj.instance_eval <<-EOS
+      def #{name}
+        @__xmlattr[#{qnamedump}]
+      end
 
-        def #{name}=(value)
-          @__xmlattr[#{qname.dump}] = value
-        end
-      EOS
-    end
+      def #{name}=(value)
+        @__xmlattr[#{qnamedump}] = value
+      end
+    EOS
   end
 
-  if RUBY_VERSION > "1.7.0"
-    def define_xmlattr(obj)
-      obj.instance_variable_set('@__xmlattr', {})
-      unless obj.respond_to?(:__xmlattr)
-        Mapping.define_attr_accessor(obj, :__xmlattr, proc { @__xmlattr })
-      end
-    end
-  else
-    def define_xmlattr(obj)
-      obj.instance_variable_set('@__xmlattr', {})
-      unless obj.respond_to?(:__xmlattr)
-        obj.instance_eval <<-EOS
-          def __xmlattr
-            @__xmlattr
-          end
-        EOS
-      end
+  # Mapping.define_attr_accessor calls define_method with proc and it exhausts
+  # much memory for each singleton Object.  just instance_eval instead of it.
+  def define_xmlattr(obj)
+    obj.instance_variable_set('@__xmlattr', {})
+    unless obj.respond_to?(:__xmlattr)
+      obj.instance_eval <<-EOS
+        def __xmlattr
+          @__xmlattr
+        end
+      EOS
     end
   end
 
