@@ -133,35 +133,26 @@ class Object; include Marshallable
 
 private
 
-  if RUBY_VERSION > "1.7.0"
-    def __define_attr_accessor(qname)
-      name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
-      getter = setter = nil
-      unless self.respond_to?(name)
-        getter = proc { self[qname] }
-      end
-      unless self.respond_to?(name + "=")
-        setter = proc { |value| self[qname] = value }
-      end
-      Mapping.define_attr_accessor(self, name, getter, setter)
+  # Mapping.define_attr_accessor calls define_method with proc and it exhausts
+  # much memory for each singleton Object.  just instance_eval instead of it.
+  def __define_attr_accessor(qname)
+    # untaint depends GenSupport.safemethodname
+    name = XSD::CodeGen::GenSupport.safemethodname(qname.name).untaint
+    # untaint depends QName#dump
+    qnamedump = qname.dump.untaint
+    unless self.respond_to?(name)
+      instance_eval <<-EOS
+        def #{name}
+          self[#{qnamedump}]
+        end
+      EOS
     end
-  else
-    def __define_attr_accessor(qname)
-      name = XSD::CodeGen::GenSupport.safemethodname(qname.name)
-      unless self.respond_to?(name)
-        instance_eval <<-EOS
-          def #{name}
-            self[#{qname.dump}]
-          end
-        EOS
-      end
-      unless self.respond_to?(name + "=")
-        instance_eval <<-EOS
-          def #{name}=(value)
-            self[#{qname.dump}] = value
-          end
-        EOS
-      end
+    unless self.respond_to?(name + "=")
+      instance_eval <<-EOS
+        def #{name}=(value)
+          self[#{qnamedump}] = value
+        end
+      EOS
     end
   end
 

@@ -42,7 +42,8 @@ module Mapping
     soap_obj = nil
     protect_threadvars(:SOAPMarshalDataKey, :SOAPExternalCES, :SOAPMarshalNoReference) do
       Thread.current[:SOAPMarshalDataKey] = {}
-      Thread.current[:SOAPExternalCES] = opt[:external_ces] || $KCODE
+      Thread.current[:SOAPExternalCES] =
+        opt[:external_ces] || XSD::Charset.encoding
       Thread.current[:SOAPMarshalNoReference] = opt[:no_reference]
       soap_obj = _obj2soap(obj, registry, type)
     end
@@ -54,7 +55,8 @@ module Mapping
     obj = nil
     protect_threadvars(:SOAPMarshalDataKey, :SOAPExternalCES, :SOAPMarshalNoReference) do
       Thread.current[:SOAPMarshalDataKey] = {}
-      Thread.current[:SOAPExternalCES] = opt[:external_ces] || $KCODE
+      Thread.current[:SOAPExternalCES] =
+        opt[:external_ces] || XSD::Charset.encoding
       Thread.current[:SOAPMarshalNoReference] = opt[:no_reference]
       obj = _soap2obj(node, registry, klass)
     end
@@ -67,7 +69,8 @@ module Mapping
     soap_ary = SOAPArray.new(ValueArrayName, 1, type)
     protect_threadvars(:SOAPMarshalDataKey, :SOAPExternalCES, :SOAPMarshalNoReference) do
       Thread.current[:SOAPMarshalDataKey] = {}
-      Thread.current[:SOAPExternalCES] = opt[:external_ces] || $KCODE
+      Thread.current[:SOAPExternalCES] =
+        opt[:external_ces] || XSD::Charset.encoding
       Thread.current[:SOAPMarshalNoReference] = opt[:no_reference]
       ary.each do |ele|
         soap_ary.add(_obj2soap(ele, registry, type))
@@ -82,7 +85,8 @@ module Mapping
     md_ary = SOAPArray.new(ValueArrayName, rank, type)
     protect_threadvars(:SOAPMarshalDataKey, :SOAPExternalCES, :SOAPMarshalNoReference) do
       Thread.current[:SOAPMarshalDataKey] = {}
-      Thread.current[:SOAPExternalCES] = opt[:external_ces] || $KCODE
+      Thread.current[:SOAPExternalCES] =
+        opt[:external_ces] || XSD::Charset.encoding
       Thread.current[:SOAPMarshalNoReference] = opt[:no_reference]
       add_md_ary(md_ary, ary, [], registry)
     end
@@ -312,27 +316,34 @@ module Mapping
       end
     else
       values.each do |attr_name, value|
-        name = XSD::CodeGen::GenSupport.safevarname(attr_name)
+        # untaint depends GenSupport.safevarname
+        name = XSD::CodeGen::GenSupport.safevarname(attr_name).untaint
         setter = name + "="
         if obj.respond_to?(setter)
           obj.__send__(setter, value)
         else
           obj.instance_variable_set('@' + name, value)
           begin
-            define_attr_accessor(obj, name,
-              proc { instance_variable_get('@' + name) },
-              proc { |value| instance_variable_set('@' + name, value) })
+            unless obj.respond_to?(name)
+              obj.instance_eval <<-EOS
+                def #{name}
+                  @#{name}
+                end
+              EOS
+            end
+            unless self.respond_to?(name + "=")
+              obj.instance_eval <<-EOS
+                def #{name}=(value)
+                  @#{name} = value
+                end
+              EOS
+            end
           rescue TypeError
             # singleton class may not exist (e.g. Float)
           end
         end
       end
     end
-  end
-
-  def self.define_attr_accessor(obj, name, getterproc, setterproc = nil)
-    define_singleton_method(obj, name, &getterproc) if getterproc
-    define_singleton_method(obj, name + '=', &setterproc) if setterproc
   end
 
   def self.schema_type_definition(klass)

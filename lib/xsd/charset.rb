@@ -167,7 +167,7 @@ public
     SJISRegexp =~ str
   end
 
-  def Charset.is_ces(str, code = $KCODE)
+  def Charset.is_ces(str, code = @internal_encoding)
     case code
     when 'NONE'
       is_us_ascii(str)
