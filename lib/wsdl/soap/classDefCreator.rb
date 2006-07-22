@@ -372,6 +372,7 @@ private
       if klass = attribute_basetype(attribute)
         type = klass.name
       else
+        warn("unresolved attribute type #{attribute.type} for #{name}")
         type = nil
       end
       methodname = safemethodname('xmlattr_' + name.name)
