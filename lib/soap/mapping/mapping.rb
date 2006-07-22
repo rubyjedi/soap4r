@@ -288,24 +288,28 @@ module Mapping
   end
 
   def self.get_attribute(obj, attr_name)
-    if obj.is_a?(::Hash)
+    case obj
+    when ::SOAP::Mapping::Object
+      return obj[attr_name]
+    when ::Hash
       return obj[attr_name] || obj[attr_name.intern]
-    end
-    iv = obj.instance_variables
-    name = XSD::CodeGen::GenSupport.safevarname(attr_name)
-    if iv.include?("@#{name}")
-      return obj.instance_variable_get("@#{name}")
-    elsif iv.include?("@#{attr_name}")
-      return obj.instance_variable_get("@#{attr_name}")
-    end
-    if obj.is_a?(::Struct) or obj.is_a?(Marshallable)
-      if obj.respond_to?(name)
-        return obj.__send__(name)
-      elsif obj.respond_to?(attr_name)
-        return obj.__send__(attr_name)
+    else
+      iv = obj.instance_variables
+      name = XSD::CodeGen::GenSupport.safevarname(attr_name)
+      if iv.include?("@#{name}")
+        return obj.instance_variable_get("@#{name}")
+      elsif iv.include?("@#{attr_name}")
+        return obj.instance_variable_get("@#{attr_name}")
       end
+      if obj.is_a?(::Struct) or obj.is_a?(Marshallable)
+        if obj.respond_to?(name)
+          return obj.__send__(name)
+        elsif obj.respond_to?(attr_name)
+          return obj.__send__(attr_name)
+        end
+      end
+      nil
     end
-    nil
   end
 
   def self.set_attributes(obj, values)

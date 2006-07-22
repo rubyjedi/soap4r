@@ -98,7 +98,7 @@ private
     elsif obj.is_a?(SOAPStruct) && (type = @definedtypes[type_qname])
       soap_obj = obj
       mark_marshalled_obj(obj, soap_obj)
-      elements2soap(obj, soap_obj, type.content.elements)
+      elements2soap(obj, soap_obj, type.elements)
       soap_obj
     elsif obj.is_a?(SOAPArray) && (type = @definedtypes[type_qname])
       soap_obj = obj
@@ -171,7 +171,7 @@ private
     soap_obj = SOAPStruct.new(type_qname)
     unless obj.nil?
       mark_marshalled_obj(obj, soap_obj)
-      elements2soap(obj, soap_obj, type.content.elements)
+      elements2soap(obj, soap_obj, type.elements)
     end
     soap_obj
   end
