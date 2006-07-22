@@ -21,7 +21,7 @@ class SOAPHandler < Handler
     super(charset)
     @refpool = []
     @idpool = []
-    @textbuf = ''
+    @textbuf = []
     @is_first_top_ele = true
   end
 
@@ -143,7 +143,7 @@ class SOAPHandler < Handler
   end
 
   def decode_tag(ns, elename, attrs, parent)
-    @textbuf = ''
+    @textbuf.clear
     is_nil, type, arytype, root, offset, position, href, id, extraattr =
       decode_attrs(ns, attrs)
     o = nil
@@ -182,7 +182,7 @@ class SOAPHandler < Handler
   def decode_tag_end(ns, node)
     o = node.node
     if o.is_a?(SOAPUnknown)
-      newnode = if /\A\s*\z/ =~ @textbuf
+      newnode = if /\A\s*\z/ =~ @textbuf.join
 	o.as_struct
       else
 	o.as_string
@@ -453,25 +453,26 @@ private
   end
 
   def decode_textbuf(node)
+    textbufstr = @textbuf.join
     case node
     when XSD::XSDHexBinary, XSD::XSDBase64Binary
-      node.set_encoded(@textbuf)
+      node.set_encoded(textbufstr)
     when XSD::XSDString
       if @charset
-	@textbuf = XSD::Charset.encoding_from_xml(@textbuf, @charset)
+	textbufstr = XSD::Charset.encoding_from_xml(textbufstr, @charset)
       end
       if node.definedtype
-        node.definedtype.check_lexical_format(@textbuf)
+        node.definedtype.check_lexical_format(textbufstr)
       end
-      node.set(@textbuf)
+      node.set(textbufstr)
     when SOAPNil
       # Nothing to do.
     when SOAPBasetype
-      node.set(@textbuf)
+      node.set(textbufstr)
     else
       # Nothing to do...
     end
-    @textbuf = ''
+    @textbuf.clear
   end
 
   NilLiteralMap = {
