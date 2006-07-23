@@ -1,5 +1,5 @@
 # SOAP4R - WSDL literal mapping registry.
-# Copyright (C) 2004, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2004-2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -142,7 +142,7 @@ private
     elements = type.elements
     any = nil
     if type.have_any?
-      any = scan_any(obj, elements)
+      any = Mapping.get_attributes_for_any(obj, elements)
     end
     elements.each do |child_ele|
       case child_ele
@@ -235,23 +235,6 @@ private
     end
   end
 
-  def scan_any(obj, elements)
-    if obj.respond_to?(:__xmlele_any)
-      obj.__xmlele_any
-    else
-      any = Mapping.get_attributes(obj)
-      if elements
-        elements.each do |child_ele|
-          child = Mapping.get_attribute(obj, child_ele.name.name)
-          if k = any.key(child)
-            any.delete(k)
-          end
-        end
-      end
-      any
-    end
-  end
-
   def nil2soap(ele)
     if ele.nillable
       obj2elesoap(nil, ele)     # add an empty element
@@ -318,7 +301,7 @@ private
     definition = schema_element_definition(obj.class)
     any = nil
     if definition.have_any?
-      any = scan_any(obj, definition.elements)
+      any = Mapping.get_attributes_for_any(obj, definition.elements)
     end
     definition.elements.each do |eledef|
       if eledef.elename == XSD::AnyTypeName
@@ -327,7 +310,7 @@ private
             ele.add(child)
           end
         end
-      elsif child = Mapping.get_attribute(obj, eledef.elename.name)
+      elsif child = Mapping.get_attribute(obj, eledef.varname)
         if eledef.as_array?
           child.each do |item|
             ele.add(obj2soap(item, eledef.elename))

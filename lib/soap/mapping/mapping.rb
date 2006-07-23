@@ -1,5 +1,5 @@
 # SOAP4R - Ruby type mapping utility.
-# Copyright (C) 2000, 2001, 2003-2005  NAKAMURA Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003-2006  NAKAMURA Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -287,6 +287,23 @@ module Mapping
     end
   end
 
+  def self.get_attributes_for_any(obj, elements)
+    if obj.respond_to?(:__xmlele_any)
+      obj.__xmlele_any
+    else
+      any = get_attributes(obj)
+      if elements
+        elements.each do |child_ele|
+          child = get_attribute(obj, child_ele.name.name)
+          if k = any.key(child)
+            any.delete(k)
+          end
+        end
+      end
+      any
+    end
+  end
+
   def self.get_attribute(obj, attr_name)
     case obj
     when ::SOAP::Mapping::Object
@@ -366,9 +383,10 @@ module Mapping
   end
 
   class SchemaElementDefinition
-    attr_reader :elename, :type
+    attr_reader :varname, :elename, :type
 
-    def initialize(elename, type, as_array)
+    def initialize(varname, elename, type, as_array)
+      @varname = varname
       @elename = elename
       @type = type
       @as_array = as_array
@@ -433,8 +451,13 @@ module Mapping
         if name == XSD::AnyTypeName
           definition.set_any
         end
-        definition.elements << SchemaElementDefinition.new(
-          name || XSD::QName.new(schema_ns, varname), class_name, as_array)
+        definition.elements <<
+          SchemaElementDefinition.new(
+            varname,
+            name || XSD::QName.new(schema_ns, varname),
+            class_name,
+            as_array
+          )
       end
       definition
     end

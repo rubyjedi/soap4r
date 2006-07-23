@@ -1,5 +1,5 @@
 # SOAP4R - Mapping factory.
-# Copyright (C) 2000, 2001, 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000-2003, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -38,16 +38,7 @@ class Factory
 
   def setiv2soap(node, obj, map)
     if obj.class.class_variables.include?('@@schema_element')
-      obj.class.class_eval('@@schema_element').each do |name, info|
-        type, qname = info
-        if qname
-          elename = qname.name
-        else
-          elename = Mapping.name2elename(name)
-        end
-        node.add(elename,
-          Mapping._obj2soap(obj.instance_variable_get('@' + name), map))
-      end
+      setdefinediv2soap(node, obj, map)
     else
       # should we sort instance_variables?
       obj.instance_variables.each do |var|
@@ -60,6 +51,25 @@ class Factory
   end
 
 private
+
+  def setdefinediv2soap(ele, obj, map)
+    # cache needed?
+    definition = Mapping.schema_element_definition(obj.class)
+    definition.elements.each do |eledef|
+      child = Mapping.get_attribute(obj, eledef.varname)
+      if child.is_a?(XSD::NSDBase)
+        ele.add(eledef.varname, child)
+      else
+        klass = Mapping.class_from_name(eledef.type)
+        if klass && klass.ancestors.include?(::SOAP::SOAPBasetype)
+          ele.add(eledef.varname, klass.new(child))
+        else
+          # should check klass matches an actual object?
+          ele.add(eledef.varname, Mapping._obj2soap(child, map))
+        end
+      end
+    end
+  end
 
   def setiv2ary(obj, node, map)
     node.each do |name, value|
