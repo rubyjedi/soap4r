@@ -240,7 +240,6 @@ class SOAPMethodRequest < SOAPMethod
   end
 
   def initialize(qname, param_def = nil, soapaction = nil)
-    check_elename(qname)
     super(qname, param_def)
     @soapaction = soapaction
   end
@@ -264,15 +263,6 @@ class SOAPMethodRequest < SOAPMethod
     response_name ||=
       XSD::QName.new(@elename.namespace, @elename.name + 'Response')
     SOAPMethodResponse.new(response_name, @param_def)
-  end
-
-private
-
-  def check_elename(qname)
-    # NCName & ruby's method name
-    unless /\A[\w_][\w\d_\-]*\z/ =~ qname.name
-      raise MethodDefinitionError.new("element name '#{qname.name}' not allowed")
-    end
   end
 end
 
