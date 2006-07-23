@@ -2,21 +2,16 @@
 require 'RAAServant.rb'
 
 require 'soap/rpc/standaloneServer'
+require 'soap/mapping/registry'
 
 class RAABaseServicePortType
-  MappingRegistry = SOAP::Mapping::Registry.new
+  MappingRegistry = ::SOAP::Mapping::Registry.new
 
   MappingRegistry.set(
     StringArray,
     ::SOAP::SOAPArray,
     ::SOAP::Mapping::Registry::TypedArrayFactory,
     { :type => XSD::QName.new("http://www.w3.org/2001/XMLSchema", "string") }
-  )
-  MappingRegistry.set(
-    Map,
-    ::SOAP::SOAPArray,
-    ::SOAP::Mapping::Registry::TypedArrayFactory,
-    { :type => XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType") }
   )
   MappingRegistry.set(
     Category,
@@ -49,52 +44,77 @@ class RAABaseServicePortType
     { :type => XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Owner") }
   )
 
-
   Methods = [
-    ["getAllListings", "getAllListings", [
-      ["retval", "return",
-       [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]], "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"],
-    ["getProductTree", "getProductTree", [
-      ["retval", "return",
-       [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "anyType"]]], "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"],
-    ["getInfoFromCategory", "getInfoFromCategory", [
-      ["in", "category",
-       [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Category"]],
-      ["retval", "return",
-       [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]]], "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"],
-    ["getModifiedInfoSince", "getModifiedInfoSince", [
-      ["in", "timeInstant",
-       [SOAP::SOAPDateTime]],
-      ["retval", "return",
-       [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]]], "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"],
-    ["getInfoFromName", "getInfoFromName", [
-      ["in", "productName",
-       [SOAP::SOAPString]],
-      ["retval", "return",
-       [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]]], "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"],
-    ["getInfoFromOwnerId", "getInfoFromOwnerId", [
-      ["in", "ownerId",
-       [SOAP::SOAPInt]],
-      ["retval", "return",
-       [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]]], "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"]
+    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getAllListings"),
+      "",
+      "getAllListings",
+      [ ["retval", "return", ["String[]", "http://www.w3.org/2001/XMLSchema", "string"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
+    ],
+    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getProductTree"),
+      "",
+      "getProductTree",
+      [ ["retval", "return", ["Hash", "http://xml.apache.org/xml-soap", "Map"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
+    ],
+    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromCategory"),
+      "",
+      "getInfoFromCategory",
+      [ ["in", "category", ["Category", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Category"]],
+        ["retval", "return", ["Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
+    ],
+    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getModifiedInfoSince"),
+      "",
+      "getModifiedInfoSince",
+      [ ["in", "timeInstant", ["::SOAP::SOAPDateTime"]],
+        ["retval", "return", ["Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
+    ],
+    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromName"),
+      "",
+      "getInfoFromName",
+      [ ["in", "productName", ["::SOAP::SOAPString"]],
+        ["retval", "return", ["Info", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
+    ],
+    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromOwnerId"),
+      "",
+      "getInfoFromOwnerId",
+      [ ["in", "ownerId", ["::SOAP::SOAPInt"]],
+        ["retval", "return", ["Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded }
+    ]
   ]
 end
 
-class App < SOAP::RPC::StandaloneServer
+class RAABaseServicePortTypeApp < ::SOAP::RPC::StandaloneServer
   def initialize(*arg)
-    super
-
+    super(*arg)
     servant = RAABaseServicePortType.new
-    RAABaseServicePortType::Methods.each do |name_as, name, params, soapaction, namespace|
-      qname = XSD::QName.new(namespace, name_as)
-      @router.add_method(servant, qname, soapaction, name, params)
+    RAABaseServicePortType::Methods.each do |definitions|
+      opt = definitions.last
+      if opt[:request_style] == :document
+        @router.add_document_operation(servant, *definitions)
+      else
+        @router.add_rpc_operation(servant, *definitions)
+      end
     end
-
     self.mapping_registry = RAABaseServicePortType::MappingRegistry
   end
 end
 
-# Change listen port.
 if $0 == __FILE__
-  App.new('app', nil, '0.0.0.0', 10080).start
+  # Change listen port.
+  server = RAABaseServicePortTypeApp.new('app', nil, '0.0.0.0', 10080)
+  trap(:INT) do
+    server.shutdown
+  end
+  server.start
 end
