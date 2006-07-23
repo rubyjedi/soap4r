@@ -1,5 +1,5 @@
 # WSDL4R - Creating standalone server stub code from WSDL.
-# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -28,7 +28,18 @@ class StandaloneServerStubCreator
   def dump(service_name)
     warn("- Standalone stub can have only 1 port for now.  So creating stub for the first port and rests are ignored.")
     warn("- Standalone server stub ignores port location defined in WSDL.  Location is http://localhost:10080/ by default.  Generated client from WSDL must be configured to point this endpoint manually.")
-    port = @definitions.service(service_name).ports[0]
+    services = @definitions.service(service_name)
+    unless services
+      raise RuntimeError.new("service not defined: #{service_name}")
+    end
+    ports = services.ports
+    if ports.empty?
+      raise RuntimeError.new("ports not found for #{service_name}")
+    end
+    port = ports[0]
+    if port.porttype.nil?
+      raise RuntimeError.new("porttype not found for #{port}")
+    end
     dump_porttype(port.porttype.name)
   end
 
