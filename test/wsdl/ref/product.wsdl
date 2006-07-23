@@ -84,7 +84,7 @@
         <complexType>
           <simpleContent>
             <extension base="xsd:string">
-              <attribute name="Role" type="xs:string" use="required"/>
+              <attribute name="Role" type="xsd:string" use="required"/>
             </extension>
           </simpleContent>
         </complexType>

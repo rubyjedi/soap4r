@@ -69,7 +69,7 @@ end
 #   contains SOAP::SOAPString
 class Creator < ::String
   @@schema_attribute = {
-    XSD::QName.new(nil, "Role") => nil
+    XSD::QName.new(nil, "Role") => "SOAP::SOAPString"
   }
 
   def xmlattr_Role
