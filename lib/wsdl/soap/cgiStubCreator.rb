@@ -1,5 +1,5 @@
 # WSDL4R - Creating CGI stub code from WSDL.
-# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -27,7 +27,18 @@ class CGIStubCreator
 
   def dump(service_name)
     warn("CGI stub can have only 1 port.  Creating stub for the first port...  Rests are ignored.")
-    port = @definitions.service(service_name).ports[0]
+    services = @definitions.service(service_name)
+    unless services
+      raise RuntimeError.new("service not defined: #{service_name}")
+    end
+    ports = services.ports
+    if ports.empty?
+      raise RuntimeError.new("ports not found for #{service_name}")
+    end
+    port = ports[0]
+    if port.porttype.nil?
+      raise RuntimeError.new("porttype not found for #{port}")
+    end
     dump_porttype(port.porttype.name)
   end
 

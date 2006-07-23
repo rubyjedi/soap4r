@@ -1,5 +1,5 @@
 # WSDL4R - Creating client skelton code from WSDL.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -25,7 +25,11 @@ class ClientSkeltonCreator
 
   def dump(service_name)
     result = ""
-    @definitions.service(service_name).ports.each do |port|
+    services = @definitions.service(service_name)
+    unless services
+      raise RuntimeError.new("service not defined: #{service_name}")
+    end
+    services.ports.each do |port|
       result << dump_porttype(port.porttype.name)
       result << "\n"
     end
