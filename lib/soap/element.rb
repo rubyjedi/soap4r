@@ -167,16 +167,15 @@ public
     attrs.each do |key, value|
       @element.extraattr[key] = value
     end
-    @element.extraattr[ns.name(AttrMustUnderstandName)] =
-      (@mustunderstand ? '1' : '0')
+    @element.extraattr[AttrMustUnderstandName] = (@mustunderstand ? '1' : '0')
     if @encodingstyle
-      @element.extraattr[ns.name(AttrEncodingStyleName)] = @encodingstyle
+      @element.extraattr[AttrEncodingStyleName] = @encodingstyle
     end
     unless @element.encodingstyle
       @element.encodingstyle = @encodingstyle
     end
     if @actor
-      @element.extraattr[ns.name(AttrActorName)] = @actor
+      @element.extraattr[AttrActorName] = @actor
     end
     yield(@element)
   end
