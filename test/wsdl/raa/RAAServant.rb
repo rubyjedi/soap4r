@@ -77,7 +77,15 @@ class RAABaseServicePortType
   #   (undefined)
   #
   def getInfoFromName(productName)
-    raise NotImplementedError.new
+    Info.new(
+      Category.new("major", "minor"), 
+      Product.new(123, productName, "short description", "version", "status",
+        URI.parse("http://example.com/homepage"),
+        URI.parse("http://example.com/download"),
+        "license", "description"),
+      Owner.new(456, URI.parse("mailto:email@example.com"), "name"),
+      Time.now,
+      Time.now)
   end
   
   # SYNOPSIS

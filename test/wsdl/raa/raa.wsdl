@@ -18,30 +18,30 @@
 
       <complexType name="Category">
   	<all>
-    	  <element name="major" type="string"/>
-	  <element name="minor" type="string"/>
+    	  <element name="major" type="xsd:string"/>
+	  <element name="minor" type="xsd:string"/>
   	</all>
       </complexType>
 
       <complexType name="Product">
   	<all>
-    	  <element name="id" type="int"/>
-    	  <element name="name" type="string"/>
-    	  <element name="short_description" type="string"/>
-	  <element name="version" type="string"/>
-	  <element name="status" type="string"/>
-	  <element name="homepage" type="anyURI"/>
-	  <element name="download" type="anyURI"/>
-	  <element name="license" type="string"/>
-	  <element name="description" type="string"/>
+    	  <element name="id" type="xsd:int"/>
+    	  <element name="name" type="xsd:string"/>
+    	  <element name="short_description" type="xsd:string"/>
+	  <element name="version" type="xsd:string"/>
+	  <element name="status" type="xsd:string"/>
+	  <element name="homepage" type="xsd:anyURI"/>
+	  <element name="download" type="xsd:anyURI"/>
+	  <element name="license" type="xsd:string"/>
+	  <element name="description" type="xsd:string"/>
   	</all>
       </complexType>
 
       <complexType name="Owner">
   	<all>
-    	  <element name="id" type="int"/>
-	  <element name="email" type="anyURI"/>
-	  <element name="name" type="string"/>
+    	  <element name="id" type="xsd:int"/>
+	  <element name="email" type="xsd:anyURI"/>
+	  <element name="name" type="xsd:string"/>
   	</all>
       </complexType>
 
@@ -82,8 +82,8 @@
 	  <element name="item" minOccurs="0" maxOccurs="unbounded">
 	    <complexType>
 	      <sequence>
-		<element name="key" type="anyType" />
-		<element name="value" type="anyType" />
+		<element name="key" type="xsd:anyType" />
+		<element name="value" type="xsd:anyType" />
 	      </sequence>
 	    </complexType>
 	  </element>
