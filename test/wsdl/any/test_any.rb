@@ -75,9 +75,16 @@ class TestAny < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
-    require pathname('echo')
+    begin
+      back = $:.dup
+      $:.unshift(pathname("."))
+      require pathname('echoDriver')
+    ensure
+      $:.replace(back) if back
+    end
   end
 
   def teardown_server
@@ -144,6 +151,24 @@ class TestAny < Test::Unit::TestCase
   def test_wsdl
     wsdl = File.join(DIR, 'any.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = STDOUT if $DEBUG
+    arg = FooBar.new("before", "after")
+    arg.set_any(
+      [
+        ::SOAP::SOAPElement.new("foo", "bar"),
+        ::SOAP::SOAPElement.new("baz", "qux")
+      ]
+    )
+    res = @client.echo(arg)
+    assert_equal(arg.before, res.before)
+    assert_equal("bar", res.foo)
+    assert_equal("qux", res.baz)
+    assert_equal(arg.after, res.after)
+  end
+
+  def test_naive
+    @client = Echo_port_type.new
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
     arg = FooBar.new("before", "after")
