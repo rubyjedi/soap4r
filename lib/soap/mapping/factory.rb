@@ -58,14 +58,14 @@ private
     definition.elements.each do |eledef|
       child = Mapping.get_attribute(obj, eledef.varname)
       if child.is_a?(XSD::NSDBase)
-        ele.add(eledef.varname, child)
+        ele.add(eledef.elename.name, child)
       else
         klass = Mapping.class_from_name(eledef.type)
         if klass && klass.ancestors.include?(::SOAP::SOAPBasetype)
-          ele.add(eledef.varname, klass.new(child))
+          ele.add(eledef.elename.name, klass.new(child))
         else
           # should check klass matches an actual object?
-          ele.add(eledef.varname, Mapping._obj2soap(child, map))
+          ele.add(eledef.elename.name, Mapping._obj2soap(child, map))
         end
       end
     end

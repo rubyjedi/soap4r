@@ -8,6 +8,11 @@
   <types>
     <xsd:schema targetNamespace="urn:com.example:echo"
         elementFormDefault="qualified">
+      <xsd:complexType name="TestType">
+        <xsd:sequence>
+          <xsd:any minOccurs="0" maxOccurs="*" />
+        </xsd:sequence>
+      </xsd:complexType>
       <xsd:element name="echoRequest">
         <xsd:complexType>
           <xsd:sequence>

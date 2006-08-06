@@ -11,7 +11,7 @@
       <xsd:complexType name="person">
 	<xsd:all>
 	  <xsd:element name="family-name" type="xsd:string" />
-	  <xsd:element name="given_name" type="xsd:string" />
+	  <xsd:element name="Given_name" type="xsd:string" />
 	  <xsd:element name="age" type="xsd:int" />
           <xsd:element name="gender" type="txd:gender" />
 	  <xsd:element name="link" type="txd:person" />

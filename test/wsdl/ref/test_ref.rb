@@ -156,9 +156,9 @@ class TestRef < Test::Unit::TestCase
     r1 = e(q(Namespace, "Rating"), "0")
     r2 = e(q(Namespace, "Rating"), "+1")
     r3 = e(q(Namespace, "Rating"), "-1")
-    c11 = e("comment_1", "comment11")
+    c11 = e("Comment_1", "comment11")
     c11.extraattr["msgid"] = "msgid11"
-    c12 = e("comment_1", "comment12")
+    c12 = e("Comment_1", "comment12")
     c12.extraattr["msgid"] = "msgid12"
     c21 = e("comment-2", "comment21")
     c21.extraattr["msgid"] = "msgid21"
@@ -205,9 +205,9 @@ class TestRef < Test::Unit::TestCase
     r1 = Rating::C_0
     r2 = Rating::C_1
     r3 = Rating::C_1_2
-    c11 = ::SOAP::SOAPElement.new("comment_1", "comment11")
+    c11 = ::SOAP::SOAPElement.new("Comment_1", "comment11")
     c11.extraattr["msgid"] = "msgid11"
-    c12 = ::SOAP::SOAPElement.new("comment_1", "comment12")
+    c12 = ::SOAP::SOAPElement.new("Comment_1", "comment12")
     c12.extraattr["msgid"] = "msgid12"
     c21 = Comment.new("comment21")
     c21.xmlattr_msgid = "msgid21"
@@ -243,9 +243,9 @@ class TestRef < Test::Unit::TestCase
     r1 = Rating::C_0
     r2 = Rating::C_1
     r3 = Rating::C_1_2
-    c11 = ::SOAP::SOAPElement.new("comment_1", "comment11")
+    c11 = ::SOAP::SOAPElement.new("Comment_1", "comment11")
     c11.extraattr["msgid"] = "msgid11"
-    c12 = ::SOAP::SOAPElement.new("comment_1", "comment12")
+    c12 = ::SOAP::SOAPElement.new("Comment_1", "comment12")
     c12.extraattr["msgid"] = "msgid12"
     c21 = Comment.new("comment21")
     c21.xmlattr_msgid = "msgid21"

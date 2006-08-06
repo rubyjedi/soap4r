@@ -21,7 +21,7 @@ class ProductBag
   @@schema_element = [
     ["bag", ["Product[]", XSD::QName.new(nil, "bag")]],
     ["rating", ["SOAP::SOAPString[]", XSD::QName.new("urn:ref", "Rating")]],
-    ["comment_1", ["[]", XSD::QName.new(nil, "comment_1")]],
+    ["comment_1", ["[]", XSD::QName.new(nil, "Comment_1")]],
     ["comment_2", ["Comment[]", XSD::QName.new(nil, "comment-2")]],
     ["v___point", ["C__point", XSD::QName.new(nil, "__point")]]
   ]
