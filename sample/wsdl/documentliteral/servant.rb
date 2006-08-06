@@ -3,8 +3,8 @@ require 'default.rb'
 class EchoPortType
   def echo(parameters)
     response = EchoResponse.new
-    response.sampleMultiValue << parameters.xmlattr_sampleAttr
-    response.sampleMultiValue << parameters.sampleElement
+    response << parameters.xmlattr_sampleAttr
+    response << parameters.sampleElement
     response
   end
 end

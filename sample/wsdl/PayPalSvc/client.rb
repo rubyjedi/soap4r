@@ -22,10 +22,15 @@ class RequesterCredentialsHandler < SOAP::Header::SimpleHandler
 end
 
 endpoint_url = ARGV.shift
-obj = PayPalAPIInterface.new(endpoint_url)
+obj = PayPalAPIAAInterface.new(endpoint_url)
 obj.headerhandler << RequesterCredentialsHandler.new('NaHi', 'pass', 'authorizing_account_emailaddress')
-obj.test_loopback_response << ""
-obj.wiredump_dev = STDOUT
+obj.wiredump_dev = STDOUT if $DEBUG
+
+obj.test_loopback_response << File.read("response.xml")
+payerInfo = obj.getExpressCheckoutDetails(nil).getExpressCheckoutDetailsResponseDetails.payerInfo
+p payerInfo.payerName.firstName
+p payerInfo.payerBusiness
+exit
 
 getTransactionDetailsRequest = nil
 puts obj.getTransactionDetails(getTransactionDetailsRequest)
