@@ -268,15 +268,13 @@ private
       else      # untyped element is treated as anyType.
         child = Mapping._soap2obj(value, self)
       end
-      vars[name] = child
-    end
-    if obj.is_a?(::Array)
-      vars.values.flatten.each do |item|
-        obj << item
+      if item and item.as_array?
+        (vars[name] ||= []) << child
+      else
+        vars[name] = child
       end
-    else
-      Mapping.set_attributes(obj, vars)
     end
+    Mapping.set_attributes(obj, vars)
   end
 
   # it caches @@schema_element.  this means that @@schema_element must not be

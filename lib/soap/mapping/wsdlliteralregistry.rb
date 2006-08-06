@@ -432,9 +432,7 @@ private
       end
     end
     if obj.is_a?(::Array)
-      vars.values.flatten.each do |item|
-        obj << item
-      end
+      obj.replace(vars.values.flatten)
     else
       Mapping.set_attributes(obj, vars)
     end

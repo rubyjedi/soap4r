@@ -378,8 +378,7 @@ module Mapping
   def self.schema_element_definition(klass)
     schema_element = class_schema_variable(:schema_element, klass)
     return nil unless schema_element
-    schema_ns = schema_ns_definition(klass)
-    parse_schema_element_definition(schema_ns, schema_element)
+    parse_schema_element_definition(klass, schema_element)
   end
 
   class SchemaElementDefinition
@@ -431,7 +430,8 @@ module Mapping
   class << Mapping
   private
 
-    def parse_schema_element_definition(schema_ns, schema_element)
+    def parse_schema_element_definition(klass, schema_element)
+      schema_ns = schema_ns_definition(klass)
       definition = SchemaDefinition.new
       if schema_element[0] == :choice
         schema_element.shift
@@ -440,7 +440,7 @@ module Mapping
       schema_element.each do |element|
         varname, info = element
         class_name, name = info
-        as_array = false
+        as_array = klass.ancestors.include?(::Array)
         if /\[\]$/ =~ class_name
           class_name = class_name.sub(/\[\]$/, '')
           if class_name.empty?
