@@ -1,5 +1,5 @@
 # SOAP4R - RPC Proxy library.
-# Copyright (C) 2000, 2003-2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2003-2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -44,6 +44,8 @@ public
     @protocol_option = options["protocol"] ||= ::SOAP::Property.new
     initialize_streamhandler(@protocol_option)
     @operation = {}
+    @operation_by_qname = {}
+    @operation_by_soapaction = {}
     @mandatorycharset = nil
     @allow_unqualified_element = true
     @default_encodingstyle = nil
@@ -84,7 +86,8 @@ public
     opt[:response_style] ||= :rpc
     opt[:request_use] ||= :encoded
     opt[:response_use] ||= :encoded
-    @operation[name] = Operation.new(soapaction, param_def, opt)
+    op = Operation.new(soapaction, param_def, opt)
+    assign_operation(name, qname, soapaction, op)
   end
 
   def add_document_operation(soapaction, name, param_def, opt = {})
@@ -100,7 +103,8 @@ public
     unless opt.key?(:attributeformdefault)
       opt[:attributeformdefault] = true
     end
-    @operation[name] = Operation.new(soapaction, param_def, opt)
+    op = Operation.new(soapaction, param_def, opt)
+    assign_operation(name, nil, soapaction, op)
   end
 
   # add_method is for shortcut of typical rpc/encoded method definition.
@@ -114,9 +118,8 @@ public
   end
 
   def call(name, *params)
-    unless op_info = @operation[name]
-      raise MethodDefinitionError, "method: #{name} not defined"
-    end
+    # name must be used only for lookup
+    op_info = lookup_operation(name)
     mapping_opt = create_mapping_opt
     req_header = create_request_header
     req_body = SOAPBody.new(
@@ -282,6 +285,39 @@ private
     }
     opt.update(hash) if hash
     opt
+  end
+
+  def assign_operation(name, qname, soapaction, op)
+    assigned = false
+    if name and !name.empty?
+      @operation[name] = op
+      assigned = true
+    end
+    if qname
+      @operation_by_qname[qname] = op
+      assigned = true
+    end
+    if soapaction and !soapaction.empty?
+      @operation_by_soapaction[soapaction] = op
+      assigned = true
+    end
+    unless assigned
+      raise MethodDefinitionError.new("cannot assign operation")
+    end
+  end
+
+  def lookup_operation(name_or_qname_or_soapaction)
+    if op = @operation[name_or_qname_or_soapaction]
+      return op
+    end
+    if op = @operation_by_qname[name_or_qname_or_soapaction]
+      return op
+    end
+    if op = @operation_by_soapaction[name_or_qname_or_soapaction]
+      return op
+    end
+    raise MethodDefinitionError.new(
+      "operation: #{name_or_qname_or_soapaction} not supported")
   end
 
   class Operation
