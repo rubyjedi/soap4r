@@ -37,7 +37,13 @@ class OperationBinding < Info
   end
 
   def find_operation
-    porttype.operations[@name] or raise RuntimeError.new("#{@name} not found")
+    porttype.operations.each do |op|
+      next if op.name != @name
+      next if op.input and @input and op.input.name != @input.name
+      next if op.output and @output and op.output.name != @output.name
+      return op
+    end
+    raise RuntimeError.new("#{@name} not found")
   end
 
   def soapoperation_name
