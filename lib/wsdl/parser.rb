@@ -1,5 +1,5 @@
 # WSDL4R - WSDL XML Instance parser library.
-# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -138,7 +138,7 @@ private
     end
     attrs.each do |key, value|
       attr_ele = ns.parse(key, true)
-      value_ele = ns.parse(value, true)
+      value_ele = ns.parse(value, false)
       value_ele.source = value  # for recovery; value may not be a QName
       if o.parse_attr(attr_ele, value_ele).nil?
         unless @ignored.key?(attr_ele)

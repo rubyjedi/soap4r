@@ -105,11 +105,7 @@ class Attribute < Info
     when FixedAttrName
       @fixed = value.source
     when ArrayTypeAttrName
-      @arytype = if value.namespace.nil?
-          XSD::QName.new(XSD::Namespace, value.source)
-        else
-          value
-        end
+      @arytype = value
     else
       nil
     end
