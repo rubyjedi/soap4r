@@ -89,6 +89,26 @@
           </simpleContent>
         </complexType>
       </element>
+
+      <complexType name="Document">
+        <simpleContent>
+          <extension base="string">
+            <attribute name="ID" type="xsd:string"/>
+          </extension>
+        </simpleContent>
+      </complexType>
+
+      <complexType name="DerivedChoice_BaseSimpleContent">
+        <complexContent mixed="false">
+          <extension base="tns:Document">
+            <choice>
+              <element name="varStringExt" type="xsd:string"/>
+              <element name="varFloatExt" type="xsd:float"/>
+            </choice>
+            <attribute name="attrStringExt" type="xsd:string"/>
+          </extension>
+        </complexContent>
+      </complexType>
     </xsd:schema>
   </types>
 

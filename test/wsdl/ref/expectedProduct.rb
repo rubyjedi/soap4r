@@ -154,3 +154,54 @@ class C__point < ::String
     @__xmlattr = {}
   end
 end
+
+# {urn:ref}Document
+#   contains SOAP::SOAPString
+class Document < ::String
+  @@schema_attribute = {
+    XSD::QName.new(nil, "ID") => "SOAP::SOAPString"
+  }
+
+  def xmlattr_ID
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")]
+  end
+
+  def xmlattr_ID=(value)
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")] = value
+  end
+
+  def initialize(*arg)
+    super
+    @__xmlattr = {}
+  end
+end
+
+# {urn:ref}DerivedChoice_BaseSimpleContent
+class DerivedChoice_BaseSimpleContent
+  @@schema_type = "DerivedChoice_BaseSimpleContent"
+  @@schema_ns = "urn:ref"
+  @@schema_attribute = {
+    XSD::QName.new(nil, "attrStringExt") => "SOAP::SOAPString"
+  }
+  @@schema_element = [ :choice,
+    ["varStringExt", ["SOAP::SOAPString", XSD::QName.new(nil, "varStringExt")]],
+    ["varFloatExt", ["SOAP::SOAPFloat", XSD::QName.new(nil, "varFloatExt")]]
+  ]
+
+  attr_accessor :varStringExt
+  attr_accessor :varFloatExt
+
+  def xmlattr_attrStringExt
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "attrStringExt")]
+  end
+
+  def xmlattr_attrStringExt=(value)
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "attrStringExt")] = value
+  end
+
+  def initialize(varStringExt = nil, varFloatExt = nil)
+    @varStringExt = varStringExt
+    @varFloatExt = varFloatExt
+    @__xmlattr = {}
+  end
+end
