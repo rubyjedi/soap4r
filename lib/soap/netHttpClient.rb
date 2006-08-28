@@ -153,16 +153,16 @@ private
     if !@proxy or NO_PROXY_HOSTS.include?(uri.host)
       return true
     end
-    if @no_proxy
-      @no_proxy.scan(/([^:,]*)(?::(\d+))?/) do |host, port|
-  	if /(\A|\.)#{Regexp.quote(host)}\z/i =~ uri.host &&
-	    (!port || uri.port == port.to_i)
-	  return true
-	end
-      end
-    else
-      false
+    unless @no_proxy
+      return false
     end
+    @no_proxy.scan(/([^:,]+)(?::(\d+))?/) do |host, port|
+      if /(\A|\.)#{Regexp.quote(host)}\z/i =~ uri.host &&
+          (!port || uri.port == port.to_i)
+        return true
+      end
+    end
+    false
   end
 
   class SessionManager
