@@ -1,5 +1,5 @@
 # XSD4R - XML Schema Namespace library
-# Copyright (C) 2000-2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000-2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -13,6 +13,8 @@ module XSD
 
 
 class NS
+  Namespace = 'http://www.w3.org/XML/1998/namespace'
+
   class Assigner
     def initialize
       @count = 0
@@ -30,13 +32,11 @@ class NS
 
 public
 
-  def initialize(tag2ns = {})
-    @tag2ns = tag2ns
+  def initialize(tag2ns = nil)
+    @tag2ns = tag2ns || ns_default
     @assigner = nil
     @ns2tag = {}
-    @tag2ns.each do |tag, ns|
-      @ns2tag[ns] = tag
-    end
+    @ns2tag = @tag2ns.invert
     @default_namespace = nil
   end
 
@@ -71,8 +71,8 @@ public
   def name(name)
     if (name.namespace == @default_namespace)
       name.name
-    elsif @ns2tag.key?(name.namespace)
-      "#{@ns2tag[name.namespace]}:#{name.name}"
+    elsif tag = @ns2tag[name.namespace]
+      "#{tag}:#{name.name}"
     else
       raise FormatError.new("namespace: #{name.namespace} not defined yet")
     end
@@ -133,6 +133,12 @@ protected
 
   def assigner=(assigner)
     @assigner = assigner
+  end
+
+private
+
+  def ns_default
+    {'xml' => Namespace}
   end
 end
 
