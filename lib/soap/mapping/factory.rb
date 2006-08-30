@@ -40,7 +40,7 @@ class Factory
     if obj.class.class_variables.include?('@@schema_element')
       setdefinediv2soap(node, obj, map)
     else
-      # should we sort instance_variables?
+      # should we sort instance_variables? how?
       obj.instance_variables.each do |var|
         name = var.sub(/^@/, '')
         elename = Mapping.name2elename(name)
@@ -57,17 +57,21 @@ private
     definition = Mapping.schema_element_definition(obj.class)
     definition.elements.each do |eledef|
       child = Mapping.get_attribute(obj, eledef.varname)
-      if child.is_a?(XSD::NSDBase)
-        ele.add(eledef.elename.name, child)
+      # extract method
+      if child.nil?
+        value = SOAPNil.new
+      elsif child.is_a?(XSD::NSDBase)
+        value = child
       else
         klass = Mapping.class_from_name(eledef.type)
         if klass && klass.ancestors.include?(::SOAP::SOAPBasetype)
-          ele.add(eledef.elename.name, klass.new(child))
+          value = klass.new(child)
         else
           # should check klass matches an actual object?
-          ele.add(eledef.elename.name, Mapping._obj2soap(child, map))
+          value = Mapping._obj2soap(child, map)
         end
       end
+      ele.add(eledef.elename.name, value)
     end
   end
 
@@ -292,6 +296,7 @@ class TypedStructFactory_ < Factory
     if obj.class <= SOAP::Marshallable
       setiv2soap(soap_obj, obj, map)
     else
+      # allow to serialize an instance of unmarked class
       setiv2soap(soap_obj, obj, map)
     end
     soap_obj

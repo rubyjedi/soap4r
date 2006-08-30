@@ -522,7 +522,7 @@ public
 private
 
   def add_member(name, value = nil)
-    value = SOAPNil.new() if value.nil?
+    value = SOAPNil.new if value.nil?
     @array.push(name)
     value.elename = value.elename.dup_name(name)
     @data.push(value)
