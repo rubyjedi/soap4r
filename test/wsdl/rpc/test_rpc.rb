@@ -11,13 +11,17 @@ module WSDL; module RPC
 class TestRPC < Test::Unit::TestCase
   class Server < ::SOAP::RPC::StandaloneServer
     def on_init
-      self.generate_explicit_type = false
       add_rpc_method(self, 'echo', 'arg1', 'arg2')
       add_rpc_method(self, 'echo_err', 'arg1', 'arg2')
     end
   
     DummyPerson = Struct.new("family-name".intern, :Given_name)
     def echo(arg1, arg2)
+      if arg1.given_name == 'typed'
+        self.generate_explicit_type = true
+      else
+        self.generate_explicit_type = false
+      end
       case arg1.family_name
       when 'normal'
         arg1.family_name = arg2.family_name
@@ -26,6 +30,8 @@ class TestRPC < Test::Unit::TestCase
         arg1
       when 'dummy'
         DummyPerson.new("family-name", "given_name")
+      when 'nil'
+        Person.new(nil, nil)
       else
         raise
       end
@@ -65,9 +71,17 @@ class TestRPC < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
-    require pathname('echo')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require pathname('echo.rb')
+      require pathname('echoDriver.rb')
+    ensure
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server
@@ -111,6 +125,27 @@ class TestRPC < Test::Unit::TestCase
     assert_equal("58", ret.given_name)
     assert_equal(nil, ret.family_name)
     assert_equal(nil, ret.age)
+  end
+
+  def test_stub
+    @client = Echo_port_type.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDOUT if $DEBUG
+
+    ret = @client.echo(Person.new("normal", "typed", 12, Gender::F), Person.new("Hi", "Na", 21, Gender::M))
+    assert_equal(Person, ret.class)
+    assert_equal("Hi", ret.family_name)
+    assert_equal("Na", ret.given_name)
+    assert_equal(21, ret.age)
+  end
+
+  def test_stub_nil
+    @client = Echo_port_type.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDOUT if $DEBUG
+
+    ret = @client.echo(Person.new("nil", "", 12, Gender::F), Person.new("Hi", "Na", 21, Gender::M))
+    assert_nil(ret.family_name)
+    assert_nil(ret.given_name)
+    assert_nil(ret.age)
   end
 end
 
