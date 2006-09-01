@@ -395,7 +395,8 @@ private
       if @response_style == :rpc
         response_rpc(body, mapping_registry, literal_mapping_registry, opt)
       else
-        response_doc(body, mapping_registry, literal_mapping_registry, opt)
+        unique_result_for_one_element_array(
+          response_doc(body, mapping_registry, literal_mapping_registry, opt))
       end
     end
 
@@ -408,6 +409,11 @@ private
     end
 
   private
+
+    # nil for [] / 1 for [1] / [1, 2] for [1, 2]
+    def unique_result_for_one_element_array(ary)
+      ary.size <= 1 ? ary[0] : ary
+    end
 
     def check_style(style)
       unless [:rpc, :document].include?(style)
@@ -489,9 +495,9 @@ private
 
     def response_doc(body, mapping_registry, literal_mapping_registry, opt)
       if @response_use == :encoded
-        return *response_doc_enc(body, mapping_registry, opt)
+        response_doc_enc(body, mapping_registry, opt)
       else
-        return *response_doc_lit(body, literal_mapping_registry, opt)
+        response_doc_lit(body, literal_mapping_registry, opt)
       end
     end
 
