@@ -88,6 +88,11 @@ private
     end
     Mapping.set_attributes(obj, vars)
   end
+
+  def anonymous_class?(obj)
+    name = obj.class.name
+    name.nil? or name.empty?    # 1.8 returns ""
+  end
 end
 
 class StringFactory_ < Factory

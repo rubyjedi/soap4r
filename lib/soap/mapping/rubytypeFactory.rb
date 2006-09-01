@@ -262,7 +262,7 @@ private
   end
 
   def unknownobj2soap(soap_class, obj, info, map)
-    if obj.class.name.empty?
+    if anonymous_class?(obj)
       raise TypeError.new("can't dump anonymous class #{obj}")
     end
     singleton_class = class << obj; self; end
