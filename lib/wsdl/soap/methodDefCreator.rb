@@ -1,5 +1,5 @@
 # WSDL4R - Creating driver code from WSDL.
-# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -32,12 +32,15 @@ class MethodDefCreator
     @types.clear
     result = ""
     port = @definitions.porttype(porttype)
-    port.find_binding.operations.each do |op_bind|
-      op = op_bind.find_operation
-      next unless op_bind # no binding is defined
-      next unless op_bind.soapoperation # not a SOAP operation binding
-      result << ",\n" unless result.empty?
-      result << dump_method(op, op_bind).chomp
+    binding = port.find_binding
+    if binding
+      binding.operations.each do |op_bind|
+        op = op_bind.find_operation
+        next unless op_bind # no binding is defined
+        next unless op_bind.soapoperation # not a SOAP operation binding
+        result << ",\n" unless result.empty?
+        result << dump_method(op, op_bind).chomp
+      end
     end
     return result, @types
   end
@@ -78,8 +81,8 @@ class MethodDefCreator
 private
 
   def dump_method(operation, binding)
-    name = safemethodname(operation.name.name)
-    name_as = operation.name.name
+    name = safemethodname(operation.name)
+    name_as = operation.name
     style = binding.soapoperation_style
     inputuse = binding.input.soapbody_use
     outputuse = binding.output.soapbody_use

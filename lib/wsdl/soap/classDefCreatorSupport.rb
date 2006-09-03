@@ -32,7 +32,7 @@ module ClassDefCreatorSupport
   end
 
   def dump_method_signature(operation)
-    name = operation.name.name
+    name = operation.name
     input = operation.input
     output = operation.output
     fault = operation.fault

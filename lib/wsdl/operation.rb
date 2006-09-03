@@ -1,5 +1,5 @@
 # WSDL4R - WSDL operation definition.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -51,7 +51,7 @@ class Operation < Info
     else
       typename = nil
     end
-    NameInfo.new(@name, typename, inputparts)
+    NameInfo.new(operationname(@name), typename, inputparts)
   end
 
   def output_info
@@ -60,7 +60,7 @@ class Operation < Info
     else
       typename = nil
     end
-    NameInfo.new(@name, typename, outputparts)
+    NameInfo.new(operationname(@name), typename, outputparts)
   end
 
   EMPTY = [].freeze
@@ -75,7 +75,7 @@ class Operation < Info
 
   def inputname
     if input
-      XSD::QName.new(targetnamespace, input.name ? input.name.name : @name.name)
+      operationname(input.name ? input.name.name : @name)
     else
       nil
     end
@@ -91,8 +91,7 @@ class Operation < Info
 
   def outputname
     if output
-      XSD::QName.new(targetnamespace,
-        output.name ? output.name.name : @name.name + 'Response')
+      operationname(output.name ? output.name.name : @name + 'Response')
     else
       nil
     end
@@ -123,7 +122,7 @@ class Operation < Info
   def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new(targetnamespace, value.source)
+      @name = value.source
     when TypeAttrName
       @type = value
     when ParameterOrderAttrName
@@ -165,6 +164,10 @@ private
     # result length can be shorter than parts's.
     # return part must not be a part of the parameterOrder.
     result
+  end
+
+  def operationname(name)
+    XSD::QName.new(targetnamespace, name)
   end
 end
 

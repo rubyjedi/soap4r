@@ -1,5 +1,5 @@
 # WSDL4R - WSDL bound operation definition.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -39,8 +39,10 @@ class OperationBinding < Info
   def find_operation
     porttype.operations.each do |op|
       next if op.name != @name
-      next if op.input and @input and op.input.name != @input.name
-      next if op.output and @output and op.output.name != @output.name
+      next if op.input and @input and op.input.name and @input.name and
+        op.input.name != @input.name
+      next if op.output and @output and op.output.name and @output.name and
+        op.output.name != @output.name
       return op
     end
     raise RuntimeError.new("#{@name} not found")
@@ -103,7 +105,7 @@ class OperationBinding < Info
   def parse_attr(attr, value)
     case attr
     when NameAttrName
-      @name = XSD::QName.new(targetnamespace, value.source)
+      @name = value.source
     else
       nil
     end
