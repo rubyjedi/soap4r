@@ -1,5 +1,5 @@
 # WSDL4R - Creating driver code from WSDL.
-# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -46,7 +46,10 @@ private
     methoddef, types = MethodDefCreator.new(@definitions).dump(porttype)
     mr_creator = MappingRegistryCreator.new(@definitions)
     binding = @definitions.bindings.find { |item| item.type == porttype }
-    return '' unless binding.soapbinding        # not a SOAP binding
+    if binding.nil? or binding.soapbinding.nil?
+      # not bind or not a SOAP binding
+      return ''
+    end
     address = @definitions.porttype(porttype).locations[0]
 
     c = XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")

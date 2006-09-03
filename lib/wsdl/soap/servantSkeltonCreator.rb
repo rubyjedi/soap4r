@@ -1,5 +1,5 @@
 # WSDL4R - Creating servant skelton code from WSDL.
-# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -45,7 +45,7 @@ private
     c = XSD::CodeGen::ClassDef.new(class_name)
     operations = @definitions.porttype(name).operations
     operations.each do |operation|
-      name = safemethodname(operation.name.name)
+      name = safemethodname(operation.name)
       input = operation.input
       params = input.find_message.parts.collect { |part|
         safevarname(part.name)
