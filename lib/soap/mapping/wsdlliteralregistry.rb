@@ -121,7 +121,8 @@ private
     if type.base
       ele = base2soap(obj, TypeMap[type.base])
     elsif type.list
-      ele = base2soap(obj.join(" "), SOAP::SOAPString)
+      value = obj.is_a?(Array) ? obj.join(" ") : obj.to_s
+      ele = base2soap(value, SOAP::SOAPString)
     else
       raise MappingError.new("unsupported simpleType: #{type}")
     end

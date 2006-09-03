@@ -123,16 +123,17 @@ private
 
   def simpleobj2soap(obj, type)
     type.check_lexical_format(obj)
-    return SOAPNil.new if obj.nil?      # ToDo: check nillable.
+    return SOAPNil.new if obj.nil?      # TODO: check nillable.
     if type.base
-      soap_obj = base2soap(obj, TypeMap[type.base])
-      soap_obj.type = type.name
-      soap_obj
+      ele = base2soap(obj, TypeMap[type.base])
+      ele.type = type.name
     elsif type.list
-      base2soap(obj.join(" "), SOAP::SOAPString)
+      value = obj.is_a?(Array) ? obj.join(" ") : obj.to_s
+      ele = base2soap(value, SOAP::SOAPString)
     else
       raise MappingError.new("unsupported simpleType: #{type}")
     end
+    ele
   end
 
   def complexobj2soap(obj, type)

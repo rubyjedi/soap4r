@@ -115,6 +115,19 @@ class TestList < Test::Unit::TestCase
     assert_equal(e1.join(" "), ret.e1)
     assert_equal(e2.join(" "), ret.e2)
   end
+
+  def test_string_as_a_value
+    @client = List_porttype.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDOUT if $DEBUG
+    e1 = ['inlineruby', 'inlineperl']
+    e2 = 'python smalltalk'
+    ret = @client.echo(Echoele.new(e1, e2))
+    # in the future...
+    #   assert_equal(e1, ret.e1)
+    #   assert_equal(e2, ret.e2)
+    assert_equal(e1.join(" "), ret.e1)
+    assert_equal(e2, ret.e2)
+  end
 end
 
 
