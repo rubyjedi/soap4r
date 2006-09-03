@@ -1,5 +1,5 @@
 # WSDL4R - WSDL portType definition.
-# Copyright (C) 2002, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -27,13 +27,15 @@ class PortType < Info
     @operations = XSD::NamedElements.new
   end
 
+  # may be nil if not defined
   def find_binding
-    root.bindings.find { |item| item.type == @name } or
-      raise RuntimeError.new("#{@name} not found")
+    root.bindings.find { |item| item.type == @name }
   end
 
   def locations
-    bind_name = find_binding.name
+    binding = find_binding
+    return [] if binding.nil?
+    bind_name = binding.name
     result = []
     root.services.each do |service|
       service.ports.each do |port|
