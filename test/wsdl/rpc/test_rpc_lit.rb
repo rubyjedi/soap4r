@@ -194,7 +194,7 @@ class TestRPCLIT < Test::Unit::TestCase
 </env:Envelope>]
 
   def test_stub_echoStringArray
-    drv = SoapTestPortTypeRpc.new("http://localhost:#{Port}/")
+    drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
     # response contains only 1 part.
     result = drv.echoStringArray(ArrayOfstring["a", "b", "c"])[0]
@@ -235,7 +235,7 @@ class TestRPCLIT < Test::Unit::TestCase
 </env:Envelope>]
 
   def test_stub_echoStringArrayInline
-    drv = SoapTestPortTypeRpc.new("http://localhost:#{Port}/")
+    drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
     # response contains only 1 part.
     result = drv.echoStringArrayInline(ArrayOfstringInline["a", "b", "c"])[0]
@@ -303,7 +303,7 @@ class TestRPCLIT < Test::Unit::TestCase
   end
 
   def test_stub_echoNestedStruct
-    drv = SoapTestPortTypeRpc.new("http://localhost:#{Port}/")
+    drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
     # response contains only 1 part.
     result = drv.echoNestedStruct(SOAPStructStruct.new("str", 1, 1.0, SOAPStruct.new("str", 1, 1.0)))[0]
@@ -375,7 +375,7 @@ class TestRPCLIT < Test::Unit::TestCase
   end
 
   def test_stub_echoStructArray
-    drv = SoapTestPortTypeRpc.new("http://localhost:#{Port}/")
+    drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
     # response contains only 1 part.
     e = SOAPStruct.new("str", 2, 2.1)

@@ -56,6 +56,7 @@ class TestRPC < Test::Unit::TestCase
   def teardown
     teardown_server
     File.unlink(pathname('echo.rb')) unless $DEBUG
+    File.unlink(pathname('echoDriver.rb')) unless $DEBUG
     @client.reset_stream if @client
   end
 

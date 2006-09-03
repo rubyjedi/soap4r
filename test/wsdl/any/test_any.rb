@@ -59,7 +59,10 @@ class TestAny < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('echo.rb')) if !$DEBUG and File.exist?('echo.rb')
+    unless $DEBUG
+      File.unlink(pathname('echo.rb')) if File.exist?(pathname('echo.rb'))
+      File.unlink(pathname('echoDriver.rb')) if File.exist?(pathname('echoDriver.rb'))
+    end
     @client.reset_stream if @client
   end
 
