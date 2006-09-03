@@ -159,7 +159,7 @@
   </message>
 
 
-  <portType name="SoapTestPortTypeRpc">
+  <portType name="SoapTestPortTypeRpcLit">
 
     <!-- echoStruct rpc operation -->
     <operation name="echoStruct" parameterOrder="inputStruct">
@@ -228,7 +228,7 @@
 
   </portType>
 
-  <binding name="Soap11TestRpcLitBinding" type="tns:SoapTestPortTypeRpc">
+  <binding name="Soap11TestRpcLitBinding" type="tns:SoapTestPortTypeRpcLit">
     <soap11:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
 
     <!-- echoStruct rpc operation -->
