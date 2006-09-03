@@ -3,6 +3,7 @@ require 'soap/rpc/driver'
 api_key = ARGV.shift or raise
 
 flickr = SOAP::RPC::Driver.new('http://www.flickr.com/services/soap/')
+flickr.wiredump_dev = STDOUT if $DEBUG
 
 flickr.add_document_method('request', nil,
   XSD::QName.new('urn:flickr', 'FlickrRequest'),
