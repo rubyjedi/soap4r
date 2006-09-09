@@ -85,13 +85,28 @@ class TestUnqualified < Test::Unit::TestCase
     File.join(DIR, filename)
   end
 
-  LOGIN_REQUEST_QUALIFIED =
+  LOGIN_REQUEST_QUALIFIED_UNTYPED =
 %q[<?xml version="1.0" encoding="utf-8" ?>
 <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:login xmlns:n1="urn:lp">
+      <username>NaHi</username>
+      <password>passwd</password>
+      <timezone>JST</timezone>
+    </n1:login>
+  </env:Body>
+</env:Envelope>]
+
+  LOGIN_REQUEST_QUALIFIED_TYPED =
+%q[<?xml version="1.0" encoding="utf-8" ?>
+<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <env:Body>
+    <n1:login xmlns:n1="urn:lp"
+        xsi:type="n1:login">
       <username>NaHi</username>
       <password>passwd</password>
       <timezone>JST</timezone>
@@ -113,7 +128,8 @@ class TestUnqualified < Test::Unit::TestCase
     @client.wiredump_dev = str = ''
     @client.login(:timezone => 'JST', :password => 'passwd',
       :username => 'NaHi')
-    assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str))
+    # untyped because of passing a Hash
+    assert_equal(LOGIN_REQUEST_QUALIFIED_UNTYPED, parse_requestxml(str))
   end
 
   include ::SOAP
@@ -129,7 +145,7 @@ class TestUnqualified < Test::Unit::TestCase
 
     @client.wiredump_dev = str = ''
     @client.login(Login.new('NaHi', 'passwd', 'JST'))
-    assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str))
+    assert_equal(LOGIN_REQUEST_QUALIFIED_TYPED, parse_requestxml(str))
   end
 
   def parse_requestxml(str)

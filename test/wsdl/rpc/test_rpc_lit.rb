@@ -164,8 +164,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   ECHO_STRING_ARRAY_REQUEST =
 %q[<?xml version="1.0" encoding="utf-8" ?>
-<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStringArray xmlns:n1="http://soapbuilders.org/rpc-lit-test">
@@ -196,6 +195,7 @@ class TestRPCLIT < Test::Unit::TestCase
   def test_stub_echoStringArray
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
+    drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoStringArray(ArrayOfstring["a", "b", "c"])[0]
     assert_equal(["a", "b", "c"], result.stringItem)
@@ -205,8 +205,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   ECHO_STRING_ARRAY_INLINE_REQUEST =
 %q[<?xml version="1.0" encoding="utf-8" ?>
-<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStringArrayInline xmlns:n1="http://soapbuilders.org/rpc-lit-test">
@@ -237,6 +236,7 @@ class TestRPCLIT < Test::Unit::TestCase
   def test_stub_echoStringArrayInline
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
+    drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoStringArrayInline(ArrayOfstringInline["a", "b", "c"])[0]
     assert_equal(["a", "b", "c"], result.stringItem)
@@ -246,8 +246,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   ECHO_NESTED_STRUCT_REQUEST =
 %q[<?xml version="1.0" encoding="utf-8" ?>
-<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoNestedStruct xmlns:n1="http://soapbuilders.org/rpc-lit-test">
@@ -290,6 +289,7 @@ class TestRPCLIT < Test::Unit::TestCase
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = str = ''
+    @client.generate_explicit_type = false
     # response contains only 1 part.
     result = @client.echoNestedStruct(SOAPStructStruct.new("str", 1, 1.0, SOAPStruct.new("str", 1, 1.0)))[0]
     assert_equal('str', result.varString)
@@ -305,6 +305,7 @@ class TestRPCLIT < Test::Unit::TestCase
   def test_stub_echoNestedStruct
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
+    drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoNestedStruct(SOAPStructStruct.new("str", 1, 1.0, SOAPStruct.new("str", 1, 1.0)))[0]
     assert_equal('str', result.varString)
@@ -319,8 +320,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   ECHO_STRUCT_ARRAY_REQUEST =
 %q[<?xml version="1.0" encoding="utf-8" ?>
-<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStructArray xmlns:n1="http://soapbuilders.org/rpc-lit-test">
@@ -367,6 +367,7 @@ class TestRPCLIT < Test::Unit::TestCase
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = str = ''
+    @client.generate_explicit_type = false
     # response contains only 1 part.
     e = SOAPStruct.new("str", 2, 2.1)
     result = @client.echoStructArray(ArrayOfSOAPStruct[e, e])
@@ -377,6 +378,7 @@ class TestRPCLIT < Test::Unit::TestCase
   def test_stub_echoStructArray
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
+    drv.generate_explicit_type = false
     # response contains only 1 part.
     e = SOAPStruct.new("str", 2, 2.1)
     result = drv.echoStructArray(ArrayOfSOAPStruct[e, e])

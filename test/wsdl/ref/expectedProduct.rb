@@ -2,7 +2,7 @@ require 'xsd/qname'
 
 # {urn:ref}Rating
 class Rating < ::String
-  @@schema_type = "Rating"
+  @@schema_type = nil
   @@schema_ns = "urn:ref"
 
   C_0 = Rating.new("0")
@@ -12,7 +12,7 @@ end
 
 # {urn:ref}Product-Bag
 class ProductBag
-  @@schema_type = "Product-Bag"
+  @@schema_type = nil
   @@schema_ns = "urn:ref"
   @@schema_attribute = {
     XSD::QName.new("urn:ref", "version") => "SOAP::SOAPString",
@@ -88,7 +88,7 @@ end
 
 # {urn:ref}yesno
 class Yesno < ::String
-  @@schema_type = "yesno"
+  @@schema_type = nil
   @@schema_ns = "urn:ref"
 
   N = Yesno.new("N")

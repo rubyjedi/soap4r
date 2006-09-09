@@ -291,8 +291,10 @@ private
     end
 
     data.extraattr.each do |key, value|
-      SOAPGenerator.assign_ns(attrs, ns, key.namespace)
-      attrs[ns.name(key)] = encode_attr_value(generator, ns, key, value)
+      if key.is_a?(XSD::QName)
+        keytag = encode_qname(attrs, ns, key)
+      end
+      attrs[keytag] = encode_attr_value(generator, ns, key, value)
     end
     if data.id
       attrs['id'] = data.id
@@ -301,10 +303,13 @@ private
   end
 
   def encode_attr_value(generator, ns, qname, value)
-    if value.is_a?(SOAPType)
+    case value
+    when SOAPType
       ref = SOAPReference.new(value)
       generator.add_reftarget(qname.name, value)
       ref.refidstr
+    when XSD::QName
+      encode_qname(attrs, ns, value)
     else
       value.to_s
     end

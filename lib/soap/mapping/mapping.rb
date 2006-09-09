@@ -397,10 +397,11 @@ module Mapping
   end
 
   class SchemaDefinition
-    attr_reader :elements
+    attr_reader :ns, :type, :elements
 
-    def initialize(*arg)
-      super
+    def initialize(ns, type)
+      @ns = ns
+      @type = type
       @elements = []
       @choice = false
       @any = false
@@ -432,7 +433,8 @@ module Mapping
 
     def parse_schema_element_definition(klass, schema_element)
       schema_ns = schema_ns_definition(klass)
-      definition = SchemaDefinition.new
+      schema_type = schema_type_definition(klass)
+      definition = SchemaDefinition.new(schema_ns, schema_type)
       if schema_element[0] == :choice
         schema_element.shift
         definition.set_choice

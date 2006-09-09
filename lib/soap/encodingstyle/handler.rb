@@ -93,6 +93,15 @@ class Handler
 
   def decode_epilogue
   end
+
+  def encode_qname(attrs, ns, qname)
+    unless qname.namespace.nil?
+      SOAPGenerator.assign_ns(attrs, ns, qname.namespace)
+      ns.name(qname)
+    else
+      qname.name
+    end
+  end
 end
 
 

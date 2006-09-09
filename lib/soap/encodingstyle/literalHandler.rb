@@ -29,17 +29,16 @@ class LiteralHandler < Handler
   def encode_data(generator, ns, data, parent)
     attrs = {}
     name = generator.encode_name(ns, data, attrs)
-    data.extraattr.each do |k, v|
+    data.extraattr.each do |key, value|
+      next if !@generate_explicit_type and key == XSD::AttrTypeName
       # ToDo: check generator.attributeformdefault here
-      if k.is_a?(XSD::QName)
-        if k.namespace
-          SOAPGenerator.assign_ns(attrs, ns, k.namespace)
-          k = ns.name(k)
-        else
-          k = k.name
-        end
+      if key.is_a?(XSD::QName)
+        key = encode_qname(attrs, ns, key)
       end
-      attrs[k] = v
+      if value.is_a?(XSD::QName)
+        value = encode_qname(attrs, ns, value)
+      end
+      attrs[key] = value
     end
     case data
     when SOAPRawString

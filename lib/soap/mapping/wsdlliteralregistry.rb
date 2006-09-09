@@ -280,26 +280,9 @@ private
     ele.qualified =
       (obj.class.class_variables.include?('@@schema_qualified') and
       obj.class.class_eval('@@schema_qualified'))
-    add_elements2soap(obj, ele)
-    ele
-  end
-
-  def mappingobj2soap(obj, qname)
-    ele = SOAPElement.new(qname)
-    obj.__xmlele.each do |key, value|
-      if value.is_a?(::Array)
-        value.each do |item|
-          ele.add(obj2soap(item, key))
-        end
-      else
-        ele.add(obj2soap(value, key))
-      end
-    end
-    ele
-  end
-
-  def add_elements2soap(obj, ele)
     definition = schema_element_definition(obj.class)
+    ele.extraattr[XSD::AttrTypeName] =
+      XSD::QName.new(definition.ns, definition.type)
     any = nil
     if definition.have_any?
       any = Mapping.get_attributes_for_any(obj, definition.elements)
@@ -325,15 +308,30 @@ private
         end
       end
     end
+    ele
+  end
+
+  def mappingobj2soap(obj, qname)
+    ele = SOAPElement.new(qname)
+    obj.__xmlele.each do |key, value|
+      if value.is_a?(::Array)
+        value.each do |item|
+          ele.add(obj2soap(item, key))
+        end
+      else
+        ele.add(obj2soap(value, key))
+      end
+    end
+    ele
   end
   
   def add_attributes2soap(obj, ele)
     attributes = schema_attribute_definition(obj.class)
     if attributes
       attributes.each do |qname, param|
-        attr = obj.__send__(
+        at = obj.__send__(
           XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
-        ele.extraattr[qname] = attr
+        ele.extraattr[qname] = at
       end
     elsif obj.respond_to?(:__xmlattr)
       obj.__xmlattr.each do |key, value|
