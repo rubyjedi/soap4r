@@ -29,6 +29,7 @@ public
   attr_accessor :allow_unqualified_element
   attr_accessor :default_encodingstyle
   attr_accessor :generate_explicit_type
+  attr_accessor :return_response_as_xml
   attr_reader :headerhandler
   attr_reader :streamhandler
 
@@ -50,6 +51,7 @@ public
     @allow_unqualified_element = true
     @default_encodingstyle = nil
     @generate_explicit_type = true
+    @return_response_as_xml = false
     @headerhandler = Header::HandlerSet.new
     @mapping_registry = nil
     @literal_mapping_registry = ::SOAP::Mapping::WSDLLiteralRegistry.new
@@ -114,7 +116,12 @@ public
 
   def invoke(req_header, req_body, opt = nil)
     opt ||= create_encoding_opt
-    route(req_header, req_body, opt, opt)
+    env = route(req_header, req_body, opt, opt)
+    if @return_response_as_xml
+      opt[:response_as_xml]
+    else
+      env
+    end
   end
 
   def call(name, *params)
@@ -149,8 +156,12 @@ public
     rescue ::SOAP::FaultError => e
       op_info.raise_fault(e, @mapping_registry, @literal_mapping_registry)
     end
-    op_info.response_obj(env.body, @mapping_registry,
-      @literal_mapping_registry, mapping_opt)
+    if @return_response_as_xml
+      resopt[:response_as_xml]
+    else
+      op_info.response_obj(env.body, @mapping_registry,
+        @literal_mapping_registry, mapping_opt)
+    end
   end
 
   def route(req_header, req_body, reqopt, resopt)
@@ -255,10 +266,16 @@ private
       opt[:charset] = @mandatorycharset ||
 	StreamHandler.parse_media_type(mime.root.headers['content-type'].str)
       env = Processor.unmarshal(mime.root.content, opt)
+      if @return_response_as_xml
+        opt[:response_as_xml] = mime.root.content
+      end
     else
       opt[:charset] = @mandatorycharset ||
 	::SOAP::StreamHandler.parse_media_type(contenttype)
       env = Processor.unmarshal(conn_data.receive_string, opt)
+      if @return_response_as_xml
+        opt[:response_as_xml] = conn_data.receive_string
+      end
     end
     unless env.is_a?(::SOAP::SOAPEnvelope)
       raise ResponseFormatError.new(
