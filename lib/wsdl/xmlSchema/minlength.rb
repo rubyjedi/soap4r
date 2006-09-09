@@ -1,5 +1,5 @@
-# WSDL4R - XMLSchema length definition for WSDL.
-# Copyright (C) 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# WSDL4R - XMLSchema minLength definition for WSDL.
+# Copyright (C) 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -13,7 +13,7 @@ module WSDL
 module XMLSchema
 
 
-class Length < Info
+class MinLength < Info
   def initialize
     super
   end
@@ -25,7 +25,7 @@ class Length < Info
   def parse_attr(attr, value)
     case attr
     when ValueAttrName
-      parent.length = Integer(value.source)
+      parent.minlength = Integer(value.source)
     end
   end
 end

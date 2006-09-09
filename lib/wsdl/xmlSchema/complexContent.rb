@@ -17,11 +17,13 @@ module XMLSchema
 class ComplexContent < Info
   attr_accessor :restriction
   attr_accessor :extension
+  attr_accessor :mixed
 
   def initialize
     super
     @restriction = nil
     @extension = nil
+    @mixed = false
   end
 
   def targetnamespace
@@ -72,7 +74,12 @@ class ComplexContent < Info
   end
 
   def parse_attr(attr, value)
-    nil
+    case attr
+    when MixedAttrName
+      @mixed = (value.source == 'true')
+    else
+      nil
+    end
   end
 end
 

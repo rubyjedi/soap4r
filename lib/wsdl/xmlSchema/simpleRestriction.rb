@@ -18,6 +18,8 @@ class SimpleRestriction < Info
   attr_reader :base
   attr_reader :enumeration
   attr_accessor :length
+  attr_accessor :maxlength
+  attr_accessor :minlength
   attr_accessor :pattern
 
   def initialize
@@ -25,12 +27,16 @@ class SimpleRestriction < Info
     @base = nil
     @enumeration = []   # NamedElements?
     @length = nil
+    @maxlength = nil
+    @minlength = nil
     @pattern = nil
   end
   
   def valid?(value)
     return false unless check_restriction(value)
     return false unless check_length(value)
+    return false unless check_maxlength(value)
+    return false unless check_minlength(value)
     return false unless check_pattern(value)
     true
   end
@@ -38,11 +44,15 @@ class SimpleRestriction < Info
   def parse_element(element)
     case element
     when EnumerationName
-      Enumeration.new   # just a parsing handler
+      Enumeration.new
     when LengthName
-      Length.new   # just a parsing handler
+      Length.new
     when PatternName
-      Pattern.new   # just a parsing handler
+      Pattern.new
+    when MaxLengthName
+      MaxLength.new
+    when MinLengthName
+      MinLength.new
     end
   end
 
@@ -61,6 +71,14 @@ private
 
   def check_length(value)
     @length.nil? or value.size == @length
+  end
+
+  def check_maxlength(value)
+    @maxlength.nil? or value.size <= @maxlength
+  end
+
+  def check_minlength(value)
+    @minlength.nil? or value.size >= @minlength
   end
 
   def check_pattern(value)
