@@ -37,7 +37,7 @@ class ClassDefCreator
   def dump(type = nil)
     result = "require 'xsd/qname'\n"
     if type
-      result = dump_classdef(type.name, type)
+      result << dump_classdef(type.name, type)
     else
       str = dump_element
       unless str.empty?
@@ -68,7 +68,7 @@ private
   def dump_element
     @elements.collect { |ele|
       if ele.local_complextype
-        qualified = ele.elementform == 'qualified'
+        qualified = (ele.elementform == 'qualified')
         dump_complextypedef(ele.name, ele.local_complextype, qualified)
       elsif ele.local_simpletype
         dump_simpletypedef(ele.name, ele.local_simpletype)
@@ -100,15 +100,16 @@ private
 
   def dump_simpletypedef(qname, simpletype)
     if simpletype.restriction
-      dump_simpletypedef_restriction(qname, simpletype.restriction)
+      dump_simpletypedef_restriction(qname, simpletype)
     elsif simpletype.list
-      dump_simpletypedef_list(qname, simpletype.list)
+      dump_simpletypedef_list(qname, simpletype)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
   end
 
-  def dump_simpletypedef_restriction(qname, restriction)
+  def dump_simpletypedef_restriction(qname, typedef)
+    restriction = typedef.restriction
     if restriction.enumeration.empty?
       # not supported.  minlength?
       return nil
@@ -116,13 +117,20 @@ private
     classname = create_class_name(qname)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
-    c.def_classvar('schema_type', ndq(qname.name))
+    if typedef.name.nil?
+      # local simpletype of a element
+      c.def_classvar('schema_type', ndq(nil))
+    else
+      # named simpletype
+      c.def_classvar('schema_type', ndq(qname.name))
+    end
     c.def_classvar('schema_ns', ndq(qname.namespace))
     define_classenum_restriction(c, classname, restriction.enumeration)
     c.dump
   end
 
-  def dump_simpletypedef_list(qname, list)
+  def dump_simpletypedef_list(qname, typedef)
+    list = typedef.list
     c = ClassDef.new(create_class_name(qname), '::Array')
     c.comment = "#{qname}"
     if simpletype = list.local_simpletype
@@ -203,7 +211,13 @@ private
       c = ClassDef.new(create_class_name(qname))
     end
     c.comment = "#{qname}"
-    c.def_classvar('schema_type', ndq(qname.name))
+    if typedef.name.nil?
+      # local complextype of a element
+      c.def_classvar('schema_type', ndq(nil))
+    else
+      # named complextype
+      c.def_classvar('schema_type', ndq(qname.name))
+    end
     c.def_classvar('schema_ns', ndq(qname.namespace))
     c.def_classvar('schema_qualified', dq('true')) if qualified
     schema_element, init_lines, init_params =
