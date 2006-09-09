@@ -41,9 +41,9 @@ class WSDLDriverFactory
     drv
   end
 
-  # depricated old interface
+  # deprecated old interface
   def create_driver(servicename = nil, portname = nil)
-    warn("WSDLDriverFactory#create_driver is depricated.  Use create_rpc_driver instead.")
+    warn("WSDLDriverFactory#create_driver is deprecated.  Use create_rpc_driver instead.")
     port = find_port(servicename, portname)
     WSDLDriver.new(@wsdl, port, nil)
   end
@@ -535,20 +535,25 @@ class WSDLDriver
     end
 
     def add_rpc_method_interface(name, parts_names)
-      ::SOAP::Mapping.define_singleton_method(@host, name) do |*arg|
-        unless arg.size == parts_names.size
-          raise ArgumentError.new(
-            "wrong number of arguments (#{arg.size} for #{parts_names.size})")
+      param_count = parts_names.size
+      @host.instance_eval <<-EOS
+        def #{name}(*arg)
+          unless arg.size == #{param_count}
+            raise ArgumentError.new(
+              "wrong number of arguments (\#{arg.size} for #{param_count})")
+          end
+          @servant.rpc_call(#{name.dump}, *arg)
         end
-        @servant.rpc_call(name, *arg)
-      end
+      EOS
       @host.method(name)
     end
 
     def add_document_method_interface(name, parts_names)
-      ::SOAP::Mapping.define_singleton_method(@host, name) do |h, b|
-        @servant.document_send(name, h, b)
-      end
+      @host.instance_eval <<-EOS
+        def #{name}(h, b)
+          @servant.document_send(#{name.dump}, h, b)
+        end
+      EOS
       @host.method(name)
     end
 
