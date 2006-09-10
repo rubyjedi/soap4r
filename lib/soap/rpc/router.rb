@@ -1,5 +1,5 @@
 # SOAP4R - RPC Routing library
-# Copyright (C) 2001, 2002, 2004, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2001, 2002, 2004-2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -9,7 +9,7 @@
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/mapping'
-require 'soap/mapping/wsdlliteralregistry'
+require 'soap/mapping/literalregistry'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/streamHandler'
@@ -34,7 +34,7 @@ class Router
     @actor = actor
     @mapping_registry = nil
     @headerhandler = Header::HandlerSet.new
-    @literal_mapping_registry = ::SOAP::Mapping::WSDLLiteralRegistry.new
+    @literal_mapping_registry = ::SOAP::Mapping::LiteralRegistry.new
     @generate_explicit_type = true
     @external_ces = nil
     @operation_by_soapaction = {}

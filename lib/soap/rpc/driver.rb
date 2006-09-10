@@ -1,5 +1,5 @@
 # SOAP4R - SOAP RPC driver
-# Copyright (C) 2000, 2001, 2003-2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2000, 2001, 2003-2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -8,7 +8,6 @@
 
 require 'soap/soap'
 require 'soap/mapping'
-require 'soap/mapping/wsdlliteralregistry'
 require 'soap/rpc/rpc'
 require 'soap/rpc/proxy'
 require 'soap/rpc/element'

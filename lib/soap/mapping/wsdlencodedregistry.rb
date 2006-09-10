@@ -19,23 +19,20 @@ module Mapping
 
 class WSDLEncodedRegistry < Registry
   include TraverseSupport
+  include RegistrySupport
 
   attr_reader :definedelements
   attr_reader :definedtypes
-  attr_accessor :excn_handler_obj2soap
-  attr_accessor :excn_handler_soap2obj
 
   def initialize(definedtypes = XSD::NamedElements::Empty)
+    super()
     @definedtypes = definedtypes
     # @definedelements = definedelements  needed?
-    @excn_handler_obj2soap = nil
-    @excn_handler_soap2obj = nil
     # For mapping AnyType element.
     @rubytype_factory = RubytypeFactory.new(
       :allow_untyped_struct => true,
       :allow_original_mapping => true
     )
-    @schema_element_cache = {}
   end
 
   def obj2soap(obj, qname = nil)
@@ -79,17 +76,18 @@ class WSDLEncodedRegistry < Registry
 private
 
   def any2soap(obj, qname)
+    ele = nil
     if obj.nil?
-      SOAPNil.new
+      ele = SOAPNil.new
     elsif qname.nil? or qname == XSD::AnyTypeName
-      @rubytype_factory.obj2soap(nil, obj, nil, self)
+      ele = @rubytype_factory.obj2soap(nil, obj, nil, self)
     elsif obj.is_a?(XSD::NSDBase)
-      soap2soap(obj, qname)
+      ele = soap2soap(obj, qname)
     elsif type = TypeMap[qname]
-      base2soap(obj, type)
-    else
-      nil
+      ele = base2soap(obj, type)
     end
+    add_attributes2soap(obj, ele) unless ele.nil?
+    ele
   end
 
   def soap2soap(obj, type_qname)
@@ -152,19 +150,6 @@ private
     else
       raise MappingError.new("unknown compound type: #{type.compoundtype}")
     end
-  end
-
-  def base2soap(obj, type)
-    soap_obj = nil
-    if type <= XSD::XSDString
-      str = XSD::Charset.encoding_conv(obj.to_s,
-        Thread.current[:SOAPExternalCES], XSD::Charset.encoding)
-      soap_obj = type.new(str)
-      mark_marshalled_obj(obj, soap_obj)
-    else
-      soap_obj = type.new(obj)
-    end
-    soap_obj
   end
 
   def struct2soap(obj, type_qname, type)
@@ -240,7 +225,7 @@ private
   end
 
   def add_elements2stubobj(node, obj)
-    definition = schema_element_definition(obj.class)
+    definition = Mapping.schema_definition_classdef(obj.class)
     vars = {}
     node.each do |name, value|
       item = definition.elements.find { |k, v| k.elename.name == name }
@@ -276,12 +261,6 @@ private
       end
     end
     Mapping.set_attributes(obj, vars)
-  end
-
-  # it caches @@schema_element.  this means that @@schema_element must not be
-  # changed while a lifetime of a WSDLLiteralRegistry.
-  def schema_element_definition(klass)
-    @schema_element_cache[klass] ||= Mapping.schema_element_definition(klass)
   end
 end
 

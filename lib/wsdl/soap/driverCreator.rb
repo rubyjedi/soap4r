@@ -54,7 +54,7 @@ private
 
     c = XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
     c.def_require("soap/rpc/driver")
-    c.def_const("MappingRegistry", "::SOAP::Mapping::Registry.new")
+    c.def_const("MappingRegistry", "::SOAP::Mapping::EncodedRegistry.new")
     c.def_const("DefaultEndpointUrl", ndq(address))
     c.def_code(mr_creator.dump(types))
     c.def_code <<-EOD

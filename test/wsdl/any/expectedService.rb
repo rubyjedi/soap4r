@@ -5,7 +5,7 @@ require 'soap/rpc/standaloneServer'
 require 'soap/mapping/registry'
 
 class Echo_port_type
-  MappingRegistry = ::SOAP::Mapping::Registry.new
+  MappingRegistry = ::SOAP::Mapping::EncodedRegistry.new
 
   Methods = [
     [ "urn:example.com:echo",
