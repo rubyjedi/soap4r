@@ -38,7 +38,7 @@ class MappingRegistryCreator
           end
 	end
       end
-   end
+    end
     return map
   end
 
