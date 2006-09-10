@@ -1,5 +1,5 @@
 # SOAP4R - Marshalling/Unmarshalling Ruby's object using SOAP Encoding.
-# Copyright (C) 2001, 2003  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2001, 2003, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -15,12 +15,12 @@ module SOAP
 
 module Marshal
   # Trying xsd:dateTime data to be recovered as aTime.
-  MarshalMappingRegistry = Mapping::Registry.new(
+  MarshalMappingRegistry = Mapping::EncodedRegistry.new(
     :allow_original_mapping => true)
   MarshalMappingRegistry.add(
     Time,
     ::SOAP::SOAPDateTime,
-    ::SOAP::Mapping::Registry::DateTimeFactory
+    ::SOAP::Mapping::EncodedRegistry::DateTimeFactory
   )
 
   class << self

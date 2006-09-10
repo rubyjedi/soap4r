@@ -51,7 +51,7 @@ private
     c1 = XSD::CodeGen::ClassDef.new(class_name)
     c1.def_require("soap/rpc/cgistub")
     c1.def_require("soap/mapping/registry")
-    c1.def_const("MappingRegistry", "::SOAP::Mapping::Registry.new")
+    c1.def_const("MappingRegistry", "::SOAP::Mapping::EncodedRegistry.new")
     c1.def_code(mr_creator.dump(types))
     c1.def_code <<-EOD
 Methods = [

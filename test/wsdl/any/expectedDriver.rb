@@ -4,7 +4,7 @@ require 'soap/rpc/driver'
 
 class Echo_port_type < ::SOAP::RPC::Driver
   DefaultEndpointUrl = "http://localhost:10080"
-  MappingRegistry = ::SOAP::Mapping::Registry.new
+  MappingRegistry = ::SOAP::Mapping::EncodedRegistry.new
 
   Methods = [
     [ "urn:example.com:echo",

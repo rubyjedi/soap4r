@@ -1,5 +1,5 @@
 # WSDL4R - Creating MappingRegistry code from WSDL.
-# Copyright (C) 2002, 2003, 2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2002, 2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -65,7 +65,7 @@ private
 MappingRegistry.set(
   #{create_class_name(ele)},
   ::SOAP::SOAPStruct,
-  ::SOAP::Mapping::Registry::TypedStructFactory,
+  ::SOAP::Mapping::EncodedRegistry::TypedStructFactory,
   { :type => #{dqname(ele)} }
 )
 __EOD__
@@ -80,7 +80,7 @@ __EOD__
 MappingRegistry.set(
   #{create_class_name(ele)},
   ::SOAP::SOAPArray,
-  ::SOAP::Mapping::Registry::TypedArrayFactory,
+  ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
   { :type => #{dqname(type)} }
 )
 __EOD__

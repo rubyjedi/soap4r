@@ -9,6 +9,7 @@
 require 'soap/soap'
 require 'soap/processor'
 require 'soap/mapping'
+require 'soap/mapping/literalregistry'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
 require 'soap/streamHandler'
@@ -54,7 +55,7 @@ public
     @return_response_as_xml = false
     @headerhandler = Header::HandlerSet.new
     @mapping_registry = nil
-    @literal_mapping_registry = ::SOAP::Mapping::WSDLLiteralRegistry.new
+    @literal_mapping_registry = ::SOAP::Mapping::LiteralRegistry.new
   end
 
   def inspect
@@ -278,8 +279,7 @@ private
       end
     end
     unless env.is_a?(::SOAP::SOAPEnvelope)
-      raise ResponseFormatError.new(
-        "response is not a SOAP envelope: #{conn_data.receive_string}")
+      raise ResponseFormatError.new("response is not a SOAP envelope: #{env}")
     end
     env
   end

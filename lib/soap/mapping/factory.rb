@@ -54,7 +54,7 @@ private
 
   def setdefinediv2soap(ele, obj, map)
     # cache needed?
-    definition = Mapping.schema_element_definition(obj.class)
+    definition = Mapping.schema_definition_classdef(obj.class)
     definition.elements.each do |eledef|
       child = Mapping.get_attribute(obj, eledef.varname)
       # extract method
@@ -106,11 +106,12 @@ class StringFactory_ < Factory
       return nil
     end
     begin
-      unless XSD::Charset.is_ces(obj, Thread.current[:SOAPExternalCES])
+      externalces = Thread.current[:SOAPMapping][:ExternalCES]
+      unless XSD::Charset.is_ces(obj, externalces)
         return nil
       end
-      encoded = XSD::Charset.encoding_conv(obj,
-        Thread.current[:SOAPExternalCES], XSD::Charset.encoding)
+      encoded = XSD::Charset.encoding_conv(obj, externalces,
+        XSD::Charset.encoding)
       soap_obj = soap_class.new(encoded)
     rescue XSD::ValueSpaceError
       return nil
@@ -122,7 +123,7 @@ class StringFactory_ < Factory
   def soap2obj(obj_class, node, info, map)
     obj = Mapping.create_empty_object(obj_class)
     decoded = XSD::Charset.encoding_conv(node.data, XSD::Charset.encoding,
-      Thread.current[:SOAPExternalCES])
+      Thread.current[:SOAPMapping][:ExternalCES])
     obj.replace(decoded)
     mark_unmarshalled_obj(node, obj)
     return true, obj

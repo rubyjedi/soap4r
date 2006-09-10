@@ -20,31 +20,25 @@ module Mapping
   ApacheSOAPTypeNamespace = 'http://xml.apache.org/xml-soap'
 
 
-  # TraverseSupport breaks following thread variables.
-  #   Thread.current[:SOAPMarshalDataKey]
   module TraverseSupport
     def mark_marshalled_obj(obj, soap_obj)
       raise if obj.nil?
-      Thread.current[:SOAPMarshalDataKey][obj.__id__] = soap_obj
+      Thread.current[:SOAPMapping][:MarshalKey][obj.__id__] = soap_obj
     end
 
     def mark_unmarshalled_obj(node, obj)
       return if obj.nil?
       # node.id is not Object#id but SOAPReference#id
-      Thread.current[:SOAPMarshalDataKey][node.id] = obj
+      Thread.current[:SOAPMapping][:MarshalKey][node.id] = obj
     end
   end
 
 
-  EMPTY_OPT = {}
+  EMPTY_OPT = {}.freeze
   def self.obj2soap(obj, registry = nil, type = nil, opt = EMPTY_OPT)
     registry ||= Mapping::DefaultRegistry
     soap_obj = nil
-    protect_threadvars(:SOAPMarshalDataKey, :SOAPExternalCES, :SOAPMarshalNoReference) do
-      Thread.current[:SOAPMarshalDataKey] = {}
-      Thread.current[:SOAPExternalCES] =
-        opt[:external_ces] || XSD::Charset.encoding
-      Thread.current[:SOAPMarshalNoReference] = opt[:no_reference]
+    protect_mapping(opt) do
       soap_obj = _obj2soap(obj, registry, type)
     end
     soap_obj
@@ -53,11 +47,7 @@ module Mapping
   def self.soap2obj(node, registry = nil, klass = nil, opt = EMPTY_OPT)
     registry ||= Mapping::DefaultRegistry
     obj = nil
-    protect_threadvars(:SOAPMarshalDataKey, :SOAPExternalCES, :SOAPMarshalNoReference) do
-      Thread.current[:SOAPMarshalDataKey] = {}
-      Thread.current[:SOAPExternalCES] =
-        opt[:external_ces] || XSD::Charset.encoding
-      Thread.current[:SOAPMarshalNoReference] = opt[:no_reference]
+    protect_mapping(opt) do
       obj = _soap2obj(node, registry, klass)
     end
     obj
@@ -67,11 +57,7 @@ module Mapping
     registry ||= Mapping::DefaultRegistry
     type = XSD::QName.new(type_ns, typename)
     soap_ary = SOAPArray.new(ValueArrayName, 1, type)
-    protect_threadvars(:SOAPMarshalDataKey, :SOAPExternalCES, :SOAPMarshalNoReference) do
-      Thread.current[:SOAPMarshalDataKey] = {}
-      Thread.current[:SOAPExternalCES] =
-        opt[:external_ces] || XSD::Charset.encoding
-      Thread.current[:SOAPMarshalNoReference] = opt[:no_reference]
+    protect_mapping(opt) do
       ary.each do |ele|
         soap_ary.add(_obj2soap(ele, registry, type))
       end
@@ -83,11 +69,7 @@ module Mapping
     registry ||= Mapping::DefaultRegistry
     type = XSD::QName.new(type_ns, typename)
     md_ary = SOAPArray.new(ValueArrayName, rank, type)
-    protect_threadvars(:SOAPMarshalDataKey, :SOAPExternalCES, :SOAPMarshalNoReference) do
-      Thread.current[:SOAPMarshalDataKey] = {}
-      Thread.current[:SOAPExternalCES] =
-        opt[:external_ces] || XSD::Charset.encoding
-      Thread.current[:SOAPMarshalNoReference] = opt[:no_reference]
+    protect_mapping(opt) do
       add_md_ary(md_ary, ary, [], registry)
     end
     md_ary
@@ -124,8 +106,8 @@ module Mapping
   end
 
   def self._obj2soap(obj, registry, type = nil)
-    if referent = Thread.current[:SOAPMarshalDataKey][obj.__id__] and
-        !Thread.current[:SOAPMarshalNoReference]
+    if referent = Thread.current[:SOAPMapping][:MarshalKey][obj.__id__] and
+        !Thread.current[:SOAPMapping][:NoReference]
       SOAPReference.new(referent)
     elsif registry
       registry.obj2soap(obj, type)
@@ -140,8 +122,8 @@ module Mapping
     elsif node.is_a?(SOAPReference)
       target = node.__getobj__
       # target.id is not Object#id but SOAPReference#id
-      if referent = Thread.current[:SOAPMarshalDataKey][target.id] and
-          !Thread.current[:SOAPMarshalNoReference]
+      if referent = Thread.current[:SOAPMapping][:MarshalKey][target.id] and
+          !Thread.current[:SOAPMapping][:NoReference]
         return referent
       else
         return _soap2obj(target, registry, klass)
@@ -376,65 +358,32 @@ module Mapping
   end
 
   def self.schema_element_definition(klass)
-    schema_element = class_schema_variable(:schema_element, klass)
-    return nil unless schema_element
-    parse_schema_element_definition(klass, schema_element)
-  end
-
-  class SchemaElementDefinition
-    attr_reader :varname, :elename, :type
-
-    def initialize(varname, elename, type, as_array)
-      @varname = varname
-      @elename = elename
-      @type = type
-      @as_array = as_array
-    end
-
-    def as_array?
-      @as_array
-    end
-  end
-
-  class SchemaDefinition
-    attr_reader :ns, :type, :elements
-
-    def initialize(ns, type)
-      @ns = ns
-      @type = type
-      @elements = []
-      @choice = false
-      @any = false
-    end
-
-    def choice?
-      @choice
-    end
-
-    def have_any?
-      @any
-    end
-
-    def set_choice
-      @choice = true
-    end
-
-    def set_any
-      @any = true
-    end
+    class_schema_variable(:schema_element, klass)
   end
 
   def self.schema_attribute_definition(klass)
     class_schema_variable(:schema_attribute, klass)
   end
 
-  class << Mapping
-  private
+  def self.schema_definition_classdef(klass)
+    if definition = Thread.current[:SOAPMapping][:SchemaDefinition][klass]
+      return definition
+    end
+    ns = schema_ns_definition(klass)
+    type = schema_type_definition(klass)
+    elements = schema_element_definition(klass)
+    attributes = schema_attribute_definition(klass)
+    return nil if ns.nil? and type.nil? and elements.nil? and attributes.nil?
+    definition = create_schema_definition(klass, ns, type, elements, attributes)
+    Thread.current[:SOAPMapping][:SchemaDefinition][klass] = definition
+    definition
+  end
 
-    def parse_schema_element_definition(klass, schema_element)
-      schema_ns = schema_ns_definition(klass)
-      schema_type = schema_type_definition(klass)
-      definition = SchemaDefinition.new(schema_ns, schema_type)
+  def self.create_schema_definition(klass, schema_ns, schema_type,
+      schema_element, schema_attributes)
+    definition = SchemaDefinition.new(schema_ns, schema_type)
+    definition.attributes = schema_attributes
+    if schema_element
       if schema_element[0] == :choice
         schema_element.shift
         definition.set_choice
@@ -461,12 +410,72 @@ module Mapping
             as_array
           )
       end
-      definition
     end
+    definition
+  end
+
+  class SchemaElementDefinition
+    attr_reader :varname, :elename, :type
+
+    def initialize(varname, elename, type, as_array)
+      @varname = varname
+      @elename = elename
+      @type = type
+      @as_array = as_array
+    end
+
+    def as_array?
+      @as_array
+    end
+  end
+
+  class SchemaDefinition
+    attr_reader :ns, :type, :elements
+    attr_accessor :attributes
+
+    def initialize(ns, type)
+      @ns = ns
+      @type = type
+      @elements = []
+      @attributes = nil
+      @choice = false
+      @any = false
+    end
+
+    def choice?
+      @choice
+    end
+
+    def have_any?
+      @any
+    end
+
+    def set_choice
+      @choice = true
+    end
+
+    def set_any
+      @any = true
+    end
+  end
+
+  class << Mapping
+  private
 
     def class_schema_variable(sym, klass)
       var = "@@#{sym}"
       klass.class_variables.include?(var) ? klass.class_eval(var) : nil
+    end
+
+    def protect_mapping(opt)
+      protect_threadvars(:SOAPMapping) do
+        data = Thread.current[:SOAPMapping] = {}
+        data[:MarshalKey] = {}
+        data[:ExternalCES] = opt[:external_ces] || XSD::Charset.encoding
+        data[:NoReference] = opt[:no_reference]
+        data[:SchemaDefinition] = {}
+        yield
+      end
     end
 
     def protect_threadvars(*symbols)
