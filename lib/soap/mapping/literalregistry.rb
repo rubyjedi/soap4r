@@ -27,6 +27,21 @@ class LiteralRegistry
     super()
     @excn_handler_obj2soap = nil
     @excn_handler_soap2obj = nil
+    @class_schema_definition = {}
+    @qname_schema_definition = {}
+  end
+
+  def add(obj_class, definition)
+    definition = Mapping.create_schema_definition(obj_class, definition)
+    @class_schema_definition[obj_class] = definition
+    if definition.name
+      qname = XSD::QName.new(definition.ns, definition.name)
+      @qname_schema_definition[qname] = [obj_class, definition]
+    end
+    if definition.type
+      qname = XSD::QName.new(definition.ns, definition.type)
+      @qname_schema_definition[qname] = [obj_class, definition]
+    end
   end
 
   def obj2soap(obj, qname)
@@ -74,8 +89,8 @@ private
 
   def any2soap(obj, qname)
     ele = nil
-    if obj.class.class_variables.include?('@@schema_element')
-      ele = stubobj2soap(obj, qname)
+    if definition = schema_definition_from_class(obj.class)
+      ele = stubobj2soap(obj, qname, definition)
     elsif obj.is_a?(SOAP::Mapping::Object)
       ele = mappingobj2soap(obj, qname)
     elsif obj.is_a?(Hash)
@@ -101,12 +116,13 @@ private
     ele
   end
 
-  def stubobj2soap(obj, qname)
-    ele = SOAPElement.new(qname)
-    ele.qualified =
-      (obj.class.class_variables.include?('@@schema_qualified') and
-      obj.class.class_eval('@@schema_qualified'))
-    definition = Mapping.schema_definition_classdef(obj.class)
+  def stubobj2soap(obj, qname, definition)
+    if obj.is_a?(::String)
+      ele = SOAPElement.new(qname, obj)
+    else
+      ele = SOAPElement.new(qname)
+    end
+    ele.qualified = definition.qualified
     ele.extraattr[XSD::AttrTypeName] =
       XSD::QName.new(definition.ns, definition.type)
     any = nil
@@ -152,28 +168,33 @@ private
   end
 
   def any2obj(node, obj_class = nil)
-    unless obj_class
-      typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
-      obj_class = Mapping.class_from_name(typestr)
+    if obj_class
+      definition = schema_definition_from_class(obj_class)
+    else
+      obj_class, definition = schema_definition_from_qname(node.elename)
+      unless obj_class
+        typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
+        obj_class = Mapping.class_from_name(typestr)
+        definition = schema_definition_from_class(obj_class) if obj_class
+      end
     end
     if node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
-      if obj_class and obj_class.class_variables.include?('@@schema_element')
-        elesoap2stubobj(node, obj_class)
+      if definition
+        return elesoap2stubobj(node, obj_class, definition)
       else
         # SOAPArray for literal?
-        elesoap2plainobj(node)
+        return elesoap2plainobj(node)
       end
-    else
-      obj = Mapping.soap2obj(node, nil, obj_class, MAPPING_OPT)
-      add_attributes2obj(node, obj)
-      obj
     end
+    obj = Mapping.soap2obj(node, nil, obj_class, MAPPING_OPT)
+    add_attributes2obj(node, obj)
+    obj
   end
 
-  def elesoap2stubobj(node, obj_class)
+  def elesoap2stubobj(node, obj_class, definition)
     obj = Mapping.create_empty_object(obj_class)
-    add_elesoap2stubobj(node, obj)
-    add_attributes2stubobj(node, obj)
+    add_elesoap2stubobj(node, obj, definition)
+    add_attributes2stubobj(node, obj, definition)
     obj
   end
 
@@ -193,34 +214,14 @@ private
     obj
   end
 
-  def add_elesoap2stubobj(node, obj)
-    definition = Mapping.schema_definition_classdef(obj.class)
+  def add_elesoap2stubobj(node, obj, definition)
     vars = {}
     node.each do |name, value|
       item = definition.elements.find { |k, v| k.elename.name == name }
-      if item and item.type
-        if klass = Mapping.class_from_name(item.type)
-          # klass must be a SOAPBasetype or a class
-          if klass.ancestors.include?(::SOAP::SOAPBasetype)
-            if value.respond_to?(:data)
-              child = klass.new(value.data).data
-            else
-              child = klass.new(nil).data
-            end
-          else
-            child = any2obj(value, klass)
-          end
-        elsif klass = Mapping.module_from_name(item.type)
-          # simpletype
-          if value.respond_to?(:data)
-            child = value.data
-          else
-            raise MappingError.new("cannot map to a module value: #{item.type}")
-          end
-        else
-          raise MappingError.new("unknown class/module: #{item.type}")
-        end
-      else      # untyped element is treated as anyType.
+      if item
+        child = elesoapchild2obj(value, definition.ns, item)
+      else
+        # unknown element is treated as anyType.
         child = any2obj(value)
       end
       if item and item.as_array?
@@ -236,9 +237,44 @@ private
     end
   end
 
-  def add_attributes2stubobj(node, obj)
-    schema_definition = Mapping.schema_definition_classdef(obj.class)
-    if schema_definition && attributes = schema_definition.attributes
+  def elesoapchild2obj(value, ns, eledef)
+    obj_class, child_definition = schema_definition_from_qname(eledef.elename)
+    if child_definition
+      any2obj(value, obj_class)
+    elsif eledef.type
+      obj_class, child_definition =
+        schema_definition_from_qname(XSD::QName.new(ns, eledef.type))
+      if child_definition
+        any2obj(value, obj_class)
+      elsif klass = Mapping.class_from_name(eledef.type)
+        # klass must be a SOAPBasetype or a class
+        if klass.ancestors.include?(::SOAP::SOAPBasetype)
+          if value.respond_to?(:data)
+            klass.new(value.data).data
+          else
+            klass.new(nil).data
+          end
+        else
+          any2obj(value, klass)
+        end
+      elsif klass = Mapping.module_from_name(eledef.type)
+        # simpletype
+        if value.respond_to?(:data)
+          value.data
+        else
+          raise MappingError.new("cannot map to a module value: #{eledef.type}")
+        end
+      else
+        raise MappingError.new("unknown class/module: #{eledef.type}")
+      end
+    else
+      # untyped element is treated as anyType.
+      any2obj(value)
+    end
+  end
+
+  def add_attributes2stubobj(node, obj, definition)
+    if attributes = definition.attributes
       define_xmlattr(obj)
       attributes.each do |qname, class_name|
         attr = node.extraattr[qname]
@@ -299,6 +335,18 @@ private
         end
       EOS
     end
+  end
+
+  def schema_definition_from_class(klass)
+    @class_schema_definition[klass] || Mapping.schema_definition_classdef(klass)
+  end
+
+  def class_from_schema_definition(definition)
+    @class_schema_definition.key(definition)
+  end
+
+  def schema_definition_from_qname(qname)
+    @qname_schema_definition[qname]
   end
 end
 

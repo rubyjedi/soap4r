@@ -349,12 +349,20 @@ module Mapping
     end
   end
 
+  def self.schema_ns_definition(klass)
+    class_schema_variable(:schema_ns, klass)
+  end
+
+  def self.schema_name_definition(klass)
+    class_schema_variable(:schema_name, klass)
+  end
+
   def self.schema_type_definition(klass)
     class_schema_variable(:schema_type, klass)
   end
 
-  def self.schema_ns_definition(klass)
-    class_schema_variable(:schema_ns, klass)
+  def self.schema_qualified_definition(klass)
+    class_schema_variable(:schema_qualified, klass)
   end
 
   def self.schema_element_definition(klass)
@@ -370,18 +378,33 @@ module Mapping
       return definition
     end
     ns = schema_ns_definition(klass)
+    name = schema_name_definition(klass)
     type = schema_type_definition(klass)
+    qualified = schema_qualified_definition(klass)
     elements = schema_element_definition(klass)
     attributes = schema_attribute_definition(klass)
-    return nil if ns.nil? and type.nil? and elements.nil? and attributes.nil?
-    definition = create_schema_definition(klass, ns, type, elements, attributes)
+    return nil if ns.nil? and name.nil? and type.nil? and elements.nil? and attributes.nil?
+    definition = create_schema_definition(klass,
+      :schema_ns => ns,
+      :schema_name => name,
+      :schema_type => type,
+      :schema_qualified => qualified,
+      :schema_element => elements,
+      :schema_attribute => attributes
+    )
     Thread.current[:SOAPMapping][:SchemaDefinition][klass] = definition
     definition
   end
 
-  def self.create_schema_definition(klass, schema_ns, schema_type,
-      schema_element, schema_attributes)
-    definition = SchemaDefinition.new(schema_ns, schema_type)
+  def self.create_schema_definition(klass, definition)
+    schema_ns = definition[:schema_ns]
+    schema_name = definition[:schema_name]
+    schema_type = definition[:schema_type]
+    schema_qualified = definition[:schema_qualified]
+    schema_element = definition[:schema_element]
+    schema_attributes = definition[:schema_attribute]
+    definition = SchemaDefinition.new(schema_ns, schema_name, schema_type,
+      schema_qualified)
     definition.attributes = schema_attributes
     if schema_element
       if schema_element[0] == :choice
@@ -430,12 +453,14 @@ module Mapping
   end
 
   class SchemaDefinition
-    attr_reader :ns, :type, :elements
+    attr_reader :ns, :name, :type, :qualified, :elements
     attr_accessor :attributes
 
-    def initialize(ns, type)
+    def initialize(ns, name, type, qualified)
       @ns = ns
+      @name = name
       @type = type
+      @qualified = qualified
       @elements = []
       @attributes = nil
       @choice = false
