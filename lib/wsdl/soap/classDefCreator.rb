@@ -71,7 +71,8 @@ private
         qualified = (ele.elementform == 'qualified')
         dump_complextypedef(ele.name, ele.local_complextype, qualified)
       elsif ele.local_simpletype
-        dump_simpletypedef(ele.name, ele.local_simpletype)
+        qualified = (ele.elementform == 'qualified')
+        dump_simpletypedef(ele.name, ele.local_simpletype, qualified)
       else
         nil
       end
@@ -98,17 +99,17 @@ private
     }.compact.join("\n")
   end
 
-  def dump_simpletypedef(qname, simpletype)
+  def dump_simpletypedef(qname, simpletype, qualified = false)
     if simpletype.restriction
-      dump_simpletypedef_restriction(qname, simpletype)
+      dump_simpletypedef_restriction(qname, simpletype, qualified)
     elsif simpletype.list
-      dump_simpletypedef_list(qname, simpletype)
+      dump_simpletypedef_list(qname, simpletype, qualified)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
   end
 
-  def dump_simpletypedef_restriction(qname, typedef)
+  def dump_simpletypedef_restriction(qname, typedef, qualified)
     restriction = typedef.restriction
     if restriction.enumeration.empty?
       # not supported.  minlength?
@@ -125,11 +126,12 @@ private
       c.def_classvar('schema_type', ndq(qname.name))
     end
     c.def_classvar('schema_ns', ndq(qname.namespace))
+    c.def_classvar('schema_qualified', dq('true')) if qualified
     define_classenum_restriction(c, classname, restriction.enumeration)
     c.dump
   end
 
-  def dump_simpletypedef_list(qname, typedef)
+  def dump_simpletypedef_list(qname, typedef, qualified)
     list = typedef.list
     c = ClassDef.new(create_class_name(qname), '::Array')
     c.comment = "#{qname}"

@@ -28,7 +28,8 @@ class LiteralRegistry
     @excn_handler_obj2soap = nil
     @excn_handler_soap2obj = nil
     @class_schema_definition = {}
-    @qname_schema_definition = {}
+    @elename_schema_definition = {}
+    @type_schema_definition = {}
   end
 
   def add(obj_class, definition)
@@ -36,11 +37,11 @@ class LiteralRegistry
     @class_schema_definition[obj_class] = definition
     if definition.name
       qname = XSD::QName.new(definition.ns, definition.name)
-      @qname_schema_definition[qname] = [obj_class, definition]
+      @elename_schema_definition[qname] = definition
     end
     if definition.type
       qname = XSD::QName.new(definition.ns, definition.type)
-      @qname_schema_definition[qname] = [obj_class, definition]
+      @type_schema_definition[qname] = definition
     end
   end
 
@@ -123,8 +124,10 @@ private
       ele = SOAPElement.new(qname)
     end
     ele.qualified = definition.qualified
-    ele.extraattr[XSD::AttrTypeName] =
-      XSD::QName.new(definition.ns, definition.type)
+    if definition.type
+      ele.extraattr[XSD::AttrTypeName] =
+        XSD::QName.new(definition.ns, definition.type)
+    end
     any = nil
     if definition.have_any?
       any = Mapping.get_attributes_for_any(obj, definition.elements)
@@ -171,11 +174,9 @@ private
     if obj_class
       definition = schema_definition_from_class(obj_class)
     else
-      obj_class, definition = schema_definition_from_qname(node.elename)
-      unless obj_class
-        typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
-        obj_class = Mapping.class_from_name(typestr)
-        definition = schema_definition_from_class(obj_class) if obj_class
+      definition = schema_definition_from_elename(node.elename)
+      if definition
+        obj_class = definition.class_for
       end
     end
     if node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
@@ -238,14 +239,14 @@ private
   end
 
   def elesoapchild2obj(value, ns, eledef)
-    obj_class, child_definition = schema_definition_from_qname(eledef.elename)
+    child_definition = schema_definition_from_elename(eledef.elename)
     if child_definition
-      any2obj(value, obj_class)
+      any2obj(value, child_definition.class_for)
     elsif eledef.type
-      obj_class, child_definition =
-        schema_definition_from_qname(XSD::QName.new(ns, eledef.type))
+      child_definition =
+        schema_definition_from_type(XSD::QName.new(ns, eledef.type))
       if child_definition
-        any2obj(value, obj_class)
+        any2obj(value, child_definition.class_for)
       elsif klass = Mapping.class_from_name(eledef.type)
         # klass must be a SOAPBasetype or a class
         if klass.ancestors.include?(::SOAP::SOAPBasetype)
@@ -341,12 +342,20 @@ private
     @class_schema_definition[klass] || Mapping.schema_definition_classdef(klass)
   end
 
-  def class_from_schema_definition(definition)
-    @class_schema_definition.key(definition)
+  def schema_definition_from_elename(qname)
+    @elename_schema_definition[qname] || find_schema_definition(qname.name)
   end
 
-  def schema_definition_from_qname(qname)
-    @qname_schema_definition[qname]
+  def schema_definition_from_type(type)
+    @type_schema_definition[type] || find_schema_definition(type.name)
+  end
+
+  def find_schema_definition(name)
+    typestr = XSD::CodeGen::GenSupport.safeconstname(name)
+    obj_class = Mapping.class_from_name(typestr)
+    if obj_class
+      schema_definition_from_class(obj_class)
+    end
   end
 end
 

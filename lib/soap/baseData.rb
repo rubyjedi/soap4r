@@ -81,8 +81,11 @@ module SOAPBasetype
   include SOAPType
   include SOAP
 
+  attr_accessor :qualified
+
   def initialize(*arg)
     super
+    @qualified = nil
   end
 end
 
@@ -94,8 +97,11 @@ module SOAPCompoundtype
   include SOAPType
   include SOAP
 
+  attr_accessor :qualified
+
   def initialize(*arg)
     super
+    @qualified = nil
   end
 end
 

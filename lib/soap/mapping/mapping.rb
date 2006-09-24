@@ -403,8 +403,8 @@ module Mapping
     schema_qualified = definition[:schema_qualified]
     schema_element = definition[:schema_element]
     schema_attributes = definition[:schema_attribute]
-    definition = SchemaDefinition.new(schema_ns, schema_name, schema_type,
-      schema_qualified)
+    definition = SchemaDefinition.new(klass, schema_ns, schema_name,
+      schema_type, schema_qualified)
     definition.attributes = schema_attributes
     if schema_element
       if schema_element[0] == :choice
@@ -453,10 +453,11 @@ module Mapping
   end
 
   class SchemaDefinition
-    attr_reader :ns, :name, :type, :qualified, :elements
+    attr_reader :class_for, :ns, :name, :type, :qualified, :elements
     attr_accessor :attributes
 
-    def initialize(ns, name, type, qualified)
+    def initialize(class_for, ns, name, type, qualified)
+      @class_for = class_for
       @ns = ns
       @name = name
       @type = type

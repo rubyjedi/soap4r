@@ -5,6 +5,7 @@
       <s:element name="GetPrimeNumbers">
         <s:complexType>
           <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" form="unqualified" name="Min" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="Max" type="s:string" />
           </s:sequence>
         </s:complexType>

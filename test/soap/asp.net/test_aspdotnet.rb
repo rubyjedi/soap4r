@@ -97,7 +97,8 @@ class TestASPDotNet < Test::Unit::TestCase
       @client.add_method_with_soapaction('sayHello', Server::Namespace + 'SayHello', 'name')
       @client.default_encodingstyle = SOAP::EncodingStyle::ASPDotNetHandler::Namespace
       assert_equal("Hello Mike", @client.sayHello("Mike"))
-      assert_equal(REQUEST_ASPDOTNETHANDLER, parse_requestxml(str))
+      assert_equal(REQUEST_ASPDOTNETHANDLER, parse_requestxml(str),
+        [REQUEST_ASPDOTNETHANDLER, parse_requestxml(str)].join("\n\n"))
     end
 
     def parse_requestxml(str)

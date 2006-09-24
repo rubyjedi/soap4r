@@ -150,8 +150,8 @@ module RegistrySupport
   end
   
   def add_attributes2soap(obj, ele)
-    schema_definition = Mapping.schema_definition_classdef(obj.class)
-    if schema_definition && attributes = schema_definition.attributes
+    definition = Mapping.schema_definition_classdef(obj.class)
+    if definition && attributes = definition.attributes
       attributes.each do |qname, param|
         at = obj.__send__(
           XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
@@ -164,7 +164,7 @@ module RegistrySupport
     end
   end
 
-  def base2soap(obj, type)
+  def base2soap(obj, type, qualified = nil)
     soap_obj = nil
     if type <= XSD::XSDString
       str = XSD::Charset.encoding_conv(obj.to_s,
@@ -173,6 +173,7 @@ module RegistrySupport
     else
       soap_obj = type.new(obj)
     end
+    soap_obj.qualified = qualified
     soap_obj
   end
 end

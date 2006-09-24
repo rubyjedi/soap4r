@@ -161,6 +161,7 @@ public
     @encodingstyle = encodingstyle
     @actor = actor
     element.parent = self if element
+    element.qualified = true
   end
 
   def encode(generator, ns, attrs = {})

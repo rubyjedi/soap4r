@@ -37,6 +37,8 @@ public
     @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
     @generate_explicit_type =
       opt.key?(:generate_explicit_type) ? opt[:generate_explicit_type] : true
+    # elementformdefault is for default namespace usage controll
+    # TODO: should be renamed
     @elementformdefault = opt[:elementformdefault]
     @attributeformdefault = opt[:attributeformdefault]
     @use_numeric_character_reference = opt[:use_numeric_character_reference]
@@ -138,7 +140,7 @@ public
     if element_local?(data)
       data.elename.name
     else
-      if element_qualified?(data)
+      if @elementformdefault
         SOAPGenerator.assign_ns(attrs, ns, data.elename.namespace, '')
       else
         SOAPGenerator.assign_ns(attrs, ns, data.elename.namespace)
@@ -214,18 +216,6 @@ public
 
   def element_local?(element)
     element.elename.namespace.nil?
-  end
-
-  def element_qualified?(element)
-    if element.respond_to?(:qualified)
-      if element.qualified.nil?
-        @elementformdefault
-      else
-        element.qualified
-      end
-    else
-      @elementformdefault
-    end
   end
 
   def self.assign_ns(attrs, ns, namespace, tag = nil)

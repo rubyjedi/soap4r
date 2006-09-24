@@ -4,6 +4,7 @@ require 'xsd/qname'
 class Rating < ::String
   @@schema_type = nil
   @@schema_ns = "urn:ref"
+  @@schema_qualified = "true"
 
   C_0 = Rating.new("0")
   C_1 = Rating.new("+1")
@@ -14,6 +15,7 @@ end
 class ProductBag
   @@schema_type = nil
   @@schema_ns = "urn:ref"
+  @@schema_qualified = "true"
   @@schema_attribute = {
     XSD::QName.new("urn:ref", "version") => "SOAP::SOAPString",
     XSD::QName.new("urn:ref", "yesno") => "SOAP::SOAPString"

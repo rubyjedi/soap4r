@@ -69,11 +69,11 @@ class MethodDefCreator
     param = []
     operation.inputparts.each do |input|
       param << param_set(::SOAP::RPC::SOAPMethod::IN, input.name,
-        documentdefinedtype(input), elementqualified(input))
+        documentdefinedtype(input))
     end
     operation.outputparts.each do |output|
       param << param_set(::SOAP::RPC::SOAPMethod::OUT, output.name,
-        documentdefinedtype(output), elementqualified(output))
+        documentdefinedtype(output))
     end
     param
   end
@@ -164,20 +164,6 @@ __EOD__
       ['::SOAP::SOAPElement', part.element.namespace, part.element.name]
     elsif definedtype = @complextypes[part.type]
       ['::SOAP::SOAPElement', part.type.namespace, part.type.name]
-    else
-      raise RuntimeError.new("part: #{part.name} cannot be resolved")
-    end
-  end
-
-  def elementqualified(part)
-    if mapped = basetype_mapped_class(part.type)
-      false
-    elsif definedtype = @simpletypes[part.type]
-      false
-    elsif definedtype = @elements[part.element]
-      definedtype.elementform == 'qualified'
-    elsif definedtype = @complextypes[part.type]
-      false
     else
       raise RuntimeError.new("part: #{part.name} cannot be resolved")
     end

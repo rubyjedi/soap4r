@@ -20,7 +20,7 @@
   </types>
 
   <message name="msg_echoitem">
-    <part name="parameters" element="txd:foo.bar"/>
+    <part name="parameters" type="txd:foo.bar"/>
   </message>
 
   <portType name="echo_port_type">
