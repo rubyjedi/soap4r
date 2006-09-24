@@ -19,6 +19,7 @@ class TestHelloWorld < Test::Unit::TestCase
     }
     @endpoint = "http://localhost:#{Port}/"
     @client = SOAP::RPC::Driver.new(@endpoint, 'urn:hws')
+    @client.wiredump_dev = STDERR if $DEBUG
     @client.add_method("hello_world", "from")
   end
 

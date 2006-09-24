@@ -8,6 +8,7 @@
 
 require 'wsdl/info'
 require 'wsdl/soap/mappingRegistryCreator'
+require 'wsdl/soap/literalMappingRegistryCreator'
 require 'wsdl/soap/methodDefCreator'
 require 'wsdl/soap/classDefCreatorSupport'
 require 'xsd/codegen'
@@ -43,8 +44,9 @@ private
 
   def dump_porttype(porttype)
     class_name = create_class_name(porttype)
-    methoddef, types = MethodDefCreator.new(@definitions).dump(porttype)
+    methoddef, methodtypes = MethodDefCreator.new(@definitions).dump(porttype)
     mr_creator = MappingRegistryCreator.new(@definitions)
+    literal_mr_creator = LiteralMappingRegistryCreator.new(@definitions)
     binding = @definitions.bindings.find { |item| item.type == porttype }
     if binding.nil? or binding.soapbinding.nil?
       # not bind or not a SOAP binding
@@ -54,14 +56,18 @@ private
 
     c = XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
     c.def_require("soap/rpc/driver")
+    #c.def_const("EncodedMappingRegistry", "::SOAP::Mapping::EncodedRegistry.new")
     c.def_const("MappingRegistry", "::SOAP::Mapping::EncodedRegistry.new")
+    #c.def_const("LiteralMappingRegistry", "::SOAP::Mapping::LiteralRegistry.new")
     c.def_const("DefaultEndpointUrl", ndq(address))
-    c.def_code(mr_creator.dump(types))
+    c.def_code(mr_creator.dump(methodtypes))
+    #c.def_code(literal_mr_creator.dump)
     c.def_code <<-EOD
 Methods = [
 #{methoddef.gsub(/^/, "  ")}
 ]
     EOD
+        #self.literal_mapping_registry = LiteralMappingRegistry
     c.def_method("initialize", "endpoint_url = nil") do
       <<-EOD
         endpoint_url ||= DefaultEndpointUrl

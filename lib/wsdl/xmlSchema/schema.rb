@@ -69,6 +69,7 @@ class Schema < Info
       o
     when ElementName
       o = Element.new
+      o.form = 'qualified'      # root element is qualified
       @elements << o
       o
     when AttributeName

@@ -87,27 +87,16 @@ class TestQualified < Test::Unit::TestCase
     File.join(DIR, filename)
   end
 
-  LOGIN_REQUEST_QUALIFIED_NS =
-%q[<?xml version="1.0" encoding="utf-8" ?>
-<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <env:Body>
-    <n1:GetPrimeNumbers xmlns:n1="http://www50.brinkster.com/vbfacileinpt/np">
-      <n1:Max>10</n1:Max>
-    </n1:GetPrimeNumbers>
-  </env:Body>
-</env:Envelope>]
-
   LOGIN_REQUEST_QUALIFIED =
 %q[<?xml version="1.0" encoding="utf-8" ?>
 <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
-    <GetPrimeNumbers xmlns="http://www50.brinkster.com/vbfacileinpt/np">
-      <Max>10</Max>
-    </GetPrimeNumbers>
+    <n1:GetPrimeNumbers xmlns:n1="http://www50.brinkster.com/vbfacileinpt/np">
+      <Min>2</Min>
+      <n1:Max>10</n1:Max>
+    </n1:GetPrimeNumbers>
   </env:Body>
 </env:Envelope>]
 
@@ -123,8 +112,9 @@ class TestQualified < Test::Unit::TestCase
     end
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = str = ''
-    @client.GetPrimeNumbers(:Max => 10)
-    assert_equal(LOGIN_REQUEST_QUALIFIED_NS, parse_requestxml(str))
+    @client.GetPrimeNumbers(:Min => 2, :Max => 10)
+    assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
+      [LOGIN_REQUEST_QUALIFIED, parse_requestxml(str)].join("\n\n"))
   end
 
   include ::SOAP
@@ -139,8 +129,9 @@ class TestQualified < Test::Unit::TestCase
     @client = PnumSoap.new("http://localhost:#{Port}/")
 
     @client.wiredump_dev = str = ''
-    @client.getPrimeNumbers(GetPrimeNumbers.new(10))
-    assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str))
+    @client.getPrimeNumbers(GetPrimeNumbers.new(2, 10))
+    assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
+      [LOGIN_REQUEST_QUALIFIED, parse_requestxml(str)].join("\n\n"))
   end
 
   def parse_requestxml(str)

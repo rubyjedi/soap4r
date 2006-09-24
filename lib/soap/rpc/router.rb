@@ -537,6 +537,7 @@ private
       (0...result.size).collect { |idx|
         ele = Mapping.obj2soap(result[idx], mapping_registry, nil, opt)
         ele.elename = @doc_response_qnames[idx]
+        ele.qualified = @doc_response_qualified[idx]
         ele
       }
     end
@@ -546,9 +547,7 @@ private
         ele = Mapping.obj2soap(result[idx], mapping_registry,
           @doc_response_qnames[idx])
         ele.encodingstyle = LiteralNamespace
-        if ele.respond_to?(:qualified)
-          ele.qualified = @doc_response_qualified[idx]
-        end
+        ele.qualified = @doc_response_qualified[idx]
         ele
       }
     end

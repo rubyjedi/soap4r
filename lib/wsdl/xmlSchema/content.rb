@@ -49,6 +49,7 @@ class Content < Info
     case element
     when ElementName
       o = Element.new
+      o.form = elementformdefault
       @elements << o
       o
     else

@@ -98,14 +98,6 @@ public
     opt[:response_style] ||= :document
     opt[:request_use] ||= :literal
     opt[:response_use] ||= :literal
-    # default values of these values are unqualified in XML Schema.
-    # set true for backward compatibility.
-    unless opt.key?(:elementformdefault)
-      opt[:elementformdefault] = true
-    end
-    unless opt.key?(:attributeformdefault)
-      opt[:attributeformdefault] = true
-    end
     op = Operation.new(soapaction, param_def, opt)
     assign_operation(name, nil, soapaction, op)
   end
@@ -486,6 +478,7 @@ private
       (0...values.size).collect { |idx|
         ele = Mapping.obj2soap(values[idx], mapping_registry, nil, opt)
         ele.elename = @doc_request_qnames[idx]
+        ele.qualified = @doc_request_qualified[idx]
         ele
       }
     end
@@ -495,9 +488,7 @@ private
         ele = Mapping.obj2soap(values[idx], mapping_registry,
           @doc_request_qnames[idx], opt)
         ele.encodingstyle = LiteralNamespace
-        if ele.respond_to?(:qualified)
-          ele.qualified = @doc_request_qualified[idx]
-        end
+        ele.qualified = @doc_request_qualified[idx]
         ele
       }
     end

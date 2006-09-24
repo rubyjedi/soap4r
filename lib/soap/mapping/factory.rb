@@ -53,7 +53,6 @@ class Factory
 private
 
   def setdefinediv2soap(ele, obj, map)
-    # cache needed?
     definition = Mapping.schema_definition_classdef(obj.class)
     definition.elements.each do |eledef|
       child = Mapping.get_attribute(obj, eledef.varname)

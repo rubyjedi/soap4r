@@ -79,31 +79,32 @@ private
     qualified = (eledef.elementform == 'qualified')
     if eledef.type
       if type = @definedtypes[eledef.type]
-        ele = obj2typesoap(obj, type, qualified)
+        ele = obj2typesoap(obj, type)
       elsif type = TypeMap[eledef.type]
         ele = base2soap(obj, type)
       else
         raise MappingError.new("cannot find type #{eledef.type}")
       end
     elsif eledef.local_complextype
-      ele = obj2typesoap(obj, eledef.local_complextype, qualified)
+      ele = obj2typesoap(obj, eledef.local_complextype)
     elsif eledef.local_simpletype
-      ele = obj2typesoap(obj, eledef.local_simpletype, qualified)
+      ele = obj2typesoap(obj, eledef.local_simpletype)
     else
       raise MappingError.new('illegal schema?')
     end
     ele.elename = eledef.name
+    ele.qualified = qualified
     ele
   end
 
-  def obj2typesoap(obj, type, qualified)
+  def obj2typesoap(obj, type)
     ele = nil
     if type.is_a?(::WSDL::XMLSchema::SimpleType)
       ele = simpleobj2soap(obj, type)
     elsif type.simplecontent
       ele = simpleobj2soap(obj, type.simplecontent)
     else
-      ele = complexobj2soap(obj, type, qualified)
+      ele = complexobj2soap(obj, type)
     end
     add_attributes2soap(obj, ele)
     ele
@@ -123,9 +124,8 @@ private
     ele
   end
 
-  def complexobj2soap(obj, type, qualified)
+  def complexobj2soap(obj, type)
     ele = SOAPElement.new(type.name)
-    ele.qualified = qualified
     if type.choice?
       complexobj2choicesoap(obj, ele, type)
     else
