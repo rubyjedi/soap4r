@@ -13,7 +13,7 @@ module WSDL
 module XMLSchema
 
 
-class Length < Info
+class MaxLength < Info
   def initialize
     super
   end
