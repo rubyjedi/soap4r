@@ -48,11 +48,17 @@ class TestSOAP < Test::Unit::TestCase
     str = "abc"
     assert_equal(str, SOAP::SOAPString.new(str).data)
     assert_equal(str, SOAP::SOAPString.new(str).to_s)
-    assert_raises(XSD::ValueSpaceError) do
-      SOAP::SOAPString.new("\0")
-    end
-    assert_raises(XSD::ValueSpaceError) do
-      p SOAP::SOAPString.new("\xC0\xC0").to_s
+    back = XSD::XSDString.strict_ces_validation
+    XSD::XSDString.strict_ces_validation = true
+    begin
+      assert_raises(XSD::ValueSpaceError) do
+        SOAP::SOAPString.new("\0")
+      end
+      assert_raises(XSD::ValueSpaceError) do
+        SOAP::SOAPString.new("\xC0\xC0").to_s
+      end
+    ensure
+      XSD::XSDString.strict_ces_validation = back
     end
   end
 
