@@ -31,7 +31,7 @@ RubyIVarName = XSD::QName.new(RubyTypeInstanceNamespace, 'ivars')
 
 
 # For anyType object: SOAP::Mapping::Object not ::Object
-class Object; include Marshallable
+class Object
   def initialize
     @__xmlele_type = {}
     @__xmlele = []
@@ -101,6 +101,10 @@ class Object; include Marshallable
     value
   end
 
+  def marshal_load(dumpobj)
+    __import(dumpobj)
+  end
+
 private
 
   # Mapping.define_attr_accessor calls define_method with proc and it exhausts
@@ -108,9 +112,11 @@ private
   def __define_attr_accessor(qname)
     # untaint depends GenSupport.safemethodname
     name = XSD::CodeGen::GenSupport.safemethodname(qname.name).untaint
-    # untaint depends QName#dump
+    # untaint depends on QName#dump
     qnamedump = qname.dump.untaint
+    singleton = false
     unless self.respond_to?(name)
+      singleton = true
       instance_eval <<-EOS
         def #{name}
           self[#{qnamedump}]
@@ -118,9 +124,17 @@ private
       EOS
     end
     unless self.respond_to?(name + "=")
+      singleton = true
       instance_eval <<-EOS
         def #{name}=(value)
           self[#{qnamedump}] = value
+        end
+      EOS
+    end
+    if singleton && !self.respond_to?(:marshal_dump)
+      instance_eval <<-EOS
+        def marshal_dump
+          __export
         end
       EOS
     end
@@ -137,6 +151,23 @@ private
     else
       raise RuntimeError.new("unknown type")
     end
+  end
+
+  def __export
+    dumpobj = ::SOAP::Mapping::Object.new
+    dumpobj.__xmlele.replace(@__xmlele)
+    dumpobj.__xmlattr.replace(@__xmlattr)
+    dumpobj
+  end
+
+  def __import(dumpobj)
+    @__xmlele_type = {}
+    @__xmlele = []
+    @__xmlattr = {}
+    dumpobj.__xmlele.each do |qname, value|
+      __add_xmlele_value(qname, value)
+    end
+    @__xmlattr.replace(dumpobj.__xmlattr)
   end
 end
 
