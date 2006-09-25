@@ -183,6 +183,7 @@ class DerivedChoice_BaseSimpleContent
   @@schema_type = "DerivedChoice_BaseSimpleContent"
   @@schema_ns = "urn:ref"
   @@schema_attribute = {
+    XSD::QName.new(nil, "ID") => "SOAP::SOAPString",
     XSD::QName.new(nil, "attrStringExt") => "SOAP::SOAPString"
   }
   @@schema_element = [ :choice,
@@ -192,6 +193,14 @@ class DerivedChoice_BaseSimpleContent
 
   attr_accessor :varStringExt
   attr_accessor :varFloatExt
+
+  def xmlattr_ID
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")]
+  end
+
+  def xmlattr_ID=(value)
+    (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")] = value
+  end
 
   def xmlattr_attrStringExt
     (@__xmlattr ||= {})[XSD::QName.new(nil, "attrStringExt")]

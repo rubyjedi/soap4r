@@ -70,9 +70,9 @@ class ComplexType < Info
 
   def attributes
     if @complexcontent
-      @complexcontent.attributes
+      @complexcontent.attributes + @attributes
     elsif @simplecontent
-      @simplecontent.attributes
+      @simplecontent.attributes + @attributes
     else
       @attributes
     end
