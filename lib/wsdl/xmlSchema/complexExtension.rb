@@ -17,7 +17,6 @@ module XMLSchema
 class ComplexExtension < Info
   attr_accessor :base
   attr_reader :content
-  attr_reader :attributes
 
   def initialize
     super
@@ -48,6 +47,10 @@ class ComplexExtension < Info
     result.concat(basetype.elements)
     result.concat(content.elements) if content
     result
+  end
+
+  def attributes
+    basetype.attributes + @attributes
   end
 
   def check_type
