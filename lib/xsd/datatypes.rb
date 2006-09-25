@@ -191,11 +191,24 @@ class XSDString < XSDAnySimpleType
     init(Type, value)
   end
 
+  @@strict_ces_validation = false
+
+  def self.strict_ces_validation=(strict_ces_validation)
+    @@strict_ces_validation = strict_ces_validation
+  end
+
+  def self.strict_ces_validation
+    @@strict_ces_validation
+  end
+
 private
 
   def screen_data(value)
-    unless XSD::Charset.is_ces(value, XSD::Charset.encoding)
-      raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
+    if ::XSD::XSDString.strict_ces_validation
+      externalces = XSD::Charset.encoding
+      unless XSD::Charset.is_ces(value, externalces)
+        raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
+      end
     end
     value
   end

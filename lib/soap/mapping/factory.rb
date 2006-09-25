@@ -106,9 +106,6 @@ class StringFactory_ < Factory
     end
     begin
       externalces = Thread.current[:SOAPMapping][:ExternalCES]
-      unless XSD::Charset.is_ces(obj, externalces)
-        return nil
-      end
       encoded = XSD::Charset.encoding_conv(obj, externalces,
         XSD::Charset.encoding)
       soap_obj = soap_class.new(encoded)
