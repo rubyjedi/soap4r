@@ -72,7 +72,7 @@ class TestSimpleType < Test::Unit::TestCase
 
   def test_ping
     result = @client.echo_version("1.9")
-    assert_equal("1.9", result.version)
+    assert_equal("1.9", result.myversion)
     assert_equal("checked", result.msg)
     assert_raise(XSD::ValueSpaceError) do
       @client.echo_version("2.0")
