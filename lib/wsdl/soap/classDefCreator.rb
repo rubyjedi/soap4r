@@ -19,7 +19,9 @@ class ClassDefCreator
   include ClassDefCreatorSupport
   include XSD::CodeGen
 
-  def initialize(definitions)
+  def initialize(definitions, modulepath = nil)
+    @definitions = definitions
+    @modulepath = modulepath
     @elements = definitions.collect_elements
     @elements.uniq!
     @attributes = definitions.collect_attributes
@@ -36,6 +38,11 @@ class ClassDefCreator
 
   def dump(type = nil)
     result = "require 'xsd/qname'\n"
+    if @modulepath
+      result << "\n"
+      result << @modulepath.collect { |ele| "module #{ele}" }.join("; ")
+      result << "\n\n"
+    end
     if type
       result << dump_classdef(type.name, type)
     else
@@ -59,6 +66,11 @@ class ClassDefCreator
         result << "\n" unless result.empty?
         result << str
       end
+    end
+    if @modulepath
+      result << "\n\n"
+      result << @modulepath.collect { |ele| "end" }.join("; ")
+      result << "\n"
     end
     result
   end
@@ -95,7 +107,7 @@ private
 
   def dump_complextype
     @complextypes.collect { |type|
-      dump_complextypedef(type.name, type)
+      dump_complextypedef(type.name, type) unless type.abstract
     }.compact.join("\n")
   end
 
@@ -120,13 +132,13 @@ private
     c.comment = "#{qname}"
     if typedef.name.nil?
       # local simpletype of a element
-      c.def_classvar('schema_type', ndq(nil))
+      #c.def_classvar('schema_type', ndq(nil))
     else
       # named simpletype
-      c.def_classvar('schema_type', ndq(qname.name))
+      #c.def_classvar('schema_type', ndq(qname.name))
     end
-    c.def_classvar('schema_ns', ndq(qname.namespace))
-    c.def_classvar('schema_qualified', dq('true')) if qualified
+    #c.def_classvar('schema_ns', ndq(qname.namespace))
+    #c.def_classvar('schema_qualified', dq('true')) if qualified
     define_classenum_restriction(c, classname, restriction.enumeration)
     c.dump
   end
@@ -215,13 +227,13 @@ private
     c.comment = "#{qname}"
     if typedef.name.nil?
       # local complextype of a element
-      c.def_classvar('schema_type', ndq(nil))
+      #c.def_classvar('schema_type', ndq(nil))
     else
       # named complextype
-      c.def_classvar('schema_type', ndq(qname.name))
+      #c.def_classvar('schema_type', ndq(qname.name))
     end
-    c.def_classvar('schema_ns', ndq(qname.namespace))
-    c.def_classvar('schema_qualified', dq('true')) if qualified
+    #c.def_classvar('schema_ns', ndq(qname.namespace))
+    #c.def_classvar('schema_qualified', dq('true')) if qualified
     schema_element, init_lines, init_params =
       parse_elements(c, typedef.elements, qname.namespace)
     if typedef.choice?
@@ -231,9 +243,9 @@ private
       define_attribute(c, typedef.attributes)
       init_lines << "@__xmlattr = {}"
     end
-    c.def_classvar('schema_element',
-      dump_schema_element_definition(schema_element, 2)
-    )
+    #c.def_classvar('schema_element',
+    #  dump_schema_element_definition(schema_element, 2)
+    #)
     c.def_method('initialize', *init_params) do
       init_lines.join("\n")
     end
@@ -402,13 +414,13 @@ private
       end
       schema_attribute << [name, type]
     end
-    c.def_classvar('schema_attribute',
-      "{\n  " +
-        schema_attribute.collect { |name, type|
-          dqname(name) + ' => ' + ndq(type)
-        }.join(",\n  ") +
-      "\n}"
-    )
+    #c.def_classvar('schema_attribute',
+    #  "{\n  " +
+    #    schema_attribute.collect { |name, type|
+    #      dqname(name) + ' => ' + ndq(type)
+    #    }.join(",\n  ") +
+    #  "\n}"
+    #)
   end
 
   def name_element(element)
@@ -449,9 +461,9 @@ private
       child_element_name = DEFAULT_ITEM_NAME
     end
     schema_element << [child_element_name.name, child_element_name, type]
-    c.def_classvar('schema_element',
-      dump_schema_element_definition(schema_element, 2)
-    )
+    #c.def_classvar('schema_element',
+    #  dump_schema_element_definition(schema_element, 2)
+    #)
     c.dump
   end
 end

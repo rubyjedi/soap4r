@@ -24,14 +24,16 @@ class TestSOAPENC < Test::Unit::TestCase
   Port = 17171
 
   def setup
-    setup_server
     setup_classdef
+    setup_server
     @client = nil
   end
 
   def teardown
     teardown_server
-    File.unlink(pathname('echo.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('echo.rb'))
+    end
     @client.reset_stream if @client
   end
 
@@ -42,6 +44,9 @@ class TestSOAPENC < Test::Unit::TestCase
   end
 
   def setup_classdef
+    if ::Object.constants.include?("Version_struct")
+      ::Object.instance_eval { remove_const("Version_struct") }
+    end
     gen = WSDL::SOAP::WSDL2Ruby.new
     gen.location = pathname("soapenc.wsdl")
     gen.basedir = DIR
@@ -49,7 +54,13 @@ class TestSOAPENC < Test::Unit::TestCase
     gen.opt['classdef'] = nil
     gen.opt['force'] = true
     gen.run
-    require pathname('echo')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require pathname('echo')
+    ensure
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server

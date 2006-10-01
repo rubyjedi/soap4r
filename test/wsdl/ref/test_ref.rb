@@ -22,6 +22,7 @@ class TestRef < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'Product-Bag'),
         XSD::QName.new(Namespace, 'Creator')
       )
+      self.literal_mapping_registry = ProductMappingRegistry::LiteralRegistry
     end
   
     def echo(arg)
@@ -55,8 +56,8 @@ class TestRef < Test::Unit::TestCase
   Port = 17171
 
   def setup
-    setup_server
     setup_classdef
+    setup_server
     @client = nil
   end
 
@@ -82,12 +83,13 @@ class TestRef < Test::Unit::TestCase
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
+    backupdir = Dir.pwd
     begin
-      back = $:.dup
-      $:.unshift(pathname("."))
+      Dir.chdir(DIR)
+      require pathname('product')
       require pathname('productDriver')
     ensure
-      $:.replace(back) if back
+      Dir.chdir(backupdir)
     end
   end
 
@@ -197,6 +199,7 @@ class TestRef < Test::Unit::TestCase
     wsdl = File.join(DIR, 'product.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.literal_mapping_registry = ProductMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
     p1 = Product.new("foo", Rating::C_0)
     p2 = Product.new("bar", Rating::C_1)

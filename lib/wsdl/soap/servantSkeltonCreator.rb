@@ -21,19 +21,30 @@ class ServantSkeltonCreator
 
   attr_reader :definitions
 
-  def initialize(definitions)
+  def initialize(definitions, modulepath = nil)
     @definitions = definitions
+    @modulepath = modulepath
   end
 
   def dump(porttype = nil)
+    result = ""
+    if @modulepath
+      result << "\n"
+      result << @modulepath.collect { |ele| "module #{ele}" }.join("; ")
+      result << "\n\n"
+    end
     if porttype.nil?
-      result = ""
       @definitions.porttypes.each do |type|
 	result << dump_porttype(type.name)
 	result << "\n"
       end
     else
-      result = dump_porttype(porttype)
+      result << dump_porttype(porttype)
+    end
+    if @modulepath
+      result << "\n\n"
+      result << @modulepath.collect { |ele| "end" }.join("; ")
+      result << "\n"
     end
     result
   end

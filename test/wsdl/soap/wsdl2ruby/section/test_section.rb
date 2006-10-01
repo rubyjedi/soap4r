@@ -21,6 +21,10 @@ class TestSection < Test::Unit::TestCase
   end
 
   def test_marshal
+    # avoid name crash (<item> => an Item when a class Item is defined)
+    if ::Object.constants.include?("Item")
+      ::Object.instance_eval { remove_const("Item") }
+    end
     require pathname('mysample.rb')
     s1 = Section.new(1, "section1", "section 1", 1001, Question.new("q1"))
     s2 = Section.new(2, "section2", "section 2", 1002, Question.new("q2"))
@@ -38,12 +42,7 @@ private
   end
 
   def compare(expected, actual)
-    begin
-      assert_equal(loadfile(expected), loadfile(actual), expected)
-    rescue
-      puts `diff -U 2 -p #{expected} #{actual}`
-      raise
-    end
+    assert_equal(loadfile(expected), loadfile(actual), expected)
   end
 
   def loadfile(file)

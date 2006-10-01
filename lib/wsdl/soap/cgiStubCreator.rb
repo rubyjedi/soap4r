@@ -21,8 +21,9 @@ class CGIStubCreator
 
   attr_reader :definitions
 
-  def initialize(definitions)
+  def initialize(definitions, modulepath = nil)
     @definitions = definitions
+    @modulepath = modulepath
   end
 
   def dump(service_name)
@@ -45,14 +46,13 @@ class CGIStubCreator
 private
 
   def dump_porttype(name)
-    class_name = create_class_name(name)
-    methoddef, types = MethodDefCreator.new(@definitions).dump(name)
-    mr_creator = MappingRegistryCreator.new(@definitions)
+    class_name = create_class_name(name, @modulepath)
+    result = MethodDefCreator.new(@definitions, @modulepath).dump(name)
+    methoddef = result[:methoddef]
+    wsdl_name = @definitions.name ? @definitions.name.name : 'default'
+    mrname = safeconstname(wsdl_name + 'MappingRegistry')
     c1 = XSD::CodeGen::ClassDef.new(class_name)
     c1.def_require("soap/rpc/cgistub")
-    c1.def_require("soap/mapping/registry")
-    c1.def_const("MappingRegistry", "::SOAP::Mapping::EncodedRegistry.new")
-    c1.def_code(mr_creator.dump(types))
     c1.def_code <<-EOD
 Methods = [
 #{methoddef.gsub(/^/, "  ")}
@@ -72,7 +72,8 @@ Methods = [
             @router.add_rpc_operation(servant, *definitions)
           end
         end
-        self.mapping_registry = #{class_name}::MappingRegistry
+        self.mapping_registry = #{mrname}::EncodedRegistry
+        self.literal_mapping_registry = #{mrname}::LiteralRegistry
         self.level = Logger::Severity::ERROR
       EOD
     end

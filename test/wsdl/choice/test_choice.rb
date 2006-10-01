@@ -20,6 +20,7 @@ class TestChoice < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echoele'),
         XSD::QName.new(Namespace, 'echo_response')
       )
+      @router.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
     end
   
     def echo(arg)
@@ -32,14 +33,17 @@ class TestChoice < Test::Unit::TestCase
   Port = 17171
 
   def setup
-    setup_server
     setup_classdef
+    setup_server
     @client = nil
   end
 
   def teardown
     teardown_server
-    File.unlink(pathname('choice.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('choice.rb'))
+      File.unlink(pathname('choiceDriver.rb'))
+    end
     @client.reset_stream if @client
   end
 
@@ -55,9 +59,17 @@ class TestChoice < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
-    require pathname('choice')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require pathname('choice')
+      require pathname('choiceMappingRegistry')
+    ensure
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server
@@ -83,6 +95,8 @@ class TestChoice < Test::Unit::TestCase
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
+    @client.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
+
     ret = @client.echo(Echoele.new(TerminalID.new("imei", nil)))
     assert_equal("imei", ret.terminalID.imei)
     assert_nil(ret.terminalID.devId)
@@ -98,6 +112,7 @@ class TestChoice < Test::Unit::TestCase
       XSD::QName.new('urn:choice', 'echoele'),
       XSD::QName.new('urn:choice', 'echo_response'))
     @client.wiredump_dev = STDOUT if $DEBUG
+    @client.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
 
     echo = SOAPElement.new('echoele')
     echo.add(terminalID = SOAPElement.new('terminalID'))

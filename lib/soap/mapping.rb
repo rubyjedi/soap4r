@@ -8,3 +8,5 @@
 
 require 'soap/mapping/mapping'
 require 'soap/mapping/registry'
+require 'soap/mapping/encodedregistry'
+require 'soap/mapping/literalregistry'

@@ -20,17 +20,22 @@ class MethodDefCreator
 
   attr_reader :definitions
 
-  def initialize(definitions)
+  def initialize(definitions, modulepath)
     @definitions = definitions
+    @modulepath = modulepath
     @simpletypes = @definitions.collect_simpletypes
     @complextypes = @definitions.collect_complextypes
     @elements = @definitions.collect_elements
     @types = []
+    @encoded = false
+    @literal = false
   end
 
   def dump(porttype)
     @types.clear
-    result = ""
+    @encoded = false
+    @literal = false
+    methoddef = ""
     port = @definitions.porttype(porttype)
     binding = port.find_binding
     if binding
@@ -38,11 +43,17 @@ class MethodDefCreator
         op = op_bind.find_operation
         next unless op_bind # no binding is defined
         next unless op_bind.soapoperation # not a SOAP operation binding
-        result << ",\n" unless result.empty?
-        result << dump_method(op, op_bind).chomp
+        methoddef << ",\n" unless methoddef.empty?
+        methoddef << dump_method(op, op_bind).chomp
       end
     end
-    return result, @types
+    result = {
+      :methoddef => methoddef,
+      :types => @types,
+      :encoded => @encoded,
+      :literal => @literal
+    }
+    result
   end
 
   def collect_rpcparameter(operation)
@@ -106,6 +117,12 @@ private
   { :request_style =>  #{sym(style.id2name)}, :request_use =>  #{sym(inputuse.id2name)},
     :response_style => #{sym(style.id2name)}, :response_use => #{sym(outputuse.id2name)} }
 __EOD__
+    if inputuse == :encoded or outputuse == :encoded
+      @encoded = true
+    end
+    if inputuse == :literal or outputuse == :literal
+      @literal = true
+    end
     if style == :rpc
       return <<__EOD__
 [ #{qname.dump},
@@ -133,16 +150,15 @@ __EOD__
     elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
       when :TYPE_STRUCT, :TYPE_EMPTY    # ToDo: empty should be treated as void.
-        type = create_class_name(part.type)
+        type = create_class_name(part.type, @modulepath)
 	[type, part.type.namespace, part.type.name]
       when :TYPE_MAP
 	[Hash.name, part.type.namespace, part.type.name]
       when :TYPE_ARRAY
 	arytype = definedtype.find_arytype || XSD::AnyTypeName
-	ns = arytype.namespace
-	name = arytype.name.sub(/\[(?:,)*\]$/, '')
-        type = create_class_name(XSD::QName.new(ns, name))
-	[type + '[]', ns, name]
+	arytypename = arytype.name.sub(/\[(?:,)*\]$/, '')
+        arytypedef = create_class_name(XSD::QName.new(nil, arytypename), @modulepath)
+	[arytypedef + '[]', part.type.namespace, part.type.name]
       else
 	raise NotImplementedError.new("must not reach here")
       end

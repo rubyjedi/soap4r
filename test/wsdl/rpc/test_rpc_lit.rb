@@ -14,6 +14,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
     def on_init
       self.generate_explicit_type = false
+      self.literal_mapping_registry = RPCLiteralTestDefinitionsMappingRegistry::LiteralRegistry
       add_rpc_operation(self, 
         XSD::QName.new(Namespace, 'echoStringArray'),
         nil,
@@ -95,8 +96,8 @@ class TestRPCLIT < Test::Unit::TestCase
   Port = 17171
 
   def setup
-    setup_server
     setup_classdef
+    setup_server
     @client = nil
   end
 
@@ -168,11 +169,11 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStringArray xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <inputStringArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <n2:inputStringArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <n2:stringItem>a</n2:stringItem>
         <n2:stringItem>b</n2:stringItem>
         <n2:stringItem>c</n2:stringItem>
-      </inputStringArray>
+      </n2:inputStringArray>
     </n1:echoStringArray>
   </env:Body>
 </env:Envelope>]
@@ -198,9 +199,11 @@ class TestRPCLIT < Test::Unit::TestCase
     drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoStringArray(ArrayOfstring["a", "b", "c"])[0]
+    assert_equal(ECHO_STRING_ARRAY_REQUEST, parse_requestxml(str),
+      [ECHO_STRING_ARRAY_REQUEST, parse_requestxml(str)].join("\n\n"))
+    assert_equal(ECHO_STRING_ARRAY_RESPONSE, parse_responsexml(str),
+      [ECHO_STRING_ARRAY_RESPONSE, parse_responsexml(str)].join("\n\n"))
     assert_equal(["a", "b", "c"], result.stringItem)
-    assert_equal(ECHO_STRING_ARRAY_REQUEST, parse_requestxml(str))
-    assert_equal(ECHO_STRING_ARRAY_RESPONSE, parse_responsexml(str))
   end
 
   ECHO_STRING_ARRAY_INLINE_REQUEST =
@@ -209,11 +212,11 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStringArrayInline xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <inputStringArray>
+      <n2:inputStringArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <stringItem>a</stringItem>
         <stringItem>b</stringItem>
         <stringItem>c</stringItem>
-      </inputStringArray>
+      </n2:inputStringArray>
     </n1:echoStringArrayInline>
   </env:Body>
 </env:Envelope>]
@@ -240,7 +243,8 @@ class TestRPCLIT < Test::Unit::TestCase
     # response contains only 1 part.
     result = drv.echoStringArrayInline(ArrayOfstringInline["a", "b", "c"])[0]
     assert_equal(["a", "b", "c"], result.stringItem)
-    assert_equal(ECHO_STRING_ARRAY_INLINE_REQUEST, parse_requestxml(str))
+    assert_equal(ECHO_STRING_ARRAY_INLINE_REQUEST, parse_requestxml(str),
+      [ECHO_STRING_ARRAY_INLINE_REQUEST, parse_requestxml(str)].join("\n\n"))
     assert_equal(ECHO_STRING_ARRAY_INLINE_RESPONSE, parse_responsexml(str))
   end
 
@@ -250,7 +254,7 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoNestedStruct xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <inputStruct xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <n2:inputStruct xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <varString>str</varString>
         <varInt>1</varInt>
         <varFloat>+1</varFloat>
@@ -259,7 +263,7 @@ class TestRPCLIT < Test::Unit::TestCase
           <varInt>1</varInt>
           <varFloat>+1</varFloat>
         </n2:structItem>
-      </inputStruct>
+      </n2:inputStruct>
     </n1:echoNestedStruct>
   </env:Body>
 </env:Envelope>]
@@ -298,7 +302,8 @@ class TestRPCLIT < Test::Unit::TestCase
     assert_equal('str', result.structItem.varString)
     assert_equal('1', result.structItem.varInt)
     assert_equal('+1', result.structItem.varFloat)
-    assert_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str))
+    assert_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str),
+      [ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str)].join("\n\n"))
     assert_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
   end
 
@@ -324,7 +329,7 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStructArray xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <inputStructArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <n2:inputStructArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <n2:structItem>
           <varString>str</varString>
           <varInt>2</varInt>
@@ -335,7 +340,7 @@ class TestRPCLIT < Test::Unit::TestCase
           <varInt>2</varInt>
           <varFloat>+2.1</varFloat>
         </n2:structItem>
-      </inputStructArray>
+      </n2:inputStructArray>
     </n1:echoStructArray>
   </env:Body>
 </env:Envelope>]
@@ -371,7 +376,8 @@ class TestRPCLIT < Test::Unit::TestCase
     # response contains only 1 part.
     e = SOAPStruct.new("str", 2, 2.1)
     result = @client.echoStructArray(ArrayOfSOAPStruct[e, e])
-    assert_equal(ECHO_STRUCT_ARRAY_REQUEST, parse_requestxml(str))
+    assert_equal(ECHO_STRUCT_ARRAY_REQUEST, parse_requestxml(str),
+      [ECHO_STRUCT_ARRAY_REQUEST, parse_requestxml(str)].join("\n\n"))
     assert_equal(ECHO_STRUCT_ARRAY_RESPONSE, parse_responsexml(str))
   end
 

@@ -17,10 +17,7 @@ module SOAP
 module Mapping
 
 
-class WSDLEncodedRegistry < Registry
-  include TraverseSupport
-  include RegistrySupport
-
+class WSDLEncodedRegistry < EncodedRegistry
   attr_reader :definedelements
   attr_reader :definedtypes
 
@@ -155,10 +152,8 @@ private
   def struct2soap(obj, type_qname, type)
     return SOAPNil.new if obj.nil?      # ToDo: check nillable.
     soap_obj = SOAPStruct.new(type_qname)
-    unless obj.nil?
-      mark_marshalled_obj(obj, soap_obj)
-      elements2soap(obj, soap_obj, type.elements)
-    end
+    mark_marshalled_obj(obj, soap_obj)
+    elements2soap(obj, soap_obj, type.elements)
     soap_obj
   end
 

@@ -26,7 +26,7 @@ class WSDLDriverFactory
 
   def initialize(wsdl)
     @wsdl = import(wsdl)
-    @methoddefcreator = WSDL::SOAP::MethodDefCreator.new(@wsdl)
+    @methoddefcreator = WSDL::SOAP::MethodDefCreator.new(@wsdl, nil)
   end
   
   def inspect

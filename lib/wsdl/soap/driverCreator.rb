@@ -8,7 +8,6 @@
 
 require 'wsdl/info'
 require 'wsdl/soap/mappingRegistryCreator'
-require 'wsdl/soap/literalMappingRegistryCreator'
 require 'wsdl/soap/methodDefCreator'
 require 'wsdl/soap/classDefCreatorSupport'
 require 'xsd/codegen'
@@ -23,19 +22,32 @@ class DriverCreator
 
   attr_reader :definitions
 
-  def initialize(definitions)
+  def initialize(definitions, modulepath = nil)
     @definitions = definitions
+    @modulepath = modulepath
   end
 
   def dump(porttype = nil)
+    result = ''
+    if @modulepath
+      result << "\n"
+      @modulepath.each do |name|
+        result << "module #{name}\n"
+      end
+    end
     if porttype.nil?
-      result = ""
       @definitions.porttypes.each do |type|
 	result << dump_porttype(type.name)
 	result << "\n"
       end
     else
-      result = dump_porttype(porttype)
+      result << dump_porttype(porttype)
+    end
+    if @modulepath
+      result << "\n"
+      @modulepath.each do |name|
+        result << "end\n"
+      end
     end
     result
   end
@@ -44,9 +56,8 @@ private
 
   def dump_porttype(porttype)
     class_name = create_class_name(porttype)
-    methoddef, methodtypes = MethodDefCreator.new(@definitions).dump(porttype)
-    mr_creator = MappingRegistryCreator.new(@definitions)
-    literal_mr_creator = LiteralMappingRegistryCreator.new(@definitions)
+    result = MethodDefCreator.new(@definitions, @modulepath).dump(porttype)
+    methoddef = result[:methoddef]
     binding = @definitions.bindings.find { |item| item.type == porttype }
     if binding.nil? or binding.soapbinding.nil?
       # not bind or not a SOAP binding
@@ -56,25 +67,20 @@ private
 
     c = XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
     c.def_require("soap/rpc/driver")
-    #c.def_const("EncodedMappingRegistry", "::SOAP::Mapping::EncodedRegistry.new")
-    c.def_const("MappingRegistry", "::SOAP::Mapping::EncodedRegistry.new")
-    #c.def_const("LiteralMappingRegistry", "::SOAP::Mapping::LiteralRegistry.new")
     c.def_const("DefaultEndpointUrl", ndq(address))
-    c.def_code(mr_creator.dump(methodtypes))
-    #c.def_code(literal_mr_creator.dump)
     c.def_code <<-EOD
 Methods = [
 #{methoddef.gsub(/^/, "  ")}
 ]
     EOD
-        #self.literal_mapping_registry = LiteralMappingRegistry
+    wsdl_name = @definitions.name ? @definitions.name.name : 'default'
+    mrname = safeconstname(wsdl_name + 'MappingRegistry')
     c.def_method("initialize", "endpoint_url = nil") do
-      <<-EOD
-        endpoint_url ||= DefaultEndpointUrl
-        super(endpoint_url, nil)
-        self.mapping_registry = MappingRegistry
-        init_methods
-      EOD
+      %Q[endpoint_url ||= DefaultEndpointUrl\n] +
+      %Q[super(endpoint_url, nil)\n] +
+      %Q[self.mapping_registry = #{mrname}::EncodedRegistry\n] +
+      %Q[self.literal_mapping_registry = #{mrname}::LiteralRegistry\n] +
+      %Q[init_methods]
     end
     c.def_privatemethod("init_methods") do
       <<-EOD

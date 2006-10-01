@@ -16,10 +16,10 @@ class TestSOAPTYPE < Test::Unit::TestCase
 
     def on_init
       #self.generate_explicit_type = false
-      add_rpc_method(self, 'echo', 'arg')
+      add_rpc_method(self, 'echo_soaptype', 'arg')
     end
   
-    def echo(arg)
+    def echo_soaptype(arg)
       res = Wrapper.new
       res.short = SOAPShort.new(arg.short)
       res.long = SOAPLong.new(arg.long)
@@ -57,6 +57,7 @@ class TestSOAPTYPE < Test::Unit::TestCase
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
     gen.opt['force'] = true
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.run
     require pathname('echo')
   end
@@ -84,7 +85,7 @@ SOAPTYPE_WSDL_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
-    <n1:echo xmlns:n1="urn:soaptype"
+    <n1:echo_soaptype xmlns:n1="urn:soaptype"
         env:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
       <arg xmlns:n2="urn:soaptype-type"
           xsi:type="n2:wrapper">
@@ -92,7 +93,7 @@ SOAPTYPE_WSDL_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
         <long xsi:type="xsd:long">456</long>
         <double xsi:type="xsd:double">+789</double>
       </arg>
-    </n1:echo>
+    </n1:echo_soaptype>
   </env:Body>
 </env:Envelope>]
 
@@ -101,14 +102,14 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
-    <n1:echo xmlns:n1="urn:soaptype"
+    <n1:echo_soaptype xmlns:n1="urn:soaptype"
         env:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
       <arg xsi:type="xsd:anyType">
         <short xsi:type="xsd:short">123</short>
         <long xsi:type="xsd:long">456</long>
         <double xsi:type="xsd:double">+789</double>
       </arg>
-    </n1:echo>
+    </n1:echo_soaptype>
   </env:Body>
 </env:Envelope>]
 
@@ -122,7 +123,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     arg.short = 123
     arg.long = 456
     arg.double = 789
-    res = @client.echo(arg)
+    res = @client.echo_soaptype(arg)
 
     assert_equal(123, res.short)
     assert_equal(456, res.long)
@@ -134,14 +135,14 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
   def test_native
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/", 'urn:soaptype')
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.add_method('echo', 'arg')
+    @client.add_method('echo_soaptype', 'arg')
     @client.wiredump_dev = str = ''
 
     arg = ::Struct.new(:short, :long, :double).new
     arg.short = SOAPShort.new(123)
     arg.long = SOAPLong.new(456)
     arg.double = SOAPDouble.new(789)
-    res = @client.echo(arg)
+    res = @client.echo_soaptype(arg)
 
     assert_equal(123, res.short)
     assert_equal(456, res.long)

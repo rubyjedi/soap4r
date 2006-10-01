@@ -19,8 +19,7 @@ class WSDLMarshaller
   end
 
   def dump(obj, io = nil)
-    type = Mapping.class2element(obj.class)
-    ele =  Mapping.obj2soap(obj, @mapping_registry, type)
+    ele =  Mapping.obj2soap(obj, @mapping_registry)
     ele.elename = ele.type
     Processor.marshal(SOAPEnvelope.new(nil, SOAPBody.new(ele)), @opt, io)
   end

@@ -1,17 +1,9 @@
 require 'echo_version.rb'
-
+require 'echo_versionMappingRegistry.rb'
 require 'soap/rpc/driver'
 
 class Echo_version_port_type < ::SOAP::RPC::Driver
   DefaultEndpointUrl = "http://localhost:10080"
-  MappingRegistry = ::SOAP::Mapping::EncodedRegistry.new
-
-  MappingRegistry.set(
-    Version_struct,
-    ::SOAP::SOAPStruct,
-    ::SOAP::Mapping::EncodedRegistry::TypedStructFactory,
-    { :type => XSD::QName.new("urn:example.com:simpletype-rpc-type", "version_struct") }
-  )
 
   Methods = [
     [ XSD::QName.new("urn:example.com:simpletype-rpc", "echo_version"),
@@ -35,7 +27,8 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
   def initialize(endpoint_url = nil)
     endpoint_url ||= DefaultEndpointUrl
     super(endpoint_url, nil)
-    self.mapping_registry = MappingRegistry
+    self.mapping_registry = Echo_versionMappingRegistry::EncodedRegistry
+    self.literal_mapping_registry = Echo_versionMappingRegistry::LiteralRegistry
     init_methods
   end
 

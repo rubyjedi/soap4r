@@ -43,16 +43,21 @@ class WSDL2Ruby
 private
 
   def initialize
+    @modulepath = nil
     @location = nil
     @opt = {}
     @logger = Logger.new(STDERR)
     @basedir = nil
     @wsdl = nil
     @name = nil
+    @classdef_filename = nil
+    @mr_filename = nil
   end
 
   def create_file
+    @modulepath = @opt['module_path']
     create_classdef if @opt.key?('classdef')
+    create_mapping_registry if @opt.key?('mapping_registry') or @opt.key?('driver')
     create_servant_skelton(@opt['servant_skelton']) if @opt.key?('servant_skelton')
     create_cgi_stub(@opt['cgi_stub']) if @opt.key?('cgi_stub')
     create_standalone_server_stub(@opt['standalone_server_stub']) if @opt.key?('standalone_server_stub')
@@ -65,7 +70,17 @@ private
     @classdef_filename = @name + '.rb'
     check_file(@classdef_filename) or return
     write_file(@classdef_filename) do |f|
-      f << WSDL::SOAP::ClassDefCreator.new(@wsdl).dump
+      f << WSDL::SOAP::ClassDefCreator.new(@wsdl, @modulepath).dump
+    end
+  end
+
+  def create_mapping_registry
+    @logger.info { "Creating mapping registry definition." }
+    @mr_filename = @name + 'MappingRegistry.rb'
+    check_file(@mr_filename) or return
+    write_file(@mr_filename) do |f|
+      f << "require '#{@classdef_filename}'\n" if @classdef_filename
+      f << WSDL::SOAP::MappingRegistryCreator.new(@wsdl, @modulepath).dump
     end
   end
 
@@ -77,7 +92,7 @@ private
     write_file(@client_skelton_filename) do |f|
       f << shbang << "\n"
       f << "require '#{@driver_filename}'\n\n" if @driver_filename
-      f << WSDL::SOAP::ClientSkeltonCreator.new(@wsdl).dump(
+      f << WSDL::SOAP::ClientSkeltonCreator.new(@wsdl, @modulepath).dump(
 	create_name(servicename))
     end
   end
@@ -88,7 +103,7 @@ private
     check_file(@servant_skelton_filename) or return
     write_file(@servant_skelton_filename) do |f|
       f << "require '#{@classdef_filename}'\n\n" if @classdef_filename
-      f << WSDL::SOAP::ServantSkeltonCreator.new(@wsdl).dump(
+      f << WSDL::SOAP::ServantSkeltonCreator.new(@wsdl, @modulepath).dump(
 	create_name(porttypename))
     end
   end
@@ -100,10 +115,9 @@ private
     check_file(@cgi_stubFilename) or return
     write_file(@cgi_stubFilename) do |f|
       f << shbang << "\n"
-      if @servant_skelton_filename
-	f << "require '#{@servant_skelton_filename}'\n\n"
-      end
-      f << WSDL::SOAP::CGIStubCreator.new(@wsdl).dump(create_name(servicename))
+      f << "require '#{@servant_skelton_filename}'\n" if @servant_skelton_filename
+      f << "require '#{@mr_filename}'\n" if @mr_filename
+      f << WSDL::SOAP::CGIStubCreator.new(@wsdl, @modulepath).dump(create_name(servicename))
     end
   end
 
@@ -114,8 +128,9 @@ private
     check_file(@standalone_server_stub_filename) or return
     write_file(@standalone_server_stub_filename) do |f|
       f << shbang << "\n"
-      f << "require '#{@servant_skelton_filename}'\n\n" if @servant_skelton_filename
-      f << WSDL::SOAP::StandaloneServerStubCreator.new(@wsdl).dump(
+      f << "require '#{@servant_skelton_filename}'\n" if @servant_skelton_filename
+      f << "require '#{@mr_filename}'\n" if @mr_filename
+      f << WSDL::SOAP::StandaloneServerStubCreator.new(@wsdl, @modulepath).dump(
 	create_name(servicename))
     end
   end
@@ -125,8 +140,9 @@ private
     @driver_filename = (porttypename || @name) + 'Driver.rb'
     check_file(@driver_filename) or return
     write_file(@driver_filename) do |f|
-      f << "require '#{@classdef_filename}'\n\n" if @classdef_filename
-      f << WSDL::SOAP::DriverCreator.new(@wsdl).dump(
+      f << "require '#{@classdef_filename}'\n" if @classdef_filename
+      f << "require '#{@mr_filename}'\n" if @mr_filename
+      f << WSDL::SOAP::DriverCreator.new(@wsdl, @modulepath).dump(
 	create_name(porttypename))
     end
   end

@@ -10,8 +10,10 @@ private
 
   OptSet = [
     ['--wsdl','-w', GetoptLong::REQUIRED_ARGUMENT],
+    ['--module_path','-m', GetoptLong::REQUIRED_ARGUMENT],
     ['--type','-t', GetoptLong::REQUIRED_ARGUMENT],
     ['--classdef','-e', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--mapping_registry','-r', GetoptLong::OPTIONAL_ARGUMENT],
     ['--client_skelton','-c', GetoptLong::OPTIONAL_ARGUMENT],
     ['--servant_skelton','-s', GetoptLong::OPTIONAL_ARGUMENT],
     ['--cgi_stub','-g', GetoptLong::OPTIONAL_ARGUMENT],
@@ -59,18 +61,22 @@ Options:
   --type server|client
     --type server implies;
   	--classdef
+        --mapping_registry
    	--servant_skelton
     	--standalone_server_stub
     --type client implies;
      	--classdef
+        --mapping_registry
       	--client_skelton
        	--driver
   --classdef
+  --mapping_registry
   --client_skelton [servicename]
   --servant_skelton [porttypename]
   --cgi_stub [servicename]
   --standalone_server_stub [servicename]
   --driver [porttypename]
+  --module_path [Module::Path::Name]
   --force
   --quiet
 
@@ -91,21 +97,27 @@ __EOU__
        	case name
 	when "--wsdl"
 	  wsdl = arg
+        when "--module_path"
+          opt['module_path'] = arg
 	when "--type"
   	  case arg
   	  when "server"
   	    opt['classdef'] = nil
+  	    opt['mapping_registry'] = nil
   	    opt['servant_skelton'] = nil
   	    opt['standalone_server_stub'] = nil
   	  when "client"
   	    opt['classdef'] = nil
+  	    opt['mapping_registry'] = nil
   	    opt['driver'] = nil
   	    opt['client_skelton'] = nil
   	  else
   	    raise ArgumentError.new("Unknown type #{ arg }")
   	  end
-   	when "--classdef", "--client_skelton", "--servant_skelton",
-	    "--cgi_stub", "--standalone_server_stub", "--driver"
+   	when "--classdef", "--mapping_registry",
+            "--client_skelton", "--servant_skelton",
+            "--cgi_stub", "--standalone_server_stub",
+            "--driver"
   	  opt[name.sub(/^--/, '')] = arg.empty? ? nil : arg
 	when "--force"
 	  opt['force'] = true

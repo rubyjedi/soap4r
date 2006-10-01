@@ -8,7 +8,6 @@
 
 require 'soap/baseData'
 require 'soap/mapping/mapping'
-require 'soap/mapping/encodedregistry.rb'
 
 
 module SOAP
@@ -178,6 +177,44 @@ class MappingError < Error; end
 module RegistrySupport
   def initialize
     super()
+    @class_schema_definition = {}
+    @elename_schema_definition = {}
+    @type_schema_definition = {}
+  end
+
+  def register(definition)
+    obj_class = definition[:class]
+    definition = Mapping.create_schema_definition(obj_class, definition)
+    @class_schema_definition[obj_class] = definition
+    if definition.name
+      qname = XSD::QName.new(definition.ns, definition.name)
+      @elename_schema_definition[qname] = definition
+    end
+    if definition.type
+      qname = XSD::QName.new(definition.ns, definition.type)
+      @type_schema_definition[qname] = definition
+    end
+  end
+
+  def schema_definition_from_class(klass)
+    @class_schema_definition[klass] || Mapping.schema_definition_classdef(klass)
+  end
+
+  def schema_definition_from_elename(qname)
+    @elename_schema_definition[qname] || find_schema_definition(qname.name)
+  end
+
+  def schema_definition_from_type(type)
+    @type_schema_definition[type] || find_schema_definition(type.name)
+  end
+
+  def find_schema_definition(name)
+    return nil unless name
+    typestr = XSD::CodeGen::GenSupport.safeconstname(name)
+    obj_class = Mapping.class_from_name(typestr)
+    if obj_class
+      schema_definition_from_class(obj_class)
+    end
   end
   
   def add_attributes2soap(obj, ele)
@@ -208,11 +245,6 @@ module RegistrySupport
     soap_obj
   end
 end
-
-
-Registry = EncodedRegistry
-DefaultRegistry = EncodedRegistry.new
-RubyOriginalRegistry = EncodedRegistry.new(:allow_original_mapping => true)
 
 
 end

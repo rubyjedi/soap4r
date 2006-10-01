@@ -20,6 +20,7 @@ class TestArray < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echo'),
         XSD::QName.new(Namespace, 'echoResponse')
       )
+      self.literal_mapping_registry = DoubleMappingRegistry::LiteralRegistry
     end
   
     def echo(arg)
@@ -32,8 +33,8 @@ class TestArray < Test::Unit::TestCase
   Port = 17171
 
   def setup
-    setup_server
     setup_classdef
+    setup_server
     @client = nil
   end
 
@@ -55,9 +56,17 @@ class TestArray < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
     gen.opt['force'] = true
     gen.run
-    require pathname('double')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require pathname('double')
+      require pathname('doubleMappingRegistry')
+    ensure
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server
@@ -82,6 +91,7 @@ class TestArray < Test::Unit::TestCase
     wsdl = File.join(DIR, 'double.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.literal_mapping_registry = DoubleMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
     arg = ArrayOfDouble[0.1, 0.2, 0.3]
     assert_equal(arg, @client.echo(Echo.new(arg)).ary)
@@ -91,9 +101,10 @@ class TestArray < Test::Unit::TestCase
     wsdl = File.join(DIR, 'double.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.literal_mapping_registry = DoubleMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
-    arg = {:ary => [0.1, 0.2, 0.3]}
-    assert_equal(arg[:ary], @client.echo(arg).ary)
+    arg = {:ary => {:double => [0.1, 0.2, 0.3]}}
+    assert_equal(arg[:ary][:double], @client.echo(arg).ary)
   end
 end
 

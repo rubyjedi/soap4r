@@ -1,12 +1,9 @@
 #!/usr/bin/env ruby
 require 'echoServant.rb'
-
+require 'echoMappingRegistry.rb'
 require 'soap/rpc/standaloneServer'
-require 'soap/mapping/registry'
 
 class Echo_port_type
-  MappingRegistry = ::SOAP::Mapping::EncodedRegistry.new
-
   Methods = [
     [ "urn:example.com:echo",
       "echo",
@@ -30,7 +27,8 @@ class Echo_port_typeApp < ::SOAP::RPC::StandaloneServer
         @router.add_rpc_operation(servant, *definitions)
       end
     end
-    self.mapping_registry = Echo_port_type::MappingRegistry
+    self.mapping_registry = EchoMappingRegistry::EncodedRegistry
+    self.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
   end
 end
 
