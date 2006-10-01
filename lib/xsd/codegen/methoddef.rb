@@ -21,7 +21,14 @@ class MethodDef
   attr_accessor :definition
 
   def initialize(name, *params)
-    unless safemethodname?(name)
+    klass, mname = name.split('.', 2)
+    if mname.nil?
+      mname, klass = klass, mname
+    end
+    unless safemethodname?(mname)
+      raise ArgumentError.new("name '#{name}' seems to be unsafe")
+    end
+    if klass and klass != 'self' and !safeconstname(klass)
       raise ArgumentError.new("name '#{name}' seems to be unsafe")
     end
     @name = name

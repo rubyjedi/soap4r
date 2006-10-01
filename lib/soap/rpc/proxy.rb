@@ -463,11 +463,13 @@ private
 
     def request_rpc_lit(values, mapping_registry, opt)
       method = @rpc_method_factory.dup
+      names = method.input_params
+      types = method.get_paramtypes(names)
       params = {}
       idx = 0
-      method.input_params.each do |name|
+      names.each do |name|
         params[name] = Mapping.obj2soap(values[idx], mapping_registry, 
-          XSD::QName.new(nil, name), opt)
+          types[idx] || XSD::QName.new, opt)
         idx += 1
       end
       method.set_param(params)

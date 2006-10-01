@@ -127,6 +127,16 @@ class SOAPMethod < SOAPStruct
     end
   end
 
+  def get_paramtypes(names)
+    types = []
+    @signature.each do |io_type, name, param_type|
+      if param_type && idx = names.index(name)
+        types[idx] = XSD::QName.new(param_type[1], param_type[2])
+      end
+    end
+    types
+  end
+
   def SOAPMethod.param_count(param_def, *type)
     count = 0
     param_def.each do |io_type, name, param_type|

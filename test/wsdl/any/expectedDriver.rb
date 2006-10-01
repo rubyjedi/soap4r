@@ -1,10 +1,9 @@
 require 'echo.rb'
-
+require 'echoMappingRegistry.rb'
 require 'soap/rpc/driver'
 
 class Echo_port_type < ::SOAP::RPC::Driver
   DefaultEndpointUrl = "http://localhost:10080"
-  MappingRegistry = ::SOAP::Mapping::EncodedRegistry.new
 
   Methods = [
     [ "urn:example.com:echo",
@@ -19,7 +18,8 @@ class Echo_port_type < ::SOAP::RPC::Driver
   def initialize(endpoint_url = nil)
     endpoint_url ||= DefaultEndpointUrl
     super(endpoint_url, nil)
-    self.mapping_registry = MappingRegistry
+    self.mapping_registry = EchoMappingRegistry::EncodedRegistry
+    self.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     init_methods
   end
 

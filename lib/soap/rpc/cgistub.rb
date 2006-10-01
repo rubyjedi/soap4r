@@ -93,8 +93,16 @@ class CGIStub < Logger::Application
     @router.mapping_registry
   end
 
-  def mapping_registry=(value)
-    @router.mapping_registry = value
+  def mapping_registry=(mapping_registry)
+    @router.mapping_registry = mapping_registry
+  end
+
+  def literal_mapping_registry
+    @router.literal_mapping_registry
+  end
+
+  def literal_mapping_registry=(literal_mapping_registry)
+    @router.literal_mapping_registry = literal_mapping_registry
   end
 
   def generate_explicit_type

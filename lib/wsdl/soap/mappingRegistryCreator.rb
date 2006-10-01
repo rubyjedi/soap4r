@@ -1,5 +1,5 @@
 # WSDL4R - Creating MappingRegistry code from WSDL.
-# Copyright (C) 2002, 2003, 2005, 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2006  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -8,6 +8,8 @@
 
 require 'wsdl/info'
 require 'wsdl/soap/classDefCreatorSupport'
+require 'wsdl/soap/encodedMappingRegistryCreator'
+require 'wsdl/soap/literalMappingRegistryCreator'
 
 
 module WSDL
@@ -19,71 +21,30 @@ class MappingRegistryCreator
 
   attr_reader :definitions
 
-  def initialize(definitions)
+  def initialize(definitions, modulepath = nil)
     @definitions = definitions
-    @complextypes = @definitions.collect_complextypes
-    @types = nil
+    @modulepath = modulepath
   end
 
-  def dump(types)
-    @types = types
-    map_cache = []
-    map = ""
-    @types.each do |type|
-      if map_cache.index(type).nil?
-	map_cache << type
-	if type.namespace != XSD::Namespace
-	  if typemap = dump_typemap(type)
-            map << typemap
-          end
-	end
-      end
+  def dump
+    encoded_creator = EncodedMappingRegistryCreator.new(@definitions, @modulepath)
+    literal_creator = LiteralMappingRegistryCreator.new(@definitions, @modulepath)
+    wsdl_name = @definitions.name ? @definitions.name.name : 'default'
+    module_name = safeconstname(wsdl_name + 'MappingRegistry')
+    if @modulepath
+      module_name = [@modulepath, module_name].join('::')
     end
-    return map
-  end
-
-private
-
-  def dump_typemap(type)
-    if definedtype = @complextypes[type]
-      case definedtype.compoundtype
-      when :TYPE_STRUCT
-        dump_struct_typemap(definedtype)
-      when :TYPE_ARRAY
-        dump_array_typemap(definedtype)
-      when :TYPE_MAP, :TYPE_EMPTY
-        nil
-      else
-        raise NotImplementedError.new("must not reach here")
-      end
-    end
-  end
-
-  def dump_struct_typemap(definedtype)
-    ele = definedtype.name
-    return <<__EOD__
-MappingRegistry.set(
-  #{create_class_name(ele)},
-  ::SOAP::SOAPStruct,
-  ::SOAP::Mapping::EncodedRegistry::TypedStructFactory,
-  { :type => #{dqname(ele)} }
-)
-__EOD__
-  end
-
-  def dump_array_typemap(definedtype)
-    ele = definedtype.name
-    arytype = definedtype.find_arytype || XSD::AnyTypeName
-    type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
-    @types << type
-    return <<__EOD__
-MappingRegistry.set(
-  #{create_class_name(ele)},
-  ::SOAP::SOAPArray,
-  ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
-  { :type => #{dqname(type)} }
-)
-__EOD__
+    m = XSD::CodeGen::ModuleDef.new(module_name)
+    m.def_require("soap/mapping")
+    varname = 'EncodedRegistry'
+    methodname = 'define_encoded_mapping'
+    m.def_const(varname, '::SOAP::Mapping::EncodedRegistry.new')
+    m.def_code(encoded_creator.dump(varname))
+    varname = 'LiteralRegistry'
+    methodname = 'define_literal_mapping'
+    m.def_const(varname, '::SOAP::Mapping::LiteralRegistry.new')
+    m.def_code(literal_creator.dump(varname))
+    m.dump
   end
 end
 

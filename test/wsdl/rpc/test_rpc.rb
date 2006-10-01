@@ -13,6 +13,7 @@ class TestRPC < Test::Unit::TestCase
     def on_init
       add_rpc_method(self, 'echo', 'arg1', 'arg2')
       add_rpc_method(self, 'echo_err', 'arg1', 'arg2')
+      self.mapping_registry = Prefix::EchoMappingRegistry::EncodedRegistry
     end
   
     DummyPerson = Struct.new("family-name".intern, :Given_name)
@@ -22,23 +23,26 @@ class TestRPC < Test::Unit::TestCase
       else
         self.generate_explicit_type = false
       end
+      ret = nil
       case arg1.family_name
       when 'normal'
         arg1.family_name = arg2.family_name
         arg1.given_name = arg2.given_name
         arg1.age = arg2.age
-        arg1
+        ret = arg1
       when 'dummy'
-        DummyPerson.new("family-name", "given_name")
+        ret = DummyPerson.new("family-name", "given_name")
       when 'nil'
-        Person.new(nil, nil)
+        ret = Prefix::Person.new(nil, nil)
       else
         raise
       end
+      ret
     end
   
     ErrPerson = Struct.new(:Given_name, :no_such_element)
     def echo_err(arg1, arg2)
+      self.generate_explicit_type = false
       ErrPerson.new(58, Time.now)
     end
   end
@@ -48,15 +52,18 @@ class TestRPC < Test::Unit::TestCase
   Port = 17171
 
   def setup
-    setup_server
     setup_classdef
+    setup_server
     @client = nil
   end
 
   def teardown
     teardown_server
-    File.unlink(pathname('echo.rb')) unless $DEBUG
-    File.unlink(pathname('echoDriver.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('echo.rb'))
+      File.unlink(pathname('echoMappingRegistry.rb'))
+      File.unlink(pathname('echoDriver.rb'))
+    end
     @client.reset_stream if @client
   end
 
@@ -67,6 +74,9 @@ class TestRPC < Test::Unit::TestCase
   end
 
   def setup_classdef
+    if ::Object.constants.include?("Echo")
+      ::Object.instance_eval { remove_const("Echo") }
+    end
     gen = WSDL::SOAP::WSDL2Ruby.new
     gen.location = pathname("rpc.wsdl")
     gen.basedir = DIR
@@ -74,11 +84,13 @@ class TestRPC < Test::Unit::TestCase
     gen.opt['classdef'] = nil
     gen.opt['driver'] = nil
     gen.opt['force'] = true
+    gen.opt['module_path'] = 'Prefix'
     gen.run
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
       require pathname('echo.rb')
+      require pathname('echoMappingRegistry.rb')
       require pathname('echoDriver.rb')
     ensure
       Dir.chdir(backupdir)
@@ -107,43 +119,50 @@ class TestRPC < Test::Unit::TestCase
     wsdl = File.join(DIR, 'rpc.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = STDOUT if $DEBUG
+    @client.wiredump_dev = STDERR if $DEBUG
 
-    ret = @client.echo(Person.new("normal", "", 12, Gender::F), Person.new("Hi", "Na", 21, Gender::M))
-    assert_equal(Person, ret.class)
+    ret = @client.echo(Prefix::Person.new("normal", "typed", 12, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", 21, Prefix::Gender::M))
     assert_equal("Hi", ret.family_name)
     assert_equal("Na", ret.given_name)
     assert_equal(21, ret.age)
 
-    ret = @client.echo(Person.new("dummy", "", 12, Gender::F), Person.new("Hi", "Na", 21, Gender::M))
-    assert_equal(Person, ret.class)
+    ret = @client.echo(Prefix::Person.new("normal", "untyped", 12, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", 21, Prefix::Gender::M))
+    assert_equal("Hi", ret.family_name)
+    assert_equal("Na", ret.given_name)
+    # XXX WSDLEncodedRegistry should decode unteyped element using Schema
+    assert_equal("21", ret.age)
+
+    ret = @client.echo(Prefix::Person.new("dummy", "typed", 12, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", 21, Prefix::Gender::M))
     assert_equal("family-name", ret.family_name)
     assert_equal("given_name", ret.given_name)
-    assert_equal(nil, ret.age)
 
-    ret = @client.echo_err(Person.new("Na", "Hi", nil, Gender::F), Person.new("Hi", "Na", nil, Gender::M))
-    assert_equal(Person, ret.class)
+    ret = @client.echo_err(Prefix::Person.new("Na", "Hi", nil, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", nil, Prefix::Gender::M))
     assert_equal("58", ret.given_name)
-    assert_equal(nil, ret.family_name)
-    assert_equal(nil, ret.age)
   end
 
   def test_stub
-    @client = Echo_port_type.new("http://localhost:#{Port}/")
-    @client.wiredump_dev = STDOUT if $DEBUG
+    @client = Prefix::Echo_port_type.new("http://localhost:#{Port}/")
+    @client.mapping_registry = Prefix::EchoMappingRegistry::EncodedRegistry
+    @client.wiredump_dev = STDERR if $DEBUG
 
-    ret = @client.echo(Person.new("normal", "typed", 12, Gender::F), Person.new("Hi", "Na", 21, Gender::M))
-    assert_equal(Person, ret.class)
+    ret = @client.echo(Prefix::Person.new("normal", "typed", 12, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", 21, Prefix::Gender::M))
+    assert_equal(Prefix::Person, ret.class)
+    assert_equal("Hi", ret.family_name)
+    assert_equal("Na", ret.given_name)
+    assert_equal(21, ret.age)
+
+    ret = @client.echo(Prefix::Person.new("normal", "untyped", 12, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", 21, Prefix::Gender::M))
+    assert_equal(Prefix::Person, ret.class)
     assert_equal("Hi", ret.family_name)
     assert_equal("Na", ret.given_name)
     assert_equal(21, ret.age)
   end
 
   def test_stub_nil
-    @client = Echo_port_type.new("http://localhost:#{Port}/")
+    @client = Prefix::Echo_port_type.new("http://localhost:#{Port}/")
     @client.wiredump_dev = STDOUT if $DEBUG
 
-    ret = @client.echo(Person.new("nil", "", 12, Gender::F), Person.new("Hi", "Na", 21, Gender::M))
+    ret = @client.echo(Prefix::Person.new("nil", "", 12, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", 21, Prefix::Gender::M))
     assert_nil(ret.family_name)
     assert_nil(ret.given_name)
     assert_nil(ret.age)

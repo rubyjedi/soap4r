@@ -19,11 +19,16 @@ module SOAP
 module ClassDefCreatorSupport
   include XSD::CodeGen::GenSupport
 
-  def create_class_name(qname)
+  def create_class_name(qname, modulepath = nil)
     if klass = basetype_mapped_class(qname)
       ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass).name
     else
-      safeconstname(qname.name)
+      name = safeconstname(qname.name)
+      if modulepath
+        [modulepath, name].join('::')
+      else
+        name
+      end
     end
   end
 

@@ -27,22 +27,6 @@ class LiteralRegistry
     super()
     @excn_handler_obj2soap = nil
     @excn_handler_soap2obj = nil
-    @class_schema_definition = {}
-    @elename_schema_definition = {}
-    @type_schema_definition = {}
-  end
-
-  def add(obj_class, definition)
-    definition = Mapping.create_schema_definition(obj_class, definition)
-    @class_schema_definition[obj_class] = definition
-    if definition.name
-      qname = XSD::QName.new(definition.ns, definition.name)
-      @elename_schema_definition[qname] = definition
-    end
-    if definition.type
-      qname = XSD::QName.new(definition.ns, definition.type)
-      @type_schema_definition[qname] = definition
-    end
   end
 
   def obj2soap(obj, qname)
@@ -77,11 +61,7 @@ class LiteralRegistry
       rescue Exception
       end
     end
-    if node.respond_to?(:type)
-      raise MappingError.new("cannot map #{node.type.name} to Ruby object")
-    else
-      raise MappingError.new("cannot map #{node.elename.name} to Ruby object")
-    end
+    raise MappingError.new("cannot map #{node.elename.name}/#{node.type.name} to Ruby object")
   end
 
 private
@@ -151,6 +131,13 @@ private
         obj.each do |item|
           ele.add(obj2soap(item, eledef.elename))
         end
+      end
+    end
+    if definition.attributes
+      definition.attributes.each do |qname, param|
+        at = obj.__send__(
+          XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
+        ele.extraattr[qname] = at
       end
     end
     ele
@@ -335,26 +322,6 @@ private
           @__xmlattr
         end
       EOS
-    end
-  end
-
-  def schema_definition_from_class(klass)
-    @class_schema_definition[klass] || Mapping.schema_definition_classdef(klass)
-  end
-
-  def schema_definition_from_elename(qname)
-    @elename_schema_definition[qname] || find_schema_definition(qname.name)
-  end
-
-  def schema_definition_from_type(type)
-    @type_schema_definition[type] || find_schema_definition(type.name)
-  end
-
-  def find_schema_definition(name)
-    typestr = XSD::CodeGen::GenSupport.safeconstname(name)
-    obj_class = Mapping.class_from_name(typestr)
-    if obj_class
-      schema_definition_from_class(obj_class)
     end
   end
 end

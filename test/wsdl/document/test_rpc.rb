@@ -20,6 +20,7 @@ class TestRPC < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echo'),
         XSD::QName.new(Namespace, 'echo_response')
       )
+      self.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     end
   
     def echo(arg)
@@ -44,8 +45,8 @@ class TestRPC < Test::Unit::TestCase
   Port = 17171
 
   def setup
-    setup_server
     setup_classdef
+    setup_server
     @client = nil
   end
 
@@ -67,9 +68,18 @@ class TestRPC < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['force'] = true
     gen.run
-    require pathname('echo')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require pathname('echo')
+      require pathname('echoMappingRegistry')
+    ensure
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server
@@ -95,6 +105,7 @@ class TestRPC < Test::Unit::TestCase
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
+    @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
 
     struct1 = Echo_struct.new("mystring1", now1 = Time.now)
     struct1.xmlattr_m_attr = 'myattr1'
@@ -136,6 +147,7 @@ class TestRPC < Test::Unit::TestCase
     @client.add_document_method('echo', 'urn:docrpc:echo',
       XSD::QName.new('urn:docrpc', 'echoele'),
       XSD::QName.new('urn:docrpc', 'echo_response'))
+    @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
 
     echo = SOAPElement.new('foo')

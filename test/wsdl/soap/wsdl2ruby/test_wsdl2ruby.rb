@@ -57,12 +57,7 @@ private
   end
 
   def compare(expected, actual)
-    begin
-      assert_equal(loadfile(expected), loadfile(actual), expected)
-    rescue
-      puts `diff -U 2 -p #{expected} #{actual}`
-      raise
-    end
+    assert_equal(loadfile(expected), loadfile(actual), expected)
   end
 
   def loadfile(file)

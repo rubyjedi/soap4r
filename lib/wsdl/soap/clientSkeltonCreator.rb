@@ -19,18 +19,29 @@ class ClientSkeltonCreator
 
   attr_reader :definitions
 
-  def initialize(definitions)
+  def initialize(definitions, modulepath = nil)
     @definitions = definitions
+    @modulepath = modulepath
   end
 
   def dump(service_name)
-    result = ""
     services = @definitions.service(service_name)
     unless services
       raise RuntimeError.new("service not defined: #{service_name}")
     end
+    result = ""
+    if @modulepath
+      result << "\n"
+      result << @modulepath.collect { |ele| "module #{ele}" }.join("; ")
+      result << "\n\n"
+    end
     services.ports.each do |port|
       result << dump_porttype(port.porttype.name)
+      result << "\n"
+    end
+    if @modulepath
+      result << "\n\n"
+      result << @modulepath.collect { |ele| "end" }.join("; ")
       result << "\n"
     end
     result

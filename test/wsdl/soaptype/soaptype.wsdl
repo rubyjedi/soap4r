@@ -27,7 +27,7 @@
   </message>
 
   <portType name="echo_port_type">
-    <operation name="echo">
+    <operation name="echo_soaptype">
       <input message="tns:echo_in"/>
       <output message="tns:echo_out"/>
     </operation>
@@ -40,7 +40,7 @@
 
   <binding name="echo_binding" type="tns:echo_port_type">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
-    <operation name="echo">
+    <operation name="echo_soaptype">
       <soap:operation soapAction=""/>
       <input>
         <soap:body use="encoded" namespace="urn:soaptype"

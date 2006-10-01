@@ -54,9 +54,17 @@ class TestEcho < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
     gen.opt['force'] = true
     gen.run
-    require pathname('complexContent')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require pathname('complexContent')
+      require pathname('complexContentMappingRegistry')
+    ensure
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server
@@ -81,6 +89,7 @@ class TestEcho < Test::Unit::TestCase
     wsdl = File.join(DIR, 'complexContent.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.literal_mapping_registry = ComplexContentMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
     d = Derived.new
     d.name = "NaHi"

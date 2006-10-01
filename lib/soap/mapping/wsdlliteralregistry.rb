@@ -36,7 +36,7 @@ class WSDLLiteralRegistry < LiteralRegistry
     elsif eledef = @definedelements[qname]
       soap_obj = obj2elesoap(obj, eledef)
     elsif type = @definedtypes[qname]
-      soap_obj = obj2typesoap(obj, type, true)
+      soap_obj = obj2typesoap(obj, type)
     else
       soap_obj = any2soap(obj, qname)
     end

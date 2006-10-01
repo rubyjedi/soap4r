@@ -47,6 +47,9 @@ end
 
 
 class EncodedRegistry
+  include TraverseSupport
+  include RegistrySupport
+
   class Map
     def initialize(registry)
       @obj2soap = {}
@@ -136,7 +139,8 @@ class EncodedRegistry
     [::NilClass,     ::SOAP::SOAPNil,        BasetypeFactory],
     [::TrueClass,    ::SOAP::SOAPBoolean,    BasetypeFactory],
     [::FalseClass,   ::SOAP::SOAPBoolean,    BasetypeFactory],
-    [::String,       ::SOAP::SOAPString,     StringFactory],
+    [::String,       ::SOAP::SOAPString,     StringFactory,
+      {:derived_class => true}],
     [::DateTime,     ::SOAP::SOAPDateTime,   DateTimeFactory],
     [::Date,         ::SOAP::SOAPDate,       DateTimeFactory],
     [::Time,         ::SOAP::SOAPDateTime,   DateTimeFactory],
@@ -263,6 +267,7 @@ class EncodedRegistry
   attr_accessor :excn_handler_soap2obj
 
   def initialize(config = {})
+    super()
     @config = config
     @map = Map.new(self)
     if @config[:allow_original_mapping]
@@ -283,6 +288,8 @@ class EncodedRegistry
     @excn_handler_soap2obj = nil
   end
 
+  # initial mapping interface
+  # new interface Registry#register is defined in RegisterSupport
   def add(obj_class, soap_class, factory, info = nil)
     @map.add(obj_class, soap_class, factory, info)
   end
@@ -327,6 +334,9 @@ private
       return obj
     end
     begin 
+      if definition = schema_definition_from_class(obj.class)
+        return stubobj2soap(obj, definition)
+      end
       ret = @map.obj2soap(obj) ||
         @default_factory.obj2soap(nil, obj, nil, self)
       return ret if ret
@@ -343,15 +353,27 @@ private
 
   # Might return nil as a mapping result.
   def _soap2obj(node, klass = nil)
+    if klass
+      definition = schema_definition_from_class(klass)
+    else
+      if definition = schema_definition_from_elename(node.elename)
+        klass = definition.class_for
+      elsif definition = schema_definition_from_type(node.type)
+        klass = definition.class_for
+      end
+    end
+    if definition
+      conv, obj = soap2stubobj(node, klass, definition)
+    end
+    return obj if conv
     if node.extraattr.key?(RubyTypeName)
       conv, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
       return obj if conv
-    else
-      conv, obj = @map.soap2obj(node, klass)
-      return obj if conv
-      conv, obj = @default_factory.soap2obj(nil, node, nil, self)
-      return obj if conv
     end
+    conv, obj = @map.soap2obj(node, klass)
+    return obj if conv
+    conv, obj = @default_factory.soap2obj(nil, node, nil, self)
+    return obj if conv
     if @excn_handler_soap2obj
       begin
         return @excn_handler_soap2obj.call(node) { |yield_node|
@@ -403,7 +425,112 @@ private
       }.join(" ")
     end
   end
+
+  def stubobj2soap(obj, definition)
+    case obj
+    when ::Array
+      array2soap(obj, definition)
+    else
+      return unknownstubobj2soap(obj, definition)
+    end
+  end
+
+  def array2soap(obj, definition)
+    return SOAPNil.new if obj.nil?      # ToDo: check nillable.
+    arytype = definition.elements[0].elename
+    soap_obj = SOAPArray.new(ValueArrayName, 1, arytype)
+    mark_marshalled_obj(obj, soap_obj)
+    obj.each do |item|
+      soap_obj.add(Mapping._obj2soap(item, self, arytype))
+    end
+    soap_obj
+  end
+
+  def unknownstubobj2soap(obj, definition)
+    return SOAPNil.new if obj.nil?
+    if definition.elements.size == 0
+      qname = XSD::QName.new(definition.ns, definition.name)
+      ele = Mapping.obj2soap(obj)
+      ele.elename = qname
+      return ele
+    else
+      typename = XSD::QName.new(definition.ns, definition.type)
+      ele = SOAPStruct.new(typename)
+      mark_marshalled_obj(obj, ele)
+    end
+    definition.elements.each do |eledef|
+      name = eledef.elename.name
+      if child = Mapping.get_attribute(obj, eledef.varname)
+        if eledef.as_array?
+          child.each do |item|
+            ele.add(name, Mapping._obj2soap(item, self))
+          end
+        else
+          ele.add(name, Mapping._obj2soap(child, self))
+        end
+      elsif obj.respond_to?(:each) and eledef.as_array?
+        obj.each do |item|
+          ele.add(name, Mapping._obj2soap(item, self))
+        end
+      end
+    end
+    ele
+  end
+
+  def soap2stubobj(node, obj_class, definition)
+    return false unless node.is_a?(::SOAP::SOAPStruct)
+    obj = Mapping.create_empty_object(obj_class)
+    vars = {}
+    node.each do |name, value|
+      item = definition.elements.find { |k, v| k.elename.name == name }
+      if item
+        child = soap2typedobj(value, item.type)
+      else
+        child = Mapping._soap2obj(value, self)
+      end
+      if item and item.as_array?
+        (vars[name] ||= []) << child
+      else
+        vars[name] = child
+      end
+    end
+    if obj.is_a?(::Array)
+      obj.replace(vars.values.flatten)
+    else
+      Mapping.set_attributes(obj, vars)
+    end
+    return true, obj
+  end
+
+  def soap2typedobj(value, typename)
+    if klass = Mapping.class_from_name(typename)
+      if klass.ancestors.include?(::SOAP::SOAPBasetype)
+        if value.respond_to?(:data)
+          obj = klass.new(value.data).data
+        else
+          obj = klass.new(nil).data
+        end
+      else
+        obj = Mapping._soap2obj(value, self, klass)
+      end
+    elsif klass = Mapping.module_from_name(eledef.type)
+      # simpletype
+      if value.respond_to?(:data)
+        obj = value.data
+      else
+        raise MappingError.new("cannot map to a module value: #{eledef.type}")
+      end
+    else
+      raise MappingError.new("unknown class/module: #{eledef.type}")
+    end
+    obj
+  end
 end
+
+
+Registry = EncodedRegistry
+DefaultRegistry = EncodedRegistry.new
+RubyOriginalRegistry = EncodedRegistry.new(:allow_original_mapping => true)
 
 
 end

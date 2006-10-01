@@ -60,6 +60,14 @@ class HTTPServer < Logger::Application
     @router.mapping_registry = mapping_registry
   end
 
+  def literal_mapping_registry
+    @router.literal_mapping_registry
+  end
+
+  def literal_mapping_registry=(literal_mapping_registry)
+    @router.literal_mapping_registry = literal_mapping_registry
+  end
+
   def generate_explicit_type
     @router.generate_explicit_type
   end
