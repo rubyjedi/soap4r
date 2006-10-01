@@ -61,6 +61,7 @@ SimpleContentName = XSD::QName.new(XSD::Namespace, 'simpleContent')
 SimpleTypeName = XSD::QName.new(XSD::Namespace, 'simpleType')
 UniqueName = XSD::QName.new(XSD::Namespace, 'unique')
 
+AbstractAttrName = XSD::QName.new(nil, 'abstract')
 AttributeFormDefaultAttrName = XSD::QName.new(nil, 'attributeFormDefault')
 BaseAttrName = XSD::QName.new(nil, 'base')
 DefaultAttrName = XSD::QName.new(nil, 'default')

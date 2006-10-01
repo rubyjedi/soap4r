@@ -22,6 +22,7 @@ class ComplexType < Info
   attr_reader :content
   attr_accessor :final
   attr_accessor :mixed
+  attr_accessor :abstract
 
   def initialize(name = nil)
     super()
@@ -31,6 +32,7 @@ class ComplexType < Info
     @content = nil
     @final = nil
     @mixed = false
+    @abstract = false
     @attributes = XSD::NamedElements.new
   end
 
@@ -131,6 +133,8 @@ class ComplexType < Info
 
   def parse_attr(attr, value)
     case attr
+    when AbstractAttrName
+      @abstract = (value.source == 'true')
     when FinalAttrName
       @final = value.source
     when MixedAttrName
