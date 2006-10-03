@@ -73,6 +73,7 @@ class NamedElements
   def +(rhs)
     o = NamedElements.new
     o.elements = @elements + rhs.elements
+    @cache.clear
     o
   end
 
@@ -84,12 +85,13 @@ class NamedElements
 
   def uniq
     o = NamedElements.new
-    o.elements = @elements.uniq
+    o.elements = uniq_elements
     o
   end
 
   def uniq!
-    @elements.uniq!
+    @elements.replace(uniq_elements)
+    @cache.clear
   end
 
   Empty = NamedElements.new.freeze
@@ -102,6 +104,20 @@ protected
 
   def elements
     @elements
+  end
+
+private
+
+  def uniq_elements
+    dict = {}
+    elements = []
+    @elements.each do |ele|
+      unless dict.key?(ele.name)
+        dict[ele.name] = ele
+        elements << ele
+      end
+    end
+    elements
   end
 end
 
