@@ -130,15 +130,6 @@ private
     classname = create_class_name(qname)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
-    if typedef.name.nil?
-      # local simpletype of a element
-      #c.def_classvar('schema_type', ndq(nil))
-    else
-      # named simpletype
-      #c.def_classvar('schema_type', ndq(qname.name))
-    end
-    #c.def_classvar('schema_ns', ndq(qname.namespace))
-    #c.def_classvar('schema_qualified', dq('true')) if qualified
     define_classenum_restriction(c, classname, restriction.enumeration)
     c.dump
   end
@@ -225,65 +216,19 @@ private
       c = ClassDef.new(create_class_name(qname))
     end
     c.comment = "#{qname}"
-    if typedef.name.nil?
-      # local complextype of a element
-      #c.def_classvar('schema_type', ndq(nil))
-    else
-      # named complextype
-      #c.def_classvar('schema_type', ndq(qname.name))
-    end
-    #c.def_classvar('schema_ns', ndq(qname.namespace))
-    #c.def_classvar('schema_qualified', dq('true')) if qualified
-    schema_element, init_lines, init_params =
+    init_lines, init_params =
       parse_elements(c, typedef.elements, qname.namespace)
-    if typedef.choice?
-      schema_element.unshift(:choice)
-    end
     unless typedef.attributes.empty?
       define_attribute(c, typedef.attributes)
       init_lines << "@__xmlattr = {}"
     end
-    #c.def_classvar('schema_element',
-    #  dump_schema_element_definition(schema_element, 2)
-    #)
     c.def_method('initialize', *init_params) do
       init_lines.join("\n")
     end
     c.dump
   end
 
-  def dump_schema_element_definition(definition, indent = 0)
-    return '[]' if definition.empty?
-    if definition[0] == :choice
-      definition.shift
-      "[ :choice,\n" + ' ' * indent +
-        dump_schema_element(definition, indent) + "\n]"
-    elsif definition[0].is_a?(::Array)
-      "[\n" + ' ' * indent +
-        dump_schema_element(definition, indent) + "\n]"
-    else
-      varname, name, type = definition
-      '[' +
-        (
-          if name
-            varname.dump + ', [' + ndq(type) + ', ' + dqname(name) + ']'
-          else
-            varname.dump + ', ' + ndq(type)
-          end
-        ) +
-      ']'
-    end
-  end
-
-  def dump_schema_element(schema_element, indent = 0)
-    delimiter = ",\n" + " " * indent
-    schema_element.collect { |definition|
-      dump_schema_element_definition(definition, indent + 2)
-    }.join(delimiter)
-  end
-
   def parse_elements(c, elements, base_namespace)
-    schema_element = []
     init_lines = []
     init_params = []
     any = false
@@ -299,69 +244,32 @@ private
           '@__xmlele_any = elements'
         end
         init_lines << "@__xmlele_any = nil"
-        varname = 'any' # not used
-        eleqname = XSD::AnyTypeName
-        type = nil
-        schema_element << [varname, eleqname, type]
       when XMLSchema::Element
-        if element.type == XSD::AnyTypeName
-          type = nil
-        elsif klass = element_basetype(element)
-          type = klass.name
-        elsif element.type
-          type = create_class_name(element.type)
-        elsif element.ref
-          type = create_class_name(element.ref)
-        else
-          type = nil      # means anyType.
-          # do we define a class for local complexType from it's name?
-          #   type = create_class_name(element.name)
-          # <element>
-          #   <complexType>
-          #     <seq...>
-          #   </complexType>
-          # </element>
-        end
         name = name_element(element).name
-        #attrname = safemethodname?(name) ? name : safemethodname(name)
         attrname = safemethodname(name)
         varname = safevarname(name)
         c.def_attr(attrname, true, varname)
         init_lines << "@#{varname} = #{varname}"
         if element.map_as_array?
           init_params << "#{varname} = []"
-          if type
-            type << '[]'
-          else
-            type = '[]'
-          end
         else
           init_params << "#{varname} = nil"
         end
-        # nil means @@schema_ns + varname
-        eleqname = element.name || element.ref
-        if eleqname && varname == name && eleqname.namespace == base_namespace
-          eleqname = nil
-        end
-        schema_element << [varname, eleqname, type]
       when WSDL::XMLSchema::Sequence
-        child_schema_element, child_init_lines, child_init_params =
+        child_init_lines, child_init_params =
           parse_elements(c, element.elements, base_namespace)
-        schema_element << child_schema_element
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Choice
-        child_schema_element, child_init_lines, child_init_params =
+        child_init_lines, child_init_params =
           parse_elements(c, element.elements, base_namespace)
-        child_schema_element.unshift(:choice)
-        schema_element << child_schema_element
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       else
         raise RuntimeError.new("unknown type: #{element}")
       end
     end
-    [schema_element, init_lines, init_params]
+    [init_lines, init_params]
   end
 
   def element_basetype(ele)
@@ -394,15 +302,8 @@ private
   end
 
   def define_attribute(c, attributes)
-    schema_attribute = []
     attributes.each do |attribute|
       name = name_attribute(attribute)
-      if klass = attribute_basetype(attribute)
-        type = klass.name
-      else
-        warn("unresolved attribute type #{attribute.type} for #{name}")
-        type = nil
-      end
       methodname = safemethodname('xmlattr_' + name.name)
       c.def_method(methodname) do <<-__EOD__
           (@__xmlattr ||= {})[#{dqname(name)}]
@@ -412,15 +313,7 @@ private
           (@__xmlattr ||= {})[#{dqname(name)}] = value
         __EOD__
       end
-      schema_attribute << [name, type]
     end
-    #c.def_classvar('schema_attribute',
-    #  "{\n  " +
-    #    schema_attribute.collect { |name, type|
-    #      dqname(name) + ' => ' + ndq(type)
-    #    }.join(",\n  ") +
-    #  "\n}"
-    #)
   end
 
   def name_element(element)
@@ -435,35 +328,9 @@ private
     raise RuntimeError.new("cannot define name of #{attribute}")
   end
 
-  DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
-
   def dump_arraydef(qname, complextype)
     c = ClassDef.new(create_class_name(qname), '::Array')
     c.comment = "#{qname}"
-    child_type = complextype.child_type
-    child_element = complextype.find_aryelement
-    schema_element = []
-    if child_type == XSD::AnyTypeName
-      type = nil
-    elsif child_element and (klass = element_basetype(child_element))
-      type = klass.name
-    elsif child_type
-      type = create_class_name(child_type)
-    else
-      type = nil
-    end
-    if child_element
-      if child_element.map_as_array?
-        type << '[]' if type
-      end
-      child_element_name = child_element.name
-    else
-      child_element_name = DEFAULT_ITEM_NAME
-    end
-    schema_element << [child_element_name.name, child_element_name, type]
-    #c.def_classvar('schema_element',
-    #  dump_schema_element_definition(schema_element, 2)
-    #)
     c.dump
   end
 end
