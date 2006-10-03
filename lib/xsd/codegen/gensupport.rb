@@ -82,8 +82,10 @@ module GenSupport
   module_function :safeconstname?
 
   def safemethodname(name)
+    postfix = name[/[=?!]$/]
     safename = name.scan(/[a-zA-Z0-9_]+/).join('_')
     safename = uncapitalize(safename)
+    safename += postfix if postfix
     if /^[a-z]/ !~ safename
       safename = "m_#{safename}"
     end
