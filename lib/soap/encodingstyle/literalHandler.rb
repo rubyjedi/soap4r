@@ -119,6 +119,9 @@ class LiteralHandler < Handler
     end
 
     def as_element
+      if @extraattr[XSD::AttrNilName] == 'true'
+        return as_nil
+      end
       o = SOAPElement.decode(@elename)
       o.parent = @parent
       o.extraattr.update(@extraattr)
@@ -127,6 +130,9 @@ class LiteralHandler < Handler
     end
 
     def as_string
+      if @extraattr[XSD::AttrNilName] == 'true'
+        return as_nil
+      end
       o = SOAPString.decode(@elename)
       o.parent = @parent
       o.extraattr.update(@extraattr)
@@ -153,11 +159,11 @@ class LiteralHandler < Handler
   def decode_tag_end(ns, node)
     o = node.node
     if o.is_a?(SOAPUnknown)
-      newnode = if /\A\s*\z/ =~ @textbuf
-	  o.as_element
-	else
-	  o.as_string
-	end
+      if /\A\s*\z/ =~ @textbuf
+        newnode = o.as_element
+      else
+        newnode = o.as_string
+      end
       node.replace_node(newnode)
       o = node.node
     end

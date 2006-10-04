@@ -20,6 +20,13 @@ class TestRPC < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echo'),
         XSD::QName.new(Namespace, 'echo_response')
       )
+      add_document_method(
+        self,
+        Namespace + ':return_nil',
+        'return_nil',
+        nil,
+        XSD::QName.new(Namespace, 'return_nil')
+      )
       self.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     end
   
@@ -37,6 +44,10 @@ class TestRPC < Test::Unit::TestCase
         arg["struct-2"] = tmp
         arg
       end
+    end
+
+    def return_nil
+      ::SOAP::SOAPNil.new
     end
   end
 
@@ -182,6 +193,17 @@ class TestRPC < Test::Unit::TestCase
     assert_equal("mystring1", ret.struct_2.m_string)
     assert_equal('2005-03-17T19:47:31',
       ret.struct_2.m_datetime.strftime(timeformat))
+  end
+
+  def test_nil
+    @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
+    @client.add_document_method('return_nil', 'urn:docrpc:return_nil',
+      nil,
+      XSD::QName.new('urn:docrpc', 'return_nil'))
+    @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
+    @client.wiredump_dev = STDOUT if $DEBUG
+
+    assert_nil(@client.return_nil)
   end
 end
 
