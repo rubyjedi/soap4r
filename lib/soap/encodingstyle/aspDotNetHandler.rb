@@ -103,13 +103,6 @@ class ASPDotNetHandler < Handler
       @handler.decode_parent(@parent, o)
       o
     end
-
-    def as_nil
-      o = SOAPNil.decode(@elename)
-      o.parent = @parent
-      @handler.decode_parent(@parent, o)
-      o
-    end
   end
 
   def decode_tag(ns, elename, attrs, parent)

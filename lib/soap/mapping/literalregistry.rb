@@ -262,6 +262,7 @@ private
   end
 
   def add_attributes2stubobj(node, obj, definition)
+    return if obj.nil? or node.extraattr.empty?
     if attributes = definition.attributes
       define_xmlattr(obj)
       attributes.each do |qname, class_name|
@@ -286,7 +287,7 @@ private
   end
 
   def add_attributes2obj(node, obj)
-    return if node.extraattr.empty?
+    return if obj.nil? or node.extraattr.empty?
     define_xmlattr(obj)
     node.extraattr.each do |qname, value|
       obj.__xmlattr[qname] = value

@@ -109,6 +109,9 @@ class SOAPHandler < Handler
     end
 
     def as_struct
+      if @extraattr[XSD::AttrNilName] == 'true'
+        return as_nil
+      end
       o = SOAPStruct.decode(@elename, @type)
       o.id = @id
       o.root = @root
@@ -120,6 +123,9 @@ class SOAPHandler < Handler
     end
 
     def as_string
+      if @extraattr[XSD::AttrNilName] == 'true'
+        return as_nil
+      end
       o = SOAPString.decode(@elename)
       o.id = @id
       o.root = @root

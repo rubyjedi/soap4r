@@ -206,6 +206,13 @@ end
 class SOAPNil < XSD::XSDNil
   include SOAPBasetype
   extend SOAPModuleUtils
+
+public
+
+  def initialize(value = nil)
+    super(value)
+    @extraattr[XSD::AttrNilName] = 'true'
+  end
 end
 
 # SOAPRawString is for sending raw string.  In contrast to SOAPString,
@@ -321,7 +328,7 @@ class SOAPBase64 < XSD::XSDBase64Binary
   Type = SOAPENCType = QName.new(EncodingNamespace, Base64Literal)
 
 public
-  # Override the definition in SOAPBasetype.
+
   def initialize(value = nil)
     super(value)
     @type = Type
