@@ -149,6 +149,7 @@ class MIMEMessage
     @parts = []
     @headers = Headers.new
     @root = nil
+    @boundary = nil
   end
 
   def self.parse(head, str)
