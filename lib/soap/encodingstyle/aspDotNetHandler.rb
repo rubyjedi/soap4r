@@ -33,7 +33,8 @@ class ASPDotNetHandler < Handler
     # service as an rpc/encoded service.  in the situation, local elements
     # should be qualified.  propagate parent's namespace to children.
     if data.elename.namespace.nil?
-      data.elename.namespace = parent.elename.namespace
+      data.elename =
+        XSD::QName.new(parent.elename.namespace, data.elename.name)
     end
     name = generator.encode_name(ns, data, attrs)
     case data

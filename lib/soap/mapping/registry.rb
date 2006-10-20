@@ -186,13 +186,11 @@ module RegistrySupport
     obj_class = definition[:class]
     definition = Mapping.create_schema_definition(obj_class, definition)
     @class_schema_definition[obj_class] = definition
-    if definition.name
-      qname = XSD::QName.new(definition.ns, definition.name)
-      @elename_schema_definition[qname] = definition
+    if definition.elename
+      @elename_schema_definition[definition.elename] = definition
     end
     if definition.type
-      qname = XSD::QName.new(definition.ns, definition.type)
-      @type_schema_definition[qname] = definition
+      @type_schema_definition[definition.type] = definition
     end
   end
 
@@ -236,13 +234,22 @@ module RegistrySupport
     soap_obj = nil
     if type <= XSD::XSDString
       str = XSD::Charset.encoding_conv(obj.to_s,
-        Thread.current[:SOAPMapping][:ExternalCES], XSD::Charset.encoding)
+        Thread.current[:SOAPMapping][:ExternalCES],
+        XSD::Charset.encoding)
       soap_obj = type.new(str)
     else
       soap_obj = type.new(obj)
     end
     soap_obj.qualified = qualified
     soap_obj
+  end
+
+  def base2obj(value, klass)
+    if value.respond_to?(:data)
+      klass.new(value.data).data
+    else
+      klass.new(nil).data
+    end
   end
 end
 

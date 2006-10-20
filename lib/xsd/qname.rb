@@ -10,8 +10,8 @@ module XSD
 
 
 class QName
-  attr_accessor :namespace
-  attr_accessor :name
+  attr_reader :namespace
+  attr_reader :name
   attr_accessor :source
 
   def initialize(namespace = nil, name = nil)

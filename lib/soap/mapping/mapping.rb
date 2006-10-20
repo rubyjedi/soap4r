@@ -228,10 +228,10 @@ module Mapping
   end
 
   def self.class2element(klass)
-    type = Mapping.class2qname(klass)
-    type.name ||= Mapping.name2elename(klass.name)
-    type.namespace ||= RubyCustomTypeNamespace
-    type
+    name = schema_type_definition(klass) ||
+      Mapping.name2elename(klass.name)
+    namespace = schema_ns_definition(klass) || RubyCustomTypeNamespace
+    XSD::QName.new(namespace, name)
   end
 
   def self.obj2element(obj)
@@ -403,63 +403,87 @@ module Mapping
     schema_qualified = definition[:schema_qualified]
     schema_element = definition[:schema_element]
     schema_attributes = definition[:schema_attribute]
-    definition = SchemaDefinition.new(klass, schema_ns, schema_name,
-      schema_type, schema_qualified)
+    elename = schema_name ? XSD::QName.new(schema_ns, schema_name) : nil
+    type = schema_type ? XSD::QName.new(schema_ns, schema_type) : nil
+    definition = SchemaDefinition.new(klass, elename, type, schema_qualified)
     definition.attributes = schema_attributes
     if schema_element
-      if schema_element[0] == :choice
-        schema_element.shift
-        definition.set_choice
-      end
-      schema_element.each do |element|
-        varname, info = element
-        class_name, name = info
-        as_array = klass.ancestors.include?(::Array)
-        if /\[\]$/ =~ class_name
-          class_name = class_name.sub(/\[\]$/, '')
-          if class_name.empty?
-            class_name = nil
-          end
-          as_array = true
-        end
-        if name == XSD::AnyTypeName
-          definition.set_any
-        end
-        definition.elements <<
-          SchemaElementDefinition.new(
-            varname,
-            name || XSD::QName.new(schema_ns, varname),
-            class_name,
-            as_array
-          )
+      if schema_element.respond_to?(:is_concrete_definition) and
+          schema_element.is_concrete_definition
+        definition.elements.replace(schema_element)
+      else
+        parse_schema_element_definition(klass, definition, schema_element)
       end
     end
     definition
   end
 
-  class SchemaElementDefinition
-    attr_reader :varname, :elename, :type
+  # for backward compatibility
+  def self.parse_schema_element_definition(klass, definition, schema_element)
+    if schema_element[0] == :choice
+      schema_element.shift
+      definition.set_choice
+    end
+    schema_element.each do |element|
+      varname, info = element
+      mapped_class, elename = info
+      as_array = klass.ancestors.include?(::Array)
+      if /\[\]$/ =~ mapped_class
+        mapped_class = mapped_class.sub(/\[\]$/, '')
+        if mapped_class.empty?
+          mapped_class = nil
+        end
+        as_array = true
+      end
+      if mapped_class
+        mapped_class = Mapping.class_from_name(mapped_class)
+      end
+      if elename == XSD::AnyTypeName
+        definition.set_any
+      elsif elename.nil?
+        ns ||= definition.elename.namespace if definition.elename
+        ns ||= definition.type.namespace if definition.type
+        elename = XSD::QName.new(ns, varname)
+      end
+      definition.elements <<
+        SchemaElementDefinition.new(varname, mapped_class, elename, as_array)
+    end
+  end
 
-    def initialize(varname, elename, type, as_array)
+  class SchemaElementDefinition
+    attr_reader :varname, :mapped_class, :elename
+
+    def initialize(varname, mapped_class, elename, as_array)
       @varname = varname
+      @mapped_class = mapped_class
       @elename = elename
-      @type = type
       @as_array = as_array
     end
 
     def as_array?
       @as_array
     end
+
+    def is_concrete_definition
+      true
+    end
+  end
+
+  class SchemaElementChoiceDefinition < ::Array
+    def is_concrete_definition
+      true
+    end
   end
 
   class SchemaDefinition
-    attr_reader :class_for, :ns, :name, :type, :qualified, :elements
+    attr_reader :class_for
+    attr_reader :elename, :type
+    attr_reader :qualified, :elements
     attr_accessor :attributes
 
-    def initialize(class_for, ns, name, type, qualified)
+    def initialize(class_for, elename, type, qualified)
       @class_for = class_for
-      @ns = ns
-      @name = name
+      @elename = elename
       @type = type
       @qualified = qualified
       @elements = []

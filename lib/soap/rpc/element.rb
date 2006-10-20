@@ -115,7 +115,7 @@ class SOAPMethod < SOAPStruct
   def set_param(params)
     params.each do |param, data|
       @inparam[param] = data
-      data.elename.name = param
+      data.elename = XSD::QName.new(data.elename.namespace, param)
       data.parent = self
     end
   end
@@ -123,7 +123,7 @@ class SOAPMethod < SOAPStruct
   def set_outparam(params)
     params.each do |param, data|
       @outparam[param] = data
-      data.elename.name = param
+      data.elename = XSD::QName.new(data.elename.namespace, param)
     end
   end
 
