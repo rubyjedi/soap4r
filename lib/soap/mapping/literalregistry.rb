@@ -105,8 +105,7 @@ private
     end
     ele.qualified = definition.qualified
     if definition.type
-      ele.extraattr[XSD::AttrTypeName] =
-        XSD::QName.new(definition.ns, definition.type)
+      ele.extraattr[XSD::AttrTypeName] = definition.type
     end
     any = nil
     if definition.have_any?
@@ -166,7 +165,7 @@ private
         obj_class = definition.class_for
       end
     end
-    if node.is_a?(SOAPElement) or node.is_a?(SOAPStruct)
+    if node.is_a?(::SOAP::SOAPElement) or node.is_a?(::SOAP::SOAPStruct)
       if definition
         return elesoap2stubobj(node, obj_class, definition)
       else
@@ -205,55 +204,44 @@ private
   def add_elesoap2stubobj(node, obj, definition)
     vars = {}
     node.each do |name, value|
-      item = definition.elements.find { |k, v| k.elename.name == name }
+      item = definition.elements.find { |k, v|
+        k.elename == value.elename
+      }
       if item
-        child = elesoapchild2obj(value, definition.ns, item)
+        child = elesoapchild2obj(value, item)
       else
         # unknown element is treated as anyType.
         child = any2obj(value)
       end
       if item and item.as_array?
         (vars[name] ||= []) << child
+      elsif vars.key?(name)
+        vars[name] = [vars[name], child].flatten
       else
         vars[name] = child
       end
     end
-    if obj.is_a?(::Array)
-      obj.replace(vars.values.flatten)
+    if obj.is_a?(::Array) and vars.keys.size == 1
+      obj.replace(vars.values[0])
     else
       Mapping.set_attributes(obj, vars)
     end
   end
 
-  def elesoapchild2obj(value, ns, eledef)
+  def elesoapchild2obj(value, eledef)
     child_definition = schema_definition_from_elename(eledef.elename)
     if child_definition
       any2obj(value, child_definition.class_for)
-    elsif eledef.type
-      child_definition =
-        schema_definition_from_type(XSD::QName.new(ns, eledef.type))
+    elsif eledef.mapped_class
+      child_definition = schema_definition_from_class(eledef.mapped_class)
       if child_definition
         any2obj(value, child_definition.class_for)
-      elsif klass = Mapping.class_from_name(eledef.type)
-        # klass must be a SOAPBasetype or a class
-        if klass.ancestors.include?(::SOAP::SOAPBasetype)
-          if value.respond_to?(:data)
-            klass.new(value.data).data
-          else
-            klass.new(nil).data
-          end
-        else
-          any2obj(value, klass)
-        end
-      elsif klass = Mapping.module_from_name(eledef.type)
-        # simpletype
-        if value.respond_to?(:data)
-          value.data
-        else
-          raise MappingError.new("cannot map to a module value: #{eledef.type}")
-        end
       else
-        raise MappingError.new("unknown class/module: #{eledef.type}")
+        if eledef.mapped_class.ancestors.include?(::SOAP::SOAPBasetype)
+          base2obj(value, eledef.mapped_class)
+        else
+          any2obj(value, eledef.mapped_class)
+        end
       end
     else
       # untyped element is treated as anyType.
@@ -268,11 +256,12 @@ private
       attributes.each do |qname, class_name|
         attr = node.extraattr[qname]
         next if attr.nil? or attr.empty?
-        klass = Mapping.class_from_name(class_name)
-        if klass.ancestors.include?(::SOAP::SOAPBasetype)
-          child = klass.new(attr).data
-        else
-          child = attr
+        child = attr
+        if class_name
+          klass = Mapping.class_from_name(class_name)
+          if klass.ancestors.include?(::SOAP::SOAPBasetype)
+            child = klass.new(attr).data
+          end
         end
         obj.__xmlattr[qname] = child
         define_xmlattr_accessor(obj, qname)

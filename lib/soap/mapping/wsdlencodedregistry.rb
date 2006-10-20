@@ -223,28 +223,17 @@ private
     definition = Mapping.schema_definition_classdef(obj.class)
     vars = {}
     node.each do |name, value|
-      item = definition.elements.find { |k, v| k.elename.name == name }
-      if item and item.type
-        if klass = Mapping.class_from_name(item.type)
-          # klass must be a SOAPBasetype or a class
-          if klass.ancestors.include?(::SOAP::SOAPBasetype)
-            if value.respond_to?(:data)
-              child = klass.new(value.data).data
-            else
-              child = klass.new(nil).data
-            end
-          else
-            child = Mapping._soap2obj(value, self, klass)
-          end
-        elsif klass = Mapping.module_from_name(item.type)
-          # simpletype
+      item = definition.elements.find { |k, v| k.elename == value.elename }
+      if item and item.mapped_class
+        # klass must be a SOAPBasetype or a class
+        if item.mapped_class.ancestors.include?(::SOAP::SOAPBasetype)
           if value.respond_to?(:data)
-            child = value.data
+            child = item.mapped_class.new(value.data).data
           else
-            raise MappingError.new("cannot map to a module value: #{item.type}")
+            child = item.mapped_class.new(nil).data
           end
         else
-          raise MappingError.new("unknown class: #{item.type}")
+          child = Mapping._soap2obj(value, self, item.mapped_class)
         end
       else      # untyped element is treated as anyType.
         child = Mapping._soap2obj(value, self)

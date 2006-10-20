@@ -362,10 +362,9 @@ private
         klass = definition.class_for
       end
     end
-    if definition
-      conv, obj = soap2stubobj(node, klass, definition)
+    if definition and node.is_a?(::SOAP::SOAPStruct)
+      return elesoap2stubobj(node, klass, definition)
     end
-    return obj if conv
     if node.extraattr.key?(RubyTypeName)
       conv, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
       return obj if conv
@@ -449,13 +448,11 @@ private
   def unknownstubobj2soap(obj, definition)
     return SOAPNil.new if obj.nil?
     if definition.elements.size == 0
-      qname = XSD::QName.new(definition.ns, definition.name)
       ele = Mapping.obj2soap(obj)
-      ele.elename = qname
+      ele.elename = definition.elename if definition.elename
       return ele
     else
-      typename = XSD::QName.new(definition.ns, definition.type)
-      ele = SOAPStruct.new(typename)
+      ele = SOAPStruct.new(definition.type)
       mark_marshalled_obj(obj, ele)
     end
     definition.elements.each do |eledef|
@@ -477,51 +474,48 @@ private
     ele
   end
 
-  def soap2stubobj(node, obj_class, definition)
-    return false unless node.is_a?(::SOAP::SOAPStruct)
+  def elesoap2stubobj(node, obj_class, definition)
     obj = Mapping.create_empty_object(obj_class)
+    add_elesoap2stubobj(node, obj, definition)
+    obj
+  end
+
+  # XXX consider to merge with the method in LiteralRegistry
+  def add_elesoap2stubobj(node, obj, definition)
     vars = {}
     node.each do |name, value|
-      item = definition.elements.find { |k, v| k.elename.name == name }
+      item = definition.elements.find { |k, v|
+        k.elename == value.elename
+      }
       if item
-        child = soap2typedobj(value, item.type)
+        child = soap2typedobj(value, item.mapped_class)
       else
+        # unknown element is treated as anyType.
         child = Mapping._soap2obj(value, self)
       end
       if item and item.as_array?
         (vars[name] ||= []) << child
+      elsif vars.key?(name)
+        vars[name] = [vars[name], child].flatten
       else
         vars[name] = child
       end
     end
-    if obj.is_a?(::Array)
-      obj.replace(vars.values.flatten)
+    if obj.is_a?(::Array) and vars.keys.size == 1
+      obj.replace(vars.values[0])
     else
       Mapping.set_attributes(obj, vars)
     end
-    return true, obj
   end
 
-  def soap2typedobj(value, typename)
-    if klass = Mapping.class_from_name(typename)
-      if klass.ancestors.include?(::SOAP::SOAPBasetype)
-        if value.respond_to?(:data)
-          obj = klass.new(value.data).data
-        else
-          obj = klass.new(nil).data
-        end
-      else
-        obj = Mapping._soap2obj(value, self, klass)
-      end
-    elsif klass = Mapping.module_from_name(eledef.type)
-      # simpletype
-      if value.respond_to?(:data)
-        obj = value.data
-      else
-        raise MappingError.new("cannot map to a module value: #{eledef.type}")
-      end
+  def soap2typedobj(value, klass)
+    unless klass
+      raise MappingError.new("unknown class: #{klass}")
+    end
+    if klass.ancestors.include?(::SOAP::SOAPBasetype)
+      obj = base2obj(value, klass)
     else
-      raise MappingError.new("unknown class/module: #{eledef.type}")
+      obj = Mapping._soap2obj(value, self, klass)
     end
     obj
   end

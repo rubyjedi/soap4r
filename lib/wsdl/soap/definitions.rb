@@ -30,9 +30,10 @@ class Definitions < Info
     type.complexcontent.restriction.base = ::SOAP::ValueArrayName
     attr = XMLSchema::Attribute.new
     attr.ref = ::SOAP::AttrArrayTypeName
-    anytype = XSD::AnyTypeName.dup
-    anytype.name += '[]'
-    attr.arytype = anytype
+    anyarray = XSD::QName.new(
+      XSD::AnyTypeName.namespace,
+      XSD::AnyTypeName.name + '[]')
+    attr.arytype = anyarray
     type.complexcontent.restriction.attributes << attr
     type
   end
