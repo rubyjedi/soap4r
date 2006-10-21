@@ -426,17 +426,20 @@ module Mapping
     end
     schema_element.each do |element|
       varname, info = element
-      mapped_class, elename = info
+      mapped_class_str, elename = info
       as_array = klass.ancestors.include?(::Array)
-      if /\[\]$/ =~ mapped_class
-        mapped_class = mapped_class.sub(/\[\]$/, '')
-        if mapped_class.empty?
-          mapped_class = nil
+      if /\[\]$/ =~ mapped_class_str
+        mapped_class_str = mapped_class_str.sub(/\[\]$/, '')
+        if mapped_class_str.empty?
+          mapped_class_str = nil
         end
         as_array = true
       end
-      if mapped_class
-        mapped_class = Mapping.class_from_name(mapped_class)
+      if mapped_class_str
+        mapped_class = Mapping.class_from_name(mapped_class_str)
+        if mapped_class.nil?
+          warn("cannot find mapped class: #{mapped_class_str}")
+        end
       end
       if elename == XSD::AnyTypeName
         definition.set_any

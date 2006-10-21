@@ -107,7 +107,7 @@ private
 
   def dump_complextype
     @complextypes.collect { |type|
-      dump_complextypedef(type.name, type) unless type.abstract
+      dump_complextypedef(type.name, type)
     }.compact.join("\n")
   end
 
@@ -216,6 +216,7 @@ private
       c = ClassDef.new(create_class_name(qname))
     end
     c.comment = "#{qname}"
+    c.comment << "\nabstract" if typedef.abstract
     init_lines, init_params =
       parse_elements(c, typedef.elements, qname.namespace)
     unless typedef.attributes.empty?
