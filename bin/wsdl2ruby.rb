@@ -60,16 +60,10 @@ Options:
   --wsdl wsdl_location
   --type server|client
     --type server implies;
-  	--classdef
-        --mapping_registry
-   	--servant_skelton
-    	--standalone_server_stub
+  	--classdef --mapping_registry --servant_skelton --standalone_server_stub
     --type client implies;
-     	--classdef
-        --mapping_registry
-      	--client_skelton
-       	--driver
-  --classdef
+     	--classdef --mapping_registry --client_skelton --driver
+  --classdef [filenameprefix]
   --mapping_registry
   --client_skelton [servicename]
   --servant_skelton [porttypename]
