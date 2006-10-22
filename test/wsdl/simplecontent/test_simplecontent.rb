@@ -12,9 +12,11 @@ class TestSimpleContent < Test::Unit::TestCase
   NS = 'urn:www.example.org:simpleContent'
   class Server < ::SOAP::RPC::StandaloneServer
     def on_init
-      add_document_method(self, NS + ':echo', 'echo',
-        XSD::QName.new(NS, 'Address'), XSD::QName.new(NS, 'Address'))
-      self.mapping_registry = SimpleContentMappingRegistry::LiteralRegistry
+      SimpleContentService::Methods.each do |definition|
+        add_document_operation(self, *definition)
+      end
+      self.mapping_registry =
+        SimpleContentMappingRegistry::LiteralRegistry
     end
   
     def echo(address)
@@ -56,6 +58,7 @@ class TestSimpleContent < Test::Unit::TestCase
     gen.opt['classdef'] = nil
     gen.opt['driver'] = nil
     gen.opt['force'] = true
+    gen.opt['module_path'] = 'WSDL::SimpleContent'
     gen.run
     backupdir = Dir.pwd
     begin
