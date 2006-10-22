@@ -324,12 +324,14 @@ private
     else
       faultcode = FaultCode::Server
     end
-    detail = Mapping::SOAPException.new(e)
+    detail = Mapping.obj2soap(Mapping::SOAPException.new(e),
+      @mapping_registry)
+    detail.elename ||= XSD::QName::EMPTY # for literal mappingregstry
     SOAPFault.new(
       SOAPElement.new(nil, faultcode),
       SOAPString.new(e.to_s),
       SOAPString.new(@actor),
-      Mapping.obj2soap(detail, @mapping_registry))
+      detail)
   end
 
   def create_mapping_opt
