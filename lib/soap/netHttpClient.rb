@@ -84,15 +84,7 @@ class NetHttpClient
   end
 
   def post(url, req_body, header = {})
-    unless url.is_a?(URI)
-      url = URI.parse(url)
-    end
-    extra = header.dup
-    extra['User-Agent'] = @agent if @agent
-    res = start(url) { |http|
-      http.post(url.request_uri, req_body, extra)
-    }
-    Response.new(res)
+    post_redirect(url, req_body, header, 10)
   end
 
   def get_content(url, header = {})
@@ -108,6 +100,28 @@ class NetHttpClient
   end
 
 private
+
+  def post_redirect(url, req_body, header, redirect_count)
+    unless url.is_a?(URI)
+      url = URI.parse(url)
+    end
+    extra = header.dup
+    extra['User-Agent'] = @agent if @agent
+    res = start(url) { |http|
+      http.post(url.request_uri, req_body, extra)
+    }
+    case res
+    when Net::HTTPRedirection 
+      if redirect_count > 0
+        post_redirect(res['location'], req_body, header,
+          redirect_count - 1) 
+      else
+       raise ArgumentError.new("Too many redirects")
+      end
+    else
+      Response.new(res)
+    end
+  end
 
   def start(url)
     http = create_connection(url)
