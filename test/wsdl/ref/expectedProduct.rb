@@ -49,7 +49,6 @@ class ProductBag
 end
 
 # {urn:ref}Creator
-#   contains SOAP::SOAPString
 class Creator < ::String
   def xmlattr_Role
     (@__xmlattr ||= {})[XSD::QName.new(nil, "Role")]
@@ -83,7 +82,6 @@ class Product
 end
 
 # {urn:ref}Comment
-#   contains SOAP::SOAPString
 class Comment < ::String
   def xmlattr_msgid
     (@__xmlattr ||= {})[XSD::QName.new(nil, "msgid")]
@@ -100,7 +98,6 @@ class Comment < ::String
 end
 
 # {urn:ref}_point
-#   contains SOAP::SOAPInteger
 class C__point < ::String
   def xmlattr_unit
     (@__xmlattr ||= {})[XSD::QName.new(nil, "unit")]
@@ -117,7 +114,6 @@ class C__point < ::String
 end
 
 # {urn:ref}Document
-#   contains SOAP::SOAPString
 class Document < ::String
   def xmlattr_ID
     (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")]
