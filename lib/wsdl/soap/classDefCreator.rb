@@ -178,9 +178,8 @@ private
   end
 
   def dump_simpleclassdef(qname, type_or_element)
-    base = basetype_class(type_or_element.simplecontent.base)
     c = ClassDef.new(create_class_name(qname), '::String')
-    c.comment = "#{qname}\n  contains #{base}"
+    c.comment = "#{qname}"
     init_lines = []
     unless type_or_element.attributes.empty?
       define_attribute(c, type_or_element.attributes)
