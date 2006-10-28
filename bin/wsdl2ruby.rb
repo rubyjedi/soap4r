@@ -96,15 +96,15 @@ __EOU__
 	when "--type"
   	  case arg
   	  when "server"
-  	    opt['classdef'] = nil
-  	    opt['mapping_registry'] = nil
-  	    opt['servant_skelton'] = nil
-  	    opt['standalone_server_stub'] = nil
+  	    opt['classdef'] ||= nil
+  	    opt['mapping_registry'] ||= nil
+  	    opt['servant_skelton'] ||= nil
+  	    opt['standalone_server_stub'] ||= nil
   	  when "client"
-  	    opt['classdef'] = nil
-  	    opt['mapping_registry'] = nil
-  	    opt['driver'] = nil
-  	    opt['client_skelton'] = nil
+  	    opt['classdef'] ||= nil
+  	    opt['mapping_registry'] ||= nil
+  	    opt['driver'] ||= nil
+  	    opt['client_skelton'] ||= nil
   	  else
   	    raise ArgumentError.new("Unknown type #{ arg }")
   	  end
