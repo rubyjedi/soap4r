@@ -22,6 +22,7 @@ class Parser
   class UnknownAttributeError < FormatDecodeError; end
   class UnexpectedElementError < FormatDecodeError; end
   class ElementConstraintError < FormatDecodeError; end
+  class ParserError < ParseError; end
 
   @@parser_factory = nil
 
@@ -30,6 +31,9 @@ class Parser
   end
 
   def self.create_parser(host, opt = {})
+    unless @@parser_factory
+      raise ParserError.new("illegal XML parser configuration")
+    end
     @@parser_factory.new(host, opt)
   end
 
@@ -59,7 +63,7 @@ public
 private
 
   def do_parse(string_or_readable)
-    raise NotImplementError.new(
+    raise ParserError.new(
       'Method do_parse must be defined in derived class.')
   end
 

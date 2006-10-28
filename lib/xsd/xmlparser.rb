@@ -51,6 +51,12 @@ loaded = false
 ].each do |lib|
   begin
     require lib
+    # XXX: for a workaround of rubygems' require inconsistency
+    # XXX: MUST BE REMOVED IN THE FUTURE
+    name = lib.sub(/^.*\//, '')
+    raise LoadError unless XSD::XMLParser.constants.find { |c|
+      c.downcase == name
+    }
     loaded = true
     break
   rescue LoadError
