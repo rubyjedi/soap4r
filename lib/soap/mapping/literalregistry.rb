@@ -75,7 +75,7 @@ private
     elsif obj.is_a?(SOAP::Mapping::Object)
       ele = mappingobj2soap(obj, qname)
     elsif obj.is_a?(Hash)
-      ele = SOAPElement.from_obj(obj)
+      ele = SOAPElement.from_obj(obj, qname.namespace)
       ele.elename = qname
     elsif obj.is_a?(Array)
       # treat as a list of simpletype
