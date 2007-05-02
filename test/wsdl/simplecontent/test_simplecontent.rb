@@ -15,7 +15,7 @@ class TestSimpleContent < Test::Unit::TestCase
       SimpleContentService::Methods.each do |definition|
         add_document_operation(self, *definition)
       end
-      self.mapping_registry =
+      self.literal_mapping_registry =
         SimpleContentMappingRegistry::LiteralRegistry
     end
   
@@ -63,10 +63,11 @@ class TestSimpleContent < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('simpleContent.rb')
-      require pathname('simpleContentMappingRegistry.rb')
-      require pathname('simpleContentDriver.rb')
+      require 'simpleContentDriver.rb'
     ensure
+      $".delete('simpleContent.rb')
+      $".delete('simpleContentDriver.rb')
+      $".delete('simpleContentMappingRegistry.rb')
       Dir.chdir(backupdir)
     end
   end

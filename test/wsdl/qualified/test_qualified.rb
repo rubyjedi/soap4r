@@ -39,8 +39,9 @@ class TestQualified < Test::Unit::TestCase
   def teardown
     teardown_server
     unless $DEBUG
-      File.unlink(pathname('default.rb'))
-      File.unlink(pathname('defaultDriver.rb'))
+      File.unlink(pathname('default.rb')) if $DEBUG
+      File.unlink(pathname('defaultMappingRegistry.rb')) if $DEBUG
+      File.unlink(pathname('defaultDriver.rb')) if $DEBUG
     end
     @client.reset_stream if @client
   end
@@ -63,8 +64,9 @@ class TestQualified < Test::Unit::TestCase
       gen.opt['driver'] = nil
       gen.opt['force'] = true
       gen.run
-      require pathname('default.rb')
+      require 'default.rb'
     ensure
+      $".delete('default.rb')
       Dir.chdir(backupdir)
     end
   end
@@ -122,8 +124,11 @@ class TestQualified < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('defaultDriver')
+      require 'defaultDriver.rb'
     ensure
+      $".delete('defaultDriver.rb')
+      $".delete('defaultMappingRegistry.rb')
+      $".delete('default.rb')
       Dir.chdir(backupdir)
     end
     @client = PnumSoap.new("http://localhost:#{Port}/")

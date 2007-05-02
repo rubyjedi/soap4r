@@ -86,9 +86,11 @@ class TestRef < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('product')
-      require pathname('productDriver')
+      require 'productDriver.rb'
     ensure
+      $".delete('product.rb')
+      $".delete('productMappingRegistry.rb')
+      $".delete('productDriver.rb')
       Dir.chdir(backupdir)
     end
   end

@@ -9,17 +9,19 @@ module Marshal
 
 
 class TestDefinedArray < Test::Unit::TestCase
+  DIR = File.dirname(File.expand_path(__FILE__))
+
   def pathname(filename)
-    File.join(File.dirname(__FILE__), filename)
+    File.join(DIR, filename)
   end
 
   def setup
-    back = $:.dup
+    backupdir = Dir.pwd
     begin
-      $:.unshift(pathname('.'))
-      require pathname('amazonEcDriver')
+      Dir.chdir(DIR)
+      require 'amazonEcDriver.rb'
     ensure
-      $:.replace(back)
+      Dir.chdir(backupdir)
     end
   end
 

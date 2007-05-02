@@ -58,10 +58,11 @@ class TestAbstract < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('abstract.rb')
-      require pathname('abstractMappingRegistry.rb')
-      require pathname('abstractDriver.rb')
+      require 'abstractDriver.rb'
     ensure
+      $".delete('abstractDriver.rb')
+      $".delete('abstract.rb')
+      $".delete('abstractMappingRegistry.rb')
       Dir.chdir(backupdir)
     end
   end

@@ -40,6 +40,7 @@ class TestList < Test::Unit::TestCase
   def teardown
     teardown_server
     File.unlink(pathname('list.rb')) unless $DEBUG
+    File.unlink(pathname('listMappingRegistry.rb')) unless $DEBUG
     File.unlink(pathname('listDriver.rb')) unless $DEBUG
     @client.reset_stream if @client
   end
@@ -59,12 +60,15 @@ class TestList < Test::Unit::TestCase
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
-    back = $:.dup
+    backupdir = Dir.pwd
     begin
-      $:.unshift(pathname('.'))
-      require pathname('listDriver')
+      Dir.chdir(DIR)
+      require 'listDriver.rb'
     ensure
-      $:.replace(back)
+      $".delete('listDriver.rb')
+      $".delete('listMappingRegistry.rb')
+      $".delete('list.rb')
+      Dir.chdir(backupdir)
     end
   end
 

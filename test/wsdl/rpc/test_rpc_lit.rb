@@ -128,9 +128,11 @@ class TestRPCLIT < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('RPC-Literal-TestDefinitions.rb')
-      require pathname('RPC-Literal-TestDefinitionsDriver.rb')
+      require 'RPC-Literal-TestDefinitionsDriver.rb'
     ensure
+      $".delete('RPC-Literal-TestDefinitions.rb')
+      $".delete('RPC-Literal-TestDefinitionsMappingRegistry.rb')
+      $".delete('RPC-Literal-TestDefinitionsDriver.rb')
       Dir.chdir(backupdir)
     end
   end

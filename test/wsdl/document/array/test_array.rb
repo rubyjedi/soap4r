@@ -62,9 +62,10 @@ class TestArray < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('double')
-      require pathname('doubleMappingRegistry')
+      require 'doubleMappingRegistry.rb'
     ensure
+      $".delete('doubleMappingRegistry.rb')
+      $".delete('double.rb')
       Dir.chdir(backupdir)
     end
   end

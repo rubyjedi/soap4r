@@ -73,7 +73,14 @@ class TestOverload < Test::Unit::TestCase
     gen.opt['classdef'] = nil
     gen.opt['force'] = true
     gen.run
-    require pathname('default')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require 'default.rb'
+    ensure
+      $".delete('default.rb')
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server

@@ -39,6 +39,7 @@ class TestUnqualified < Test::Unit::TestCase
   def teardown
     teardown_server
     File.unlink(pathname('lp.rb')) unless $DEBUG
+    File.unlink(pathname('lpMappingRegistry.rb')) unless $DEBUG
     File.unlink(pathname('lpDriver.rb')) unless $DEBUG
     @client.reset_stream if @client
   end
@@ -61,8 +62,9 @@ class TestUnqualified < Test::Unit::TestCase
       gen.opt['driver'] = nil
       gen.opt['force'] = true
       gen.run
-      require pathname('lp')
+      require 'lp.rb'
     ensure
+      $".delete('lp.rb')
       Dir.chdir(backupdir)
     end
   end
@@ -137,8 +139,11 @@ class TestUnqualified < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('lpDriver')
+      require 'lpDriver.rb'
     ensure
+      $".delete('lpDriver.rb')
+      $".delete('lpMappingRegistry.rb')
+      $".delete('lp.rb')
       Dir.chdir(backupdir)
     end
     @client = Lp_porttype.new("http://localhost:#{Port}/")

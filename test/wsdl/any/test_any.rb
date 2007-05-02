@@ -84,8 +84,11 @@ class TestAny < Test::Unit::TestCase
     begin
       back = $:.dup
       $:.unshift(pathname("."))
-      require pathname('echoDriver')
+      require 'echoDriver.rb'
     ensure
+      $".delete('echoDriver.rb')
+      $".delete('echoMappingRegistry.rb')
+      $".delete('echo.rb')
       $:.replace(back) if back
     end
   end
