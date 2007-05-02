@@ -60,9 +60,10 @@ class TestEcho < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('complexContent')
-      require pathname('complexContentMappingRegistry')
+      require 'complexContentMappingRegistry.rb'
     ensure
+      $".delete('complexContentMappingRegistry.rb')
+      $".delete('complexContent.rb')
       Dir.chdir(backupdir)
     end
   end

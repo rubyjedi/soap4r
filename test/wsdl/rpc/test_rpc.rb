@@ -89,10 +89,13 @@ class TestRPC < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('echo.rb')
-      require pathname('echoMappingRegistry.rb')
-      require pathname('echoDriver.rb')
+      require 'echo.rb'
+      require 'echoMappingRegistry.rb'
+      require 'echoDriver.rb'
     ensure
+      $".delete('echo.rb')
+      $".delete('echoMappingRegistry.rb')
+      $".delete('echoDriver.rb')
       Dir.chdir(backupdir)
     end
   end

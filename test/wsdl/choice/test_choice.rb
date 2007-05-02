@@ -65,9 +65,10 @@ class TestChoice < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('choice')
-      require pathname('choiceMappingRegistry')
+      require 'choiceMappingRegistry.rb'
     ensure
+      $".delete('choiceMappingRegistry.rb')
+      $".delete('choice.rb')
       Dir.chdir(backupdir)
     end
   end

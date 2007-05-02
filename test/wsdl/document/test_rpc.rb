@@ -64,6 +64,8 @@ class TestRPC < Test::Unit::TestCase
   def teardown
     teardown_server
     File.unlink(pathname('echo.rb')) unless $DEBUG
+    File.unlink(pathname('echoMappingRegistry.rb')) unless $DEBUG
+    File.unlink(pathname('echoDriver.rb')) unless $DEBUG
     @client.reset_stream if @client
   end
 
@@ -80,15 +82,18 @@ class TestRPC < Test::Unit::TestCase
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
     gen.opt['mapping_registry'] = nil
+    gen.opt['driver'] = nil
     gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['force'] = true
     gen.run
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('echo')
-      require pathname('echoMappingRegistry')
+      require 'echoDriver.rb'
     ensure
+      $".delete('echoDriver.rb')
+      $".delete('echoMappingRegistry.rb')
+      $".delete('echo.rb')
       Dir.chdir(backupdir)
     end
   end

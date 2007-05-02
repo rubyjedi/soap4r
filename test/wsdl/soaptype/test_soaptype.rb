@@ -59,7 +59,14 @@ class TestSOAPTYPE < Test::Unit::TestCase
     gen.opt['force'] = true
     gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.run
-    require pathname('echo')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require 'echo.rb'
+    ensure
+      $".delete('echo.rb')
+      Dir.chdir(backupdir)
+    end
   end
 
   def teardown_server

@@ -57,8 +57,9 @@ class TestSOAPENC < Test::Unit::TestCase
     backupdir = Dir.pwd
     begin
       Dir.chdir(DIR)
-      require pathname('echo')
+      require 'echo.rb'
     ensure
+      $".delete('echo.rb')
       Dir.chdir(backupdir)
     end
   end

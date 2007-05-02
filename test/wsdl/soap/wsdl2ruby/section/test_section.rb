@@ -25,7 +25,14 @@ class TestSection < Test::Unit::TestCase
     if ::Object.constants.include?("Item")
       ::Object.instance_eval { remove_const("Item") }
     end
-    require pathname('mysample.rb')
+    backupdir = Dir.pwd
+    begin
+      Dir.chdir(DIR)
+      require 'mysample.rb'
+    ensure
+      $".delete('mysample.rb')
+      Dir.chdir(backupdir)
+    end
     s1 = Section.new(1, "section1", "section 1", 1001, Question.new("q1"))
     s2 = Section.new(2, "section2", "section 2", 1002, Question.new("q2"))
     org = SectionArray[s1, s2]
