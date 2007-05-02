@@ -27,6 +27,13 @@ class TestRPC < Test::Unit::TestCase
         nil,
         XSD::QName.new(Namespace, 'return_nil')
       )
+      add_document_method(
+        self,
+        Namespace + ':return_empty',
+        'return_empty',
+        nil,
+        XSD::QName.new(Namespace, 'return_empty')
+      )
       self.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     end
   
@@ -48,6 +55,10 @@ class TestRPC < Test::Unit::TestCase
 
     def return_nil
       ::SOAP::SOAPNil.new
+    end
+
+    def return_empty
+      ""
     end
   end
 
@@ -209,6 +220,17 @@ class TestRPC < Test::Unit::TestCase
     @client.wiredump_dev = STDOUT if $DEBUG
 
     assert_nil(@client.return_nil)
+  end
+
+  def test_empty
+    @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
+    @client.add_document_method('return_empty', 'urn:docrpc:return_empty',
+      nil,
+      XSD::QName.new('urn:docrpc', 'return_empty'))
+    @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
+    @client.wiredump_dev = STDOUT if $DEBUG
+
+    assert_equal('', @client.return_empty)
   end
 end
 
