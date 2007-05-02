@@ -75,7 +75,7 @@ private
     elsif obj.is_a?(SOAP::Mapping::Object)
       ele = mappingobj2soap(obj, qname)
     elsif obj.is_a?(Hash)
-      ele = SOAPElement.from_obj(obj, qname.namespace)
+      ele = SOAPElement.from_obj(obj, nil)
       ele.elename = qname
     elsif obj.is_a?(Array)
       # treat as a list of simpletype
@@ -229,10 +229,7 @@ private
   end
 
   def elesoapchild2obj(value, eledef)
-    child_definition = schema_definition_from_elename(eledef.elename)
-    if child_definition
-      any2obj(value, child_definition.class_for)
-    elsif eledef.mapped_class
+    if eledef.mapped_class
       child_definition = schema_definition_from_class(eledef.mapped_class)
       if child_definition
         any2obj(value, child_definition.class_for)
@@ -244,8 +241,13 @@ private
         end
       end
     else
-      # untyped element is treated as anyType.
-      any2obj(value)
+      child_definition = schema_definition_from_elename(eledef.elename)
+      if child_definition
+        any2obj(value, child_definition.class_for)
+      else
+        # untyped element is treated as anyType.
+        any2obj(value)
+      end
     end
   end
 
