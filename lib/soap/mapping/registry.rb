@@ -245,11 +245,14 @@ module RegistrySupport
   end
 
   def base2obj(value, klass)
-    if value.respond_to?(:data)
-      klass.new(value.data).data
-    else
-      klass.new(nil).data
-    end
+    v = if value.respond_to?(:data)
+          value.data
+        elsif value.respond_to?(:text)
+          value.text
+        else
+          nil
+        end
+    klass.new(v).data
   end
 end
 

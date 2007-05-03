@@ -591,6 +591,10 @@ class SOAPElement
   attr_accessor :text
   alias data text
 
+  def set(value)
+    @text = value
+  end
+
   # Element interfaces.
   def add(value)
     add_member(value.elename.name, value)
