@@ -105,6 +105,7 @@ class TestRPCLIT < Test::Unit::TestCase
     teardown_server
     unless $DEBUG
       File.unlink(pathname('RPC-Literal-TestDefinitions.rb'))
+      File.unlink(pathname('RPC-Literal-TestDefinitionsMappingRegistry.rb'))
       File.unlink(pathname('RPC-Literal-TestDefinitionsDriver.rb'))
     end
     @client.reset_stream if @client
@@ -122,6 +123,7 @@ class TestRPCLIT < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run

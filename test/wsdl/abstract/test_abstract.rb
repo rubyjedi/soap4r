@@ -52,6 +52,7 @@ class TestAbstract < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
