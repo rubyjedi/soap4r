@@ -25,14 +25,14 @@ class TestRPC < Test::Unit::TestCase
         Namespace + ':return_nil',
         'return_nil',
         nil,
-        XSD::QName.new(Namespace, 'return_nil')
+        XSD::QName.new(Namespace, 'echo_response')
       )
       add_document_method(
         self,
         Namespace + ':return_empty',
         'return_empty',
         nil,
-        XSD::QName.new(Namespace, 'return_empty')
+        XSD::QName.new(Namespace, 'echo_response')
       )
       self.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     end
@@ -54,11 +54,17 @@ class TestRPC < Test::Unit::TestCase
     end
 
     def return_nil
-      ::SOAP::SOAPNil.new
+      e = Echoele.new
+      e.struct1 = Echo_struct.new(nil, nil)
+      e.struct_2 = Echo_struct.new(nil, nil)
+      e
     end
 
     def return_empty
-      ""
+      e = Echoele.new
+      e.struct1 = Echo_struct.new("", nil)
+      e.struct_2 = Echo_struct.new("", nil)
+      e
     end
   end
 
@@ -219,7 +225,9 @@ class TestRPC < Test::Unit::TestCase
     @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
 
-    assert_nil(@client.return_nil)
+    ret = @client.return_nil
+    assert_nil(ret.struct1.m_string)
+    assert_nil(ret.struct_2.m_string)
   end
 
   def test_empty
@@ -230,7 +238,9 @@ class TestRPC < Test::Unit::TestCase
     @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
 
-    assert_equal('', @client.return_empty)
+    ret = @client.return_empty
+    assert_equal("", ret.struct1.m_string)
+    assert_equal("", ret.struct_2.m_string)
   end
 end
 
