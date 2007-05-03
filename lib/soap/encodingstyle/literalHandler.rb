@@ -222,7 +222,8 @@ class LiteralHandler < Handler
 private
 
   def decode_textbuf(node)
-    if node.is_a?(XSD::XSDString)
+    case node
+    when XSD::XSDString, SOAPElement
       if @charset
 	node.set(XSD::Charset.encoding_from_xml(@textbuf, @charset))
       else

@@ -56,7 +56,7 @@ class Param < Info
       o
     when SOAPFaultName
       o = WSDL::SOAP::Fault.new
-      @soap_fault = o
+      @soapfault = o
       o
     when DocumentationName
       o = Documentation.new
