@@ -20,6 +20,7 @@ class TestWSDL2Ruby < Test::Unit::TestCase
       gen.opt['servant_skelton'] = nil
       gen.opt['cgi_stub'] = nil
       gen.opt['standalone_server_stub'] = nil
+      gen.opt['mapping_registry'] = nil
       gen.opt['driver'] = nil
       gen.opt['force'] = true
       silent do
@@ -39,6 +40,7 @@ class TestWSDL2Ruby < Test::Unit::TestCase
     compare("expectedClassdef.rb", "echo_version.rb")
     compare("expectedService.rb", "echo_version_service.rb")
     compare("expectedService.cgi", "echo_version_service.cgi")
+    compare("expectedMappingRegistry.rb", "echo_versionMappingRegistry.rb")
     compare("expectedDriver.rb", "echo_versionDriver.rb")
     compare("expectedClient.rb", "echo_version_serviceClient.rb")
 
@@ -46,6 +48,7 @@ class TestWSDL2Ruby < Test::Unit::TestCase
     File.unlink(pathname("echo_version.rb"))
     File.unlink(pathname("echo_version_service.rb"))
     File.unlink(pathname("echo_version_service.cgi"))
+    File.unlink(pathname("echo_versionMappingRegistry.rb"))
     File.unlink(pathname("echo_versionDriver.rb"))
     File.unlink(pathname("echo_version_serviceClient.rb"))
   end

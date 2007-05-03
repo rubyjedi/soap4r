@@ -18,6 +18,7 @@ class TestRPC < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
     gen.opt['driver'] = nil
     gen.opt['client_skelton'] = nil
     gen.opt['servant_skelton'] = nil
@@ -27,12 +28,14 @@ class TestRPC < Test::Unit::TestCase
       gen.run
     end
     compare("expectedEchoVersion.rb", "echo_version.rb")
+    compare("expectedMappingRegistry.rb", "echo_versionMappingRegistry.rb")
     compare("expectedDriver.rb", "echo_versionDriver.rb")
     compare("expectedService.rb", "echo_version_service.rb")
     compare("expectedClient.rb", "echo_version_serviceClient.rb")
     compare("expectedServant.rb", "echo_versionServant.rb")
 
     File.unlink(pathname("echo_version.rb"))
+    File.unlink(pathname("echo_versionMappingRegistry.rb"))
     File.unlink(pathname("echo_versionDriver.rb"))
     File.unlink(pathname("echo_version_service.rb"))
     File.unlink(pathname("echo_version_serviceClient.rb"))

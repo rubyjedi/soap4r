@@ -10,7 +10,8 @@ class Echo_port_type
       [ ["in", "parameters", ["::SOAP::SOAPElement", "urn:example.com:echo-type", "foo.bar"]],
         ["out", "parameters", ["::SOAP::SOAPElement", "urn:example.com:echo-type", "foo.bar"]] ],
       { :request_style =>  :document, :request_use =>  :literal,
-        :response_style => :document, :response_use => :literal }
+        :response_style => :document, :response_use => :literal,
+        :faults => {} }
     ]
   ]
 end

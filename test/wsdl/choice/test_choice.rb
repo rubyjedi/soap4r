@@ -42,6 +42,7 @@ class TestChoice < Test::Unit::TestCase
     teardown_server
     unless $DEBUG
       File.unlink(pathname('choice.rb'))
+      File.unlink(pathname('choiceMappingRegistry.rb'))
       File.unlink(pathname('choiceDriver.rb'))
     end
     @client.reset_stream if @client
@@ -59,6 +60,7 @@ class TestChoice < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run

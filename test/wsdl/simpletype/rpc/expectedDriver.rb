@@ -12,7 +12,8 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
       [ ["in", "version", ["::SOAP::SOAPString"]],
         ["retval", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
-        :response_style => :rpc, :response_use => :encoded }
+        :response_style => :rpc, :response_use => :encoded,
+        :faults => {} }
     ],
     [ XSD::QName.new("urn:example.com:simpletype-rpc", "echo_version_r"),
       "urn:example.com:simpletype-rpc",
@@ -20,7 +21,8 @@ class Echo_version_port_type < ::SOAP::RPC::Driver
       [ ["in", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
         ["retval", "version", ["::SOAP::SOAPString"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
-        :response_style => :rpc, :response_use => :encoded }
+        :response_style => :rpc, :response_use => :encoded,
+        :faults => {} }
     ]
   ]
 

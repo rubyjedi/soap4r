@@ -61,7 +61,11 @@ class TestAny < Test::Unit::TestCase
     teardown_server
     unless $DEBUG
       File.unlink(pathname('echo.rb')) if File.exist?(pathname('echo.rb'))
+      File.unlink(pathname('echoMappingRegistry.rb')) if File.exist?(pathname('echoMappingRegistry.rb'))
       File.unlink(pathname('echoDriver.rb')) if File.exist?(pathname('echoDriver.rb'))
+      File.unlink(pathname('echoServant.rb')) if File.exist?(pathname('echoServant.rb'))
+      File.unlink(pathname('echo_service.rb')) if File.exist?(pathname('echo_service.rb'))
+      File.unlink(pathname('echo_serviceClient.rb')) if File.exist?(pathname('echo_serviceClient.rb'))
     end
     @client.reset_stream if @client
   end
@@ -78,6 +82,7 @@ class TestAny < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
@@ -117,6 +122,7 @@ class TestAny < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
     gen.opt['driver'] = nil
     gen.opt['client_skelton'] = nil
     gen.opt['servant_skelton'] = nil
