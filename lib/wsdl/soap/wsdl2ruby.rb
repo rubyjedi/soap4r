@@ -57,7 +57,7 @@ private
   def create_file
     @modulepath = @opt['module_path']
     create_classdef if @opt.key?('classdef')
-    create_mapping_registry if @opt.key?('mapping_registry') or @opt.key?('driver')
+    create_mapping_registry if @opt.key?('mapping_registry')
     create_servant_skelton(@opt['servant_skelton']) if @opt.key?('servant_skelton')
     create_cgi_stub(@opt['cgi_stub']) if @opt.key?('cgi_stub')
     create_standalone_server_stub(@opt['standalone_server_stub']) if @opt.key?('standalone_server_stub')

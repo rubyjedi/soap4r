@@ -168,8 +168,12 @@ class Router
         op.call(env.body, @mapping_registry, @literal_mapping_registry,
           create_mapping_opt)
       default_encodingstyle = op.response_default_encodingstyle
-    rescue Exception
-      soap_response = fault($!)
+    rescue Exception => e
+      # If a wsdl fault was raised by service, the fault declaration details
+      # is kept in wsdl_fault. Otherwise (exception is a program fault)
+      # wsdl_fault is nil
+      wsdl_fault_details = op.faults && op.faults[e.class.name]
+      soap_response = fault(e, wsdl_fault_details)
       default_encodingstyle = nil
     end
     conn_data.is_fault = true if soap_response.is_a?(SOAPFault)
@@ -181,7 +185,7 @@ class Router
 
   # Create fault response string.
   def create_fault_response(e)
-    env = SOAPEnvelope.new(SOAPHeader.new, SOAPBody.new(fault(e)))
+    env = SOAPEnvelope.new(SOAPHeader.new, SOAPBody.new(fault(e, nil)))
     opt = {}
     opt[:external_content] = nil
     response_string = Processor.marshal(env, opt)
@@ -318,15 +322,36 @@ private
   end
 
   # Create fault response.
-  def fault(e)
+  def fault(e, wsdl_fault_details)
     if e.is_a?(UnhandledMustUnderstandHeaderError)
       faultcode = FaultCode::MustUnderstand
     else
       faultcode = FaultCode::Server
     end
-    detail = Mapping.obj2soap(Mapping::SOAPException.new(e),
-      @mapping_registry)
-    detail.elename ||= XSD::QName::EMPTY # for literal mappingregstry
+
+    # If the exception represents a WSDL fault, the fault element should
+    # be added as the SOAP fault <detail> element. If the exception is a
+    # normal program exception, it is wrapped inside a custom SOAP4R
+    # SOAP exception element.
+    detail = nil
+    if (wsdl_fault_details)
+      registry = wsdl_fault_details[:use] == "literal" ?
+        @literal_mapping_registry : @mapping_registry
+      faultQName = XSD::QName.new(
+        wsdl_fault_details[:ns], wsdl_fault_details[:name]
+      )
+      detail = Mapping.obj2soap(e, registry, faultQName)
+      # wrap fault element (SOAPFault swallows top-level element)
+      wrapper = SOAP::SOAPElement.new(faultQName)
+      wrapper.add(detail)
+      detail = wrapper
+    else
+      # Exception is a normal program exception. Wrap it.
+      detail = Mapping.obj2soap(Mapping::SOAPException.new(e),
+                                @mapping_registry)
+      detail.elename ||= XSD::QName::EMPTY # for literal mappingregstry
+    end
+
     SOAPFault.new(
       SOAPElement.new(nil, faultcode),
       SOAPString.new(e.to_s),
@@ -345,6 +370,7 @@ private
     attr_reader :response_style
     attr_reader :request_use
     attr_reader :response_use
+    attr_reader :faults
 
     def initialize(soapaction, name, param_def, opt)
       @soapaction = soapaction
@@ -353,6 +379,7 @@ private
       @response_style = opt[:response_style]
       @request_use = opt[:request_use]
       @response_use = opt[:response_use]
+      @faults = opt[:faults]
       check_style(@request_style)
       check_style(@response_style)
       check_use(@request_use)
@@ -469,7 +496,7 @@ private
         response_rpc_lit(result, literal_mapping_registry, opt)
       end
     end
-    
+
     def response_doc(result, mapping_registry, literal_mapping_registry, opt)
       if @doc_response_qnames.size == 0
         result = []

@@ -40,9 +40,9 @@ class MethodDefCreator
     binding = port.find_binding
     if binding
       binding.operations.each do |op_bind|
-        op = op_bind.find_operation
         next unless op_bind # no binding is defined
         next unless op_bind.soapoperation # not a SOAP operation binding
+        op = op_bind.find_operation
         methoddef << ",\n" unless methoddef.empty?
         methoddef << dump_method(op, op_bind).chomp
       end
@@ -92,6 +92,19 @@ class MethodDefCreator
 private
 
   def dump_method(operation, binding)
+    op_faults = {}
+    binding.fault.each do |fault|
+      op_fault = {}
+      soapfault = fault.soapfault
+      op_fault[:ns] = fault.name.namespace
+      op_fault[:name] = fault.name.name
+      op_fault[:namespace] = soapfault.namespace
+      op_fault[:use] = soapfault.use || "literal"
+      op_fault[:encodingstyle] = soapfault.encodingstyle || "document"
+      op_faults[fault.name.name] = op_fault
+    end
+    op_faults_str = op_faults.inspect
+
     name = safemethodname(operation.name)
     name_as = operation.name
     style = binding.soapoperation_style
@@ -115,7 +128,8 @@ private
   #{dq(name)},
   #{paramstr},
   { :request_style =>  #{sym(style.id2name)}, :request_use =>  #{sym(inputuse.id2name)},
-    :response_style => #{sym(style.id2name)}, :response_use => #{sym(outputuse.id2name)} }
+    :response_style => #{sym(style.id2name)}, :response_use => #{sym(outputuse.id2name)},
+    :faults => #{op_faults_str} }
 __EOD__
     if inputuse == :encoded or outputuse == :encoded
       @encoded = true
