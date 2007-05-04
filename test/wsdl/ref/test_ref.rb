@@ -146,6 +146,7 @@ class TestRef < Test::Unit::TestCase
       gen.run
     end
     compare("expectedProduct.rb", "product.rb")
+    compare("expectedDriver.rb", "productDriver.rb")
   end
 
   def test_wsdl

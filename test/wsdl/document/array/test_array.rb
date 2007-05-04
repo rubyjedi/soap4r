@@ -40,7 +40,10 @@ class TestArray < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('double.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('double.rb'))
+      File.unlink(pathname('doubleMappingRegistry.rb'))
+    end
     @client.reset_stream if @client
   end
 
