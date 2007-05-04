@@ -38,7 +38,10 @@ class TestEcho < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('complexContent.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('complexContent.rb'))
+      File.unlink(pathname('complexContentMappingRegistry.rb'))
+    end
     @client.reset_stream if @client
   end
 
