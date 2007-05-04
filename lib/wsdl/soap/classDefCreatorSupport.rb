@@ -54,10 +54,9 @@ module ClassDefCreatorSupport
 #
 __EOD__
     unless fault.empty?
-      faultstr = (fault.collect { |f| dump_inout_type(f).chomp }).join(', ')
       str <<<<__EOD__
 # RAISES
-#   #{faultstr}
+#{dump_fault_type(fault)}
 #
 __EOD__
     end
@@ -123,6 +122,12 @@ private
     else
       base + ' ' * (pos - base.size) + str
     end
+  end
+
+  def dump_fault_type(fault)
+    fault.collect { |ele|
+      dump_inout_type(ele).chomp
+    }.join("\n")
   end
 end
 
