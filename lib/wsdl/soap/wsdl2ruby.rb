@@ -85,6 +85,7 @@ private
   end
 
   def create_client_skelton(servicename)
+    return if @wsdl.services.empty?
     @logger.info { "Creating client skelton." }
     servicename ||= @wsdl.services[0].name.name
     @client_skelton_filename = servicename + 'Client.rb'
