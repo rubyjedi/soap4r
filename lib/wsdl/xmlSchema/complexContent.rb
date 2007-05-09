@@ -54,6 +54,11 @@ class ComplexContent < Info
     content.attributes
   end
 
+  def nested_elements
+    # restrict and extension does not have particle.
+    elements
+  end
+
   def check_type
     if content
       content.check_type

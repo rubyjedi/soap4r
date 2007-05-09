@@ -80,6 +80,14 @@ class ComplexType < Info
     end
   end
 
+  def nested_elements
+    if c = @complexcontent || @content
+      c.nested_elements
+    else
+      XSD::NamedElements::Empty
+    end
+  end
+
   def find_element(name)
     return nil if name.nil?
     elements.each do |element|

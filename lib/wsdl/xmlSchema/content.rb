@@ -41,6 +41,18 @@ class Content < Info
     false
   end
 
+  def nested_elements
+    elements = XSD::NamedElements.new
+    @elements.each do |ele|
+      if ele.respond_to?(:nested_elements)
+        elements.concat(ele.nested_elements)
+      else
+        elements << ele
+      end
+    end
+    elements
+  end
+
   def <<(element)
     @elements << element
   end
