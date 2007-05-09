@@ -157,7 +157,7 @@ private
     else
       type = nil
     end
-    if child_element
+    if child_element and child_element.name
       if child_element.map_as_array?
         type << '[]' if type
       end

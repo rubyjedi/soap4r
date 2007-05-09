@@ -118,7 +118,7 @@ class ComplexType < Info
       raise RuntimeError.new("Assert: not for array")
     end
     if check_array_content
-      return elements[0]
+      return nested_elements[0]
     end
     nil # use default item name
   end

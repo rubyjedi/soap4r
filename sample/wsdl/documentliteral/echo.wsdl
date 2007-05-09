@@ -10,7 +10,7 @@
         elementFormDefault="qualified">
       <xsd:complexType name="TestType">
         <xsd:sequence>
-          <xsd:any minOccurs="0" maxOccurs="*" />
+          <xsd:any minOccurs="0" maxOccurs="unbounded" />
         </xsd:sequence>
       </xsd:complexType>
       <xsd:element name="echoRequest">
