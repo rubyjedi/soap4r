@@ -52,7 +52,12 @@ module_function
   end
 
   def set_basic_auth(client, basic_auth)
-    basic_auth.values.each do |url, userid, passwd|
+    basic_auth.values.each do |ele|
+      if ele.is_a?(::Array)
+        url, userid, passwd = ele
+      else
+        url, userid, passwd = ele[:url], ele[:userid], ele[:password]
+      end
       client.set_basic_auth(url, userid, passwd)
     end
   end

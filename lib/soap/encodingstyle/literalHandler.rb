@@ -94,7 +94,7 @@ class LiteralHandler < Handler
   def encode_data_end(generator, ns, data, parent)
     name = generator.encode_name_end(ns, data)
     cr = (data.is_a?(SOAPCompoundtype) or
-      (data.is_a?(SOAPElement) and !data.text))
+      (data.is_a?(SOAPElement) and !data.members.empty?))
     generator.encode_tag_end(name, cr)
   end
 
