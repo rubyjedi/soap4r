@@ -118,17 +118,18 @@ private
             ele.add(child)
           end
         end
-      elsif child = Mapping.get_attribute(obj, eledef.varname)
-        if eledef.as_array?
+      elsif obj.respond_to?(:each) and eledef.as_array?
+        obj.each do |item|
+          ele.add(obj2soap(item, eledef.elename))
+        end
+      else
+        child = Mapping.get_attribute(obj, eledef.varname)
+        if child.respond_to?(:each) and eledef.as_array?
           child.each do |item|
             ele.add(obj2soap(item, eledef.elename))
           end
         else
           ele.add(obj2soap(child, eledef.elename))
-        end
-      elsif obj.respond_to?(:each) and eledef.as_array?
-        obj.each do |item|
-          ele.add(obj2soap(item, eledef.elename))
         end
       end
     end

@@ -457,17 +457,18 @@ private
     end
     definition.elements.each do |eledef|
       name = eledef.elename.name
-      if child = Mapping.get_attribute(obj, eledef.varname)
-        if eledef.as_array?
+      if obj.respond_to?(:each) and eledef.as_array?
+        obj.each do |item|
+          ele.add(name, typedobj2soap(item, eledef.mapped_class))
+        end
+      else
+        child = Mapping.get_attribute(obj, eledef.varname)
+        if child.respond_to?(:each) and eledef.as_array?
           child.each do |item|
             ele.add(name, typedobj2soap(item, eledef.mapped_class))
           end
         else
           ele.add(name, typedobj2soap(child, eledef.mapped_class))
-        end
-      elsif obj.respond_to?(:each) and eledef.as_array?
-        obj.each do |item|
-          ele.add(name, typedobj2soap(item, eledef.mapped_class))
         end
       end
     end
