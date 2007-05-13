@@ -110,7 +110,7 @@ public
   end
 
   def encode_element(ns, obj, parent)
-    attrs = {}
+    attrs = obj.extraattr.dup
     if obj.is_a?(SOAPBody)
       @reftarget = obj
       obj.encode(self, ns, attrs) do |child|

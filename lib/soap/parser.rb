@@ -231,6 +231,7 @@ private
       o = SOAPFault.new
       parent.node.fault = o
     end
+    o.extraattr.update(attrs) if o
     o
   end
 
