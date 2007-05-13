@@ -176,6 +176,8 @@ __EOD__
       else
 	raise NotImplementedError.new("must not reach here")
       end
+    elsif part.type == XSD::AnyTypeName
+      [XSD::AnyTypeName]
     else
       raise RuntimeError.new("part: #{part.name} cannot be resolved")
     end
