@@ -69,10 +69,11 @@ module GenSupport
     safename = name.scan(/[a-zA-Z0-9_]+/).collect { |ele|
       GenSupport.capitalize(ele)
     }.join
-    if /^[A-Z]/ !~ safename or keyword?(safename)
-      safename = "C_#{safename}"
+    if /\A[A-Z]/ !~ safename or keyword?(safename)
+      "C_#{safename}"
+    else
+      safename
     end
-    safename
   end
   module_function :safeconstname
 
@@ -86,21 +87,22 @@ module GenSupport
     safename = name.scan(/[a-zA-Z0-9_]+/).join('_')
     safename = uncapitalize(safename)
     safename += postfix if postfix
-    if /^[a-z]/ !~ safename
-      safename = "m_#{safename}"
+    if /\A[a-z]/ !~ safename or keyword?(safename)
+      "m_#{safename}"
+    else
+      safename
     end
-    safename
   end
   module_function :safemethodname
 
   def safemethodname?(name)
-    /\A[a-zA-Z_][a-zA-Z0-9_]*[=!?]?\z/ =~ name
+    /\A[a-zA-Z_][a-zA-Z0-9_]*[=!?]?\z/ =~ name and !keyword?(name)
   end
   module_function :safemethodname?
 
   def safevarname(name)
     safename = uncapitalize(name.scan(/[a-zA-Z0-9_]+/).join('_'))
-    if /^[a-z]/ !~ safename or keyword?(safename)
+    if /\A[a-z]/ !~ safename or keyword?(safename)
       "v_#{safename}"
     else
       safename
