@@ -27,8 +27,9 @@ class Importer
     unless location.is_a?(URI)
       location = URI.parse(location)
     end
-    content = parse(fetch(location), location, originalroot)
-    content.location = location
+    source, normalizedlocation = fetch(location)
+    content = parse(source, normalizedlocation, originalroot)
+    content.location = normalizedlocation
     content
   end
 
@@ -45,9 +46,11 @@ private
   def fetch(location)
     warn("importing: #{location}") if $DEBUG
     content = nil
+    normalizedlocation = location
     if location.scheme == 'file' or
         (location.relative? and FileTest.exist?(location.path))
       content = File.open(location.path).read
+      normalizedlocation = URI.parse('file://' + File.expand_path(location.path))
     elsif location.scheme and location.scheme.size == 1 and
         FileTest.exist?(location.to_s)
       # ToDo: remove this ugly workaround for a path with drive letter
@@ -63,7 +66,7 @@ private
       end
       content = client.get_content(location)
     end
-    content
+    return content, normalizedlocation
   end
 
   def web_client
