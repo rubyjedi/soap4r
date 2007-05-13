@@ -87,26 +87,19 @@ class Definitions < Info
       fault_part = faultparts[0]
       # WS-I Basic Profile Version 1.1 (R2205) requires fault message parts 
       # to refer to elements rather than types
-      if not fault_part.element
-	raise RuntimeError.new("Fault message \"#{name}\" part \"#{fault_part.name}\" must specify an \"element\" attribute")
+      faulttype = fault_part.element
+      if not faulttype
+	warn("Fault message \"#{name}\" part \"#{fault_part.name}\" must specify an \"element\" attribute")
+        faulttype = fault_part.type
       end
-
-      if result.index(fault_part.element).nil?
-	result << fault_part.element
+      if faulttype and result.index(faulttype).nil?
+	result << faulttype
       end
     end
     result
   end
 
 private
-
-  def operation_binding(binding, operation_qname)
-    binding.operations.each do |op_binding|
-      if (op_binding.soapoperation_name == operation_qname)
-        return op_binding
-      end
-    end
-  end
 
   def get_fault_binding(op_binding, fault_name)
     op_binding.fault.each do |fault|
@@ -122,33 +115,33 @@ private
   def collect_fault_messages
     result = []
     porttypes.each do |porttype|
+      port_binding = porttype.find_binding()
       porttype.operations.each do |operation|
+        op_binding = port_binding.operations.find { |ele| ele.name == operation.name }
+        next unless op_binding
 	operation.fault.each do |fault|
           # Make sure the operation fault has a name
           if not fault.name
             warn("Operation \"#{operation.name}\": fault must specify a \"name\" attribute")
             next
           end
-          operation_qname = XSD::QName.new(operation.targetnamespace, operation.name)
-          binding = porttype.find_binding()
-          op_binding = operation_binding(binding, operation_qname)
           # Make sure that portType fault has a corresponding soap:fault
           # definition in binding section.
           if not op_binding_declares_fault(op_binding, fault.name)
-            raise RuntimeError.new("Operation \"#{operation.name}\", fault \"#{fault.name}\": no corresponding wsdl:fault binding found with a matching \"name\" attribute")          
+            warn("Operation \"#{operation.name}\", fault \"#{fault.name}\": no corresponding wsdl:fault binding found with a matching \"name\" attribute")          
+            next
           end
-          
           fault_binding = get_fault_binding(op_binding, fault.name)
           if fault_binding.soapfault.name != fault_binding.name
-            puts "WARNING: name of soap:fault \"#{fault_binding.soapfault.name}\" doesn't match the name of wsdl:fault \"#{fault_binding.name}\" in operation \"#{operation.name}\" \n\n"
+            warn("WARNING: name of soap:fault \"#{fault_binding.soapfault.name}\" doesn't match the name of wsdl:fault \"#{fault_binding.name}\" in operation \"#{operation.name}\" \n\n")
+            next
           end
           # According to WS-I (R2723): if in a wsdl:binding the use attribute
           # on a contained soapbind:fault element is present, its value MUST 
           # be "literal".          
           if fault_binding.soapfault.use and fault_binding.soapfault.use != "literal"
-            raise RuntimeError.new("Operation \"#{operation.name}\", fault \"#{fault.name}\": soap:fault \"use\" attribute must be \"literal\"")          
+            warn("Operation \"#{operation.name}\", fault \"#{fault.name}\": soap:fault \"use\" attribute must be \"literal\"")          
           end
-
 	  if result.index(fault.message).nil?
 	    result << fault.message
 	  end
