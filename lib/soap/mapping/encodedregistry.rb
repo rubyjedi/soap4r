@@ -436,11 +436,11 @@ private
 
   def array2soap(obj, definition)
     return SOAPNil.new if obj.nil?      # ToDo: check nillable.
-    arytype = definition.elements[0].elename
-    soap_obj = SOAPArray.new(ValueArrayName, 1, arytype)
+    eledef = definition.elements[0]
+    soap_obj = SOAPArray.new(ValueArrayName, 1, eledef.elename)
     mark_marshalled_obj(obj, soap_obj)
     obj.each do |item|
-      soap_obj.add(Mapping._obj2soap(item, self, arytype))
+      soap_obj.add(typedobj2soap(item, eledef.mapped_class))
     end
     soap_obj
   end
@@ -460,18 +460,26 @@ private
       if child = Mapping.get_attribute(obj, eledef.varname)
         if eledef.as_array?
           child.each do |item|
-            ele.add(name, Mapping._obj2soap(item, self))
+            ele.add(name, typedobj2soap(item, eledef.mapped_class))
           end
         else
-          ele.add(name, Mapping._obj2soap(child, self))
+          ele.add(name, typedobj2soap(child, eledef.mapped_class))
         end
       elsif obj.respond_to?(:each) and eledef.as_array?
         obj.each do |item|
-          ele.add(name, Mapping._obj2soap(item, self))
+          ele.add(name, typedobj2soap(item, eledef.mapped_class))
         end
       end
     end
     ele
+  end
+
+  def typedobj2soap(value, klass)
+    if klass and klass.ancestors.include?(::SOAP::SOAPBasetype)
+      base2soap(value, klass)
+    else
+      Mapping._obj2soap(value, self)
+    end
   end
 
   def elesoap2stubobj(node, obj_class, definition)
