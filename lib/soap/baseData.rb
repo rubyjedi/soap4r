@@ -8,6 +8,7 @@
 
 require 'xsd/datatypes'
 require 'soap/soap'
+require 'xsd/codegen/gensupport'
 
 
 module SOAP
