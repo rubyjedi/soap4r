@@ -10,6 +10,7 @@ require 'wsdl/info'
 require 'wsdl/soap/classDefCreatorSupport'
 require 'wsdl/soap/encodedMappingRegistryCreator'
 require 'wsdl/soap/literalMappingRegistryCreator'
+require 'xsd/codegen/moduledef.rb'
 
 
 module WSDL
