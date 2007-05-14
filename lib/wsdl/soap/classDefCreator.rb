@@ -116,6 +116,8 @@ private
       dump_simpletypedef_restriction(qname, simpletype, qualified)
     elsif simpletype.list
       dump_simpletypedef_list(qname, simpletype, qualified)
+    elsif simpletype.union
+      dump_simpletypedef_union(qname, simpletype, qualified)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
@@ -156,6 +158,17 @@ private
       c.comment << "\n  contains list of #{create_class_name(list.itemtype)}::*"
     else
       raise RuntimeError.new("unknown kind of list: #{list}")
+    end
+    c.dump
+  end
+
+  def dump_simpletypedef_union(qname, typedef, qualified)
+    union = typedef.union
+    c = ClassDef.new(create_class_name(qname), '::String')
+    c.comment = "#{qname}"
+    if union.member_types
+      # fixme
+      c.comment << "\n any of #{union.member_types}"
     end
     c.dump
   end

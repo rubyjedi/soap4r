@@ -17,3 +17,18 @@ class Version < ::String
   C_18 = Version.new("1.8")
   C_19 = Version.new("1.9")
 end
+
+# {urn:example.com:simpletype-rpc-type}stateType
+class StateType < ::String
+  StateType = StateType.new("stateType")
+end
+
+# {urn:example.com:simpletype-rpc-type}zipIntType
+class ZipIntType < ::String
+  C_123 = ZipIntType.new("123")
+end
+
+# {urn:example.com:simpletype-rpc-type}zipUnion
+#  any of tns:stateType tns:zipIntType
+class ZipUnion < ::String
+end

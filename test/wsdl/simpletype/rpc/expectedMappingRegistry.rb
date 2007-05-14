@@ -21,6 +21,18 @@ module Echo_versionMappingRegistry
     :schema_type => "version"
   )
 
+  EncodedRegistry.register(
+    :class => StateType,
+    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_type => "stateType"
+  )
+
+  EncodedRegistry.register(
+    :class => ZipIntType,
+    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_type => "zipIntType"
+  )
+
   LiteralRegistry.register(
     :class => Version_struct,
     :schema_ns => "urn:example.com:simpletype-rpc-type",
@@ -36,5 +48,17 @@ module Echo_versionMappingRegistry
     :class => Version,
     :schema_ns => "urn:example.com:simpletype-rpc-type",
     :schema_type => "version"
+  )
+
+  LiteralRegistry.register(
+    :class => StateType,
+    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_type => "stateType"
+  )
+
+  LiteralRegistry.register(
+    :class => ZipIntType,
+    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_type => "zipIntType"
   )
 end

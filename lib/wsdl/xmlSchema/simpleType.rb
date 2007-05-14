@@ -18,11 +18,14 @@ class SimpleType < Info
   attr_accessor :name
   attr_reader :restriction
   attr_reader :list
+  attr_reader :union
 
   def check_lexical_format(value)
     if @restriction
       check_restriction(value)
     elsif @list
+      # TODO: check
+    elsif @union
       # TODO: check
     else
       raise ArgumentError.new("incomplete simpleType")
@@ -42,6 +45,7 @@ class SimpleType < Info
     @name = name
     @restriction = nil
     @list = nil
+    @union = nil
   end
 
   def targetnamespace
@@ -56,6 +60,9 @@ class SimpleType < Info
     when ListName
       @list = List.new
       @list
+    when UnionName
+      @union = Union.new
+      @union
     end
   end
 
