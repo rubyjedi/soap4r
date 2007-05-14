@@ -130,7 +130,7 @@ class Document < ::String
 end
 
 # {urn:ref}DerivedChoice_BaseSimpleContent
-class DerivedChoice_BaseSimpleContent
+class DerivedChoice_BaseSimpleContent < Document
   attr_accessor :varStringExt
   attr_accessor :varFloatExt
 

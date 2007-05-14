@@ -12,11 +12,16 @@ class TestAbstract < Test::Unit::TestCase
   class Server < ::SOAP::RPC::StandaloneServer
     def on_init
       add_rpc_method(self, 'echo', 'name', 'author')
+      add_rpc_method(self, 'echoDerived', 'parameter')
       self.mapping_registry = AbstractMappingRegistry::EncodedRegistry
     end
   
     def echo(name, author)
       Book.new(name, author)
+    end
+
+    def echoDerived(parameter)
+      parameter
     end
   end
 
@@ -125,6 +130,15 @@ class TestAbstract < Test::Unit::TestCase
     assert_equal(author.firstname, ret.author.firstname)
     assert_equal(author.lastname, ret.author.lastname)
     assert_equal(author.nonuserid, ret.author.nonuserid)
+  end
+
+  def test_stub_derived
+    @client = AbstractService.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDERR if $DEBUG
+
+    parameter = DerivedClass1.new(123, "someVar1")
+    ret = @client.echoDerived(parameter)
+    p ret
   end
 end
 
