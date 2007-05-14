@@ -32,6 +32,25 @@
           <xsd:pattern value='[a-zA-Z0-9]{18}'/>
         </xsd:restriction>
       </xsd:simpleType>
+
+      <xsd:simpleType name="stateType">
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="stateType"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+
+      <xsd:simpleType name="zipIntType">
+        <xsd:restriction base="xsd:int">
+          <xsd:enumeration value="123"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+
+      <xsd:simpleType name="zipUnion">
+        <xsd:union memberTypes="tns:stateType tns:zipIntType"/>
+      </xsd:simpleType>
+
+      <xsd:element name="zip" type="tns:zipUnion"/>
+
     </xsd:schema>
   </types>
 

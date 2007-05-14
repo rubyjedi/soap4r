@@ -201,6 +201,8 @@ module MappingRegistryCreatorSupport
       dump_simpletypedef_restriction(qname, simpletype)
     elsif simpletype.list
       dump_simpletypedef_list(qname, simpletype)
+    elsif simpletype.union
+      dump_simpletypedef_union(qname, simpletype)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
@@ -224,6 +226,10 @@ module MappingRegistryCreatorSupport
   end
 
   def dump_simpletypedef_list(qname, typedef)
+    nil
+  end
+
+  def dump_simpletypedef_union(qname, typedef)
     nil
   end
 end

@@ -26,6 +26,7 @@ require 'wsdl/xmlSchema/choice'
 require 'wsdl/xmlSchema/sequence'
 require 'wsdl/xmlSchema/list'
 require 'wsdl/xmlSchema/attribute'
+require 'wsdl/xmlSchema/union'
 require 'wsdl/xmlSchema/unique'
 require 'wsdl/xmlSchema/enumeration'
 require 'wsdl/xmlSchema/length'
@@ -59,6 +60,7 @@ SequenceName = XSD::QName.new(XSD::Namespace, 'sequence')
 SchemaName = XSD::QName.new(XSD::Namespace, 'schema')
 SimpleContentName = XSD::QName.new(XSD::Namespace, 'simpleContent')
 SimpleTypeName = XSD::QName.new(XSD::Namespace, 'simpleType')
+UnionName = XSD::QName.new(XSD::Namespace, 'union')
 UniqueName = XSD::QName.new(XSD::Namespace, 'unique')
 
 AbstractAttrName = XSD::QName.new(nil, 'abstract')
@@ -72,6 +74,7 @@ FormAttrName = XSD::QName.new(nil, 'form')
 IdAttrName = XSD::QName.new(nil, 'id')
 ItemTypeAttrName = XSD::QName.new(nil, 'itemType')
 MaxOccursAttrName = XSD::QName.new(nil, 'maxOccurs')
+MemberTypesAttrName = XSD::QName.new(nil, 'memberTypes')
 MinOccursAttrName = XSD::QName.new(nil, 'minOccurs')
 MixedAttrName = XSD::QName.new(nil, 'mixed')
 NameAttrName = XSD::QName.new(nil, 'name')
