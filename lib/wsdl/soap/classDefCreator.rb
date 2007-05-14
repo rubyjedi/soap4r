@@ -128,6 +128,9 @@ private
       return nil
     end
     classname = create_class_name(qname)
+    if Module.constants.include?(classname)
+      warn("created definition tries to reopen existing class: #{classname}")
+    end
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     define_classenum_restriction(c, classname, restriction.enumeration)
@@ -136,7 +139,11 @@ private
 
   def dump_simpletypedef_list(qname, typedef, qualified)
     list = typedef.list
-    c = ClassDef.new(create_class_name(qname), '::Array')
+    classname = create_class_name(qname)
+    if Module.constants.include?(classname)
+      warn("created definition tries to reopen existing class: #{classname}")
+    end
+    c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
     if simpletype = list.local_simpletype
       if simpletype.restriction.nil?
@@ -144,7 +151,7 @@ private
           "unknown kind of simpletype: #{simpletype}")
       end
       define_stringenum_restriction(c, simpletype.restriction.enumeration)
-      c.comment << "\n  contains list of #{create_class_name(qname)}::*"
+      c.comment << "\n  contains list of #{classname}::*"
     elsif list.itemtype
       c.comment << "\n  contains list of #{create_class_name(list.itemtype)}::*"
     else
@@ -178,7 +185,11 @@ private
   end
 
   def dump_simpleclassdef(qname, type_or_element)
-    c = ClassDef.new(create_class_name(qname), '::String')
+    classname = create_class_name(qname)
+    if Module.constants.include?(classname)
+      warn("created definition tries to reopen existing class: #{classname}")
+    end
+    c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     init_lines = []
     unless type_or_element.attributes.empty?
@@ -209,10 +220,14 @@ private
   end
 
   def dump_classdef(qname, typedef, qualified = false)
+    classname = create_class_name(qname)
+    if Module.constants.include?(classname)
+      warn("created definition tries to reopen existing class: #{classname}")
+    end
     if @faulttypes and @faulttypes.index(qname)
-      c = ClassDef.new(create_class_name(qname), '::StandardError')
+      c = ClassDef.new(classname, '::StandardError')
     else
-      c = ClassDef.new(create_class_name(qname))
+      c = ClassDef.new(classname)
     end
     c.comment = "#{qname}"
     c.comment << "\nabstract" if typedef.abstract
@@ -329,7 +344,11 @@ private
   end
 
   def dump_arraydef(qname, complextype)
-    c = ClassDef.new(create_class_name(qname), '::Array')
+    classname = create_class_name(qname)
+    if Module.constants.include?(classname)
+      warn("created definition tries to reopen existing class: #{classname}")
+    end
+    c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
     c.dump
   end
