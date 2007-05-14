@@ -16,6 +16,24 @@
         </xsd:sequence>
       </xsd:complexType>
       <xsd:element name="foo.bar" type="txd:foo.bar"/>
+
+      <!-- from #323 -->
+      <xsd:element name="setOutputAndCompleteRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="taskId" type="xsd:string"/>
+            <xsd:element name="data">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:any maxOccurs="unbounded" minOccurs="0" />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="participantToken" type="xsd:string">
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
     </xsd:schema>
   </types>
 
@@ -23,16 +41,39 @@
     <part name="parameters" type="txd:foo.bar"/>
   </message>
 
+  <message name="setOutputAndCompleteRequest">
+    <part name="parameters" element="txd:setOutputAndCompleteRequest"/>
+  </message>
+
+  <message name="okResponse">
+    <part name="parameters" element="txd:setOutputAndCompleteRequest"/>
+  </message>
+
   <portType name="echo_port_type">
     <operation name="echo">
       <input message="tns:msg_echoitem"/>
       <output message="tns:msg_echoitem"/>
+    </operation>
+
+    <operation name="setOutputAndComplete">
+      <input message="tns:setOutputAndCompleteRequest"/>
+      <output message="tns:okResponse"/>
     </operation>
   </portType>
 
   <binding name="echo_binding" type="tns:echo_port_type">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
     <operation name="echo">
+      <soap:operation soapAction="urn:example.com:echo"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+
+    <operation name="setOutputAndComplete">
       <soap:operation soapAction="urn:example.com:echo"/>
       <input>
         <soap:body use="literal"/>

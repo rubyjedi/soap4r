@@ -116,6 +116,7 @@ private
     result = []
     porttypes.each do |porttype|
       port_binding = porttype.find_binding()
+      next unless port_binding
       porttype.operations.each do |operation|
         op_binding = port_binding.operations.find { |ele| ele.name == operation.name }
         next unless op_binding

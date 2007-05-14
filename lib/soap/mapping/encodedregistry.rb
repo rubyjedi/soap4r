@@ -510,7 +510,7 @@ private
         vars[name] = child
       end
     end
-    if obj.is_a?(::Array) and vars.keys.size == 1
+    if obj.is_a?(::Array) and is_stubobj_elements_for_array(vars)
       obj.replace(vars.values[0])
     else
       Mapping.set_attributes(obj, vars)
