@@ -221,13 +221,19 @@ private
 
   def dump_classdef(qname, typedef, qualified = false)
     classname = create_class_name(qname)
+    baseclassname = nil
+    if typedef.complexcontent
+      if base = typedef.complexcontent.base
+        baseclassname = create_class_name(base)
+      end
+    end
     if Module.constants.include?(classname)
       warn("created definition tries to reopen existing class: #{classname}")
     end
     if @faulttypes and @faulttypes.index(qname)
       c = ClassDef.new(classname, '::StandardError')
     else
-      c = ClassDef.new(classname)
+      c = ClassDef.new(classname, baseclassname)
     end
     c.comment = "#{qname}"
     c.comment << "\nabstract" if typedef.abstract

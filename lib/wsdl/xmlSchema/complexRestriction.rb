@@ -51,7 +51,7 @@ class ComplexRestriction < Info
     if @base == ::SOAP::ValueArrayName
       :TYPE_ARRAY
     else
-      basetype.check_type
+      basetype.check_type if basetype
     end
   end
   

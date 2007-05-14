@@ -38,6 +38,10 @@ class ComplexContent < Info
     @extension || @restriction
   end
 
+  def base
+    content ? content.base : nil
+  end
+
   def have_any?
     content ? content.have_any? : nil
   end
