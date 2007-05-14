@@ -254,6 +254,10 @@ module RegistrySupport
         end
     klass.new(v).data
   end
+
+  def is_stubobj_elements_for_array(vars)
+    vars.keys.size == 1 and vars.values[0].is_a?(::Array)
+  end
 end
 
 
