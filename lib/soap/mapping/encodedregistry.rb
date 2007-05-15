@@ -187,6 +187,9 @@ class EncodedRegistry
     [::String,       ::SOAP::SOAPGDay,       BasetypeFactory],
     [::String,       ::SOAP::SOAPGMonth,     BasetypeFactory],
     [::String,       ::SOAP::SOAPQName,      BasetypeFactory],
+    [::String,       ::SOAP::SOAPNormalizedString, BasetypeFactory],
+    [::String,       ::SOAP::SOAPToken,      BasetypeFactory],
+    [::String,       ::SOAP::SOAPLanguage,   BasetypeFactory],
 
     [::Hash,         ::SOAP::SOAPArray,      HashFactory],
     [::Hash,         ::SOAP::SOAPStruct,     HashFactory],
@@ -250,6 +253,9 @@ class EncodedRegistry
     [::String,       ::SOAP::SOAPGDay,       BasetypeFactory],
     [::String,       ::SOAP::SOAPGMonth,     BasetypeFactory],
     [::String,       ::SOAP::SOAPQName,      BasetypeFactory],
+    [::String,       ::SOAP::SOAPNormalizedString, BasetypeFactory],
+    [::String,       ::SOAP::SOAPToken,      BasetypeFactory],
+    [::String,       ::SOAP::SOAPLanguage,   BasetypeFactory],
 
     [::Hash,         ::SOAP::SOAPArray,      HashFactory],
     [::Hash,         ::SOAP::SOAPStruct,     HashFactory],

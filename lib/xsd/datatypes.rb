@@ -46,8 +46,8 @@ AnyURILiteral = 'anyURI'
 QNameLiteral = 'QName'
 
 NormalizedStringLiteral = 'normalizedString'
-#3.3.2 token
-#3.3.3 language
+TokenLiteral = 'token'
+LanguageLiteral = 'language'
 #3.3.4 NMTOKEN
 #3.3.5 NMTOKENS
 #3.3.6 Name
@@ -255,7 +255,7 @@ private
   def screen_data(d)
     if d.is_a?(String)
       # Integer("00012") => 10 in Ruby.
-      d.sub!(/^([+\-]?)0*(?=\d)/, "\\1")
+      d = d.sub(/^([+\-]?)0*(?=\d)/, "\\1")
     end
     screen_data_str(d)
   end
@@ -1012,6 +1012,40 @@ private
     super
   end
 end
+
+class XSDToken < XSDNormalizedString
+  Type = QName.new(Namespace, TokenLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    if /[\t\n]|\A | \z|  / =~ value
+      raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
+    end
+    super
+  end
+end  
+
+class XSDLanguage < XSDToken
+  Type = QName.new(Namespace, LanguageLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    if /\A(aa|ab|ae|af|ak|am|an|ar|as|av|ay|az|ba|be|bg|bh|bi|bm|bn|bo|br|bs|ca|ce|ch|co|cr|cs|cu|cv|cy|da|de|dv|dz|ee|el|en|eo|es|et|eu|fa|ff|fi|fj|fo|fr|fy|ga|gd|gl|gn|gu|gv|ha|he|hi|ho|hr|ht|hu|hy|hz|ia|id|ie|ig|ii|ik|io|is|it|iu|ja|jv|ka|kg|ki|kj|kk|kl|km|kn|ko|kr|ks|ku|kv|kw|ky|la|lb|lg|li|ln|lo|lt|lu|lv|mg|mh|mi|mk|ml|mn|mo|mr|ms|mt|my|na|nb|nd|ne|ng|nl|nn|no|nr|nv|ny|oc|oj|om|or|os|pa|pi|pl|ps|pt|qu|rm|rn|ro|ru|rw|sa|sc|sd|se|sg|sh|si|sk|sl|sm|sn|so|sq|sr|ss|st|su|sv|sw|ta|te|tg|th|ti|tk|tl|tn|to|tr|ts|tt|tw|ty|ug|uk|ur|uz|ve|vi|vo|wa|wo|xh|yi|yo|za|zh|zu)\z/ =~ value
+      raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }', see ISO 639 for more information.")
+    end
+    super
+  end
+end  
 
 class XSDInteger < XSDDecimal
   Type = QName.new(Namespace, IntegerLiteral)
