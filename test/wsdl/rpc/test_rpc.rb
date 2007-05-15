@@ -12,6 +12,7 @@ class TestRPC < Test::Unit::TestCase
   class Server < ::SOAP::RPC::StandaloneServer
     def on_init
       add_rpc_method(self, 'echo', 'arg1', 'arg2')
+      add_rpc_method(self, 'echo_basetype', 'arg1', 'arg2')
       add_rpc_method(self, 'echo_err', 'arg1', 'arg2')
       self.mapping_registry = Prefix::EchoMappingRegistry::EncodedRegistry
     end
@@ -38,6 +39,11 @@ class TestRPC < Test::Unit::TestCase
         raise
       end
       ret
+    end
+
+    def echo_basetype(arg1, arg2)
+      raise unless arg1.is_a?(Date)
+      arg1
     end
   
     ErrPerson = Struct.new(:Given_name, :no_such_element)
@@ -133,7 +139,7 @@ class TestRPC < Test::Unit::TestCase
     ret = @client.echo(Prefix::Person.new("normal", "untyped", 12, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", 21, Prefix::Gender::M))
     assert_equal("Hi", ret.family_name)
     assert_equal("Na", ret.given_name)
-    # XXX WSDLEncodedRegistry should decode unteyped element using Schema
+    # XXX WSDLEncodedRegistry should decode untyped element using Schema
     assert_equal("21", ret.age)
 
     ret = @client.echo(Prefix::Person.new("dummy", "typed", 12, Prefix::Gender::F), Prefix::Person.new("Hi", "Na", 21, Prefix::Gender::M))
@@ -170,6 +176,15 @@ class TestRPC < Test::Unit::TestCase
     assert_nil(ret.family_name)
     assert_nil(ret.given_name)
     assert_nil(ret.age)
+  end
+
+  def test_basetype_stub
+    @client = Prefix::Echo_port_type.new("http://localhost:#{Port}/")
+    @client.mapping_registry = Prefix::EchoMappingRegistry::EncodedRegistry
+    @client.wiredump_dev = STDERR if $DEBUG
+
+    ret = @client.echo_basetype(Time.now, 12345)
+    assert_equal(Date, ret.class)
   end
 end
 

@@ -455,8 +455,12 @@ private
     def request_rpc_enc(values, mapping_registry, opt)
       method = @rpc_method_factory.dup
       names = method.input_params
-      obj = create_request_obj(names, values)
-      soap = Mapping.obj2soap(obj, mapping_registry, @rpc_request_qname, opt)
+      types = method.input_param_types
+      ary = Mapping.objs2soap(values, mapping_registry, types, opt)
+      soap = {}
+      0.upto(ary.length - 1) do |idx|
+        soap[names[idx]] = ary[idx]
+      end
       method.set_param(soap)
       method
     end
@@ -544,16 +548,6 @@ private
       body.collect { |key, value|
         Mapping.soap2obj(value, mapping_registry)
       }
-    end
-
-    def create_request_obj(names, params)
-      o = Object.new
-      idx = 0
-      while idx < params.length
-        o.instance_variable_set('@' + names[idx], params[idx])
-        idx += 1
-      end
-      o
     end
   end
 end

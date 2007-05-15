@@ -112,6 +112,14 @@ class SOAPMethod < SOAPStruct
     collect_params(OUT, INOUT)
   end
 
+  def input_param_types
+    collect_param_types(IN, INOUT)
+  end
+
+  def output_param_types
+    collect_param_types(OUT, INOUT)
+  end
+
   def set_param(params)
     params.each do |param, data|
       @inparam[param] = data
@@ -129,9 +137,9 @@ class SOAPMethod < SOAPStruct
 
   def get_paramtypes(names)
     types = []
-    @signature.each do |io_type, name, param_type|
-      if param_type && idx = names.index(name)
-        types[idx] = XSD::QName.new(param_type[1], param_type[2])
+    @signature.each do |io_type, name, type_qname|
+      if type_qname && idx = names.index(name)
+        types[idx] = type_qname
       end
     end
     types
@@ -189,9 +197,17 @@ class SOAPMethod < SOAPStruct
 
 private
 
+  def collect_param_types(*type)
+    names = []
+    @signature.each do |io_type, name, type_qname|
+      names << type_qname if type.include?(io_type)
+    end
+    names
+  end
+
   def collect_params(*type)
     names = []
-    @signature.each do |io_type, name, param_type|
+    @signature.each do |io_type, name, type_qname|
       names << name if type.include?(io_type)
     end
     names
@@ -199,15 +215,24 @@ private
 
   def init_param(param_def)
     param_def.each do |io_type, name, param_type|
+      mapped_class, nsdef, namedef = param_type
+      if mapped_class.is_a?(String)
+        mapped_class = Mapping.class_from_name(mapped_class)
+      end
+      if nsdef && namedef
+        type_qname = XSD::QName.new(nsdef, namedef)
+      elsif mapped_class
+        type_qname = TypeMap.index(mapped_class)
+      end
       case io_type
       when IN
-        @signature.push([IN, name, param_type])
+        @signature.push([IN, name, type_qname])
         @inparam_names.push(name)
       when OUT
-        @signature.push([OUT, name, param_type])
+        @signature.push([OUT, name, type_qname])
         @outparam_names.push(name)
       when INOUT
-        @signature.push([INOUT, name, param_type])
+        @signature.push([INOUT, name, type_qname])
         @inoutparam_names.push(name)
       when RETVAL
         if @retval_name
@@ -215,13 +240,7 @@ private
         end
         @retval_name = name
         @retval_class_name = nil
-        if param_type
-          if param_type[0].is_a?(String)
-            @retval_class_name = Mapping.class_from_name(param_type[0])
-          else
-            @retval_class_name = param_type[0]
-          end
-        end
+        @retval_class_name = mapped_class
       else
         raise MethodDefinitionError.new("unknown type: #{io_type}")
       end

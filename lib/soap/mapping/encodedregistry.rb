@@ -295,9 +295,8 @@ class EncodedRegistry
   end
   alias set add
 
-  # general Registry ignores type_qname
   def obj2soap(obj, type_qname = nil)
-    soap = _obj2soap(obj)
+    soap = _obj2soap(obj, type_qname)
     if @allow_original_mapping
       addextend2soap(soap, obj)
     end
@@ -323,7 +322,7 @@ class EncodedRegistry
 
 private
 
-  def _obj2soap(obj)
+  def _obj2soap(obj, type_qname = nil)
     ret = nil
     if obj.is_a?(SOAPStruct) or obj.is_a?(SOAPArray)
       obj.replace do |ele|
@@ -332,6 +331,8 @@ private
       return obj
     elsif obj.is_a?(SOAPBasetype)
       return obj
+    elsif type_qname && type = TypeMap[type_qname]
+      return base2soap(obj, type)
     end
     begin 
       if definition = schema_definition_from_class(obj.class)
@@ -353,14 +354,16 @@ private
 
   # Might return nil as a mapping result.
   def _soap2obj(node, klass = nil)
+    definition = find_node_definition(node)
     if klass
-      definition = schema_definition_from_class(klass)
-    else
-      if definition = schema_definition_from_elename(node.elename)
+      klass_definition = schema_definition_from_class(klass)
+      if definition and definition.class_for.ancestors.include?(klass)
         klass = definition.class_for
-      elsif definition = schema_definition_from_type(node.type)
-        klass = definition.class_for
+      else
+        definition = klass_definition
       end
+    else
+      klass = definition.class_for if definition
     end
     if definition and node.is_a?(::SOAP::SOAPStruct)
       return elesoap2stubobj(node, klass, definition)
@@ -369,7 +372,7 @@ private
       conv, obj = @rubytype_factory.soap2obj(nil, node, nil, self)
       return obj if conv
     end
-    conv, obj = @map.soap2obj(node, klass)
+    conv, obj = @map.soap2obj(node)
     return obj if conv
     conv, obj = @default_factory.soap2obj(nil, node, nil, self)
     return obj if conv
@@ -527,6 +530,10 @@ private
       obj = Mapping._soap2obj(value, self, klass)
     end
     obj
+  end
+
+  def find_node_definition(node)
+    schema_definition_from_elename(node.elename) || schema_definition_from_type(node.type)
   end
 end
 
