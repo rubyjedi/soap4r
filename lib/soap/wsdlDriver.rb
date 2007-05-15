@@ -134,7 +134,7 @@ private
     # the first element of typedef in param_def is a String like
     # "::SOAP::SOAPStruct".  turn this String to a class.
     param_def.collect { |io, name, typedef|
-      typedef[0] = Mapping.class_from_name(typedef[0])
+      typedef[0] = Mapping.class_from_name(typedef[0]) if typedef[0]
       [io, name, typedef]
     }
   end

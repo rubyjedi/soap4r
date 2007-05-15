@@ -153,14 +153,9 @@ __EOD__
     if mapped = basetype_mapped_class(part.type)
       ['::' + mapped.name]
     elsif definedtype = @simpletypes[part.type]
-      if definedtype.base
-        ['::' + basetype_mapped_class(definedtype.base).name]
-      else
-        raise RuntimeError.new("unsupported simpleType: #{definedtype}")
-      end
+      [nil, definedtype.name.namespace, definedtype.name.name]
     elsif definedtype = @elements[part.element]
-      #['::SOAP::SOAPStruct', part.element.namespace, part.element.name]
-      ['nil', part.element.namespace, part.element.name]
+      [nil, part.element.namespace, part.element.name]
     elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
       when :TYPE_STRUCT, :TYPE_EMPTY    # ToDo: empty should be treated as void.
@@ -242,9 +237,9 @@ __EOD__
 
   def type2str(type)
     if type.size == 1
-      "[#{dq(type[0])}]" 
+      "[#{ndq(type[0])}]" 
     else
-      "[#{dq(type[0])}, #{ndq(type[1])}, #{dq(type[2])}]" 
+      "[#{ndq(type[0])}, #{ndq(type[1])}, #{dq(type[2])}]" 
     end
   end
 

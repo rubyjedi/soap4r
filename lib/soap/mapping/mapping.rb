@@ -44,6 +44,19 @@ module Mapping
     soap_obj
   end
 
+  def self.objs2soap(objs, registry = nil, types = nil, opt = EMPTY_OPT)
+    registry ||= Mapping::DefaultRegistry
+    ary = []
+    protect_mapping(opt) do
+      0.upto(objs.length - 1) do |idx|
+        type = types ? types[idx] : nil
+        soap = _obj2soap(objs[idx], registry, type)
+        ary << soap
+      end
+    end
+    ary
+  end
+
   def self.soap2obj(node, registry = nil, klass = nil, opt = EMPTY_OPT)
     registry ||= Mapping::DefaultRegistry
     obj = nil
