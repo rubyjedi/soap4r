@@ -138,7 +138,9 @@ class TestAbstract < Test::Unit::TestCase
 
     parameter = DerivedClass1.new(123, "someVar1")
     ret = @client.echoDerived(parameter)
-    p ret
+    assert_equal(123, ret.id)
+    assert_equal(["someVar1"], ret.someVar1)
+    assert_equal(DerivedClass1, ret.class)
   end
 end
 
