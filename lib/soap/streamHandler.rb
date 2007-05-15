@@ -228,8 +228,13 @@ private
     else
       raise HTTPStreamError.new("#{ res.status }: #{ res.reason }")
     end
+
+    # decode gzipped content, if we know it's there from the headers
     if res.respond_to?(:header) and !res.header['content-encoding'].empty? and
         res.header['content-encoding'][0].downcase == 'gzip'
+      receive_string = decode_gzip(receive_string)
+    # otherwise check for the gzip header
+    elsif @accept_encoding_gzip && receive_string[0..1] == "\x1f\x8b"
       receive_string = decode_gzip(receive_string)
     end
     conn_data.receive_string = receive_string
