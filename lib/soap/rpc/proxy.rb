@@ -84,20 +84,14 @@ public
   end
 
   def add_rpc_operation(qname, soapaction, name, param_def, opt = {})
+    ensure_styleuse_option(opt, :rpc, :encoded)
     opt[:request_qname] = qname
-    opt[:request_style] ||= :rpc
-    opt[:response_style] ||= :rpc
-    opt[:request_use] ||= :encoded
-    opt[:response_use] ||= :encoded
     op = Operation.new(soapaction, param_def, opt)
     assign_operation(name, qname, soapaction, op)
   end
 
   def add_document_operation(soapaction, name, param_def, opt = {})
-    opt[:request_style] ||= :document
-    opt[:response_style] ||= :document
-    opt[:request_use] ||= :literal
-    opt[:response_use] ||= :literal
+    ensure_styleuse_option(opt, :document, :literal)
     op = Operation.new(soapaction, param_def, opt)
     assign_operation(name, nil, soapaction, op)
   end
@@ -142,6 +136,9 @@ public
       :attributeformdefault => op_info.attributeformdefault
     )
     env = route(req_header, req_body, reqopt, resopt)
+    if op_info.response_use.nil?
+      return nil
+    end
     raise EmptyResponseError unless env
     receive_headers(env.header)
     begin
@@ -189,6 +186,17 @@ public
   end
 
 private
+
+  def ensure_styleuse_option(opt, style, use)
+    if opt[:request_style] || opt[:response_style] || opt[:request_use] || opt[:response_use]
+      # do not edit
+    else
+      opt[:request_style] ||= style
+      opt[:response_style] ||= style
+      opt[:request_use] ||= use
+      opt[:response_use] ||= use
+    end
+  end
 
   def initialize_streamhandler(options)
     value = options["streamhandler"]
@@ -430,8 +438,9 @@ private
       end
     end
 
+    # nil means oneway
     def check_use(use)
-      unless [:encoded, :literal].include?(use)
+      unless [:encoded, :literal, nil].include?(use)
         raise MethodDefinitionError.new("unknown use: #{use}")
       end
     end
