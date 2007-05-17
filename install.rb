@@ -1,14 +1,34 @@
 #!/usr/bin/env ruby
 
+require 'getoptlong'
 require 'rbconfig'
 require 'ftools'
 
+OptSet = [
+  ['--prefix','-p', GetoptLong::REQUIRED_ARGUMENT],
+]
+prefix = nil
+GetoptLong.new(*OptSet).each do |name, arg|
+  case name
+  when "--prefix"
+    prefix = arg
+  else
+    raise ArgumentError.new("Unknown type #{ arg }")
+  end
+end
+
 include Config
+RV = CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
+ORG_PREFIX = CONFIG["prefix"]
+SRCPATH = File.join(File.dirname($0), 'lib')
 
 RUBYLIBDIR = CONFIG["rubylibdir"]
-RV = CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
 SITELIBDIR = CONFIG["sitedir"] + "/" +  RV 
-SRCPATH = File.join(File.dirname($0), 'lib')
+
+if prefix
+  RUBYLIBDIR.sub!(/^#{Regexp.quote(ORG_PREFIX)}/, prefix)
+  SITELIBDIR.sub!(/^#{Regexp.quote(ORG_PREFIX)}/, prefix)
+end
 
 def install(from, to)
   to_path = File.catname(from, to)
