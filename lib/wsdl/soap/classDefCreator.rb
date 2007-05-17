@@ -279,6 +279,7 @@ private
         end
         init_lines << "@__xmlele_any = nil"
       when XMLSchema::Element
+        next if element.ref == SchemaName
         name = name_element(element).name
         attrname = safemethodname(name)
         varname = safevarname(name)

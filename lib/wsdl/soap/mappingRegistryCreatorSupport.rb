@@ -69,6 +69,7 @@ module MappingRegistryCreatorSupport
         elsif element.type
           type = create_class_name(element.type, @modulepath)
         elsif element.ref
+          next if element.ref == SchemaName
           type = create_class_name(element.ref, @modulepath)
         else
           type = nil      # means anyType.
