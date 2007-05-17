@@ -89,6 +89,28 @@ __XML__
     assert_equal("hello world",
       REXML::XPath.match(doc, "//*[name()='return']")[0].text)
   end
+
+  RESPONSE_CDATA = <<__XML__.chomp
+<env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+  <env:Body>
+    <gno:getHealthSummaryResponse xmlns:gno='http://some.url'>
+      <gno:htmlContent>
+        <![CDATA[<span>some html</span>]]>
+      </gno:htmlContent>
+    </gno:getHealthSummaryResponse>
+  </env:Body>
+</env:Envelope>
+__XML__
+  def test_cdata
+    @client.return_response_as_xml = true
+    @client.test_loopback_response << RESPONSE_CDATA
+    xml = @client.hello(nil)
+    assert_equal(RESPONSE_CDATA, xml)
+    require 'rexml/document'
+    doc = REXML::Document.new(xml)
+    assert_equal("<span>some html</span>",
+      REXML::XPath.match(doc, "//*[name()='gno:htmlContent']")[0][1].value)
+  end
 end
 
 
