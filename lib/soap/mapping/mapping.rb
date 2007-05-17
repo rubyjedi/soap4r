@@ -118,8 +118,22 @@ module Mapping
     end
   end
 
+  class REXMLElementWrap
+    def initialize(ele)
+      @ele = ele
+    end
+
+    def to_xml
+      @ele.to_s
+    end
+  end
+
   def self._obj2soap(obj, registry, type = nil)
-    if referent = Thread.current[:SOAPMapping][:MarshalKey][obj.__id__] and
+    if obj.respond_to?(:to_xml)
+      SOAPRawData.new(obj)
+    elsif defined?(::REXML) and obj.is_a?(::REXML::Element)
+      SOAPRawData.new(REXMLElementWrap.new(obj))
+    elsif referent = Thread.current[:SOAPMapping][:MarshalKey][obj.__id__] and
         !Thread.current[:SOAPMapping][:NoReference]
       SOAPReference.new(referent)
     elsif registry

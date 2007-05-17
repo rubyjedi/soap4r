@@ -68,6 +68,24 @@ class TestASPDotNet < Test::Unit::TestCase
     assert_equal("Hello Mike", @client.sayHello(:name => "Mike"))
   end
 
+  def test_xml
+    @client = SOAP::RPC::Driver.new(Endpoint, Server::Namespace)
+    @client.wiredump_dev = STDOUT if $DEBUG
+    @client.add_document_method('sayHello', Server::Namespace + 'SayHello',
+      XSD::QName.new(Server::Namespace, 'SayHello'),
+      XSD::QName.new(Server::Namespace, 'SayHelloResponse'))
+    require 'rexml/document'
+    xml = <<__XML__
+<n1:sayHello xmlns:n1="http://localhost/WebService/">
+  <n1:name>Mike</n1:name>
+</n1:sayHello>
+__XML__
+    ele = REXML::Document.new(xml)
+    assert_equal("Hello Mike", @client.sayHello(ele))
+    def xml.to_xml; to_s; end
+    assert_equal("Hello Mike", @client.sayHello(xml))
+  end
+
   def test_aspdotnethandler
     @client = SOAP::RPC::Driver.new(Endpoint, Server::Namespace)
     @client.wiredump_dev = STDOUT if $DEBUG

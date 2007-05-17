@@ -68,7 +68,10 @@ public
   end
 
   def encode_data(ns, obj, parent)
-    if obj.is_a?(SOAPEnvelopeElement)
+    if obj.respond_to?(:to_xml)
+      @buf << "\n#{obj.to_xml}"
+      return
+    elsif obj.is_a?(SOAPEnvelopeElement)
       encode_element(ns, obj, parent)
       return
     end

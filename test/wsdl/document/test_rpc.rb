@@ -217,6 +217,60 @@ class TestRPC < Test::Unit::TestCase
       ret.struct_2.m_datetime.strftime(timeformat))
   end
 
+  def test_to_xml
+    @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
+    @client.add_document_method('echo', 'urn:docrpc:echo',
+      XSD::QName.new('urn:docrpc', 'echoele'),
+      XSD::QName.new('urn:docrpc', 'echo_response'))
+    @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
+    @client.wiredump_dev = STDOUT if $DEBUG
+
+    require 'rexml/document'
+    echo = REXML::Document.new(<<__XML__.chomp)
+<foo attr-int="5" attr_string="attr_string">
+  <struct1 m_attr="myattr1">
+    <m_string>mystring1</m_string>
+    <m_datetime>2005-03-17T19:47:31+01:00</m_datetime>
+  </struct1>
+  <struct-2 m_attr="myattr2">
+    <m_string>mystring2</m_string>
+    <m_datetime>2005-03-17T19:47:32+02:00</m_datetime>
+  </struct-2>
+</foo>
+__XML__
+    ret = @client.echo(echo)
+    timeformat = "%Y-%m-%dT%H:%M:%S"
+    assert_equal('mystring2', ret.struct1.m_string)
+    assert_equal('2005-03-17T19:47:32',
+      ret.struct1.m_datetime.strftime(timeformat))
+    assert_equal("mystring1", ret.struct_2.m_string)
+    assert_equal('2005-03-17T19:47:31',
+      ret.struct_2.m_datetime.strftime(timeformat))
+    assert_equal('attr_string', ret.xmlattr_attr_string)
+    assert_equal(5, ret.xmlattr_attr_int)
+    #
+    echoele = REXML::Document.new(<<__XML__.chomp)
+<n1:echoele xmlns:n1="urn:docrpc">
+  <struct-2>
+    <m_datetime>2005-03-17T19:47:32+02:00</m_datetime>
+    <m_string>mystring2</m_string>
+  </struct-2>
+  <struct1>
+    <m_datetime>2005-03-17T19:47:31+01:00</m_datetime>
+    <m_string>mystring1</m_string>
+  </struct1>
+</n1:echoele>
+__XML__
+    ret = @client.echo(echoele)
+    timeformat = "%Y-%m-%dT%H:%M:%S"
+    assert_equal('mystring2', ret.struct1.m_string)
+    assert_equal('2005-03-17T19:47:32',
+      ret.struct1.m_datetime.strftime(timeformat))
+    assert_equal("mystring1", ret.struct_2.m_string)
+    assert_equal('2005-03-17T19:47:31',
+      ret.struct_2.m_datetime.strftime(timeformat))
+  end
+
   def test_nil
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
     @client.add_document_method('return_nil', 'urn:docrpc:return_nil',

@@ -764,6 +764,18 @@ private
 end
 
 
+class SOAPRawData < SOAPElement
+  def initialize(obj)
+    super(XSD::QName::EMPTY)
+    @obj = obj
+  end
+
+  def to_xml
+    @obj.to_xml
+  end
+end
+
+
 class SOAPArray < XSD::NSDBase
   include SOAPCompoundtype
   include Enumerable
