@@ -178,9 +178,14 @@ class Router
     end
     conn_data.is_fault = true if soap_response.is_a?(SOAPFault)
     header = call_headers(headerhandler)
-    body = SOAPBody.new(soap_response)
-    env = SOAPEnvelope.new(header, body)
-    marshal(conn_data, env, default_encodingstyle)
+    if op.response_use.nil?
+      conn_data.send_string = ""
+      conn_data
+    else
+      body = SOAPBody.new(soap_response)
+      env = SOAPEnvelope.new(header, body)
+      marshal(conn_data, env, default_encodingstyle)
+    end
   end
 
   # Create fault response string.
@@ -217,10 +222,14 @@ private
   end
 
   def ensure_styleuse_option(opt, style, use)
-    opt[:request_style] ||= style
-    opt[:response_style] ||= style
-    opt[:request_use] ||= use
-    opt[:response_use] ||= use
+    if opt[:request_style] || opt[:response_style] || opt[:request_use] || opt[:response_use]
+      # do not edit
+    else
+      opt[:request_style] ||= style
+      opt[:response_style] ||= style
+      opt[:request_use] ||= use
+      opt[:response_use] ||= use
+    end
   end
 
   def assign_operation(soapaction, qname, op)
@@ -432,6 +441,8 @@ private
       return result if result.is_a?(SOAPFault)
       if @response_style == :rpc
         response_rpc(result, mapping_registry, literal_mapping_registry, opt)
+      elsif @doc_response_qnames.empty?
+        # nothing to do
       else
         response_doc(result, mapping_registry, literal_mapping_registry, opt)
       end
@@ -587,8 +598,9 @@ private
       end
     end
 
+    # nil means oneway
     def check_use(use)
-      unless [:encoded, :literal].include?(use)
+      unless [:encoded, :literal, nil].include?(use)
         raise ArgumentError.new("unknown use: #{use}")
       end
     end

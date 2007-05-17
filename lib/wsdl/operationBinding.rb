@@ -76,6 +76,14 @@ class OperationBinding < Info
     end
   end
 
+  def soapbody
+    (@input || @output).soapbody
+  end
+
+  def soapnamespace
+    soapbody ? soapbody.namespace : nil
+  end
+
   def parse_element(element)
     case element
     when InputName

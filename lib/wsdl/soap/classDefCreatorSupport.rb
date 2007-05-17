@@ -72,7 +72,11 @@ __EOD__
   end
 
   def sym(ele)
-    ':' + ele
+    ':' + ele.id2name
+  end
+
+  def nsym(ele)
+    ele.nil? ? 'nil' : sym(ele)
   end
 
   def dqname(qname)

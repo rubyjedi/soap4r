@@ -108,9 +108,9 @@ private
     name = safemethodname(operation.name)
     name_as = operation.name
     style = binding.soapoperation_style
-    inputuse = binding.input.soapbody_use
-    outputuse = binding.output.soapbody_use
-    namespace = binding.input.soapbody.namespace
+    inputuse = binding.input ? binding.input.soapbody_use : nil
+    outputuse = binding.output ? binding.output.soapbody_use : nil
+    namespace = binding.soapnamespace
     if style == :rpc
       qname = XSD::QName.new(namespace, name_as)
       paramstr = param2str(collect_rpcparameter(operation))
@@ -127,8 +127,8 @@ private
 #{ndq(binding.soapaction)},
   #{dq(name)},
   #{paramstr},
-  { :request_style =>  #{sym(style.id2name)}, :request_use =>  #{sym(inputuse.id2name)},
-    :response_style => #{sym(style.id2name)}, :response_use => #{sym(outputuse.id2name)},
+  { :request_style =>  #{nsym(style)}, :request_use =>  #{nsym(inputuse)},
+    :response_style => #{nsym(style)}, :response_use => #{nsym(outputuse)},
     :faults => #{op_faults_str} }
 __EOD__
     if inputuse == :encoded or outputuse == :encoded
