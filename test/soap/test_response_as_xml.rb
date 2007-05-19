@@ -41,6 +41,7 @@ class TestResponseAsXml < Test::Unit::TestCase
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/", Namespace)
     @client.wiredump_dev = STDERR if $DEBUG
     @client.add_method('hello', 'name')
+    @client.add_document_method('hellodoc', Namespace, XSD::QName.new(Namespace, 'helloRequest'), XSD::QName.new(Namespace, 'helloResponse'))
   end
 
   def teardown
@@ -93,15 +94,20 @@ __XML__
   RESPONSE_CDATA = <<__XML__.chomp
 <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
   <env:Body>
-    <gno:getHealthSummaryResponse xmlns:gno='http://some.url'>
+    <gno:helloResponse xmlns:gno='urn:example.com:hello'>
       <gno:htmlContent>
         <![CDATA[<span>some html</span>]]>
       </gno:htmlContent>
-    </gno:getHealthSummaryResponse>
+    </gno:helloResponse>
   </env:Body>
 </env:Envelope>
 __XML__
   def test_cdata
+    @client.return_response_as_xml = false
+    @client.test_loopback_response << RESPONSE_CDATA
+    ret = @client.hellodoc(nil)
+    assert_equal("\n        <span>some html</span>\n      ", ret.htmlContent)
+    #
     @client.return_response_as_xml = true
     @client.test_loopback_response << RESPONSE_CDATA
     xml = @client.hello(nil)
@@ -110,6 +116,7 @@ __XML__
     doc = REXML::Document.new(xml)
     assert_equal("<span>some html</span>",
       REXML::XPath.match(doc, "//*[name()='gno:htmlContent']")[0][1].value)
+    #
   end
 end
 

@@ -82,7 +82,9 @@ class XMLScanner < XSD::XMLParser::Parser
     characters(str)
   end
 
-  # def on_cdata(str); end
+  def on_cdata(str)
+    characters(str)
+  end
 
   def on_etag(name)
     end_element(name)

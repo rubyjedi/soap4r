@@ -42,6 +42,10 @@ class REXMLParser < XSD::XMLParser::Parser
     characters(text)
   end
 
+  def cdata(content)
+    characters(content)
+  end
+
   def xmldecl(version, encoding, standalone)
     # Version should be checked.
   end
