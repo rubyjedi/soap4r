@@ -4,8 +4,8 @@
 require 'rubygems'
 SPEC = Gem::Specification.new do |s|
   s.name = "soap4r"
-  s.version = "1.5.5.20061004"
-  s.date = "2006-10-04"
+  s.version = "1.5.5.20070519"
+  s.date = "2007-05-19"
   s.author = "NAKAMURA, Hiroshi"
   s.email = "nahi@ruby-lang.org"
   s.homepage = "http://dev.ctor.org/soap4r"
