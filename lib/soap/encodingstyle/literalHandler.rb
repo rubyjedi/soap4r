@@ -41,6 +41,10 @@ class LiteralHandler < Handler
       attrs[key] = value
     end
     case data
+    when SOAPExternalReference
+      # do not encode SOAPExternalReference in
+      # literalHandler (which is used for literal service)
+      data.referred
     when SOAPRawString
       generator.encode_tag(name, attrs)
       generator.encode_rawstring(data.to_s)
@@ -92,6 +96,9 @@ class LiteralHandler < Handler
   end
 
   def encode_data_end(generator, ns, data, parent)
+    # do not encode SOAPExternalReference in
+    # literalHandler (which is used for literal service)
+    return nil if data.is_a?(SOAPExternalReference)
     name = generator.encode_name_end(ns, data)
     cr = (data.is_a?(SOAPCompoundtype) or
       (data.is_a?(SOAPElement) and !data.members.empty?))
