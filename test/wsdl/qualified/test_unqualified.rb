@@ -2,6 +2,8 @@ require 'test/unit'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
+
 
 if defined?(HTTPAccess2)
 
@@ -49,7 +51,7 @@ class TestUnqualified < Test::Unit::TestCase
   def setup_server
     @server = Server.new('Test', "urn:lp", '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @server_thread = start_server_thread(@server)
+    @server_thread = TestUtil.start_server_thread(@server)
   end
 
   def setup_clientdef
@@ -77,14 +79,6 @@ class TestUnqualified < Test::Unit::TestCase
     @server.shutdown
     @server_thread.kill
     @server_thread.join
-  end
-
-  def start_server_thread(server)
-    t = Thread.new {
-      Thread.current.abort_on_exception = true
-      server.start
-    }
-    t
   end
 
   def pathname(filename)
@@ -140,16 +134,7 @@ class TestUnqualified < Test::Unit::TestCase
 
   include ::SOAP
   def test_naive
-    backupdir = Dir.pwd
-    begin
-      Dir.chdir(DIR)
-      require 'lpDriver.rb'
-    ensure
-      $".delete('lpDriver.rb')
-      $".delete('lpMappingRegistry.rb')
-      $".delete('lp.rb')
-      Dir.chdir(backupdir)
-    end
+    TestUtil.require(DIR, 'lpDriver.rb', 'lpMappingRegistry.rb', 'lp.rb')
     @client = Lp_porttype.new("http://localhost:#{Port}/")
 
     @client.wiredump_dev = str = ''

@@ -1,6 +1,9 @@
 require 'test/unit'
 require 'soap/marshal'
 require 'rbconfig'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', '..', '..', 'testutil.rb')
+
+
 module WSDL; module SOAP
 
 
@@ -25,14 +28,7 @@ class TestSection < Test::Unit::TestCase
     if ::Object.constants.include?("Item")
       ::Object.instance_eval { remove_const("Item") }
     end
-    backupdir = Dir.pwd
-    begin
-      Dir.chdir(DIR)
-      require 'mysample.rb'
-    ensure
-      $".delete('mysample.rb')
-      Dir.chdir(backupdir)
-    end
+    TestUtil.require(DIR, 'mysample.rb')
     s1 = Section.new(1, "section1", "section 1", 1001, Question.new("q1"))
     s2 = Section.new(2, "section2", "section 2", 1002, Question.new("q2"))
     org = SectionArray[s1, s2]
@@ -49,11 +45,7 @@ private
   end
 
   def compare(expected, actual)
-    assert_equal(loadfile(expected), loadfile(actual), expected)
-  end
-
-  def loadfile(file)
-    File.open(pathname(file)) { |f| f.read }
+    TestUtil.filecompare(pathname(expected), pathname(actual))
   end
 end
 

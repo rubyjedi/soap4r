@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module WSDL
@@ -41,7 +42,7 @@ class TestSimpleType < Test::Unit::TestCase
   def setup_server
     @server = Server.new('Test', "urn:example.com:simpletype", '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @server_thread = start_server_thread(@server)
+    @server_thread = TestUtil.start_server_thread(@server)
   end
 
   def setup_client
@@ -65,14 +66,6 @@ class TestSimpleType < Test::Unit::TestCase
 
   def teardown_client
     @client.reset_stream
-  end
-
-  def start_server_thread(server)
-    t = Thread.new {
-      Thread.current.abort_on_exception = true
-      server.start
-    }
-    t
   end
 
   def test_ping

@@ -40,7 +40,7 @@ class Param < Info
     if @soapbody
       @soapbody.use || :literal
     else
-      raise RuntimeError.new("soap:body not found")
+      nil
     end
   end
 

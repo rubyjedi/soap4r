@@ -3,6 +3,7 @@ require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module WSDL; module Any
@@ -73,7 +74,7 @@ class TestAny < Test::Unit::TestCase
   def setup_server
     @server = Server.new('Test', Namespace, '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @server_thread = start_server_thread(@server)
+    @server_thread = TestUtil.start_server_thread(@server)
   end
 
   def setup_classdef
@@ -87,30 +88,13 @@ class TestAny < Test::Unit::TestCase
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
-    begin
-      back = $:.dup
-      $:.unshift(pathname("."))
-      require 'echoDriver.rb'
-    ensure
-      $".delete('echoDriver.rb')
-      $".delete('echoMappingRegistry.rb')
-      $".delete('echo.rb')
-      $:.replace(back) if back
-    end
+    TestUtil.require(DIR, 'echoDriver.rb', 'echoMappingRegistry.rb', 'echo.rb')
   end
 
   def teardown_server
     @server.shutdown
     @server_thread.kill
     @server_thread.join
-  end
-
-  def start_server_thread(server)
-    t = Thread.new {
-      Thread.current.abort_on_exception = true
-      server.start
-    }
-    t
   end
 
   def pathname(filename)
@@ -130,7 +114,7 @@ class TestAny < Test::Unit::TestCase
     gen.opt['servant_skelton'] = nil
     gen.opt['standalone_server_stub'] = nil
     gen.opt['force'] = true
-    suppress_warning do
+    TestUtil.silent do
       gen.run
     end
     compare("expectedEcho.rb", "echo.rb")
@@ -145,21 +129,7 @@ class TestAny < Test::Unit::TestCase
   end
 
   def compare(expected, actual)
-    assert_equal(loadfile(expected), loadfile(actual), actual)
-  end
-
-  def loadfile(file)
-    File.open(pathname(file)) { |f| f.read }
-  end
-
-  def suppress_warning
-    back = $VERBOSE
-    $VERBOSE = nil
-    begin
-      yield
-    ensure
-      $VERBOSE = back
-    end
+    TestUtil.filecompare(pathname(expected), pathname(actual))
   end
 
   def test_wsdl
