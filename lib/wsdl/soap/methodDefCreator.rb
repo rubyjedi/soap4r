@@ -96,12 +96,13 @@ private
     binding.fault.each do |fault|
       op_fault = {}
       soapfault = fault.soapfault
+      faultclass = create_class_name(fault.name, @modulepath)
       op_fault[:ns] = fault.name.namespace
       op_fault[:name] = fault.name.name
       op_fault[:namespace] = soapfault.namespace
       op_fault[:use] = soapfault.use || "literal"
       op_fault[:encodingstyle] = soapfault.encodingstyle || "document"
-      op_faults[fault.name.name] = op_fault
+      op_faults[faultclass] = op_fault
     end
     op_faults_str = op_faults.inspect
 
