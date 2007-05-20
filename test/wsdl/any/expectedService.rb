@@ -3,6 +3,8 @@ require 'echoServant.rb'
 require 'echoMappingRegistry.rb'
 require 'soap/rpc/standaloneServer'
 
+module WSDL; module Any
+
 class Echo_port_type
   Methods = [
     [ "urn:example.com:echo",
@@ -24,11 +26,15 @@ class Echo_port_type
   ]
 end
 
+end; end
+
+module WSDL; module Any
+
 class Echo_port_typeApp < ::SOAP::RPC::StandaloneServer
   def initialize(*arg)
     super(*arg)
-    servant = Echo_port_type.new
-    Echo_port_type::Methods.each do |definitions|
+    servant = WSDL::Any::Echo_port_type.new
+    WSDL::Any::Echo_port_type::Methods.each do |definitions|
       opt = definitions.last
       if opt[:request_style] == :document
         @router.add_document_operation(servant, *definitions)
@@ -41,9 +47,11 @@ class Echo_port_typeApp < ::SOAP::RPC::StandaloneServer
   end
 end
 
+end; end
+
 if $0 == __FILE__
   # Change listen port.
-  server = Echo_port_typeApp.new('app', nil, '0.0.0.0', 10080)
+  server = WSDL::Any::Echo_port_typeApp.new('app', nil, '0.0.0.0', 10080)
   trap(:INT) do
     server.shutdown
   end

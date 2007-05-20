@@ -66,14 +66,6 @@ private
         dump_complextypedef(ele.name, ele.local_complextype, qualified)
       elsif ele.local_simpletype
         dump_simpletypedef(ele.name, ele.local_simpletype, qualified)
-      elsif ele.type
-        if @complextypes[ele.type]
-          dump_complextypedef(ele.name, @complextypes[ele.type], qualified)
-        elsif @simpletypes[ele.type]
-          dump_simpletypedef(ele.name, @simpletypes[ele.type], qualified)
-        else
-          nil
-        end
       else
         nil
       end

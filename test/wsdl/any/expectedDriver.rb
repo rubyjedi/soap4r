@@ -1,5 +1,7 @@
 require 'echo.rb'
 require 'echoMappingRegistry.rb'
+
+module WSDL::Any
 require 'soap/rpc/driver'
 
 class Echo_port_type < ::SOAP::RPC::Driver
@@ -53,3 +55,5 @@ private
   end
 end
 
+
+end

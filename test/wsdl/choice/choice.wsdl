@@ -54,8 +54,21 @@
         </xsd:complexType>
       </xsd:element>
 
-      <xsd:element name="echoele_complex" type="tns:andor" />
-      <xsd:element name="echo_complex_response" type="tns:andor" />
+      <xsd:element name="echoele_complex">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="data" type="tns:andor"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="echo_complex_response">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="data" type="tns:andor"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
     </xsd:schema>
   </types>
 

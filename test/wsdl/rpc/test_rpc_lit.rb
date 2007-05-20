@@ -122,6 +122,7 @@ class TestRPCLIT < Test::Unit::TestCase
     gen.location = pathname("test-rpc-lit.wsdl")
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['classdef'] = nil
     gen.opt['mapping_registry'] = nil
     gen.opt['driver'] = nil
@@ -321,8 +322,8 @@ class TestRPCLIT < Test::Unit::TestCase
     assert_equal('1', result.varInt)
     assert_equal('+1', result.varFloat)
     assert_equal('str', result.structItem.varString)
-    assert_equal(1, result.structItem.varInt)
-    assert_equal(1.0, result.structItem.varFloat)
+    assert_equal('1', result.structItem.varInt)
+    assert_equal('+1', result.structItem.varFloat)
     assert_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str))
     assert_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
   end

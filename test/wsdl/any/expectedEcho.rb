@@ -1,21 +1,7 @@
 require 'xsd/qname'
 
-# {urn:example.com:echo-type}foo.bar
-class FooBar
-  attr_accessor :before
-  attr_reader :__xmlele_any
-  attr_accessor :after
+module WSDL::Any
 
-  def set_any(elements)
-    @__xmlele_any = elements
-  end
-
-  def initialize(before = nil, after = nil)
-    @before = before
-    @__xmlele_any = nil
-    @after = after
-  end
-end
 
 # {urn:example.com:echo-type}foo.bar
 class FooBar
@@ -45,4 +31,7 @@ class SetOutputAndCompleteRequest
     @data = data
     @participantToken = participantToken
   end
+end
+
+
 end

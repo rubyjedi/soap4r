@@ -83,6 +83,7 @@ class TestAny < Test::Unit::TestCase
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
     gen.opt['mapping_registry'] = nil
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
@@ -121,6 +122,7 @@ class TestAny < Test::Unit::TestCase
     gen.location = pathname("any.wsdl")
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['classdef'] = nil
     gen.opt['mapping_registry'] = nil
     gen.opt['driver'] = nil
@@ -131,8 +133,8 @@ class TestAny < Test::Unit::TestCase
     suppress_warning do
       gen.run
     end
-    compare("expectedDriver.rb", "echoDriver.rb")
     compare("expectedEcho.rb", "echo.rb")
+    compare("expectedDriver.rb", "echoDriver.rb")
     compare("expectedService.rb", "echo_service.rb")
 
     File.unlink(pathname("echo_service.rb"))

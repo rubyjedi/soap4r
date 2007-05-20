@@ -49,6 +49,7 @@ class TestFault < Test::Unit::TestCase
     gen.location = pathname("fault.wsdl")
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['classdef'] = nil
     gen.opt['mapping_registry'] = nil
     gen.opt['servant_skelton'] = nil
@@ -123,7 +124,7 @@ class TestFault < Test::Unit::TestCase
       assert(false)
     rescue Exception => e
       assert_equal(::SOAP::FaultError, e.class)
-      assert_equal("AddFault", e.faultstring.data)
+      assert_equal("WSDL::Fault::AddFault", e.faultstring.data)
       assert_equal("Value 101 is too large", e.detail.addFault.reason)
       assert_equal("Critical", e.detail.addFault.severity)
     end
