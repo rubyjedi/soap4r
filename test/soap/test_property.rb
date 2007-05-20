@@ -28,6 +28,8 @@ class TestProperty < Test::Unit::TestCase
 a.b.0 = 1
 a.b.1 = 2
 a.b.2 = 3
+a.b.3 = 日本語
+a.b.表 = 1表2
 client.protocol.http.proxy=http://myproxy:8080   \r
 client.protocol.http.no_proxy:  intranet.example.com,local.example.com\r
 client.protocol.http.protocol_version = 1.0
@@ -44,7 +46,8 @@ vvv.www = 5
 xxx.yyy.zzz = 6
 __EOP__
     prop = Property.load(propstr)
-    assert_equal(["1", "2", "3"], prop["a.b"].values.sort)
+    assert_equal("1表2", prop["a.b.表"])
+    assert_equal(["1", "1表2", "2", "3", "日本語"], prop["a.b"].values.sort)
     assert_equal("intranet.example.com,local.example.com",
       prop["client.protocol.http.no_proxy"])
     assert_equal("http://myproxy:8080", prop["client.protocol.http.proxy"])
