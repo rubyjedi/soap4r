@@ -20,10 +20,22 @@ class TestChoice < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echoele'),
         XSD::QName.new(Namespace, 'echo_response')
       )
+      add_document_method(
+        self,
+        Namespace + ':echo_complex',
+        'echo_complex',
+        XSD::QName.new(Namespace, 'echoele_complex'),
+        XSD::QName.new(Namespace, 'echo_complex_response')
+      )
       @router.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
     end
   
     def echo(arg)
+      arg
+    end
+
+    def echo_complex(arg)
+      p arg
       arg
     end
   end
@@ -130,6 +142,55 @@ class TestChoice < Test::Unit::TestCase
     ret = @client.echo(echo)
     assert_equal("devId", ret.terminalID.devId)
     assert_nil(ret.terminalID.imei)
+  end
+
+  def test_naive_complex
+    @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
+    @client.add_document_method('echo_complex', 'urn:choice:echo_complex',
+      XSD::QName.new('urn:choice', 'echoele_complex'),
+      XSD::QName.new('urn:choice', 'echo_complex_response'))
+    @client.wiredump_dev = STDOUT if $DEBUG
+    @client.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
+    #
+    ret = @client.echo_complex(Andor.new("A", "B1", nil, nil, nil, nil, "C1", "C2"))
+    assert_equal("A", ret.a)
+    assert_equal("B1", ret.b1)
+    assert_equal(nil, ret.b2a)
+    assert_equal(nil, ret.b2b)
+    assert_equal(nil, ret.b3a)
+    assert_equal(nil, ret.b3b)
+    assert_equal("C1", ret.c1)
+    assert_equal("C2", ret.c2)
+    #
+    ret = @client.echo_complex(Andor.new("A", nil, "B2a", "B2b", nil, nil, "C1", "C2"))
+    assert_equal("A", ret.a)
+    assert_equal(nil, ret.b1)
+    assert_equal("B2a", ret.b2a)
+    assert_equal("B2b", ret.b2b)
+    assert_equal(nil, ret.b3a)
+    assert_equal(nil, ret.b3b)
+    assert_equal("C1", ret.c1)
+    assert_equal("C2", ret.c2)
+    #
+    ret = @client.echo_complex(Andor.new("A", nil, nil, nil, "B3a", nil, "C1", "C2"))
+    assert_equal("A", ret.a)
+    assert_equal(nil, ret.b1)
+    assert_equal(nil, ret.b2a)
+    assert_equal(nil, ret.b2b)
+    assert_equal("B3a", ret.b3a)
+    assert_equal(nil, ret.b3b)
+    assert_equal("C1", ret.c1)
+    assert_equal("C2", ret.c2)
+    #
+    ret = @client.echo_complex(Andor.new("A", nil, nil, nil, nil, "B3b", "C1", "C2"))
+    assert_equal("A", ret.a)
+    assert_equal(nil, ret.b1)
+    assert_equal(nil, ret.b2a)
+    assert_equal(nil, ret.b2b)
+    assert_equal(nil, ret.b3a)
+    assert_equal("B3b", ret.b3b)
+    assert_equal("C1", ret.c1)
+    assert_equal("C2", ret.c2)
   end
 end
 

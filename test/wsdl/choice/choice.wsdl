@@ -53,6 +53,9 @@
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
+
+      <xsd:element name="echoele_complex" type="tns:andor" />
+      <xsd:element name="echo_complex_response" type="tns:andor" />
     </xsd:schema>
   </types>
 
@@ -62,11 +65,22 @@
   <message name="echo_out">
     <part name="parameters" element="tns:echo_response" />
   </message>
+  <message name="echo_complex_in">
+    <part name="parameters" element="tns:echoele_complex" />
+  </message>
+  <message name="echo_complex_out">
+    <part name="parameters" element="tns:echo_complex_response" />
+  </message>
 
   <portType name="choice_porttype">
     <operation name="echo">
       <input message="tns:echo_in" />
       <output message="tns:echo_out" />
+    </operation>
+
+    <operation name="echo_complex">
+      <input message="tns:echo_complex_in" />
+      <output message="tns:echo_complex_out" />
     </operation>
   </portType>
 
@@ -74,6 +88,16 @@
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
     <operation name="echo">
       <soap:operation soapAction="urn:choice:echo" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+
+    <operation name="echo_complex">
+      <soap:operation soapAction="urn:choice:echo_complex" style="document" />
       <input>
         <soap:body use="literal" />
       </input>

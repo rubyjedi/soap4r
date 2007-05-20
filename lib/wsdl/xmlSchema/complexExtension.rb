@@ -49,6 +49,13 @@ class ComplexExtension < Info
     result
   end
 
+  def nested_elements
+    result = XSD::NamedElements.new
+    result.concat(basetype.nested_elements)
+    result.concat(content.nested_elements) if content
+    result
+  end
+
   def attributes
     basetype.attributes + @attributes
   end

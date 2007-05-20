@@ -134,18 +134,12 @@ private
   end
 
   def complexobj2sequencesoap(obj, ele, type)
-    elements = type.elements
-    any = nil
-    if type.have_any?
-      any = Mapping.get_attributes_for_any(obj, elements)
-    end
-    elements.each do |child_ele|
+    type.elements.each do |child_ele|
       case child_ele
       when WSDL::XMLSchema::Any
-        if any
-          SOAPElement.from_objs(any).each do |child|
-            ele.add(child)
-          end
+        any = Mapping.get_attributes_for_any(obj)
+        SOAPElement.from_objs(any).each do |child|
+          ele.add(child)
         end
       when WSDL::XMLSchema::Element
         complexobj2soapchildren(obj, ele, child_ele)
@@ -161,13 +155,7 @@ private
   end
 
   def complexobj2choicesoap(obj, ele, type)
-    elements = type.elements
-    any = nil
-    if type.have_any?
-      raise MappingError.new(
-        "<any/> in <choice/> is not supported: #{ele.name.name}")
-    end
-    elements.each do |child_ele|
+    type.elements.each do |child_ele|
       break if complexobj2soapchildren(obj, ele, child_ele, true)
     end
     ele

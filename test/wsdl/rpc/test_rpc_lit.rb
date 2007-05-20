@@ -321,8 +321,8 @@ class TestRPCLIT < Test::Unit::TestCase
     assert_equal('1', result.varInt)
     assert_equal('+1', result.varFloat)
     assert_equal('str', result.structItem.varString)
-    assert_equal('1', result.structItem.varInt)
-    assert_equal('+1', result.structItem.varFloat)
+    assert_equal(1, result.structItem.varInt)
+    assert_equal(1.0, result.structItem.varFloat)
     assert_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str))
     assert_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
   end

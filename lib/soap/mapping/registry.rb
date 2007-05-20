@@ -206,6 +206,11 @@ module RegistrySupport
     @type_schema_definition[type] || find_schema_definition(type.name)
   end
 
+  def find_node_definition(node)
+    schema_definition_from_elename(node.elename) ||
+      schema_definition_from_type(node.type)
+  end
+
   def find_schema_definition(name)
     return nil unless name
     typestr = XSD::CodeGen::GenSupport.safeconstname(name)

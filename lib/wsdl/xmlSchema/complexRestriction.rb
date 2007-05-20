@@ -47,6 +47,10 @@ class ComplexRestriction < Info
     @content ? @content.elements : XSD::NamedElements::Empty
   end
 
+  def nested_elements
+    @content ? @content.nested_elements : XSD::NamedElements::Empty
+  end
+
   def check_type
     if @base == ::SOAP::ValueArrayName
       :TYPE_ARRAY
