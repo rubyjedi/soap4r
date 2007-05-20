@@ -52,7 +52,11 @@ module SchemaComplexTypeDefinition
         found = ele.find_element(qname)
         return found if found
       else
-        return ele if ele.elename == qname
+        # relaxed match
+        if ele.elename == qname or
+            (qname.namespace.nil? and ele.elename.name == qname.name)
+          return ele
+        end
       end
     end
     nil

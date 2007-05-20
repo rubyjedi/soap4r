@@ -58,6 +58,7 @@ class TestAbstract < Test::Unit::TestCase
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
     gen.opt['mapping_registry'] = nil
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run

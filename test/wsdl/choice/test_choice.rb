@@ -35,8 +35,7 @@ class TestChoice < Test::Unit::TestCase
     end
 
     def echo_complex(arg)
-      p arg
-      arg
+      Echo_complex_response.new(arg.data)
     end
   end
 
@@ -73,6 +72,7 @@ class TestChoice < Test::Unit::TestCase
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
     gen.opt['mapping_registry'] = nil
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
@@ -152,45 +152,45 @@ class TestChoice < Test::Unit::TestCase
     @client.wiredump_dev = STDOUT if $DEBUG
     @client.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
     #
-    ret = @client.echo_complex(Andor.new("A", "B1", nil, nil, nil, nil, "C1", "C2"))
-    assert_equal("A", ret.a)
-    assert_equal("B1", ret.b1)
-    assert_equal(nil, ret.b2a)
-    assert_equal(nil, ret.b2b)
-    assert_equal(nil, ret.b3a)
-    assert_equal(nil, ret.b3b)
-    assert_equal("C1", ret.c1)
-    assert_equal("C2", ret.c2)
+    ret = @client.echo_complex(Echoele_complex.new(Andor.new("A", "B1", nil, nil, nil, nil, "C1", "C2")))
+    assert_equal("A", ret.data.a)
+    assert_equal("B1", ret.data.b1)
+    assert_equal(nil, ret.data.b2a)
+    assert_equal(nil, ret.data.b2b)
+    assert_equal(nil, ret.data.b3a)
+    assert_equal(nil, ret.data.b3b)
+    assert_equal("C1", ret.data.c1)
+    assert_equal("C2", ret.data.c2)
     #
-    ret = @client.echo_complex(Andor.new("A", nil, "B2a", "B2b", nil, nil, "C1", "C2"))
-    assert_equal("A", ret.a)
-    assert_equal(nil, ret.b1)
-    assert_equal("B2a", ret.b2a)
-    assert_equal("B2b", ret.b2b)
-    assert_equal(nil, ret.b3a)
-    assert_equal(nil, ret.b3b)
-    assert_equal("C1", ret.c1)
-    assert_equal("C2", ret.c2)
+    ret = @client.echo_complex(Echoele_complex.new(Andor.new("A", nil, "B2a", "B2b", nil, nil, "C1", "C2")))
+    assert_equal("A", ret.data.a)
+    assert_equal(nil, ret.data.b1)
+    assert_equal("B2a", ret.data.b2a)
+    assert_equal("B2b", ret.data.b2b)
+    assert_equal(nil, ret.data.b3a)
+    assert_equal(nil, ret.data.b3b)
+    assert_equal("C1", ret.data.c1)
+    assert_equal("C2", ret.data.c2)
     #
-    ret = @client.echo_complex(Andor.new("A", nil, nil, nil, "B3a", nil, "C1", "C2"))
-    assert_equal("A", ret.a)
-    assert_equal(nil, ret.b1)
-    assert_equal(nil, ret.b2a)
-    assert_equal(nil, ret.b2b)
-    assert_equal("B3a", ret.b3a)
-    assert_equal(nil, ret.b3b)
-    assert_equal("C1", ret.c1)
-    assert_equal("C2", ret.c2)
+    ret = @client.echo_complex(Echoele_complex.new(Andor.new("A", nil, nil, nil, "B3a", nil, "C1", "C2")))
+    assert_equal("A", ret.data.a)
+    assert_equal(nil, ret.data.b1)
+    assert_equal(nil, ret.data.b2a)
+    assert_equal(nil, ret.data.b2b)
+    assert_equal("B3a", ret.data.b3a)
+    assert_equal(nil, ret.data.b3b)
+    assert_equal("C1", ret.data.c1)
+    assert_equal("C2", ret.data.c2)
     #
-    ret = @client.echo_complex(Andor.new("A", nil, nil, nil, nil, "B3b", "C1", "C2"))
-    assert_equal("A", ret.a)
-    assert_equal(nil, ret.b1)
-    assert_equal(nil, ret.b2a)
-    assert_equal(nil, ret.b2b)
-    assert_equal(nil, ret.b3a)
-    assert_equal("B3b", ret.b3b)
-    assert_equal("C1", ret.c1)
-    assert_equal("C2", ret.c2)
+    ret = @client.echo_complex(Echoele_complex.new(Andor.new("A", nil, nil, nil, nil, "B3b", "C1", "C2")))
+    assert_equal("A", ret.data.a)
+    assert_equal(nil, ret.data.b1)
+    assert_equal(nil, ret.data.b2a)
+    assert_equal(nil, ret.data.b2b)
+    assert_equal(nil, ret.data.b3a)
+    assert_equal("B3b", ret.data.b3b)
+    assert_equal("C1", ret.data.c1)
+    assert_equal("C2", ret.data.c2)
   end
 end
 

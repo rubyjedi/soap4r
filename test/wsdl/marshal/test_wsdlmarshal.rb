@@ -4,9 +4,8 @@ require 'soap/mapping/wsdlencodedregistry'
 require 'soap/marshal'
 require 'wsdl/soap/wsdl2ruby'
 
-class WSDLMarshaller
-  include SOAP
 
+class WSDLMarshaller
   def initialize(wsdlfile)
     wsdl = WSDL::Parser.new.parse(File.open(wsdlfile) { |f| f.read })
     types = wsdl.collect_complextypes
@@ -15,18 +14,18 @@ class WSDLMarshaller
       :generate_explicit_type => false,
       :pretty => true
     }
-    @mapping_registry = Mapping::WSDLEncodedRegistry.new(types)
+    @mapping_registry = ::SOAP::Mapping::WSDLEncodedRegistry.new(types)
   end
 
   def dump(obj, io = nil)
-    ele =  Mapping.obj2soap(obj, @mapping_registry)
+    ele =  ::SOAP::Mapping.obj2soap(obj, @mapping_registry)
     ele.elename = ele.type
-    Processor.marshal(SOAPEnvelope.new(nil, SOAPBody.new(ele)), @opt, io)
+    ::SOAP::Processor.marshal(::SOAP::SOAPEnvelope.new(nil, ::SOAP::SOAPBody.new(ele)), @opt, io)
   end
 
   def load(io)
-    header, body = Processor.unmarshal(io, @opt)
-    Mapping.soap2obj(body.root_node)
+    header, body = ::SOAP::Processor.unmarshal(io, @opt)
+    ::SOAP::Mapping.soap2obj(body.root_node)
   end
 end
 

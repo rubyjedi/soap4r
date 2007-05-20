@@ -1,5 +1,7 @@
 require 'product.rb'
 require 'productMappingRegistry.rb'
+
+module WSDL::Ref
 require 'soap/rpc/driver'
 
 class Ref_porttype < ::SOAP::RPC::Driver
@@ -45,3 +47,5 @@ private
   end
 end
 
+
+end
