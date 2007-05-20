@@ -34,22 +34,22 @@ class LiteralMappingRegistryCreator
   def dump(varname)
     @varname = varname
     result = ''
-    str = dump_element
-    unless str.empty?
-      result << "\n" unless result.empty?
-      result << str
-    end
-    str = dump_attribute
-    unless str.empty?
-      result << "\n" unless result.empty?
-      result << str
-    end
     str = dump_complextype
     unless str.empty?
       result << "\n" unless result.empty?
       result << str
     end
     str = dump_simpletype
+    unless str.empty?
+      result << "\n" unless result.empty?
+      result << str
+    end
+    str = dump_element
+    unless str.empty?
+      result << "\n" unless result.empty?
+      result << str
+    end
+    str = dump_attribute
     unless str.empty?
       result << "\n" unless result.empty?
       result << str
@@ -61,11 +61,19 @@ private
 
   def dump_element
     @elements.collect { |ele|
+      qualified = (ele.elementform == 'qualified')
       if ele.local_complextype
-        qualified = (ele.elementform == 'qualified')
         dump_complextypedef(ele.name, ele.local_complextype, qualified)
       elsif ele.local_simpletype
-        dump_simpletypedef(ele.name, ele.local_simpletype)
+        dump_simpletypedef(ele.name, ele.local_simpletype, qualified)
+      elsif ele.type
+        if @complextypes[ele.type]
+          dump_complextypedef(ele.name, @complextypes[ele.type], qualified)
+        elsif @simpletypes[ele.type]
+          dump_simpletypedef(ele.name, @simpletypes[ele.type], qualified)
+        else
+          nil
+        end
       else
         nil
       end

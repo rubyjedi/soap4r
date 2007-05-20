@@ -502,9 +502,7 @@ private
   def add_elesoap2stubobj(node, obj, definition)
     vars = {}
     node.each do |name, value|
-      item = definition.elements.find { |k, v|
-        k.elename == value.elename
-      }
+      item = definition.elements.find_element(value.elename)
       if item
         child = soap2typedobj(value, item.mapped_class)
       else
@@ -536,10 +534,6 @@ private
       obj = Mapping._soap2obj(value, self, klass)
     end
     obj
-  end
-
-  def find_node_definition(node)
-    schema_definition_from_elename(node.elename) || schema_definition_from_type(node.type)
   end
 end
 

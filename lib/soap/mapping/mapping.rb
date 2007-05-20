@@ -7,6 +7,7 @@
 
 
 require 'xsd/codegen/gensupport'
+require 'soap/mapping/schemadefinition'
 
 
 module SOAP
@@ -296,20 +297,11 @@ module Mapping
     end
   end
 
-  def self.get_attributes_for_any(obj, elements)
+  def self.get_attributes_for_any(obj)
     if obj.respond_to?(:__xmlele_any)
       obj.__xmlele_any
     else
-      any = get_attributes(obj)
-      if elements
-        elements.each do |child_ele|
-          child = get_attribute(obj, child_ele.name.name)
-          if k = any.key(child)
-            any.delete(k)
-          end
-        end
-      end
-      any
+      get_attributes(obj)
     end
   end
 
@@ -437,24 +429,50 @@ module Mapping
     if schema_element
       if schema_element.respond_to?(:is_concrete_definition) and
           schema_element.is_concrete_definition
-        definition.elements.replace(schema_element)
+        definition.elements = schema_element
       else
-        parse_schema_element_definition(klass, definition, schema_element)
+        default_ns = elename.namespace if elename
+        default_ns ||= type.namespace if type
+        definition.elements = parse_schema_definition(schema_element, default_ns)
+        # needed?
+        if klass.ancestors.include?(::Array)
+          definition.elements.set_array
+        end
       end
     end
     definition
   end
 
   # for backward compatibility
-  def self.parse_schema_element_definition(klass, definition, schema_element)
+  # returns SchemaComplexTypeDefinition
+  def self.parse_schema_definition(schema_element, default_ns)
+    definition = nil
     if schema_element[0] == :choice
       schema_element.shift
-      definition.set_choice
+      definition = SchemaChoiceDefinition.new
+    else
+      definition = SchemaSequenceDefinition.new
     end
-    schema_element.each do |element|
-      varname, info = element
+    schema_element.each do |ele|
+      element_definition = parse_schema_element_definition(ele, default_ns)
+      definition << element_definition
+      if element_definition.as_array?
+        definition.set_array
+      end
+    end
+    definition
+  end
+
+  # returns SchemaElementDefinition
+  def self.parse_schema_element_definition(schema_element, default_ns)
+    if schema_element[0] == :choice
+      parse_schema_definition(schema_element, default_ns)
+    elsif schema_element[0].is_a?(Array)
+      parse_schema_definition(schema_element, default_ns)
+    else
+      varname, info = schema_element
       mapped_class_str, elename = info
-      as_array = klass.ancestors.include?(::Array)
+      as_any = as_array = false
       if /\[\]$/ =~ mapped_class_str
         mapped_class_str = mapped_class_str.sub(/\[\]$/, '')
         if mapped_class_str.empty?
@@ -469,73 +487,12 @@ module Mapping
         end
       end
       if elename == XSD::AnyTypeName
-        definition.set_any
+        as_any = true
       elsif elename.nil?
-        ns ||= definition.elename.namespace if definition.elename
-        ns ||= definition.type.namespace if definition.type
-        elename = XSD::QName.new(ns, varname)
+        elename = XSD::QName.new(default_ns, varname)
       end
-      definition.elements <<
-        SchemaElementDefinition.new(varname, mapped_class, elename, as_array)
-    end
-  end
-
-  class SchemaElementDefinition
-    attr_reader :varname, :mapped_class, :elename
-
-    def initialize(varname, mapped_class, elename, as_array)
-      @varname = varname
-      @mapped_class = mapped_class
-      @elename = elename
-      @as_array = as_array
-    end
-
-    def as_array?
-      @as_array
-    end
-
-    def is_concrete_definition
-      true
-    end
-  end
-
-  class SchemaElementChoiceDefinition < ::Array
-    def is_concrete_definition
-      true
-    end
-  end
-
-  class SchemaDefinition
-    attr_reader :class_for
-    attr_reader :elename, :type
-    attr_reader :qualified, :elements
-    attr_accessor :attributes
-
-    def initialize(class_for, elename, type, qualified)
-      @class_for = class_for
-      @elename = elename
-      @type = type
-      @qualified = qualified
-      @elements = []
-      @attributes = nil
-      @choice = false
-      @any = false
-    end
-
-    def choice?
-      @choice
-    end
-
-    def have_any?
-      @any
-    end
-
-    def set_choice
-      @choice = true
-    end
-
-    def set_any
-      @any = true
+      SchemaElementDefinition.new(
+        varname, mapped_class, elename, as_any, as_array)
     end
   end
 

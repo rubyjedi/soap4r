@@ -55,12 +55,12 @@ class ComplexContent < Info
   end
 
   def attributes
-    content.attributes
+    content ? content.attributes : XSD::NamedElements::Empty
   end
 
   def nested_elements
     # restrict and extension does not have particle.
-    elements
+    content ? content.nested_elements : XSD::NamedElements::Empty
   end
 
   def check_type

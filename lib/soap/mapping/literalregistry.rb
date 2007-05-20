@@ -107,32 +107,7 @@ private
     if definition.type
       ele.extraattr[XSD::AttrTypeName] = definition.type
     end
-    any = nil
-    if definition.have_any?
-      any = Mapping.get_attributes_for_any(obj, definition.elements)
-    end
-    definition.elements.each do |eledef|
-      if eledef.elename == XSD::AnyTypeName
-        if any
-          SOAPElement.from_objs(any).each do |child|
-            ele.add(child)
-          end
-        end
-      elsif obj.respond_to?(:each) and eledef.as_array?
-        obj.each do |item|
-          ele.add(obj2soap(item, eledef.elename))
-        end
-      else
-        child = Mapping.get_attribute(obj, eledef.varname)
-        if child.respond_to?(:each) and eledef.as_array?
-          child.each do |item|
-            ele.add(obj2soap(item, eledef.elename))
-          end
-        else
-          ele.add(obj2soap(child, eledef.elename))
-        end
-      end
-    end
+    stubobj2soap_elements(obj, ele, definition.elements)
     if definition.attributes
       definition.attributes.each do |qname, param|
         at = obj.__send__(
@@ -141,6 +116,48 @@ private
       end
     end
     ele
+  end
+
+  def stubobj2soap_elements(obj, ele, definition, add_if_nil = true)
+    added = false
+    case definition
+    when SchemaSequenceDefinition, SchemaEmptyDefinition
+      definition.each do |eledef|
+        ele_added = stubobj2soap_elements(obj, ele, eledef, add_if_nil)
+        added = true if ele_added
+      end
+    when SchemaChoiceDefinition
+      definition.each do |eledef|
+        added = stubobj2soap_elements(obj, ele, eledef, false)
+        break if added
+      end
+    else
+      added = true
+      if definition.as_any?
+        any = Mapping.get_attributes_for_any(obj)
+        SOAPElement.from_objs(any).each do |child|
+          ele.add(child)
+        end
+      elsif obj.respond_to?(:each) and definition.as_array?
+        obj.each do |item|
+          ele.add(obj2soap(item, definition.elename))
+        end
+      else
+        child = Mapping.get_attribute(obj, definition.varname)
+        if child.nil? and !add_if_nil
+          added = false
+        else
+          if child.respond_to?(:each) and definition.as_array?
+            child.each do |item|
+              ele.add(obj2soap(item, definition.elename))
+            end
+          else
+            ele.add(obj2soap(child, definition.elename))
+          end
+        end
+      end
+    end
+    added
   end
 
   def mappingobj2soap(obj, qname)
@@ -205,9 +222,7 @@ private
   def add_elesoap2stubobj(node, obj, definition)
     vars = {}
     node.each do |name, value|
-      item = definition.elements.find { |k, v|
-        k.elename == value.elename
-      }
+      item = definition.elements.find_element(value.elename)
       if item
         child = elesoapchild2obj(value, item)
       else
