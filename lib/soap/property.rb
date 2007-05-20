@@ -65,13 +65,13 @@ class Property
 
   KEY_REGSRC = '([^=:\\\\]*(?:\\\\.[^=:\\\\]*)*)'
   DEF_REGSRC = '\\s*' + KEY_REGSRC + '\\s*[=:]\\s*(.*)'
-  COMMENT_REGEXP = Regexp.new('^(?:#.*|)$')
-  CATDEF_REGEXP = Regexp.new("^\\[\\s*#{KEY_REGSRC}\\s*\\]$")
-  LINE_REGEXP = Regexp.new("^#{DEF_REGSRC}$")
+  COMMENT_REGEXP = Regexp.new('^(?:#.*|)$', nil, 'u')
+  CATDEF_REGEXP = Regexp.new("^\\[\\s*#{KEY_REGSRC}\\s*\\]$", nil, 'u')
+  LINE_REGEXP = Regexp.new("^#{DEF_REGSRC}$", nil, 'u')
   def load(stream)
     key_prefix = ""
     stream.each_with_index do |line, lineno|
-      line.sub!(/\r?\n\z/, '')
+      line.sub!(/\r?\n\z/u, '')
       case line
       when COMMENT_REGEXP
 	next
@@ -279,7 +279,7 @@ private
     when Symbol
       [name]
     when String
-      name.scan(/[^.\\]+(?:\\.[^.\\])*/)	# split with unescaped '.'
+      name.scan(/[^.\\]+(?:\\.[^.\\])*/u)	# split with unescaped '.'
     when Array
       name
     else
@@ -311,7 +311,7 @@ private
   end
 
   def loadstr(str)
-    str.gsub(/\\./) { |c| eval("\"#{c}\"") }
+    str.gsub(/\\./u) { |c| eval("\"#{c}\"") }
   end
 end
 
