@@ -227,16 +227,6 @@ private
     p ["client", ok, cert] if $DEBUG
     ok
   end
-
-  def silent
-    back = $VERBOSE
-    $VERBOSE = nil
-    begin
-      yield
-    ensure
-      $VERBOSE = back
-    end
-  end
 end
 
 

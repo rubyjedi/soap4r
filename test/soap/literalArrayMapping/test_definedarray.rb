@@ -2,6 +2,7 @@ require 'test/unit'
 require 'soap/mapping'
 require 'soap/processor'
 require 'soap/rpc/element'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module SOAP
@@ -16,13 +17,7 @@ class TestDefinedArray < Test::Unit::TestCase
   end
 
   def setup
-    backupdir = Dir.pwd
-    begin
-      Dir.chdir(DIR)
-      require 'amazonEcDriver.rb'
-    ensure
-      Dir.chdir(backupdir)
-    end
+    TestUtil.require(DIR, 'amazonEcDriver.rb')
   end
 
   def test_amazonresponse

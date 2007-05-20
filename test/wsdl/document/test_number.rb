@@ -3,6 +3,7 @@ require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module WSDL; module Document
@@ -45,7 +46,7 @@ class TestNumber < Test::Unit::TestCase
   def setup_server
     @server = Server.new('Test', "urn:rpc", '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @server_thread = start_server_thread(@server)
+    @server_thread = TestUtil.start_server_thread(@server)
   end
 
   def setup_classdef
@@ -56,28 +57,13 @@ class TestNumber < Test::Unit::TestCase
     gen.opt['classdef'] = nil
     gen.opt['force'] = true
     gen.run
-    backupdir = Dir.pwd
-    begin
-      Dir.chdir(DIR)
-      require 'foo.rb'
-    ensure
-      $".delete('foo.rb')
-      Dir.chdir(backupdir)
-    end
+    TestUtil.require(DIR, 'foo.rb')
   end
 
   def teardown_server
     @server.shutdown
     @server_thread.kill
     @server_thread.join
-  end
-
-  def start_server_thread(server)
-    t = Thread.new {
-      Thread.current.abort_on_exception = true
-      server.start
-    }
-    t
   end
 
   def pathname(filename)

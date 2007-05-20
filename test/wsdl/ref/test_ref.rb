@@ -2,6 +2,7 @@ require 'test/unit'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
 require 'wsdl/soap/wsdl2ruby'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module WSDL
@@ -74,7 +75,7 @@ class TestRef < Test::Unit::TestCase
   def setup_server
     @server = Server.new('Test', Namespace, '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @server_thread = start_server_thread(@server)
+    @server_thread = TestUtil.start_server_thread(@server)
   end
 
   def setup_classdef
@@ -88,16 +89,7 @@ class TestRef < Test::Unit::TestCase
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
-    backupdir = Dir.pwd
-    begin
-      Dir.chdir(DIR)
-      require 'productDriver.rb'
-    ensure
-      $".delete('product.rb')
-      $".delete('productMappingRegistry.rb')
-      $".delete('productDriver.rb')
-      Dir.chdir(backupdir)
-    end
+    TestUtil.require(DIR, 'product.rb', 'productMappingRegistry.rb', 'productDriver.rb')
   end
 
   def teardown_server
@@ -106,34 +98,12 @@ class TestRef < Test::Unit::TestCase
     @server_thread.join
   end
 
-  def start_server_thread(server)
-    t = Thread.new {
-      Thread.current.abort_on_exception = true
-      server.start
-    }
-    t
-  end
-
   def pathname(filename)
     File.join(DIR, filename)
   end
 
   def compare(expected, actual)
-    assert_equal(loadfile(expected), loadfile(actual), actual)
-  end
-
-  def loadfile(file)
-    File.open(pathname(file)) { |f| f.read }
-  end
-
-  def suppress_warning
-    back = $VERBOSE
-    $VERBOSE = nil
-    begin
-      yield
-    ensure
-      $VERBOSE = back
-    end
+    TestUtil.filecompare(pathname(expected), pathname(actual))
   end
 
   def test_classdef
@@ -143,7 +113,7 @@ class TestRef < Test::Unit::TestCase
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
     gen.opt['force'] = true
-    suppress_warning do
+    TestUtil.silent do
       gen.run
     end
     compare("expectedProduct.rb", "product.rb")

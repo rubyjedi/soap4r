@@ -3,6 +3,7 @@ require 'wsdl/parser'
 require 'soap/mapping/wsdlencodedregistry'
 require 'soap/marshal'
 require 'wsdl/soap/wsdl2ruby'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 class WSDLMarshaller
@@ -65,11 +66,7 @@ class TestWSDLMarshal < Test::Unit::TestCase
   end
 
   def compare(expected, actual)
-    assert_equal(loadfile(expected), loadfile(actual), actual)
-  end
-
-  def loadfile(file)
-    File.open(pathname(file)) { |f| f.read }
+    TestUtil.filecompare(pathname(expected), pathname(actual))
   end
 
   def pathname(filename)

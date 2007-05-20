@@ -3,6 +3,7 @@ require 'soap/rpc/driver'
 require 'webrick'
 require 'webrick/httpproxy'
 require 'logger'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', 'testutil.rb')
 
 
 module SOAP
@@ -41,7 +42,7 @@ class TestStreamHandler < Test::Unit::TestCase
       '/',
       WEBrick::HTTPServlet::ProcHandler.new(method(:do_server_proc).to_proc)
     )
-    @server_thread = start_server_thread(@server)
+    @server_thread = TestUtil.start_server_thread(@server)
   end
 
   def setup_proxyserver
@@ -51,7 +52,7 @@ class TestStreamHandler < Test::Unit::TestCase
       :Port => ProxyPort,
       :AccessLog => []
     )
-    @proxyserver_thread = start_server_thread(@proxyserver)
+    @proxyserver_thread = TestUtil.start_server_thread(@proxyserver)
   end
 
   def setup_client
@@ -73,14 +74,6 @@ class TestStreamHandler < Test::Unit::TestCase
 
   def teardown_client
     @client.reset_stream
-  end
-
-  def start_server_thread(server)
-    t = Thread.new {
-      Thread.current.abort_on_exception = true
-      server.start
-    }
-    t
   end
 
   def do_server_proc(req, res)

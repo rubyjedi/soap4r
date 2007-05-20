@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', '..', 'testutil.rb')
 
 
 module WSDL; module SimpleType
@@ -24,7 +25,7 @@ class TestRPC < Test::Unit::TestCase
     gen.opt['servant_skelton'] = nil
     gen.opt['standalone_server_stub'] = nil
     gen.opt['force'] = true
-    suppress_warning do
+    TestUtil.silent do
       gen.run
     end
     compare("expectedEchoVersion.rb", "echo_version.rb")
@@ -43,21 +44,7 @@ class TestRPC < Test::Unit::TestCase
   end
 
   def compare(expected, actual)
-    assert_equal(loadfile(expected), loadfile(actual), actual)
-  end
-
-  def loadfile(file)
-    File.open(pathname(file)) { |f| f.read }
-  end
-
-  def suppress_warning
-    back = $VERBOSE
-    $VERBOSE = nil
-    begin
-      yield
-    ensure
-      $VERBOSE = back
-    end
+    TestUtil.filecompare(pathname(expected), pathname(actual))
   end
 end
 

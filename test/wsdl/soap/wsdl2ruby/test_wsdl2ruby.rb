@@ -1,6 +1,9 @@
 require 'test/unit'
 require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', '..', 'testutil.rb')
+
+
 module WSDL; module SOAP
 
 
@@ -8,9 +11,7 @@ class TestWSDL2Ruby < Test::Unit::TestCase
   DIR = File.dirname(File.expand_path(__FILE__))
 
   def setup
-    backupdir = Dir.pwd
-    begin
-      Dir.chdir(DIR)
+    Dir.chdir(DIR) do
       gen = WSDL::SOAP::WSDL2Ruby.new
       gen.location = pathname("rpc.wsdl")
       gen.basedir = DIR
@@ -23,11 +24,9 @@ class TestWSDL2Ruby < Test::Unit::TestCase
       gen.opt['mapping_registry'] = nil
       gen.opt['driver'] = nil
       gen.opt['force'] = true
-      silent do
+      TestUtil.silent do
         gen.run
       end
-    ensure
-      Dir.chdir(backupdir)
     end
   end
 
@@ -60,21 +59,11 @@ private
   end
 
   def compare(expected, actual)
-    assert_equal(loadfile(expected), loadfile(actual), expected)
+    TestUtil.filecompare(pathname(expected), pathname(actual))
   end
 
   def loadfile(file)
     File.open(pathname(file)) { |f| f.read }
-  end
-
-  def silent
-    back = $VERBOSE
-    $VERBOSE = nil
-    begin
-      yield
-    ensure
-      $VERBOSE = back
-    end
   end
 end
 
