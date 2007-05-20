@@ -10,7 +10,7 @@ module XSD
 module CodeGen
 
 # from the file 'keywords' in 1.9.
-KEYWORD = {}
+KEYWORDS = {}
 %w(
 __LINE__
 __FILE__
@@ -52,7 +52,105 @@ until
 when
 while
 yield
-).each { |k| KEYWORD[k] = nil }
+).each { |k| KEYWORDS[k] = nil }
+
+# from Module.constants from 1.8 & 1.9
+CONSTANTS = {}
+%w(
+ARGF
+ARGV
+ArgumentError
+Array
+BasicObject
+Bignum
+Binding
+Class
+Comparable
+Continuation
+Data
+Dir
+ENV
+EOFError
+Enumerable
+Errno
+Exception
+FALSE
+FalseClass
+File
+FileTest
+Fixnum
+Float
+FloatDomainError
+GC
+Hash
+IO
+IOError
+IndexError
+Integer
+Interrupt
+Kernel
+KeyError
+LoadError
+LocalJumpError
+Marshal
+MatchData
+MatchingData
+Math
+Method
+Module
+Mutex
+NIL
+NameError
+NilClass
+NoMemoryError
+NoMethodError
+NotImplementedError
+Numeric
+Object
+ObjectSpace
+PLATFORM
+Precision
+Proc
+Process
+RELEASE_DATE
+RUBY_PATCHLEVEL
+RUBY_PLATFORM
+RUBY_RELEASE_DATE
+RUBY_VERSION
+Range
+RangeError
+Regexp
+RegexpError
+RuntimeError
+STDERR
+STDIN
+STDOUT
+ScriptError
+SecurityError
+Signal
+SignalException
+StandardError
+String
+Struct
+Symbol
+SyntaxError
+SystemCallError
+SystemExit
+SystemStackError
+TOPLEVEL_BINDING
+TRUE
+Thread
+ThreadError
+ThreadGroup
+Time
+TrueClass
+TypeError
+UnboundMethod
+VERSION
+VM
+ZeroDivisionError
+).each { |c| CONSTANTS[c] = nil }
+
 
 module GenSupport
   def capitalize(target)
@@ -69,7 +167,7 @@ module GenSupport
     safename = name.scan(/[a-zA-Z0-9_]+/).collect { |ele|
       GenSupport.capitalize(ele)
     }.join
-    if /\A[A-Z]/ !~ safename or keyword?(safename)
+    if /\A[A-Z]/ !~ safename or keyword?(safename) or constant?(safename)
       "C_#{safename}"
     else
       safename
@@ -116,9 +214,14 @@ module GenSupport
   module_function :safevarname?
 
   def keyword?(word)
-    KEYWORD.key?(word)
+    KEYWORDS.key?(word)
   end
   module_function :keyword?
+
+  def constant?(word)
+    CONSTANTS.key?(word)
+  end
+  module_function :constant?
 
   def format(str, indent = nil)
     str = trim_eol(str)
