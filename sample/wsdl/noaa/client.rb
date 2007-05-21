@@ -29,8 +29,6 @@ data.parameters.temperature.each do |temp|
   p temp.value
 end
 
-p data["time-layout"]["start-valid-time"]
-
 ## accessing through statically generated driver
 
 # run wsdl2ruby.rb to create needed files like this;
@@ -41,6 +39,6 @@ params = WeatherParametersType.new(false, false, true, true, false, false,
 
 drv = NdfdXMLPortType.new
 drv.wiredump_dev = STDOUT if $DEBUG
-dwml = drv.NDFDgen(lattitude, longitude, ProductType::TimeSeries, starter,
+dwml = drv.nDFDgen(lattitude, longitude, ProductType::TimeSeries, starter,
   ender, params)
 puts dwml
