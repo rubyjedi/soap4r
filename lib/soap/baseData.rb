@@ -731,35 +731,10 @@ class SOAPElement
 private
 
   def add_member(name, value)
-    add_accessor(name)
     @array.push(name)
     @data.push(value)
     value.parent = self if value.respond_to?(:parent=)
     value
-  end
-
-  # Mapping.define_singleton_method calls define_method with proc and it
-  # exhausts much memory for each singleton Object.  just instance_eval instead
-  # of it.
-  def add_accessor(name)
-    # untaint depends GenSupport.safemethodname
-    methodname = XSD::CodeGen::GenSupport.safemethodname(name).untaint
-    # untaint depends String#dump and Array#index
-    namedump = name.dump.untaint
-    unless self.respond_to?(methodname)
-      instance_eval <<-EOS
-        def #{methodname}
-          @data[@array.index(#{namedump})]
-        end
-      EOS
-    end
-    unless self.respond_to?(methodname + "=")
-      instance_eval <<-EOS
-        def #{methodname}=(value)
-          @data[@array.index(#{namedump})] = value
-        end
-      EOS
-    end
   end
 end
 
