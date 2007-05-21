@@ -465,6 +465,7 @@ private
 
   def decode_textbuf(node)
     textbufstr = @textbuf.join
+    @textbuf.clear
     case node
     when XSD::XSDHexBinary, XSD::XSDBase64Binary
       node.set_encoded(textbufstr)
@@ -483,7 +484,6 @@ private
     else
       # Nothing to do...
     end
-    @textbuf.clear
   end
 
   NilLiteralMap = {

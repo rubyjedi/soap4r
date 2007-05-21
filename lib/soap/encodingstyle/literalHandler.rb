@@ -19,7 +19,7 @@ class LiteralHandler < Handler
 
   def initialize(charset = nil)
     super(charset)
-    @textbuf = ''
+    @textbuf = []
   end
 
 
@@ -157,7 +157,7 @@ class LiteralHandler < Handler
   end
 
   def decode_tag(ns, elename, attrs, parent)
-    @textbuf = ''
+    @textbuf.clear
     o = SOAPUnknown.new(self, elename, decode_attrs(ns, attrs))
     o.parent = parent
     o
@@ -166,7 +166,7 @@ class LiteralHandler < Handler
   def decode_tag_end(ns, node)
     o = node.node
     if o.is_a?(SOAPUnknown)
-      if /\A\s*\z/ =~ @textbuf
+      if /\A\s*\z/ =~ @textbuf.join
         newnode = o.as_element
       else
         newnode = o.as_string
@@ -176,7 +176,6 @@ class LiteralHandler < Handler
     end
 
     decode_textbuf(o)
-    @textbuf = ''
   end
 
   def decode_text(ns, text)
@@ -229,12 +228,14 @@ class LiteralHandler < Handler
 private
 
   def decode_textbuf(node)
+    textbufstr = @textbuf.join
+    @textbuf.clear
     case node
     when XSD::XSDString, SOAPElement
       if @charset
-	node.set(XSD::Charset.encoding_from_xml(@textbuf, @charset))
+	node.set(XSD::Charset.encoding_from_xml(textbufstr, @charset))
       else
-	node.set(@textbuf)
+	node.set(textbufstr)
       end
     else
       # Nothing to do...
