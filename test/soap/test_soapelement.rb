@@ -52,13 +52,13 @@ class TestSOAPElement < Test::Unit::TestCase
     obj.add(child)
     assert(obj.key?("abc"))
     assert_same(child, obj["abc"])
-    assert_same(child, obj.abc)
+    assert_same(child, obj["abc"])
     child = d("foo")
     obj.add(child)
-    assert_equal(child, obj.foo)
+    assert_equal(child, obj["foo"])
     child = d("_?a?b_")
     obj.add(child)
-    assert_equal(child, obj.m___a_b_)
+    assert_equal(child, obj["_?a?b_"])
   end
 
   def test_member
