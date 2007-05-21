@@ -154,12 +154,12 @@ ZeroDivisionError
 
 module GenSupport
   def capitalize(target)
-    target.sub(/^([a-z])/) { $1.tr!('[a-z]', '[A-Z]') }
+    target.sub(/^([a-z])/) { $1.upcase }
   end
   module_function :capitalize
 
   def uncapitalize(target)
-    target.sub(/^([A-Z])/) { $1.tr!('[A-Z]', '[a-z]') }
+    target.sub(/^([A-Z])/) { $1.downcase }
   end
   module_function :uncapitalize
 
