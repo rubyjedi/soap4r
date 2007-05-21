@@ -106,7 +106,10 @@ private
 
   def dump_complextype
     @complextypes.collect { |type|
-      dump_complextypedef(type.name, type)
+      dump_complextypedef(type.name, type) if type.abstract
+    }.compact.join("\n") +
+    @complextypes.collect { |type|
+      dump_complextypedef(type.name, type) unless type.abstract
     }.compact.join("\n")
   end
 
