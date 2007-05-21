@@ -1,0 +1,1007 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="mms_MizGIS"
+ targetNamespace="urn:mms_MizGIS"
+ xmlns:tns="urn:mms_MizGIS"
+ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+ xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ xmlns:mms="urn:mms_MizGIS"
+ xmlns:SOAP="http://schemas.xmlsoap.org/wsdl/soap/"
+ xmlns:WSDL="http://schemas.xmlsoap.org/wsdl/"
+ xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+<types>
+
+ <schema targetNamespace="urn:mms_MizGIS"
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:mms="urn:mms_MizGIS"
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="unqualified"
+  attributeFormDefault="unqualified">
+  <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+  <simpleType name="ModeType">
+   <restriction base="xsd:string">
+    <enumeration value="rmONFOOT"/>
+    <enumeration value="rmCAR"/>
+    <enumeration value="rmPT"/>
+   </restriction>
+  </simpleType>
+  <simpleType name="VehicleType">
+   <restriction base="xsd:string">
+    <enumeration value="vtNULL"/>
+    <enumeration value="vtANY"/>
+    <enumeration value="vtCAR"/>
+    <enumeration value="vtRESIDENTIAL-VEHICLE"/>
+    <enumeration value="vtEMERGENCY-VEHICLE"/>
+    <enumeration value="vtTAXI"/>
+    <enumeration value="vtPUBLIC-BUS"/>
+    <enumeration value="vtDELIVERY-TRUCK"/>
+    <enumeration value="vtBICYCLE"/>
+    <enumeration value="vtPEDESTRIAN"/>
+    <enumeration value="vtBUS"/>
+    <enumeration value="vtTRAM"/>
+    <enumeration value="vtMETRO"/>
+    <enumeration value="vtTRAIN"/>
+    <enumeration value="vtAIRPLANE"/>
+   </restriction>
+  </simpleType>
+  <simpleType name="OptimizationType">
+   <restriction base="xsd:string">
+    <enumeration value="otSHORTEST"/>
+    <enumeration value="otFASTEST"/>
+    <enumeration value="otCHEAPEST"/>
+   </restriction>
+  </simpleType>
+  <simpleType name="DescriptionLevelType">
+   <restriction base="xsd:string">
+    <enumeration value="dlNONE"/>
+    <enumeration value="dlBRIEF"/>
+    <enumeration value="dlNORMAL"/>
+   </restriction>
+  </simpleType>
+  <simpleType name="StepActionType">
+   <restriction base="xsd:string">
+    <enumeration value="saNULL"/>
+    <enumeration value="saSTART"/>
+    <enumeration value="saARRIVE"/>
+    <enumeration value="saSTOP"/>
+    <enumeration value="saTURNLEFT"/>
+    <enumeration value="saTURNRIGHT"/>
+    <enumeration value="saCONTINUE"/>
+    <enumeration value="saONFOOTSTART"/>
+    <enumeration value="saONFOOTARRIVE"/>
+    <enumeration value="saMOTORWAYBEGIN"/>
+    <enumeration value="saMOTORWAYEND"/>
+    <enumeration value="saMOTORWAYENTER"/>
+    <enumeration value="saMOTORWAYLEAVE"/>
+    <enumeration value="saMOTORWAYCONTINUE"/>
+    <enumeration value="saMOTORWAYCHANGE"/>
+    <enumeration value="saCHANGECOUNTRY"/>
+    <enumeration value="saPTWAIT"/>
+    <enumeration value="saPTTRAVEL"/>
+    <enumeration value="saFERRY"/>
+   </restriction>
+  </simpleType>
+  <simpleType name="TmcRoadTypeType">
+   <restriction base="xsd:string">
+    <enumeration value="rtUNDEF"/>
+    <enumeration value="rtITA-AUTOS"/>
+    <enumeration value="rtITA-TANG"/>
+    <enumeration value="rtITA-SS"/>
+    <enumeration value="rtITA-DIR"/>
+    <enumeration value="rtITA-RACC"/>
+    <enumeration value="rtITA-TRAF"/>
+    <enumeration value="rtITA-SGC"/>
+    <enumeration value="rtNLD-A"/>
+    <enumeration value="rtNLD-N"/>
+   </restriction>
+  </simpleType>
+  <complexType name="ArrayOfint">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="xsd:int" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:int[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="ArrayOfstring">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="xsd:string[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="AccessCredentialsType">
+   <sequence>
+    <element name="Name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="Password" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="AddressSearchType">
+   <sequence>
+    <element name="languageCode" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="countryCode" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="place" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="street" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="houseNumber" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="CoordinatesType">
+   <sequence>
+    <element name="longitude" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="latitude" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="BoxType">
+   <sequence>
+    <element name="bottomLeft" type="mms:CoordinatesType" minOccurs="1" maxOccurs="1"/>
+    <element name="topRight" type="mms:CoordinatesType" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="AreaType">
+   <sequence>
+    <element name="center" type="mms:CoordinatesType" minOccurs="1" maxOccurs="1"/>
+    <element name="radius" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfAreaType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:AreaType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:AreaType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="GeocodeType">
+   <sequence>
+    <element name="areaId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="streetNameId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="lineId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="position" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="direction" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="highway" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfGeocodeType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:GeocodeType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:GeocodeType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="AddressType">
+   <sequence>
+    <element name="countryCode" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="languageCode" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="countryName" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="region" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="municipality" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="languageCodeDistrict" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="district" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="languageCodeStreetName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="streetName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="houseNumber" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="postCode" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="coordinates" type="mms:CoordinatesType" minOccurs="1" maxOccurs="1"/>
+    <element name="geocode" type="mms:GeocodeType" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfAddressType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:AddressType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:AddressType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="PoiMacrocategoryType">
+   <sequence>
+    <element name="macrocategoryId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="description" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfPoiMacrocategoryType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:PoiMacrocategoryType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:PoiMacrocategoryType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="PoiCategoryType">
+   <sequence>
+    <element name="categoryId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="macrocategoryId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="description" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="populated" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfPoiCategoryType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:PoiCategoryType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:PoiCategoryType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="PoiInfoType">
+   <sequence>
+    <element name="type" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="value" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfPoiInfoType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:PoiInfoType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:PoiInfoType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="PoiType">
+   <sequence>
+    <element name="poiId" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="categories" type="mms:ArrayOfstring" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="coordinates" type="mms:CoordinatesType" minOccurs="1" maxOccurs="1"/>
+    <element name="geocode" type="mms:GeocodeType" minOccurs="1" maxOccurs="1"/>
+    <element name="address" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="postCode" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="place" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="country" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="info" type="mms:ArrayOfPoiInfoType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="distance" type="xsd:double" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfPoiType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:PoiType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:PoiType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="TmcIdType">
+   <sequence>
+    <element name="cid" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="tabCd" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="lcd" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfTmcIdType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:TmcIdType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:TmcIdType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="TmcRoadQueryType">
+   <sequence>
+    <element name="cid" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="tabCd" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="roadLcds" type="mms:ArrayOfint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="roadCodes" type="mms:ArrayOfstring" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="roadTypes" type="mms:ArrayOfint" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="roadName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="status" type="xsd:int" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfTmcRoadQueryType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:TmcRoadQueryType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:TmcRoadQueryType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="TmcRoadOptionsType">
+   <sequence>
+    <element name="provideBox" type="xsd:boolean" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="nameDirections" type="xsd:boolean" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="listPoints" type="xsd:boolean" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="minPointImportance" type="xsd:int" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="TmcPointType">
+   <sequence>
+    <element name="pointId" type="mms:TmcIdType" minOccurs="1" maxOccurs="1"/>
+    <element name="roadLcd" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="segmentLcd" type="xsd:int" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="areaLcd" type="xsd:int" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="coordinates" type="mms:CoordinatesType" minOccurs="1" maxOccurs="1"/>
+    <element name="pointName" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="importance" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfTmcPointType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:TmcPointType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:TmcPointType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="TmcRoadType">
+   <sequence>
+    <element name="roadId" type="mms:TmcIdType" minOccurs="1" maxOccurs="1"/>
+    <element name="roadType" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="roadCode" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="roadName" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="box" type="mms:BoxType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="status" type="xsd:int" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="positiveDirName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="negativeDirName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="points" type="mms:ArrayOfTmcPointType" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfTmcRoadType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:TmcRoadType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:TmcRoadType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="TmcTrafficQueryType">
+   <sequence>
+    <element name="area" type="mms:AreaType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="box" type="mms:BoxType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="roadIds" type="mms:ArrayOfTmcIdType" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="fromPoint" type="mms:TmcIdType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="toPoint" type="mms:TmcIdType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="traffIds" type="mms:ArrayOfstring" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfTmcTrafficQueryType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:TmcTrafficQueryType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:TmcTrafficQueryType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="TmcTrafficOptionsType">
+   <sequence>
+    <element name="languageCode" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="maxResults" type="xsd:int" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="orderBySeverity" type="xsd:boolean" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="TrafficInfoType">
+   <sequence>
+    <element name="id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="cat" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="dob" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="dob2" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="dateTime" type="xsd:dateTime" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="coordinates" type="mms:CoordinatesType" minOccurs="1" maxOccurs="1"/>
+    <element name="distance" type="xsd:double" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="road" type="mms:TmcRoadType" minOccurs="1" maxOccurs="1"/>
+    <element name="roadName" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="directionName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="segmentName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="areaName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="place" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="extraPlace" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="text" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="extraText" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="source" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfTrafficInfoType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:TrafficInfoType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:TrafficInfoType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="RouteParametersType">
+   <sequence>
+    <element name="startingTime" type="xsd:dateTime" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="arrivalTime" type="xsd:dateTime" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="mode" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="optimization" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="realTime" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+    <element name="descriptionLevel" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="descriptionLanguageCode" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="providePath" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+    <element name="providePathPoints" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="RouteStepType">
+   <sequence>
+    <element name="time" type="xsd:dateTime" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="duration" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="distance" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="action" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="description" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfRouteStepType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:RouteStepType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:RouteStepType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="RouteSegmentType">
+   <sequence>
+    <element name="origin" type="mms:GeocodeType" minOccurs="1" maxOccurs="1"/>
+    <element name="destination" type="mms:GeocodeType" minOccurs="1" maxOccurs="1"/>
+    <element name="startingTime" type="xsd:dateTime" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="duration" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="distance" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="vehicle" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="steps" type="mms:ArrayOfRouteStepType" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="path" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfRouteSegmentType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:RouteSegmentType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:RouteSegmentType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="RoutePartType">
+   <sequence>
+    <element name="origin" type="mms:GeocodeType" minOccurs="1" maxOccurs="1"/>
+    <element name="destination" type="mms:GeocodeType" minOccurs="1" maxOccurs="1"/>
+    <element name="startingTime" type="xsd:dateTime" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="duration" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="distance" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="segments" type="mms:ArrayOfRouteSegmentType" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfRoutePartType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:RoutePartType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:RoutePartType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="RouteType">
+   <sequence>
+    <element name="routeId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="origin" type="mms:GeocodeType" minOccurs="1" maxOccurs="1"/>
+    <element name="destination" type="mms:GeocodeType" minOccurs="1" maxOccurs="1"/>
+    <element name="startingTime" type="xsd:dateTime" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="duration" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="distance" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="parts" type="mms:ArrayOfRoutePartType" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfRouteType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:RouteType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:RouteType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="ImagePointType">
+   <sequence>
+    <element name="x" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="y" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ImageSizeType">
+   <sequence>
+    <element name="width" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="height" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="MapIconType">
+   <sequence>
+    <element name="iconId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="iconType" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="description" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="dimmed" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+    <element name="minimize" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+    <element name="coordinates" type="mms:CoordinatesType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="point" type="mms:ImagePointType" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfMapIconType">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="mms:MapIconType" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="mms:MapIconType[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+  <complexType name="MapOptionsType">
+   <sequence>
+    <element name="format" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="showTrafficEvents" type="xsd:boolean" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="trafficIconPrefix" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="trafficIconsDimmed" type="xsd:boolean" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="roadId" type="mms:TmcIdType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="routeId" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="poiIds" type="mms:ArrayOfint" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="trafficInfoIds" type="mms:ArrayOfstring" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="icons" type="mms:ArrayOfMapIconType" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="routeIds" type="mms:ArrayOfstring" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="showBasicPois" type="xsd:boolean" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="MapType">
+   <sequence>
+    <element name="imageSize" type="mms:ImageSizeType" minOccurs="1" maxOccurs="1"/>
+    <element name="box" type="mms:BoxType" minOccurs="1" maxOccurs="1"/>
+    <element name="width" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="height" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="imageUrl" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+    <element name="icons" type="mms:ArrayOfMapIconType" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <element name="AccessCredentials" type="mms:AccessCredentialsType"/>
+ </schema>
+
+</types>
+
+<message name="getVersionRequest">
+</message>
+
+<message name="getVersionResponse">
+ <part name="name" type="xsd:string"/>
+ <part name="version" type="xsd:string"/>
+ <part name="date" type="xsd:string"/>
+ <part name="cartographyVersion" type="xsd:string"/>
+ <part name="poiCartographyVersion" type="xsd:string"/>
+</message>
+
+<message name="getAvailableCountriesRequest">
+</message>
+
+<message name="getAvailableCountriesResponse">
+ <part name="countries" type="mms:ArrayOfstring"/>
+</message>
+
+<message name="findAddressRequest">
+ <part name="addressSearch" type="mms:AddressSearchType"/>
+ <part name="maxResults" type="xsd:int"/>
+ <part name="onlyMunicipalities" type="xsd:boolean"/>
+</message>
+
+<message name="findAddressResponse">
+ <part name="addresses" type="mms:ArrayOfAddressType"/>
+</message>
+
+<message name="getAddressFromGeocodeRequest">
+ <part name="geocode" type="mms:GeocodeType"/>
+ <part name="languageCode" type="xsd:string"/>
+</message>
+
+<message name="getAddressFromGeocodeResponse">
+ <part name="address" type="mms:AddressType"/>
+</message>
+
+<message name="findGeocodeFromCoordinatesRequest">
+ <part name="coordinates" type="mms:CoordinatesType"/>
+ <part name="vehicle" type="xsd:int"/>
+</message>
+
+<message name="findGeocodeFromCoordinatesResponse">
+ <part name="found" type="xsd:boolean"/>
+ <part name="geocode" type="mms:GeocodeType"/>
+ <part name="distance" type="xsd:double"/>
+</message>
+
+<message name="findAddressFromCoordinatesRequest">
+ <part name="coordinates" type="mms:CoordinatesType"/>
+ <part name="vehicle" type="xsd:int"/>
+ <part name="languageCode" type="xsd:string"/>
+</message>
+
+<message name="findAddressFromCoordinatesResponse">
+ <part name="found" type="xsd:boolean"/>
+ <part name="address" type="mms:AddressType"/>
+ <part name="distance" type="xsd:double"/>
+</message>
+
+<message name="getListOfPoiMacrocategoriesRequest">
+ <part name="languageCode" type="xsd:string"/>
+</message>
+
+<message name="getListOfPoiMacrocategoriesResponse">
+ <part name="macrocategories" type="mms:ArrayOfPoiMacrocategoryType"/>
+</message>
+
+<message name="getListOfPoiCategoriesRequest">
+ <part name="languageCode" type="xsd:string"/>
+ <part name="onlyPopulated" type="xsd:boolean"/>
+</message>
+
+<message name="getListOfPoiCategoriesResponse">
+ <part name="categories" type="mms:ArrayOfPoiCategoryType"/>
+</message>
+
+<message name="findPoisRequest">
+ <part name="area" type="mms:AreaType"/>
+ <part name="box" type="mms:BoxType"/>
+ <part name="maxResults" type="xsd:int"/>
+ <part name="macroCategoryIds" type="mms:ArrayOfstring"/>
+ <part name="categoryIds" type="mms:ArrayOfstring"/>
+ <part name="provideInfo" type="xsd:boolean"/>
+</message>
+
+<message name="findPoisResponse">
+ <part name="pois" type="mms:ArrayOfPoiType"/>
+</message>
+
+<message name="getPoiInfoRequest">
+ <part name="poiIds" type="mms:ArrayOfint"/>
+ <part name="provideInfo" type="xsd:boolean"/>
+</message>
+
+<message name="getPoiInfoResponse">
+ <part name="pois" type="mms:ArrayOfPoiType"/>
+</message>
+
+<message name="getListOfRoadsRequest">
+ <part name="roadQueries" type="mms:ArrayOfTmcRoadQueryType"/>
+ <part name="roadOptions" type="mms:TmcRoadOptionsType"/>
+</message>
+
+<message name="getListOfRoadsResponse">
+ <part name="roads" type="mms:ArrayOfTmcRoadType"/>
+</message>
+
+<message name="getTrafficInfoRequest">
+ <part name="trafficQuery" type="mms:TmcTrafficQueryType"/>
+ <part name="trafficOptions" type="mms:TmcTrafficOptionsType"/>
+</message>
+
+<message name="getTrafficInfoResponse">
+ <part name="info" type="mms:ArrayOfTrafficInfoType"/>
+</message>
+
+<message name="getTrafficStatusRequest">
+ <part name="areas" type="mms:ArrayOfAreaType"/>
+</message>
+
+<message name="getTrafficStatusResponse">
+ <part name="status" type="mms:ArrayOfint"/>
+</message>
+
+<message name="findRouteRequest">
+ <part name="places" type="mms:ArrayOfGeocodeType"/>
+ <part name="params" type="mms:RouteParametersType"/>
+</message>
+
+<message name="findRouteResponse">
+ <part name="route" type="mms:RouteType"/>
+</message>
+
+<message name="getMapRequest">
+ <part name="imageSize" type="mms:ImageSizeType"/>
+ <part name="box" type="mms:BoxType"/>
+ <part name="options" type="mms:MapOptionsType"/>
+</message>
+
+<message name="getMapResponse">
+ <part name="map" type="mms:MapType"/>
+</message>
+
+<message name="getMapAroundRequest">
+ <part name="imageSize" type="mms:ImageSizeType"/>
+ <part name="center" type="mms:CoordinatesType"/>
+ <part name="radius" type="xsd:double"/>
+ <part name="options" type="mms:MapOptionsType"/>
+</message>
+
+<message name="getMapAroundResponse">
+ <part name="map" type="mms:MapType"/>
+</message>
+
+<message name="mms_MizGISHeader">
+ <part name="AccessCredentials" element="mms:AccessCredentials"/>
+</message>
+
+<portType name="mms_MizGISPortType">
+ <operation name="getVersion">
+  <documentation>Service definition of function mms__getVersion</documentation>
+  <input message="tns:getVersionRequest"/>
+  <output message="tns:getVersionResponse"/>
+ </operation>
+ <operation name="getAvailableCountries">
+  <documentation>Service definition of function mms__getAvailableCountries</documentation>
+  <input message="tns:getAvailableCountriesRequest"/>
+  <output message="tns:getAvailableCountriesResponse"/>
+ </operation>
+ <operation name="findAddress">
+  <documentation>Service definition of function mms__findAddress</documentation>
+  <input message="tns:findAddressRequest"/>
+  <output message="tns:findAddressResponse"/>
+ </operation>
+ <operation name="getAddressFromGeocode">
+  <documentation>Service definition of function mms__getAddressFromGeocode</documentation>
+  <input message="tns:getAddressFromGeocodeRequest"/>
+  <output message="tns:getAddressFromGeocodeResponse"/>
+ </operation>
+ <operation name="findGeocodeFromCoordinates">
+  <documentation>Service definition of function mms__findGeocodeFromCoordinates</documentation>
+  <input message="tns:findGeocodeFromCoordinatesRequest"/>
+  <output message="tns:findGeocodeFromCoordinatesResponse"/>
+ </operation>
+ <operation name="findAddressFromCoordinates">
+  <documentation>Service definition of function mms__findAddressFromCoordinates</documentation>
+  <input message="tns:findAddressFromCoordinatesRequest"/>
+  <output message="tns:findAddressFromCoordinatesResponse"/>
+ </operation>
+ <operation name="getListOfPoiMacrocategories">
+  <documentation>Service definition of function mms__getListOfPoiMacrocategories</documentation>
+  <input message="tns:getListOfPoiMacrocategoriesRequest"/>
+  <output message="tns:getListOfPoiMacrocategoriesResponse"/>
+ </operation>
+ <operation name="getListOfPoiCategories">
+  <documentation>Service definition of function mms__getListOfPoiCategories</documentation>
+  <input message="tns:getListOfPoiCategoriesRequest"/>
+  <output message="tns:getListOfPoiCategoriesResponse"/>
+ </operation>
+ <operation name="findPois">
+  <documentation>Service definition of function mms__findPois</documentation>
+  <input message="tns:findPoisRequest"/>
+  <output message="tns:findPoisResponse"/>
+ </operation>
+ <operation name="getPoiInfo">
+  <documentation>Service definition of function mms__getPoiInfo</documentation>
+  <input message="tns:getPoiInfoRequest"/>
+  <output message="tns:getPoiInfoResponse"/>
+ </operation>
+ <operation name="getListOfRoads">
+  <documentation>Service definition of function mms__getListOfRoads</documentation>
+  <input message="tns:getListOfRoadsRequest"/>
+  <output message="tns:getListOfRoadsResponse"/>
+ </operation>
+ <operation name="getTrafficInfo">
+  <documentation>Service definition of function mms__getTrafficInfo</documentation>
+  <input message="tns:getTrafficInfoRequest"/>
+  <output message="tns:getTrafficInfoResponse"/>
+ </operation>
+ <operation name="getTrafficStatus">
+  <documentation>Service definition of function mms__getTrafficStatus</documentation>
+  <input message="tns:getTrafficStatusRequest"/>
+  <output message="tns:getTrafficStatusResponse"/>
+ </operation>
+ <operation name="findRoute">
+  <documentation>Service definition of function mms__findRoute</documentation>
+  <input message="tns:findRouteRequest"/>
+  <output message="tns:findRouteResponse"/>
+ </operation>
+ <operation name="getMap">
+  <documentation>Service definition of function mms__getMap</documentation>
+  <input message="tns:getMapRequest"/>
+  <output message="tns:getMapResponse"/>
+ </operation>
+ <operation name="getMapAround">
+  <documentation>Service definition of function mms__getMapAround</documentation>
+  <input message="tns:getMapAroundRequest"/>
+  <output message="tns:getMapAroundResponse"/>
+ </operation>
+</portType>
+
+<binding name="mms_MizGIS" type="tns:mms_MizGISPortType">
+ <SOAP:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+ <operation name="getVersion">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getAvailableCountries">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="findAddress">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getAddressFromGeocode">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="findGeocodeFromCoordinates">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="findAddressFromCoordinates">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getListOfPoiMacrocategories">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getListOfPoiCategories">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="findPois">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getPoiInfo">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getListOfRoads">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getTrafficInfo">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getTrafficStatus">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="findRoute">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getMap">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getMapAround">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <SOAP:header use="literal" message="tns:mms_MizGISHeader" part="AccessCredentials"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:mms_MizGIS" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+</binding>
+
+<service name="mms_MizGIS">
+ <documentation>MizGIS Web Service</documentation>
+ <port name="mms_MizGIS" binding="tns:mms_MizGIS">
+  <SOAP:address location="http://www.verona.miz.it/mizgis-api/3.4/server"/>
+ </port>
+</service>
+
+</definitions>
