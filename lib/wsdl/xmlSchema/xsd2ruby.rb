@@ -105,3 +105,8 @@ end
 
 end
 end
+
+
+if __FILE__ == $0
+  warn("WARNING: #{File.expand_path(__FILE__)} is a library file used by bin/xsd2ruby.rb.  Find bin/xsd2ruby.rb from tarball version of soap4r or install soap4r via gem.")
+end
