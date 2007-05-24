@@ -34,8 +34,29 @@ class SchemaElementDefinition
 end
 
 module SchemaComplexTypeDefinition
+  include Enumerable
+
+  def initialize
+    @content = []
+    @element_cache = {}
+  end
+
   def is_concrete_definition
     true
+  end
+
+  def <<(ele)
+    @content << ele
+  end
+
+  def each
+    @content.each do |ele|
+      yield ele
+    end
+  end
+
+  def size
+    @content.size
   end
 
   def as_any?
@@ -47,6 +68,12 @@ module SchemaComplexTypeDefinition
   end
 
   def find_element(qname)
+    @element_cache[qname] ||= search_element(qname)
+  end
+
+private
+
+  def search_element(qname)
     each do |ele|
       if ele.respond_to?(:find_element)
         found = ele.find_element(qname)
@@ -63,17 +90,21 @@ module SchemaComplexTypeDefinition
   end
 end
 
-class SchemaEmptyDefinition < ::Array
+class SchemaEmptyDefinition
   include SchemaComplexTypeDefinition
 
   def initialize
     super()
-    freeze
+    @content.freeze
   end
 end
 
-class SchemaSequenceDefinition < ::Array
+class SchemaSequenceDefinition
   include SchemaComplexTypeDefinition
+
+  def initialize
+    super()
+  end
 
   def choice?
     false
@@ -89,8 +120,12 @@ class SchemaSequenceDefinition < ::Array
   end
 end
 
-class SchemaChoiceDefinition < ::Array
+class SchemaChoiceDefinition
   include SchemaComplexTypeDefinition
+
+  def initialize
+    super()
+  end
 
   def choice?
     true

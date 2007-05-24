@@ -197,19 +197,19 @@ module MappingRegistryCreatorSupport
     end
   end
 
-  def dump_simpletypedef(qname, simpletype, qualified = false)
+  def dump_simpletypedef(qname, simpletype, as_element = nil, qualified = false)
     if simpletype.restriction
-      dump_simpletypedef_restriction(qname, simpletype, qualified)
+      dump_simpletypedef_restriction(qname, simpletype, as_element, qualified)
     elsif simpletype.list
-      dump_simpletypedef_list(qname, simpletype, qualified)
+      dump_simpletypedef_list(qname, simpletype, as_element, qualified)
     elsif simpletype.union
-      dump_simpletypedef_union(qname, simpletype, qualified)
+      dump_simpletypedef_union(qname, simpletype, as_element, qualified)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
   end
 
-  def dump_simpletypedef_restriction(qname, typedef, qualified)
+  def dump_simpletypedef_restriction(qname, typedef, as_element, qualified)
     restriction = typedef.restriction
     if restriction.enumeration.empty?
       # not supported.  minlength?
@@ -217,20 +217,24 @@ module MappingRegistryCreatorSupport
     end
     var = {}
     var[:class] = create_class_name(qname, @modulepath)
-    var[:schema_ns] = qname.namespace
-    if typedef.name.nil?
+    if as_element
       var[:schema_type] = nil
+      var[:schema_ns] = as_element.namespace
+    elsif typedef.name.nil?
+      var[:schema_type] = nil
+      var[:schema_ns] = qname.namespace
     else
       var[:schema_type] = qname.name
+      var[:schema_ns] = qname.namespace
     end
     dump_entry(@varname, var)
   end
 
-  def dump_simpletypedef_list(qname, typedef, qualified)
+  def dump_simpletypedef_list(qname, typedef, as_element, qualified)
     nil
   end
 
-  def dump_simpletypedef_union(qname, typedef, qualified)
+  def dump_simpletypedef_union(qname, typedef, as_element, qualified)
     nil
   end
 end

@@ -299,9 +299,10 @@ module Mapping
     end
   end
 
+  EMPTY_ATTRIBUTES = {}.freeze
   def self.get_attributes_for_any(obj)
     if obj.respond_to?(:__xmlele_any)
-      obj.__xmlele_any
+      obj.__xmlele_any || EMPTY_ATTRIBUTES
     else
       get_attributes(obj)
     end
@@ -314,6 +315,9 @@ module Mapping
     when ::Hash
       return obj[attr_name] || obj[attr_name.intern]
     else
+      if obj.respond_to?(attr_name)
+        return obj.__send__(attr_name)
+      end
       iv = obj.instance_variables
       name = XSD::CodeGen::GenSupport.safevarname(attr_name)
       if iv.include?("@#{name}")
@@ -321,12 +325,8 @@ module Mapping
       elsif iv.include?("@#{attr_name}")
         return obj.instance_variable_get("@#{attr_name}")
       end
-      if obj.is_a?(::Struct) or obj.is_a?(Marshallable)
-        if obj.respond_to?(name)
-          return obj.__send__(name)
-        elsif obj.respond_to?(attr_name)
-          return obj.__send__(attr_name)
-        end
+      if obj.respond_to?(name)
+        return obj.__send__(name)
       end
       nil
     end
@@ -437,7 +437,7 @@ module Mapping
         default_ns ||= type.namespace if type
         definition.elements = parse_schema_definition(schema_element, default_ns)
         # needed?
-        if klass.ancestors.include?(::Array)
+        if klass < ::Array
           definition.elements.set_array
         end
       end

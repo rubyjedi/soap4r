@@ -363,7 +363,7 @@ private
     definition = find_node_definition(node)
     if klass
       klass_definition = schema_definition_from_class(klass)
-      if definition and definition.class_for.ancestors.include?(klass)
+      if definition and (definition.class_for < klass)
         klass = definition.class_for
       else
         definition = klass_definition
@@ -485,7 +485,7 @@ private
   end
 
   def typedobj2soap(value, klass)
-    if klass and klass.ancestors.include?(::SOAP::SOAPBasetype)
+    if klass and klass.include?(::SOAP::SOAPBasetype)
       base2soap(value, klass)
     else
       Mapping._obj2soap(value, self)
@@ -528,7 +528,7 @@ private
     unless klass
       raise MappingError.new("unknown class: #{klass}")
     end
-    if klass.ancestors.include?(::SOAP::SOAPBasetype)
+    if klass.include?(::SOAP::SOAPBasetype)
       obj = base2obj(value, klass)
     else
       obj = Mapping._soap2obj(value, self, klass)

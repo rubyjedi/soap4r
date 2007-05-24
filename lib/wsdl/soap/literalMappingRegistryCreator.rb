@@ -63,9 +63,17 @@ private
     @elements.collect { |ele|
       qualified = (ele.elementform == 'qualified')
       if ele.local_complextype
-        dump_complextypedef(ele.name, ele.local_complextype, qualified)
+        dump_complextypedef(ele.name, ele.local_complextype, nil, qualified)
       elsif ele.local_simpletype
-        dump_simpletypedef(ele.name, ele.local_simpletype, qualified)
+        dump_simpletypedef(ele.name, ele.local_simpletype, nil, qualified)
+      elsif ele.type
+        if typedef = @complextypes[ele.type]
+          dump_complextypedef(ele.type, typedef, ele.name, qualified)
+        elsif typedef = @simpletypes[ele.type]
+          dump_simpletypedef(ele.type, typedef, ele.name, qualified)
+        else
+          nil
+        end
       else
         nil
       end
@@ -92,14 +100,14 @@ private
     }.compact.join("\n")
   end
 
-  def dump_complextypedef(qname, typedef, qualified = false)
+  def dump_complextypedef(qname, typedef, as_element = nil, qualified = false)
     case typedef.compoundtype
     when :TYPE_STRUCT, :TYPE_EMPTY
-      dump_struct_typemap(qname, typedef, qualified)
+      dump_struct_typemap(qname, typedef, as_element, qualified)
     when :TYPE_ARRAY
       dump_array_typemap(qname, typedef)
     when :TYPE_SIMPLE
-      dump_simple_typemap(qname, typedef)
+      dump_simple_typemap(qname, typedef, as_element, qualified)
     when :TYPE_MAP
       # mapped as a general Hash
       nil
@@ -109,17 +117,19 @@ private
     end
   end
 
-  def dump_struct_typemap(qname, typedef, qualified = false)
+  def dump_struct_typemap(qname, typedef, as_element = nil, qualified = false)
     var = {}
     var[:class] = create_class_name(qname, @modulepath)
-    if typedef.name.nil?
-      # local complextype of a element
+    if as_element
+      var[:schema_name] = as_element.name
+      var[:schema_ns] = as_element.namespace
+    elsif typedef.name.nil?
       var[:schema_name] = qname.name
+      var[:schema_ns] = qname.namespace
     else
-      # named complextype
       var[:schema_type] = qname.name
+      var[:schema_ns] = qname.namespace
     end
-    var[:schema_ns] = qname.namespace
     var[:schema_qualified] = qualified.to_s
 
     parsed_element = parse_elements(typedef.elements, qname.namespace)
@@ -171,11 +181,19 @@ private
     dump_entry(@varname, var)
   end
 
-  def dump_simple_typemap(qname, type_or_element)
+  def dump_simple_typemap(qname, type_or_element, as_element, qualified)
     var = {}
     var[:class] = create_class_name(qname, @modulepath)
-    var[:schema_ns] = qname.namespace
-    var[:schema_type] = qname.name
+    if as_element
+      var[:schema_name] = as_element.name
+      var[:schema_ns] = as_element.namespace
+    elsif type_or_element.name.nil?
+      var[:schema_name] = qname.name
+      var[:schema_ns] = qname.namespace
+    else
+      var[:schema_type] = qname.name
+      var[:schema_ns] = qname.namespace
+    end
     unless type_or_element.attributes.empty?
       var[:schema_attribute] = define_attribute(type_or_element.attributes)
     end

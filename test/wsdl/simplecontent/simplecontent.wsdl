@@ -32,6 +32,7 @@
         <attribute name="default" type="xsd:string" />
       </complexType>
 
+      <element name="PhoneNumberElement" type="tns:PhoneNumber" />
       <complexType name="PhoneNumber">
         <simpleContent>
           <extension base="xsd:string">

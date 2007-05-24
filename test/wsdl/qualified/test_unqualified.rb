@@ -105,8 +105,7 @@ class TestUnqualified < Test::Unit::TestCase
     xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
-    <n1:login xmlns:n1="urn:lp"
-        xsi:type="n1:login">
+    <n1:login xmlns:n1="urn:lp">
       <username>NaHi</username>
       <password>passwd</password>
       <timezone>JST</timezone>

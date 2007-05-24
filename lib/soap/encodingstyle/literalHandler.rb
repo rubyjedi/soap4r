@@ -164,9 +164,11 @@ class LiteralHandler < Handler
   end
 
   def decode_tag_end(ns, node)
+    textbufstr = @textbuf.join
+    @textbuf.clear
     o = node.node
     if o.is_a?(SOAPUnknown)
-      if /\A\s*\z/ =~ @textbuf.join
+      if /\A\s*\z/ =~ textbufstr
         newnode = o.as_element
       else
         newnode = o.as_string
@@ -174,8 +176,7 @@ class LiteralHandler < Handler
       node.replace_node(newnode)
       o = node.node
     end
-
-    decode_textbuf(o)
+    decode_textbuf(o, textbufstr)
   end
 
   def decode_text(ns, text)
@@ -227,9 +228,7 @@ class LiteralHandler < Handler
 
 private
 
-  def decode_textbuf(node)
-    textbufstr = @textbuf.join
-    @textbuf.clear
+  def decode_textbuf(node, textbufstr)
     case node
     when XSD::XSDString, SOAPElement
       if @charset
