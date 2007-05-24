@@ -565,10 +565,10 @@ private
         end
         soap_response.set_outparam(outparams)
         soap_response.retval = Mapping.obj2soap(result[0], mapping_registry,
-          XSD::QName.new(nil, soap_response.elename), opt)
+          soap_response.elename, opt)
       else
         soap_response.retval = Mapping.obj2soap(result, mapping_registry,
-          XSD::QName.new(nil, soap_response.elename), opt)
+          soap_response.elename, opt)
       end
       soap_response
     end
