@@ -199,16 +199,18 @@ module RegistrySupport
   end
 
   def schema_definition_from_elename(qname)
-    @elename_schema_definition[qname] || find_schema_definition(qname.name)
+    @elename_schema_definition[qname]
   end
 
   def schema_definition_from_type(type)
-    @type_schema_definition[type] || find_schema_definition(type.name)
+    @type_schema_definition[type]
   end
 
   def find_node_definition(node)
     schema_definition_from_elename(node.elename) ||
-      schema_definition_from_type(node.type)
+      schema_definition_from_type(node.type) ||
+      find_schema_definition(node.elename.name) ||
+      find_schema_definition(node.type.name)
   end
 
   def find_schema_definition(name)
@@ -224,8 +226,7 @@ module RegistrySupport
     definition = Mapping.schema_definition_classdef(obj.class)
     if definition && attributes = definition.attributes
       attributes.each do |qname, param|
-        at = obj.__send__(
-          XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
+        at = Mapping.get_attribute(obj, XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
         ele.extraattr[qname] = at
       end
     elsif obj.respond_to?(:__xmlattr)
