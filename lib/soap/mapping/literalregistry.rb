@@ -70,17 +70,28 @@ private
 
   def any2soap(obj, qname)
     ele = nil
-    if definition = schema_definition_from_class(obj.class)
-      ele = stubobj2soap(obj, qname, definition)
-    elsif obj.is_a?(SOAP::Mapping::Object)
+    if obj.is_a?(SOAP::Mapping::Object)
       ele = mappingobj2soap(obj, qname)
-    elsif obj.is_a?(Hash)
+    elsif definition = schema_definition_from_elename(qname)
+      ele = stubobj2soap(obj, qname, definition)
+    elsif definition = schema_definition_from_class(obj.class)
+      ele = stubobj2soap(obj, qname, definition)
+    else
+      ele = anyobj2soap(obj, qname)
+    end
+    ele
+  end
+
+  def anyobj2soap(obj, qname)
+    ele = nil
+    case obj
+    when Hash
       ele = SOAPElement.from_obj(obj, nil)
       ele.elename = qname
-    elsif obj.is_a?(Array)
+    when Array
       # treat as a list of simpletype
       ele = SOAPElement.new(qname, obj.join(" "))
-    elsif obj.is_a?(XSD::QName)
+    when XSD::QName
       ele = SOAPElement.new(qname)
       ele.text = obj
     else
@@ -110,8 +121,7 @@ private
     stubobj2soap_elements(obj, ele, definition.elements)
     if definition.attributes
       definition.attributes.each do |qname, param|
-        at = obj.__send__(
-          XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
+        at = Mapping.get_attribute(obj, XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
         ele.extraattr[qname] = at
       end
     end
@@ -171,6 +181,7 @@ private
         ele.add(obj2soap(value, key))
       end
     end
+    add_attributes2soap(obj, ele)
     ele
   end
 
@@ -246,12 +257,12 @@ private
 
   def elesoapchild2obj(value, eledef)
     if eledef.mapped_class
-      child_definition = schema_definition_from_class(eledef.mapped_class)
-      if child_definition
-        any2obj(value, child_definition.class_for)
+      if eledef.mapped_class.include?(::SOAP::SOAPBasetype)
+        base2obj(value, eledef.mapped_class)
       else
-        if eledef.mapped_class.ancestors.include?(::SOAP::SOAPBasetype)
-          base2obj(value, eledef.mapped_class)
+        child_definition = schema_definition_from_class(eledef.mapped_class)
+        if child_definition
+          any2obj(value, child_definition.class_for)
         else
           any2obj(value, eledef.mapped_class)
         end
@@ -277,7 +288,7 @@ private
         child = attr
         if class_name
           klass = Mapping.class_from_name(class_name)
-          if klass.ancestors.include?(::SOAP::SOAPBasetype)
+          if klass.include?(::SOAP::SOAPBasetype)
             child = klass.new(attr).data
           end
         end

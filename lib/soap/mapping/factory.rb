@@ -63,7 +63,7 @@ private
         value = child
       else
         klass = Mapping.class_from_name(eledef.type)
-        if klass && klass.ancestors.include?(::SOAP::SOAPBasetype)
+        if klass && klass.include?(::SOAP::SOAPBasetype)
           value = klass.new(child)
         else
           # should check klass matches an actual object?

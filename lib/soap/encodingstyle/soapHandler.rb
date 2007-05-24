@@ -186,9 +186,11 @@ class SOAPHandler < Handler
   end
 
   def decode_tag_end(ns, node)
+    textbufstr = @textbuf.join
+    @textbuf.clear
     o = node.node
     if o.is_a?(SOAPUnknown)
-      newnode = if /\A\s*\z/ =~ @textbuf.join
+      newnode = if /\A\s*\z/ =~ textbufstr
 	o.as_struct
       else
 	o.as_string
@@ -199,7 +201,7 @@ class SOAPHandler < Handler
       node.replace_node(newnode)
       o = node.node
     end
-    decode_textbuf(o)
+    decode_textbuf(o, textbufstr)
     # unlink definedtype
     o.definedtype = nil
   end
@@ -463,9 +465,7 @@ private
     SOAPUnknown.new(self, elename, type, extraattr)
   end
 
-  def decode_textbuf(node)
-    textbufstr = @textbuf.join
-    @textbuf.clear
+  def decode_textbuf(node, textbufstr)
     case node
     when XSD::XSDHexBinary, XSD::XSDBase64Binary
       node.set_encoded(textbufstr)

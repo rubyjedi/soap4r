@@ -226,7 +226,7 @@ private
       item = definition.elements.find { |k, v| k.elename == value.elename }
       if item and item.mapped_class
         # klass must be a SOAPBasetype or a class
-        if item.mapped_class.ancestors.include?(::SOAP::SOAPBasetype)
+        if item.mapped_class.include?(::SOAP::SOAPBasetype)
           if value.respond_to?(:data)
             child = item.mapped_class.new(value.data).data
           else

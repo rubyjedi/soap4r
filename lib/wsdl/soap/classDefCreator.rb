@@ -105,12 +105,13 @@ private
   end
 
   def dump_complextype
-    @complextypes.collect { |type|
+    definitions = @complextypes.collect { |type|
       dump_complextypedef(type.name, type) if type.abstract
-    }.compact.join("\n") +
-    @complextypes.collect { |type|
+    }.compact
+    definitions += @complextypes.collect { |type|
       dump_complextypedef(type.name, type) unless type.abstract
-    }.compact.join("\n")
+    }.compact
+    definitions.join("\n")
   end
 
   def dump_simpletypedef(qname, simpletype, qualified = false)
