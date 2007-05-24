@@ -174,11 +174,11 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStringArrayResponse xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <return xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <n1:return xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <n2:stringItem>a</n2:stringItem>
         <n2:stringItem>b</n2:stringItem>
         <n2:stringItem>c</n2:stringItem>
-      </return>
+      </n1:return>
     </n1:echoStringArrayResponse>
   </env:Body>
 </env:Envelope>]
@@ -217,11 +217,11 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStringArrayInlineResponse xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <return>
+      <n1:return>
         <stringItem>a</stringItem>
         <stringItem>b</stringItem>
         <stringItem>c</stringItem>
-      </return>
+      </n1:return>
     </n1:echoStringArrayInlineResponse>
   </env:Body>
 </env:Envelope>]
@@ -264,7 +264,7 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoNestedStructResponse xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <return xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <n1:return xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <varString>str</varString>
         <varInt>1</varInt>
         <varFloat>+1</varFloat>
@@ -273,7 +273,7 @@ class TestRPCLIT < Test::Unit::TestCase
           <varInt>1</varInt>
           <varFloat>+1</varFloat>
         </n2:structItem>
-      </return>
+      </n1:return>
     </n1:echoNestedStructResponse>
   </env:Body>
 </env:Envelope>]
@@ -307,8 +307,8 @@ class TestRPCLIT < Test::Unit::TestCase
     assert_equal('1', result.varInt)
     assert_equal('+1', result.varFloat)
     assert_equal('str', result.structItem.varString)
-    assert_equal('1', result.structItem.varInt)
-    assert_equal('+1', result.structItem.varFloat)
+    assert_equal(1, result.structItem.varInt)
+    assert_equal(1.0, result.structItem.varFloat)
     assert_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str))
     assert_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
   end
@@ -341,7 +341,7 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStructArrayResponse xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <return xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <n1:return xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <n2:structItem>
           <varString>str</varString>
           <varInt>2</varInt>
@@ -352,7 +352,7 @@ class TestRPCLIT < Test::Unit::TestCase
           <varInt>2</varInt>
           <varFloat>+2.1</varFloat>
         </n2:structItem>
-      </return>
+      </n1:return>
     </n1:echoStructArrayResponse>
   </env:Body>
 </env:Envelope>]
