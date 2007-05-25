@@ -41,8 +41,8 @@ class Element < Info
   attr_writer :local_simpletype
   attr_writer :local_complextype
   attr_writer :constraint
-  attr_writer :maxoccurs
-  attr_writer :minoccurs
+  attr_accessor :maxoccurs
+  attr_accessor :minoccurs
   attr_writer :nillable
 
   attr_reader_ref :name
@@ -51,8 +51,6 @@ class Element < Info
   attr_reader_ref :local_simpletype
   attr_reader_ref :local_complextype
   attr_reader_ref :constraint
-  attr_reader_ref :maxoccurs
-  attr_reader_ref :minoccurs
   attr_reader_ref :nillable
 
   attr_accessor :ref
@@ -64,8 +62,8 @@ class Element < Info
     @type = type
     @local_simpletype = @local_complextype = nil
     @constraint = nil
-    @maxoccurs = '1'
-    @minoccurs = '1'
+    @maxoccurs = 1
+    @minoccurs = 1
     @nillable = nil
     @ref = nil
     @refelement = nil
@@ -130,7 +128,12 @@ class Element < Info
             "cannot parse #{value} for #{attr}")
 	end
       end
-      @maxoccurs = value.source
+      if value.source == 'unbounded'
+        @maxoccurs = nil
+      else
+        @maxoccurs = Integer(value.source)
+      end
+      value.source
     when MinOccursAttrName
       if parent.is_a?(All)
 	unless ['0', '1'].include?(value.source)
@@ -138,7 +141,7 @@ class Element < Info
             "cannot parse #{value} for #{attr}")
 	end
       end
-      @minoccurs = value.source
+      @minoccurs = Integer(value.source)
     when NillableAttrName
       @nillable = (value.source == 'true')
     else

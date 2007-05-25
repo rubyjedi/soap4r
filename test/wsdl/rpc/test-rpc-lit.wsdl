@@ -39,6 +39,13 @@
         </all>
       </complexType>
 
+      <complexType name="CombinationArray">
+        <sequence>
+          <element name="a" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+          <element name="b" type="xsd:int" minOccurs="0" maxOccurs="unbounded" />
+        </sequence>
+      </complexType>
+
       <complexType name="ArrayOfSOAPStruct">
         <sequence>
           <element ref="types:structItem" minOccurs="0" maxOccurs="unbounded"/>
