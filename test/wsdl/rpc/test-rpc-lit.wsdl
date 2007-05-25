@@ -34,8 +34,8 @@
       <complexType name="SOAPStruct">
         <all>
           <element name="varString" type="xsd:string"/>
-          <element name="varInt" type="xsd:int"/>
-          <element name="varFloat" type="xsd:float"/>
+          <element name="varInt" type="xsd:int" minOccurs="0" />
+          <element name="varFloat" type="xsd:float" minOccurs="1" />
         </all>
       </complexType>
 
@@ -55,8 +55,8 @@
       <complexType name="SOAPStructStruct">
         <all>
           <element name="varString" type="xsd:string"/>
-          <element name="varInt" type="xsd:int"/>
-          <element name="varFloat" type="xsd:float"/>
+          <element name="varInt" type="xsd:int" minOccurs="0" />
+          <element name="varFloat" type="xsd:float" minOccurs="1" />
           <element ref="types:structItem" />
         </all>
       </complexType>

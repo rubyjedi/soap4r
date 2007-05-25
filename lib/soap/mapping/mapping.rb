@@ -472,8 +472,14 @@ module Mapping
     elsif schema_element[0].is_a?(Array)
       parse_schema_definition(schema_element, default_ns)
     else
-      varname, info = schema_element
+      varname, info, occurrence = schema_element
       mapped_class_str, elename = info
+      if occurrence
+        minoccurs, maxoccurs = occurrence
+      else
+        # for backward compatibility
+        minoccurs, maxoccurs = 1, 1
+      end
       as_any = as_array = false
       if /\[\]$/ =~ mapped_class_str
         mapped_class_str = mapped_class_str.sub(/\[\]$/, '')
@@ -494,7 +500,7 @@ module Mapping
         elename = XSD::QName.new(default_ns, varname)
       end
       SchemaElementDefinition.new(
-        varname, mapped_class, elename, as_any, as_array)
+        varname, mapped_class, elename, minoccurs, maxoccurs, as_any, as_array)
     end
   end
 

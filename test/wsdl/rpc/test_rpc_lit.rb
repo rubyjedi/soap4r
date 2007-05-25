@@ -297,6 +297,56 @@ class TestRPCLIT < Test::Unit::TestCase
     assert_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
   end
 
+  ECHO_NESTED_STRUCT_REQUEST_NIL =
+%q[<?xml version="1.0" encoding="utf-8" ?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <env:Body>
+    <n1:echoNestedStruct xmlns:n1="http://soapbuilders.org/rpc-lit-test">
+      <n2:inputStruct xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+        <varString>str</varString>
+        <varFloat>+1</varFloat>
+        <n2:structItem>
+          <varString>str</varString>
+          <varInt xsi:nil="true"></varInt>
+          <varFloat>+1</varFloat>
+        </n2:structItem>
+      </n2:inputStruct>
+    </n1:echoNestedStruct>
+  </env:Body>
+</env:Envelope>]
+
+  ECHO_NESTED_STRUCT_RESPONSE_NIL =
+%q[<?xml version="1.0" encoding="utf-8" ?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <env:Body>
+    <n1:echoNestedStructResponse xmlns:n1="http://soapbuilders.org/rpc-lit-test">
+      <n1:return xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+        <varString>str</varString>
+        <varFloat>+1</varFloat>
+        <n2:structItem>
+          <varString>str</varString>
+          <varFloat>+1</varFloat>
+        </n2:structItem>
+      </n1:return>
+    </n1:echoNestedStructResponse>
+  </env:Body>
+</env:Envelope>]
+  def test_wsdl_echoNestedStruct_nil
+    wsdl = pathname('test-rpc-lit.wsdl')
+    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = str = ''
+    @client.generate_explicit_type = false
+    result = @client.echoNestedStruct(SOAPStructStruct.new("str", nil, 1.0, SOAPStruct.new("str", ::SOAP::SOAPNil.new, 1.0)))[0]
+    assert(!result.respond_to?(:varInt))
+    assert(result.respond_to?(:varString))
+    assert_equal(ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str),
+      [ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str)].join("\n\n"))
+    assert_equal(ECHO_NESTED_STRUCT_RESPONSE_NIL, parse_responsexml(str))
+  end
+
   def test_stub_echoNestedStruct
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
     drv.wiredump_dev = str = ''
@@ -311,6 +361,19 @@ class TestRPCLIT < Test::Unit::TestCase
     assert_equal(1.0, result.structItem.varFloat)
     assert_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str))
     assert_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
+  end
+
+  def test_stub_echoNestedStruct_nil
+    drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
+    drv.wiredump_dev = str = ''
+    drv.generate_explicit_type = false
+    # response contains only 1 part.
+    result = drv.echoNestedStruct(SOAPStructStruct.new("str", nil, 1.0, SOAPStruct.new("str", ::SOAP::SOAPNil.new, 1.0)))[0]
+    assert(!result.respond_to?(:varInt))
+    assert(result.respond_to?(:varString))
+    assert_equal(ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str),
+      [ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str)].join("\n\n"))
+    assert_equal(ECHO_NESTED_STRUCT_RESPONSE_NIL, parse_responsexml(str))
   end
 
   ECHO_STRUCT_ARRAY_REQUEST =

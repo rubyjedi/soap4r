@@ -28,15 +28,12 @@ module MappingRegistryCreatorSupport
       "[\n" +
         dump_schema_element(definition, indent + 2) + "\n" + sp + "]"
     else
-      varname, name, type = definition
-      '[' +
-        (
-          if name
-            varname.dump + ', [' + ndq(type) + ', ' + dqname(name) + ']'
-          else
-            varname.dump + ', ' + ndq(type)
-          end
-        ) + ']'
+      varname, name, type, occurrence = definition
+      '[' + [
+        varname.dump,
+        dump_type(name, type),
+        dump_occurrence(occurrence)
+      ].compact.join(', ') + ']'
     end
   end
 
@@ -46,6 +43,22 @@ module MappingRegistryCreatorSupport
     sp + schema_element.collect { |definition|
       dump_schema_element_definition(definition, indent)
     }.join(delimiter)
+  end
+
+  def dump_type(name, type)
+    if name
+      '[' + ndq(type) + ', ' + dqname(name) + ']'
+    else
+      ndq(type)
+    end
+  end
+
+  def dump_occurrence(occurrence)
+    if occurrence and occurrence != [1, 1] # default
+      minoccurs, maxoccurs = occurrence
+      maxoccurs ||= 'nil'
+      "[#{minoccurs}, #{maxoccurs}]"
+    end
   end
 
   def parse_elements(elements, base_namespace)
@@ -60,7 +73,8 @@ module MappingRegistryCreatorSupport
         varname = 'any' # not used
         eleqname = XSD::AnyTypeName
         type = nil
-        schema_element << [varname, eleqname, type]
+        occurrence = nil
+        schema_element << [varname, eleqname, type, occurrence]
       when XMLSchema::Element
         if element.type == XSD::AnyTypeName
           type = nil
@@ -95,7 +109,8 @@ module MappingRegistryCreatorSupport
         if eleqname && varname == name && eleqname.namespace == base_namespace
           eleqname = nil
         end
-        schema_element << [varname, eleqname, type]
+        occurrence = [element.minoccurs, element.maxoccurs]
+        schema_element << [varname, eleqname, type, occurrence]
       when WSDL::XMLSchema::Sequence
         child_schema_element = parse_elements(element.elements, base_namespace)
         schema_element << child_schema_element
