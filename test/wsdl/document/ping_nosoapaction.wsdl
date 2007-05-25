@@ -50,7 +50,7 @@ targetNamespace="http://xmlsoap.org/Ping" name="Ping">
         <operation name="Ping">
             <soap:operation/>
             <input>
-                <soap:body use="literal"/>
+                <soap:body use="literal" encodingStyle="" />
             </input>
             <output>
                 <soap:body use="literal"/>
