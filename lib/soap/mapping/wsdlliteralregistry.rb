@@ -77,7 +77,9 @@ private
   def obj2elesoap(obj, eledef)
     ele = nil
     qualified = (eledef.elementform == 'qualified')
-    if eledef.type
+    if obj.is_a?(SOAPNil)
+      ele = obj
+    elsif eledef.type
       if type = @definedtypes[eledef.type]
         ele = obj2typesoap(obj, type)
       elsif type = TypeMap[eledef.type]
@@ -112,7 +114,7 @@ private
 
   def simpleobj2soap(obj, type)
     type.check_lexical_format(obj)
-    return SOAPNil.new if obj.nil?      # TODO: check nillable.
+    return SOAPNil.new if obj.nil?
     if type.base
       ele = base2soap(obj, TypeMap[type.base])
     elsif type.list

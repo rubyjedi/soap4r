@@ -128,17 +128,17 @@ private
     ele
   end
 
-  def stubobj2soap_elements(obj, ele, definition, add_if_nil = true)
+  def stubobj2soap_elements(obj, ele, definition, is_choice = false)
     added = false
     case definition
     when SchemaSequenceDefinition, SchemaEmptyDefinition
       definition.each do |eledef|
-        ele_added = stubobj2soap_elements(obj, ele, eledef, add_if_nil)
+        ele_added = stubobj2soap_elements(obj, ele, eledef, is_choice)
         added = true if ele_added
       end
     when SchemaChoiceDefinition
       definition.each do |eledef|
-        added = stubobj2soap_elements(obj, ele, eledef, false)
+        added = stubobj2soap_elements(obj, ele, eledef, true)
         break if added
       end
     else
@@ -154,7 +154,7 @@ private
         end
       else
         child = Mapping.get_attribute(obj, definition.varname)
-        if child.nil? and !add_if_nil
+        if child.nil? and (is_choice or definition.minoccurs == 0)
           added = false
         else
           if child.respond_to?(:each) and definition.as_array?

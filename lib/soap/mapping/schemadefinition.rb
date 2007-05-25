@@ -14,12 +14,15 @@ module Mapping
 
 
 class SchemaElementDefinition
-  attr_reader :varname, :mapped_class, :elename
+  attr_reader :varname, :mapped_class, :elename, :minoccurs, :maxoccurs
 
-  def initialize(varname, mapped_class, elename, as_any, as_array)
+  def initialize(varname, mapped_class, elename, minoccurs, maxoccurs,
+      as_any, as_array)
     @varname = varname
     @mapped_class = mapped_class
     @elename = elename
+    @minoccurs = minoccurs
+    @maxoccurs = maxoccurs
     @as_any = as_any
     @as_array = as_array
   end

@@ -167,16 +167,18 @@ private
     else
       type = nil
     end
+    occurrence = [0, nil]
     if child_element and child_element.name
       if child_element.map_as_array?
         type << '[]' if type
+        occurrence = [child_element.minoccurs, child_element.maxoccurs]
       end
       child_element_name = child_element.name
     else
       child_element_name = DEFAULT_ITEM_NAME
     end
     parsed_element = []
-    parsed_element << [child_element_name.name, child_element_name, type]
+    parsed_element << [child_element_name.name, child_element_name, type, occurrence]
     var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
     dump_entry(@varname, var)
   end
