@@ -44,6 +44,14 @@ class Param < Info
     end
   end
 
+  def soapbody_encodingstyle
+    if @soapbody
+      @soapbody.encodingstyle
+    else
+      nil
+    end
+  end
+
   def parse_element(element)
     case element
     when SOAPBodyName

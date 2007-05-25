@@ -45,13 +45,17 @@ class Operation < Info
     parent.targetnamespace
   end
 
+  def operationname
+    as_operationname(@name)
+  end
+
   def input_info
     if message = input_message
       typename = message.name
     else
       typename = nil
     end
-    NameInfo.new(operationname(@name), typename, inputparts)
+    NameInfo.new(operationname, typename, inputparts)
   end
 
   def output_info
@@ -60,11 +64,10 @@ class Operation < Info
     else
       typename = nil
     end
-    NameInfo.new(operationname(@name), typename, outputparts)
+    NameInfo.new(operationname, typename, outputparts)
   end
 
   EMPTY = [].freeze
-
   def inputparts
     if message = input_message
       sort_parts(message.parts)
@@ -75,7 +78,7 @@ class Operation < Info
 
   def inputname
     if input
-      operationname(input.name ? input.name.name : @name)
+      as_operationname(input.name ? input.name.name : @name)
     else
       nil
     end
@@ -91,7 +94,7 @@ class Operation < Info
 
   def outputname
     if output
-      operationname(output.name ? output.name.name : @name + 'Response')
+      as_operationname(output.name ? output.name.name : @name + 'Response')
     else
       nil
     end
@@ -166,7 +169,7 @@ private
     result
   end
 
-  def operationname(name)
+  def as_operationname(name)
     XSD::QName.new(targetnamespace, name)
   end
 end

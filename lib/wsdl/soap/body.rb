@@ -43,6 +43,8 @@ class Body < Info
       end
     when EncodingStyleAttrName
       @encodingstyle = value.source
+      @encodingstyle = nil if @encodingstyle.to_s.empty?
+      value.source
     when NamespaceAttrName
       @namespace = value.source
     else

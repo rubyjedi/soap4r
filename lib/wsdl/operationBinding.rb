@@ -49,11 +49,11 @@ class OperationBinding < Info
   end
 
   def soapoperation_name
-    if @soapoperation
-      @soapoperation.input_info.op_name
-    else
-      find_operation.name
+    op_name = find_operation.operationname
+    if @input and @input.soapbody and @input.soapbody.namespace
+      op_name = XSD::QName.new(@input.soapbody.namespace, op_name.name)
     end
+    op_name
   end
 
   def soapoperation_style
@@ -74,14 +74,6 @@ class OperationBinding < Info
     else
       nil
     end
-  end
-
-  def soapbody
-    (@input || @output).soapbody
-  end
-
-  def soapnamespace
-    soapbody ? soapbody.namespace : nil
   end
 
   def parse_element(element)
