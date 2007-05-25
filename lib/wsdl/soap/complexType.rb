@@ -24,7 +24,7 @@ class ComplexType < Info
       :TYPE_STRUCT
     elsif content
       e = elements
-      if attributes.empty? and e.size == 1 and e[0].maxoccurs != '1'
+      if attributes.empty? and e.size == 1 and e[0].map_as_array?
         if name == ::SOAP::Mapping::MapQName
           :TYPE_MAP
         else
@@ -145,9 +145,7 @@ private
 
   def check_array_content
     e = elements
-    e.size == 1 and e[0].maxoccurs != '1'
-    # content and content.elements.size == 1 and
-    #   content.elements[0].maxoccurs != '1'
+    e.size == 1 and e[0].map_as_array?
   end
 
   def content_arytype

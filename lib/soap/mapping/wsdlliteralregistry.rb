@@ -221,7 +221,7 @@ private
   def nil2soap(ele)
     if ele.nillable
       obj2elesoap(nil, ele)     # add an empty element
-    elsif Integer(ele.minoccurs) == 0
+    elsif ele.minoccurs == 0
       nil       # intends no element
     else
       raise MappingError.new("nil not allowed: #{ele.name.name}")
