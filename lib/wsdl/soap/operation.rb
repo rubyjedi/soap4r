@@ -18,13 +18,17 @@ class Operation < Info
     attr_reader :style
     attr_reader :op_name
     attr_reader :optype_name
+    attr_reader :encodingstyle
     attr_reader :headerparts
     attr_reader :bodyparts
     attr_reader :faultpart
     attr_reader :soapaction
     
-    def initialize(style, op_name, optype_name, headerparts, bodyparts, faultpart, soapaction)
+    def initialize(style, use, encodingstyle, op_name, optype_name,
+        headerparts, bodyparts, faultpart, soapaction)
       @style = style
+      @use = use
+      @encodingstyle = encodingstyle
       @op_name = op_name
       @optype_name = optype_name
       @headerparts = headerparts
@@ -88,18 +92,14 @@ private
   end
 
   def param_info(name_info, param)
+    op_style = operation_style()
+    op_use = param.soapbody_use
+    op_encodingstyle = param.soapbody_encodingstyle
     op_name = name_info.op_name
     optype_name = name_info.optype_name
-
     soapheader = param.soapheader
     headerparts = soapheader.collect { |item| item.find_part }
-
     soapbody = param.soapbody
-    if soapbody.encodingstyle and
-	soapbody.encodingstyle != ::SOAP::EncodingNamespace
-      raise NotImplementedError.new(
-	"EncodingStyle '#{ soapbody.encodingstyle }' not supported.")
-    end
     if soapbody.namespace
       op_name = XSD::QName.new(soapbody.namespace, op_name.name)
     end
@@ -111,9 +111,9 @@ private
     else
       bodyparts = name_info.parts
     end
-
     faultpart = nil
-    OperationInfo.new(operation_style, op_name, optype_name, headerparts, bodyparts, faultpart, parent.soapaction)
+    OperationInfo.new(op_style, op_use, op_encodingstyle, op_name, optype_name,
+      headerparts, bodyparts, faultpart, parent.soapaction)
   end
 end
 

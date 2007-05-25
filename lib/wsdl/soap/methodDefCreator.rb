@@ -111,9 +111,8 @@ private
     style = binding.soapoperation_style
     inputuse = binding.input ? binding.input.soapbody_use : nil
     outputuse = binding.output ? binding.output.soapbody_use : nil
-    namespace = binding.soapnamespace
     if style == :rpc
-      qname = XSD::QName.new(namespace, name_as)
+      qname = binding.soapoperation_name
       paramstr = param2str(collect_rpcparameter(operation))
     else
       qname = nil
