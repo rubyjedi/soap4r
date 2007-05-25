@@ -469,7 +469,7 @@ module MarshalTestLib
   end
 
   def test_string_escape
-    marshal_equal("\0<;;>\1;;")
+    marshal_equal("<;;>&\r'\";;>")
   end
 
   MyStruct2 = Struct.new(:a, :b)
