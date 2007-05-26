@@ -29,18 +29,16 @@ class NetHttpClient
   attr_accessor :connect_timeout
   attr_accessor :send_timeout           # ignored for now.
   attr_accessor :receive_timeout
+  attr_reader :test_loopback_response
 
   def initialize(proxy = nil, agent = nil)
     @proxy = proxy ? URI.parse(proxy) : nil
     @agent = agent
     @debug_dev = nil
+    @test_loopback_response = []
     @session_manager = SessionManager.new
     @no_proxy = @ssl_config = @protocol_version = nil
     @connect_timeout = @send_timeout = @receive_timeout = nil
-  end
-
-  def test_loopback_response
-    raise NotImplementedError.new("not supported for now")
   end
   
   def proxy=(proxy)
@@ -88,6 +86,9 @@ class NetHttpClient
   end
 
   def get_content(url, header = {})
+    if str = @test_loopback_response.shift
+      return str
+    end
     unless url.is_a?(URI)
       url = URI.parse(url)
     end
@@ -102,12 +103,30 @@ class NetHttpClient
 private
 
   def post_redirect(url, req_body, header, redirect_count)
+    if str = @test_loopback_response.shift
+      if @debug_dev
+        @debug_dev << "= Request\n\n"
+        @debug_dev << req_body
+        @debug_dev << "\n\n= Response\n\n"
+        @debug_dev << str
+      end
+      status = 200
+      reason = nil
+      contenttype = 'text/xml'
+      content = str
+      return Response.new(status, reason, contenttype, content)
+      return str
+    end
     unless url.is_a?(URI)
       url = URI.parse(url)
     end
     extra = header.dup
     extra['User-Agent'] = @agent if @agent
     res = start(url) { |http|
+      if @debug_dev
+        @debug_dev << "= Request\n\n"
+        @debug_dev << req_body << "\n"
+      end
       http.post(url.request_uri, req_body, extra)
     }
     case res
@@ -119,7 +138,7 @@ private
        raise ArgumentError.new("Too many redirects")
       end
     else
-      Response.new(res)
+      Response.from_httpresponse(res)
     end
   end
 
@@ -130,7 +149,10 @@ private
       response = yield(worker)
       worker.finish
     }
-    @debug_dev << response.body if @debug_dev
+    if @debug_dev
+      @debug_dev << "\n\n= Response\n\n"
+      @debug_dev << response.body << "\n"
+    end
     response
   end
 
@@ -186,16 +208,24 @@ private
   end
 
   class Response
-    attr_reader :content
     attr_reader :status
     attr_reader :reason
     attr_reader :contenttype
+    attr_reader :content
 
-    def initialize(res)
-      @status = res.code.to_i
-      @reason = res.message
-      @contenttype = res['content-type']
-      @content = res.body
+    def initialize(status, reason, contenttype, content)
+      @status = status
+      @reason = reason
+      @contenttype = contenttype
+      @content = content
+    end
+
+    def self.from_httpresponse(res)
+      status = res.code.to_i
+      reason = res.message
+      contenttype = res['content-type']
+      content = res.body
+      new(status, reason, contenttype, content)
     end
   end
 end
