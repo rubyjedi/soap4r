@@ -22,10 +22,17 @@ module XMLParser
   NSParseRegexp = Regexp.new('^xmlns:?(.*)$')
 
   def filter_ns(ns, attrs)
-    return attrs if attrs.nil? or attrs.empty?
+    ns_updated = false
+    if attrs.nil? or attrs.empty?
+      return [ns, attrs]
+    end
     newattrs = {}
     attrs.each do |key, value|
       if (NSParseRegexp =~ key)
+        unless ns_updated
+          ns = ns.clone_ns
+          ns_updated = true
+        end
 	# '' means 'default namespace'.
 	tag = $1 || ''
 	ns.assign(value, tag)
@@ -33,7 +40,7 @@ module XMLParser
 	newattrs[key] = value
       end
     end
-    newattrs
+    return [ns, newattrs]
   end
   module_function :filter_ns
 end

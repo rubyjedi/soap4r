@@ -198,7 +198,6 @@ private
       if definition
         return elesoap2stubobj(node, obj_class, definition)
       else
-        # SOAPArray for literal?
         return elesoap2plainobj(node)
       end
     end
@@ -208,15 +207,25 @@ private
   end
 
   def elesoap2stubobj(node, obj_class, definition)
-    obj = Mapping.create_empty_object(obj_class)
-    add_elesoap2stubobj(node, obj, definition)
+    obj = nil
+    if obj_class < ::String
+      obj = node.text
+    else
+      obj = Mapping.create_empty_object(obj_class)
+      add_elesoap2stubobj(node, obj, definition)
+    end
     add_attributes2stubobj(node, obj, definition)
     obj
   end
 
   def elesoap2plainobj(node)
-    obj = anytype2obj(node)
-    add_elesoap2plainobj(node, obj)
+    obj = nil
+    if node.members.empty?
+      obj = base2obj(node, ::SOAP::SOAPString)
+    else
+      obj = anytype2obj(node)
+      add_elesoap2plainobj(node, obj)
+    end
     add_attributes2obj(node, obj)
     obj
   end
@@ -260,12 +269,7 @@ private
       if eledef.mapped_class.include?(::SOAP::SOAPBasetype)
         base2obj(value, eledef.mapped_class)
       else
-        child_definition = schema_definition_from_class(eledef.mapped_class)
-        if child_definition
-          any2obj(value, child_definition.class_for)
-        else
-          any2obj(value, eledef.mapped_class)
-        end
+        any2obj(value, eledef.mapped_class)
       end
     else
       child_definition = schema_definition_from_elename(eledef.elename)

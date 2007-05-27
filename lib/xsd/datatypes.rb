@@ -506,7 +506,8 @@ require 'rational'
 require 'date'
 
 module XSDDateTimeImpl
-  SecInDay = 86400	# 24 * 60 * 60
+  DayInSec = 86400	# 24 * 60 * 60
+  DayInMicro = 86400_000_000
 
   def to_obj(klass)
     if klass == Time
@@ -522,13 +523,13 @@ module XSDDateTimeImpl
 
   def to_time
     begin
-      if @data.offset * SecInDay == Time.now.utc_offset
+      if @data.offset * DayInSec == Time.now.utc_offset
         d = @data
-	usec = (d.sec_fraction * SecInDay * 1000000).round
+	usec = (d.sec_fraction * DayInMicro).round
         Time.local(d.year, d.month, d.mday, d.hour, d.min, d.sec, usec)
       else
         d = @data.newof
-	usec = (d.sec_fraction * SecInDay * 1000000).round
+	usec = (d.sec_fraction * DayInMicro).round
         Time.gm(d.year, d.month, d.mday, d.hour, d.min, d.sec, usec)
       end
     rescue ArgumentError
@@ -584,8 +585,8 @@ module XSDDateTimeImpl
     elsif t.is_a?(Time)
       jd = DateTime.civil_to_jd(t.year, t.mon, t.mday, DateTime::ITALY)
       fr = DateTime.time_to_day_fraction(t.hour, t.min, [t.sec, 59].min) +
-        t.usec.to_r / 1000000 / SecInDay
-      of = t.utc_offset.to_r / SecInDay
+        t.usec.to_r / DayInMicro
+      of = t.utc_offset.to_r / DayInSec
       DateTime.new!(DateTime.jd_to_ajd(jd, fr, of), of, DateTime::ITALY)
     else
       screen_data_str(t)
@@ -628,7 +629,7 @@ private
     zonestr = $8
     data = DateTime.civil(year, mon, mday, hour, min, sec, tz2of(zonestr))
     if secfrac
-      diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / SecInDay
+      diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / DayInSec
       data += diffday
       # FYI: new0 and jd_to_rjd are not necessary to use if you don't have
       # exceptional reason.
@@ -653,7 +654,7 @@ private
   	s << ".#{ @secfrac }"
       else
 	s << sprintf("%.16f",
-          (@data.sec_fraction * SecInDay).to_f).sub(/^0/, '').sub(/0*$/, '')
+          (@data.sec_fraction * DayInSec).to_f).sub(/^0/, '').sub(/0*$/, '')
       end
     end
     add_tz(s)
@@ -682,7 +683,7 @@ private
     zonestr = $5
     data = DateTime.civil(1, 1, 1, hour, min, sec, tz2of(zonestr))
     if secfrac
-      diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / SecInDay
+      diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / DayInSec
       data += diffday
     end
     [data, secfrac]
@@ -703,7 +704,7 @@ private
   	s << ".#{ @secfrac }"
       else
 	s << sprintf("%.16f",
-          (@data.sec_fraction * SecInDay).to_f).sub(/^0/, '').sub(/0*$/, '')
+          (@data.sec_fraction * DayInSec).to_f).sub(/^0/, '').sub(/0*$/, '')
       end
     end
     add_tz(s)

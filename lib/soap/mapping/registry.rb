@@ -258,7 +258,11 @@ module RegistrySupport
         else
           nil
         end
-    klass.new(v).data
+    if value.is_a?(klass)
+      v
+    else
+      klass.new(v).data
+    end
   end
 
   def is_stubobj_elements_for_array(vars)
