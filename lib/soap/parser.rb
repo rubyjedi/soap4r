@@ -28,7 +28,9 @@ private
   class ParseFrame
     attr_reader :node
     attr_reader :name
-    attr_reader :ns, :encodingstyle
+    attr_reader :ns
+    attr_reader :encodingstyle
+    attr_reader :handler
 
     class NodeContainer
       def initialize(node)
@@ -46,15 +48,22 @@ private
 
   public
 
-    def initialize(ns, name, node, encodingstyle)
+    def initialize(ns, name, node, encodingstyle, handler)
       @ns = ns
       @name = name
-      self.node = node
+      @node = NodeContainer.new(node)
       @encodingstyle = encodingstyle
+      @handler = handler
     end
 
-    def node=(node)
-      @node = NodeContainer.new(node)
+    # to avoid memory consumption
+    def update(ns, name, node, encodingstyle, handler)
+      @ns = ns
+      @name = name
+      @node.replace_node(node)
+      @encodingstyle = encodingstyle
+      @handler = handler
+      self
     end
   end
 
@@ -69,6 +78,7 @@ public
     @opt = opt
     @parser = XSD::XMLParser.create_parser(self, opt)
     @parsestack = nil
+    @recycleframe = nil
     @lastnode = nil
     @handlers = {}
     @envelopenamespace = opt[:envelopenamespace] || EnvelopeNamespace
@@ -106,7 +116,7 @@ public
     lastframe = @parsestack.last
     ns = parent = parent_encodingstyle = nil
     if lastframe
-      ns = lastframe.ns.clone_ns
+      ns = lastframe.ns
       parent = lastframe.node
       parent_encodingstyle = lastframe.encodingstyle
     else
@@ -114,10 +124,9 @@ public
       parent = ParseFrame::NodeContainer.new(nil)
       parent_encodingstyle = nil
     end
-
-    attrs = XSD::XMLParser.filter_ns(ns, attrs)
+    # ns might be the same
+    ns, attrs = XSD::XMLParser.filter_ns(ns, attrs)
     encodingstyle = find_encodingstyle(ns, attrs)
-
     # Children's encodingstyle is derived from its parent.
     if encodingstyle.nil?
       if parent.node.is_a?(SOAPHeader)
@@ -126,17 +135,24 @@ public
         encodingstyle = parent_encodingstyle || @default_encodingstyle
       end
     end
-
-    node = decode_tag(ns, name, attrs, parent, encodingstyle)
-
-    @parsestack << ParseFrame.new(ns, name, node, encodingstyle)
+    handler = find_handler(encodingstyle)
+    unless handler
+      raise FormatDecodeError.new("Unknown encodingStyle: #{ encodingstyle }.")
+    end
+    node = decode_tag(ns, name, attrs, parent, handler)
+    if @recycleframe
+      @parsestack << @recycleframe.update(ns, name, node, encodingstyle, handler)
+      @recycleframe = nil
+    else
+      @parsestack << ParseFrame.new(ns, name, node, encodingstyle, handler)
+    end
   end
 
   def characters(text)
     lastframe = @parsestack.last
     if lastframe
       # Need not to be cloned because character does not have attr.
-      decode_text(lastframe.ns, text, lastframe.encodingstyle)
+      decode_text(lastframe.ns, text, lastframe.handler)
     else
       # Ignore Text outside of SOAP Envelope.
       p text if $DEBUG
@@ -148,8 +164,9 @@ public
     unless name == lastframe.name
       raise UnexpectedElementError.new("Closing element name '#{ name }' does not match with opening element '#{ lastframe.name }'.")
     end
-    decode_tag_end(lastframe.ns, lastframe.node, lastframe.encodingstyle)
+    decode_tag_end(lastframe.ns, lastframe.node, lastframe.handler)
     @lastnode = lastframe.node.node
+    @recycleframe = lastframe
   end
 
 private
@@ -163,44 +180,24 @@ private
     nil
   end
 
-  def decode_tag(ns, name, attrs, parent, encodingstyle)
+  def decode_tag(ns, name, attrs, parent, handler)
     ele = ns.parse(name)
-
     # Envelope based parsing.
     if ((ele.namespace == @envelopenamespace) ||
 	(@allow_unqualified_element && ele.namespace.nil?))
       o = decode_soap_envelope(ns, ele, attrs, parent)
       return o if o
     end
-
     # Encoding based parsing.
-    handler = find_handler(encodingstyle)
-    if handler
-      return handler.decode_tag(ns, ele, attrs, parent)
-    else
-      raise FormatDecodeError.new("Unknown encodingStyle: #{ encodingstyle }.")
-    end
+    return handler.decode_tag(ns, ele, attrs, parent)
   end
 
-  def decode_tag_end(ns, node, encodingstyle)
-    return unless encodingstyle
-
-    handler = find_handler(encodingstyle)
-    if handler
-      return handler.decode_tag_end(ns, node)
-    else
-      raise FormatDecodeError.new("Unknown encodingStyle: #{ encodingstyle }.")
-    end
+  def decode_tag_end(ns, node, handler)
+    return handler.decode_tag_end(ns, node)
   end
 
-  def decode_text(ns, text, encodingstyle)
-    handler = find_handler(encodingstyle)
-
-    if handler
-      handler.decode_text(ns, text)
-    else
-      # How should I do?
-    end
+  def decode_text(ns, text, handler)
+    handler.decode_text(ns, text)
   end
 
   def decode_soap_envelope(ns, ele, attrs, parent)

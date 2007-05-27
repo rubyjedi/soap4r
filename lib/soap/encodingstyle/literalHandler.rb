@@ -168,11 +168,7 @@ class LiteralHandler < Handler
     @textbuf.clear
     o = node.node
     if o.is_a?(SOAPUnknown)
-      if /\A\s*\z/ =~ textbufstr
-        newnode = o.as_element
-      else
-        newnode = o.as_string
-      end
+      newnode = o.as_element
       node.replace_node(newnode)
       o = node.node
     end

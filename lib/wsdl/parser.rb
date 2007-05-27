@@ -74,13 +74,14 @@ public
     lastframe = @parsestack.last
     ns = parent = nil
     if lastframe
-      ns = lastframe.ns.clone_ns
+      ns = lastframe.ns
       parent = lastframe.node
     else
       ns = XSD::NS.new
       parent = nil
     end
-    attrs = XSD::XMLParser.filter_ns(ns, attrs)
+    # ns might be the same
+    ns, attrs = XSD::XMLParser.filter_ns(ns, attrs)
     node = decode_tag(ns, name, attrs, parent)
     @parsestack << ParseFrame.new(ns, name, node)
   end
