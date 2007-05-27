@@ -334,6 +334,7 @@ private
 	  @decode_typemap.find_name(elename.name)
 	if type
 	  o = SOAPStruct.new(elename)
+          o.elename = elename
 	  o.definedtype = type
 	  return o
 	end

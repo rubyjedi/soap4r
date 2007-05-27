@@ -19,14 +19,14 @@ class WSDLMarshaller
   end
 
   def dump(obj, io = nil)
-    ele =  ::SOAP::Mapping.obj2soap(obj, @mapping_registry)
-    ele.elename = ele.type
+    ele = ::SOAP::Mapping.obj2soap(obj, @mapping_registry)
+    ele.elename = XSD::QName.new(nil, ele.type.name.to_s)
     ::SOAP::Processor.marshal(::SOAP::SOAPEnvelope.new(nil, ::SOAP::SOAPBody.new(ele)), @opt, io)
   end
 
   def load(io)
     header, body = ::SOAP::Processor.unmarshal(io, @opt)
-    ::SOAP::Mapping.soap2obj(body.root_node)
+    ::SOAP::Mapping.soap2obj(body.root_node, @mapping_registry)
   end
 end
 
@@ -48,6 +48,7 @@ class TestWSDLMarshal < Test::Unit::TestCase
     marshaller = WSDLMarshaller.new(pathname('person.wsdl'))
     obj = Person.new("NAKAMURA", "Hiroshi", 1, 1.0,  "1")
     str = marshaller.dump(obj)
+    puts str if $DEBUG
     obj2 = marshaller.load(str)
     assert_equal(obj, obj2)
     assert_equal(str, marshaller.dump(obj2))
