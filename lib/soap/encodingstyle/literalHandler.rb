@@ -1,5 +1,5 @@
 # SOAP4R - XML Literal EncodingStyle handler library
-# Copyright (C) 2001, 2003-2005  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
+# Copyright (C) 2001, 2003-2005, 2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
 # redistribute it and/or modify it under the same terms of Ruby's license;
@@ -109,57 +109,12 @@ class LiteralHandler < Handler
   ###
   ## decode interface.
   #
-  class SOAPTemporalObject
-    attr_accessor :parent
-
-    def initialize
-      @parent = nil
-    end
-  end
-
-  class SOAPUnknown < SOAPTemporalObject
-    def initialize(handler, elename, extraattr)
-      super()
-      @handler = handler
-      @elename = elename
-      @extraattr = extraattr
-    end
-
-    def as_element
-      if @extraattr[XSD::AttrNilName] == 'true'
-        return as_nil
-      end
-      o = SOAPElement.decode(@elename)
-      o.parent = @parent
-      o.extraattr.update(@extraattr)
-      @handler.decode_parent(@parent, o)
-      o
-    end
-
-    def as_string
-      if @extraattr[XSD::AttrNilName] == 'true'
-        return as_nil
-      end
-      o = SOAPString.decode(@elename)
-      o.parent = @parent
-      o.extraattr.update(@extraattr)
-      @handler.decode_parent(@parent, o)
-      o
-    end
-
-    def as_nil
-      o = SOAPNil.decode(@elename)
-      o.parent = @parent
-      o.extraattr.update(@extraattr)
-      @handler.decode_parent(@parent, o)
-      o
-    end
-  end
-
   def decode_tag(ns, elename, attrs, parent)
     @textbuf.clear
-    o = SOAPUnknown.new(self, elename, decode_attrs(ns, attrs))
+    o = SOAPElement.decode(elename)
     o.parent = parent
+    o.extraattr.update(decode_attrs(ns, attrs))
+    decode_parent(parent, o)
     o
   end
 
@@ -167,11 +122,6 @@ class LiteralHandler < Handler
     textbufstr = @textbuf.join
     @textbuf.clear
     o = node.node
-    if o.is_a?(SOAPUnknown)
-      newnode = o.as_element
-      node.replace_node(newnode)
-      o = node.node
-    end
     decode_textbuf(o, textbufstr)
   end
 
@@ -198,11 +148,6 @@ class LiteralHandler < Handler
   def decode_parent(parent, node)
     return unless parent.node
     case parent.node
-    when SOAPUnknown
-      newparent = parent.node.as_element
-      node.parent = newparent
-      parent.replace_node(newparent)
-      decode_parent(parent, node)
     when SOAPElement
       parent.node.add(node)
       node.parent = parent.node
