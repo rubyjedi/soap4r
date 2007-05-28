@@ -94,7 +94,7 @@ class TestOneway < Test::Unit::TestCase
   end
 
   def test_wsdl
-    @client = ::SOAP::WSDLDriverFactory.new('oneway.wsdl').create_rpc_driver
+    @client = ::SOAP::WSDLDriverFactory.new(pathname('oneway.wsdl')).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDERR if $DEBUG
     # not raised
