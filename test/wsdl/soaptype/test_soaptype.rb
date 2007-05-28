@@ -41,7 +41,10 @@ class TestSOAPTYPE < Test::Unit::TestCase
 
   def teardown
     teardown_server
-    File.unlink(pathname('echo.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('echo.rb'))
+      File.unlink(pathname('echoMappingRegistry.rb'))
+    end
     @client.reset_stream if @client
   end
 
@@ -57,10 +60,12 @@ class TestSOAPTYPE < Test::Unit::TestCase
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
+    gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.run
-    TestUtil.require(DIR, 'echo.rb')
+    TestUtil.require(DIR, 'echo.rb', 'echoMappingRegistry.rb', 'echoDriver.rb')
   end
 
   def teardown_server
@@ -125,11 +130,30 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     assert_equal(SOAPTYPE_WSDL_XML, parse_requestxml(str))
   end
 
+  def test_stub
+    @client = WSDL::RPC::Echo_port_type.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = str = ''
+
+    arg = WSDL::RPC::Wrapper.new
+    arg.short = 123
+    arg.long = 456
+    arg.double = 789
+    res = @client.echo_soaptype(arg)
+
+    assert_equal(123, res.short)
+    assert_equal(456, res.long)
+    assert_equal(789.0, res.double)
+
+    assert_equal(SOAPTYPE_WSDL_XML, parse_requestxml(str))
+  end
+
   def test_native
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/", 'urn:soaptype')
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.add_method('echo_soaptype', 'arg')
     @client.wiredump_dev = str = ''
+    @client.mapping_registry = WSDL::RPC::EchoMappingRegistry::EncodedRegistry
+    @client.literal_mapping_registry = WSDL::RPC::EchoMappingRegistry::LiteralRegistry
 
     arg = ::Struct.new(:short, :long, :double).new
     arg.short = SOAPShort.new(123)
