@@ -109,8 +109,8 @@ private
     name = safemethodname(operation.name)
     name_as = operation.name
     style = binding.soapoperation_style
-    inputuse = binding.input ? binding.input.soapbody_use : nil
-    outputuse = binding.output ? binding.output.soapbody_use : nil
+    inputuse = binding.soapbody_use_input
+    outputuse = binding.soapbody_use_output
     if style == :rpc
       qname = binding.soapoperation_name
       paramstr = param2str(collect_rpcparameter(operation))

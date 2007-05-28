@@ -102,8 +102,8 @@ private
       opt = {
         :request_style => op_bind.soapoperation_style,
         :response_style => op_bind.soapoperation_style,
-        :request_use => op_bind.input.soapbody_use,
-        :response_use => op_bind.output.soapbody_use,
+        :request_use => op_bind.soapbody_use_input,
+        :response_use => op_bind.soapbody_use_output,
         :elementformdefault => false,
         :attributeformdefault => false
       }
