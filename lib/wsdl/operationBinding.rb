@@ -68,6 +68,14 @@ class OperationBinding < Info
     style || :document
   end
 
+  def soapbody_use_input
+    soapbody_use(@input)
+  end
+
+  def soapbody_use_output
+    soapbody_use(@output)
+  end
+
   def soapaction
     if @soapoperation
       @soapoperation.soapaction
@@ -109,6 +117,12 @@ class OperationBinding < Info
     else
       nil
     end
+  end
+
+private
+
+  def soapbody_use(param)
+    param ? param.soapbody_use : nil
   end
 end
 

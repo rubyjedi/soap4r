@@ -5,7 +5,7 @@
       <element name="onewayProcessRequest">
         <complexType>
           <sequence>
-            <element name="msg" type="string"/>
+            <element name="msg" type="string" nillable="true" />
           </sequence>
         </complexType>
       </element>

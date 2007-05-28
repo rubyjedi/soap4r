@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'soap/rpc/standaloneServer'
 require 'wsdl/soap/wsdl2ruby'
+require 'soap/wsdlDriver'
 require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
@@ -86,6 +87,15 @@ class TestOneway < Test::Unit::TestCase
 
   def test_stub
     @client = OnewayPort.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDERR if $DEBUG
+    # not raised
+    @client.initiate(OnewayProcessRequest.new("msg"))
+    @client.initiate(OnewayProcessRequest.new(nil))
+  end
+
+  def test_wsdl
+    @client = ::SOAP::WSDLDriverFactory.new('oneway.wsdl').create_rpc_driver
+    @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDERR if $DEBUG
     # not raised
     @client.initiate(OnewayProcessRequest.new("msg"))
