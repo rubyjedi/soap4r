@@ -61,8 +61,8 @@ private
       client.proxy = ::SOAP::Env::HTTP_PROXY
       client.no_proxy = ::SOAP::Env::NO_PROXY
       if opt = ::SOAP::Property.loadproperty(::SOAP::PropertyName)
-        ::SOAP::HTTPConfigLoader.set_options(client,
-          opt["client.protocol.http"])
+        http_opt = opt["client.protocol.http"]
+        ::SOAP::HTTPConfigLoader.set_options(client, http_opt) if http_opt
       end
       content = client.get_content(location)
     end
