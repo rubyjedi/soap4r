@@ -179,7 +179,8 @@ class Router
     conn_data.is_fault = true if soap_response.is_a?(SOAPFault)
     header = call_headers(headerhandler)
     if op.response_use.nil?
-      conn_data.send_string = ""
+      conn_data.send_string = ''
+      conn_data.is_nocontent = true
       conn_data
     else
       body = SOAPBody.new(soap_response)

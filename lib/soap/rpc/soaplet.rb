@@ -114,6 +114,11 @@ private
   end
 
   def setup_res(conn_data, req, res)
+    if conn_data.is_nocontent
+      res.status = WEBrick::HTTPStatus::RC_ACCEPTED
+      res.body = ''
+      return
+    end
     res['content-type'] = conn_data.send_contenttype
     if conn_data.is_fault
       res.status = WEBrick::HTTPStatus::RC_INTERNAL_SERVER_ERROR
