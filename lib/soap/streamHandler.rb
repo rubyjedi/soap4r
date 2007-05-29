@@ -28,6 +28,7 @@ class StreamHandler
     attr_accessor :receive_string
     attr_accessor :receive_contenttype
     attr_accessor :is_fault
+    attr_accessor :is_nocontent
     attr_accessor :soapaction
 
     def initialize(send_string = nil)
@@ -36,6 +37,7 @@ class StreamHandler
       @receive_string = nil
       @receive_contenttype = nil
       @is_fault = false
+      @is_nocontent = false
       @soapaction = nil
     end
   end
@@ -223,8 +225,8 @@ private
     case res.status
     when 405
       raise PostUnavailableError.new("#{ res.status }: #{ res.reason }")
-    when 200, 500
-      # Nothing to do.
+    when 200, 202, 500
+      # Nothing to do.  202 is for oneway service.
     else
       raise HTTPStreamError.new("#{ res.status }: #{ res.reason }")
     end
