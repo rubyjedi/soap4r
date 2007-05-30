@@ -382,18 +382,19 @@ private
     sorted = []
     root.each do |type|
       sorted.concat(collect_dependency(type, dep))
-      dep.delete(type.name)
     end
     sorted.concat(dep.values.flatten)
     sorted
   end
 
+  # removes collected key from dep
   def collect_dependency(type, dep)
     result = [type]
     return result unless dep.key?(type.name)
     dep[type.name].each do |deptype|
       result.concat(collect_dependency(deptype, dep))
     end
+    dep.delete(type.name)
     result
   end
 end
