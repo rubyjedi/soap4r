@@ -111,9 +111,14 @@ class LiteralHandler < Handler
   #
   def decode_tag(ns, elename, attrs, parent)
     @textbuf.clear
-    o = SOAPElement.decode(elename)
+    extraattrs = decode_attrs(ns, attrs)
+    if extraattrs[XSD::AttrNilName] == 'true'
+      o = SOAPNil.decode(elename)
+    else
+      o = SOAPElement.decode(elename)
+    end
     o.parent = parent
-    o.extraattr.update(decode_attrs(ns, attrs))
+    o.extraattr.update(extraattrs)
     decode_parent(parent, o)
     o
   end
