@@ -105,13 +105,9 @@ private
   end
 
   def dump_complextype
-    definitions = @complextypes.collect { |type|
-      dump_complextypedef(type.name, type) if type.abstract
-    }.compact
-    definitions += @complextypes.collect { |type|
-      dump_complextypedef(type.name, type) unless type.abstract
-    }.compact
-    definitions.join("\n")
+    definitions = sort_dependency(@complextypes).collect { |type|
+      dump_complextypedef(type.name, type)
+    }.compact.join("\n")
   end
 
   def dump_simpletypedef(qname, simpletype, qualified = false)
@@ -370,6 +366,35 @@ private
     if @modulepath.nil? and Module.constants.include?(classname)
       warn("created definition re-opens an existing toplevel class: #{classname}")
     end
+  end
+
+  def sort_dependency(types)
+    dep = {}
+    root = []
+    types.each do |type|
+      if type.complexcontent and (base = type.complexcontent.base)
+        dep[base] ||= []
+        dep[base] << type
+      else
+        root << type
+      end
+    end
+    sorted = []
+    root.each do |type|
+      sorted.concat(collect_dependency(type, dep))
+      dep.delete(type.name)
+    end
+    sorted.concat(dep.values.flatten)
+    sorted
+  end
+
+  def collect_dependency(type, dep)
+    result = [type]
+    return result unless dep.key?(type.name)
+    dep[type.name].each do |deptype|
+      result.concat(collect_dependency(deptype, dep))
+    end
+    result
   end
 end
 
