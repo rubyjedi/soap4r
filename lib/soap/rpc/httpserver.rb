@@ -52,6 +52,14 @@ class HTTPServer < Logger::Application
     @server.shutdown if @server
   end
 
+  def authenticator
+    @soaplet.authenticator
+  end
+
+  def authenticator=(authenticator)
+    @soaplet.authenticator = authenticator
+  end
+
   def mapping_registry
     @router.mapping_registry
   end
