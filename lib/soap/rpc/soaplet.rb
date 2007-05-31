@@ -85,8 +85,11 @@ public
       conn_data = ::SOAP::StreamHandler::ConnectionData.new
       setup_req(conn_data, req)
       @router.external_ces = @options[:external_ces]
-      conn_data = @router.route(conn_data)
-      setup_res(conn_data, req, res)
+      Mapping.protect_threadvars(:SOAPlet) do
+        SOAPlet.cookies = req.cookies
+        conn_data = @router.route(conn_data)
+        setup_res(conn_data, req, res)
+      end
     rescue Exception => e
       conn_data = @router.create_fault_response(e)
       res.status = WEBrick::HTTPStatus::RC_INTERNAL_SERVER_ERROR
@@ -99,6 +102,19 @@ public
     else
       logger.debug { "SOAP response: " + res.body } if logger
     end
+  end
+
+  def self.cookies
+    if var = Thread.current[:SOAPlet]
+      var[:Cookies]
+    else
+      nil
+    end
+  end
+
+  def self.cookies=(cookies)
+    var = Thread.current[:SOAPlet] = {}
+    var[:Cookies] = cookies
   end
 
 private
@@ -114,12 +130,15 @@ private
   end
 
   def setup_res(conn_data, req, res)
+    res['content-type'] = conn_data.send_contenttype
+    if cookies = SOAPlet.cookies
+      res['set-cookie'] = cookies.to_s
+    end
     if conn_data.is_nocontent
       res.status = WEBrick::HTTPStatus::RC_ACCEPTED
       res.body = ''
       return
     end
-    res['content-type'] = conn_data.send_contenttype
     if conn_data.is_fault
       res.status = WEBrick::HTTPStatus::RC_INTERNAL_SERVER_ERROR
     end

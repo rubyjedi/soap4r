@@ -505,6 +505,22 @@ module Mapping
   end
 
   class << Mapping
+  public
+
+    def protect_threadvars(*symbols)
+      backup = {}
+      begin
+        symbols.each do |sym|
+          backup[sym] = Thread.current[sym]
+        end
+        yield
+      ensure
+        symbols.each do |sym|
+          Thread.current[sym] = backup[sym]
+        end
+      end
+    end
+
   private
 
     def class_schema_variable(sym, klass)
@@ -520,20 +536,6 @@ module Mapping
         data[:NoReference] = opt[:no_reference]
         data[:SchemaDefinition] = {}
         yield
-      end
-    end
-
-    def protect_threadvars(*symbols)
-      backup = {}
-      begin
-        symbols.each do |sym|
-          backup[sym] = Thread.current[sym]
-        end
-        yield
-      ensure
-        symbols.each do |sym|
-          Thread.current[sym] = backup[sym]
-        end
       end
     end
 
