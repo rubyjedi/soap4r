@@ -136,7 +136,9 @@ public
 
   def send(endpoint_url, conn_data, soapaction = nil, charset = @charset)
     conn_data.soapaction ||= soapaction # for backward conpatibility
-    send_post(endpoint_url, conn_data, charset)
+    conn_data = send_post(endpoint_url, conn_data, charset)
+    @client.save_cookie_store if @cookie_store
+    conn_data
   end
 
   def reset(endpoint_url = nil)

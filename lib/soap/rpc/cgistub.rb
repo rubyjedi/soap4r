@@ -34,6 +34,8 @@ class CGIStub < Logger::Application
     def [](var); end
 
     def meta_vars; end
+
+    def cookies; end
   end
 
   class SOAPStdinRequest < SOAPRequest
@@ -53,6 +55,12 @@ class CGIStub < Logger::Application
         'HTTP_SOAPACTION' => ENV['HTTP_SOAPAction']
       }
     end
+
+    def cookies
+      if cookie = ENV['HTTP_Cookie'] || ENV['Cookie']
+        [WEBrick::Cookie.parse(cookie)]
+      end
+    end
   end
 
   class SOAPFCGIRequest < SOAPRequest
@@ -71,6 +79,12 @@ class CGIStub < Logger::Application
       {
         'HTTP_SOAPACTION' => @request.env['HTTP_SOAPAction']
       }
+    end
+
+    def cookies
+      if cookie = @request.env['HTTP_Cookie'] || @request.env['Cookie']
+        [WEBrick::Cookie.parse(cookie)]
+      end
     end
   end
 
