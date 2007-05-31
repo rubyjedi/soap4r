@@ -36,6 +36,8 @@ class CGIStub < Logger::Application
     def meta_vars; end
 
     def cookies; end
+
+    def user; end
   end
 
   class SOAPStdinRequest < SOAPRequest
@@ -61,6 +63,10 @@ class CGIStub < Logger::Application
         [WEBrick::Cookie.parse(cookie)]
       end
     end
+
+    def user
+      ENV['REMOTE_USER']
+    end
   end
 
   class SOAPFCGIRequest < SOAPRequest
@@ -85,6 +91,10 @@ class CGIStub < Logger::Application
       if cookie = @request.env['HTTP_Cookie'] || @request.env['Cookie']
         [WEBrick::Cookie.parse(cookie)]
       end
+    end
+
+    def user
+      @request.env['REMOTE_USER']
     end
   end
 

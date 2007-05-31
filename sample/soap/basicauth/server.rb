@@ -18,13 +18,19 @@ class Server < SOAP::RPC::StandaloneServer
     end
 
     def echo(msg)
-      "echo from servant ##{@counter}: #{msg}"
+      "echo from servant ##{@counter} (#{SOAP::RPC::SOAPlet.user}): #{msg}"
     end
   end
 
   def initialize(*arg)
     super
     add_rpc_request_servant(Servant)
+  end
+
+  def on_init
+    userdb_file = File.join(File.dirname(__FILE__), 'htpasswd')
+    userdb = WEBrick::HTTPAuth::Htpasswd.new(userdb_file)
+    self.authenticator = WEBrick::HTTPAuth::BasicAuth.new(:Realm => 'auth', :UserDB => userdb)
   end
 end
 

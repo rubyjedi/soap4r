@@ -41,10 +41,12 @@ module RPC
 class SOAPlet < WEBrick::HTTPServlet::AbstractServlet
 public
   attr_reader :options
+  attr_accessor :authenticator
 
   def initialize(router = nil)
     @router = router || ::SOAP::RPC::Router.new(self.class.name)
     @options = {}
+    @authenticator = nil
     @config = {}
   end
 
@@ -81,11 +83,16 @@ public
 
   def do_POST(req, res)
     logger.debug { "SOAP request: " + req.body } if logger
+    if @authenticator
+      @authenticator.authenticate(req, res)
+      # you can check authenticated user with SOAP::RPC::SOAPlet.user
+    end
     begin
       conn_data = ::SOAP::StreamHandler::ConnectionData.new
       setup_req(conn_data, req)
       @router.external_ces = @options[:external_ces]
       Mapping.protect_threadvars(:SOAPlet) do
+        SOAPlet.user = req.user
         SOAPlet.cookies = req.cookies
         conn_data = @router.route(conn_data)
         setup_res(conn_data, req, res)
@@ -105,19 +112,35 @@ public
   end
 
   def self.cookies
+    get_variable(:Cookies)
+  end
+
+  def self.cookies=(cookies)
+    set_variable(:Cookies, cookies)
+  end
+
+  def self.user
+    get_variable(:User)
+  end
+
+  def self.user=(user)
+    set_variable(:User, user)
+  end
+
+private
+
+  def self.get_variable(name)
     if var = Thread.current[:SOAPlet]
-      var[:Cookies]
+      var[name]
     else
       nil
     end
   end
 
-  def self.cookies=(cookies)
-    var = Thread.current[:SOAPlet] = {}
-    var[:Cookies] = cookies
+  def self.set_variable(name, value)
+    var = Thread.current[:SOAPlet] ||= {}
+    var[name] = value
   end
-
-private
 
   def logger
     @config[:Logger]
