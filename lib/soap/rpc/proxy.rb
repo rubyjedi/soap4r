@@ -12,6 +12,8 @@ require 'soap/mapping'
 require 'soap/mapping/literalregistry'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
+require 'soap/header/handlerset'
+require 'soap/filter'
 require 'soap/streamHandler'
 require 'soap/mimemessage'
 
@@ -32,6 +34,7 @@ public
   attr_accessor :generate_explicit_type
   attr_accessor :return_response_as_xml
   attr_reader :headerhandler
+  attr_reader :filterchain
   attr_reader :streamhandler
 
   attr_accessor :mapping_registry
@@ -54,6 +57,7 @@ public
     @generate_explicit_type = true
     @return_response_as_xml = false
     @headerhandler = Header::HandlerSet.new
+    @filterchain = Filter::FilterChain.new
     @mapping_registry = nil
     @literal_mapping_registry = ::SOAP::Mapping::LiteralRegistry.new
   end
@@ -248,12 +252,17 @@ private
   end
 
   def marshal(env, opt)
+    @filterchain.each do |filter|
+      env = filter.on_outbound(env, opt)
+      break unless env
+    end
     send_string = Processor.marshal(env, opt)
     StreamHandler::ConnectionData.new(send_string)
   end
 
   def unmarshal(conn_data, opt)
     contenttype = conn_data.receive_contenttype
+    xml = nil
     if /#{MIMEMessage::MultipartContentType}/i =~ contenttype
       opt[:external_content] = {}
       mime = MIMEMessage.parse("Content-Type: " + contenttype,
@@ -266,17 +275,19 @@ private
       end
       opt[:charset] = @mandatorycharset ||
 	StreamHandler.parse_media_type(mime.root.headers['content-type'].str)
-      env = Processor.unmarshal(mime.root.content, opt)
-      if @return_response_as_xml
-        opt[:response_as_xml] = mime.root.content
-      end
+      xml = mime.root.content
     else
       opt[:charset] = @mandatorycharset ||
 	::SOAP::StreamHandler.parse_media_type(contenttype)
-      env = Processor.unmarshal(conn_data.receive_string, opt)
-      if @return_response_as_xml
-        opt[:response_as_xml] = conn_data.receive_string
-      end
+      xml = conn_data.receive_string
+    end
+    @filterchain.reverse_each do |filter|
+      xml = filter.on_inbound(xml, opt)
+      break unless xml
+    end
+    env = Processor.unmarshal(xml, opt)
+    if @return_response_as_xml
+      opt[:response_as_xml] = xml
     end
     unless env.is_a?(::SOAP::SOAPEnvelope)
       raise ResponseFormatError.new("response is not a SOAP envelope: #{env}")

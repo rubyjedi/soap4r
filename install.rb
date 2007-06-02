@@ -67,6 +67,7 @@ begin
   install_dir(SRCPATH, 'soap', 'mapping')
   install_dir(SRCPATH, 'soap', 'encodingstyle')
   install_dir(SRCPATH, 'soap', 'header')
+  install_dir(SRCPATH, 'soap', 'filter')
   install_dir(SRCPATH, 'wsdl')
   install_dir(SRCPATH, 'wsdl', 'xmlSchema')
   install_dir(SRCPATH, 'wsdl', 'soap')

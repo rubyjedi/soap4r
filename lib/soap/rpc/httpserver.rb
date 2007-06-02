@@ -103,6 +103,10 @@ class HTTPServer < Logger::Application
   end
   alias add_rpc_headerhandler add_headerhandler
 
+  def filterchain
+    @router.filterchain
+  end
+
   # method entry interface
 
   def add_rpc_method(obj, name, *param)

@@ -303,6 +303,10 @@ class SOAPMethodResponse < SOAPMethod
     @retval = nil
   end
 
+  def retval
+    @retval
+  end
+
   def retval=(retval)
     @retval = retval
     @retval.elename = @retval.elename.dup_name(@retval_name || 'return')
