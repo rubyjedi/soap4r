@@ -62,6 +62,7 @@ class Driver
   __attr_proxy :generate_explicit_type, true
   __attr_proxy :return_response_as_xml, true
   __attr_proxy :headerhandler
+  __attr_proxy :filterchain
   __attr_proxy :streamhandler
   __attr_proxy :test_loopback_response
   __attr_proxy :reset_stream

@@ -12,6 +12,8 @@ require 'soap/mapping'
 require 'soap/mapping/literalregistry'
 require 'soap/rpc/rpc'
 require 'soap/rpc/element'
+require 'soap/header/handlerset'
+require 'soap/filter'
 require 'soap/streamHandler'
 require 'soap/mimemessage'
 require 'soap/header/handlerset'
@@ -29,6 +31,7 @@ class Router
   attr_accessor :literal_mapping_registry
   attr_accessor :generate_explicit_type
   attr_accessor :external_ces
+  attr_reader :filterchain
 
   def initialize(actor)
     @actor = actor
@@ -40,6 +43,7 @@ class Router
     @operation_by_soapaction = {}
     @operation_by_qname = {}
     @headerhandlerfactory = []
+    @filterchain = Filter::FilterChain.new
   end
 
   ###
@@ -167,6 +171,7 @@ class Router
       soap_response =
         op.call(env.body, @mapping_registry, @literal_mapping_registry,
           create_mapping_opt)
+      conn_data.is_fault = true if soap_response.is_a?(SOAPFault)
       default_encodingstyle = op.response_default_encodingstyle
     rescue Exception => e
       # If a wsdl fault was raised by service, the fault declaration details
@@ -174,16 +179,16 @@ class Router
       # wsdl_fault is nil
       wsdl_fault_details = op.faults && op.faults[e.class.name]
       soap_response = fault(e, wsdl_fault_details)
+      conn_data.is_fault = true
       default_encodingstyle = nil
     end
-    conn_data.is_fault = true if soap_response.is_a?(SOAPFault)
     header = call_headers(headerhandler)
     if op.response_use.nil?
       conn_data.send_string = ''
       conn_data.is_nocontent = true
       conn_data
     else
-      body = SOAPBody.new(soap_response)
+      body = SOAPBody.new(soap_response, conn_data.is_fault)
       env = SOAPEnvelope.new(header, body)
       marshal(conn_data, env, default_encodingstyle)
     end
@@ -191,9 +196,13 @@ class Router
 
   # Create fault response string.
   def create_fault_response(e)
-    env = SOAPEnvelope.new(SOAPHeader.new, SOAPBody.new(fault(e, nil)))
+    env = SOAPEnvelope.new(SOAPHeader.new, SOAPBody.new(fault(e, nil), true))
     opt = {}
     opt[:external_content] = nil
+    @filterchain.reverse_each do |filter|
+      env = filter.on_outbound(env, opt)
+      break unless env
+    end
     response_string = Processor.marshal(env, opt)
     conn_data = StreamHandler::ConnectionData.new(response_string)
     conn_data.is_fault = true
@@ -282,6 +291,7 @@ private
   end
 
   def unmarshal(conn_data)
+    xml = nil
     opt = {}
     contenttype = conn_data.receive_contenttype
     if /#{MIMEMessage::MultipartContentType}/i =~ contenttype
@@ -296,11 +306,16 @@ private
       end
       opt[:charset] =
 	StreamHandler.parse_media_type(mime.root.headers['content-type'].str)
-      env = Processor.unmarshal(mime.root.content, opt)
+      xml = mime.root.content
     else
       opt[:charset] = ::SOAP::StreamHandler.parse_media_type(contenttype)
-      env = Processor.unmarshal(conn_data.receive_string, opt)
+      xml = conn_data.receive_string
     end
+    @filterchain.each do |filter|
+      xml = filter.on_inbound(xml, opt)
+      break unless xml
+    end
+    env = Processor.unmarshal(xml, opt)
     charset = opt[:charset]
     conn_data.send_contenttype = "text/xml; charset=\"#{charset}\""
     env
@@ -311,6 +326,10 @@ private
     opt[:external_content] = nil
     opt[:default_encodingstyle] = default_encodingstyle
     opt[:generate_explicit_type] = @generate_explicit_type
+    @filterchain.reverse_each do |filter|
+      env = filter.on_outbound(env, opt)
+      break unless env
+    end
     response_string = Processor.marshal(env, opt)
     conn_data.send_string = response_string
     if ext = opt[:external_content]

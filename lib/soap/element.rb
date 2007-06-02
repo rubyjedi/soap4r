@@ -95,6 +95,8 @@ end
 class SOAPBody < SOAPStruct
   include SOAPEnvelopeElement
 
+  attr_reader :is_fault
+
   def initialize(data = nil, is_fault = false)
     super(nil)
     @elename = EleBodyName
@@ -114,12 +116,8 @@ class SOAPBody < SOAPStruct
   def encode(generator, ns, attrs = {})
     name = ns.name(@elename)
     generator.encode_tag(name, attrs)
-    if @is_fault
-      yield(@data)
-    else
-      @data.each do |data|
-	yield(data)
-      end
+    @data.each do |data|
+      yield(data)
     end
     generator.encode_tag_end(name, true)
   end
