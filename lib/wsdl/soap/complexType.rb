@@ -23,8 +23,7 @@ class ComplexType < Info
     if have_any?
       :TYPE_STRUCT
     elsif content
-      e = elements
-      if attributes.empty? and e.size == 1 and e[0].map_as_array?
+      if attributes.empty? and map_as_array?
         if name == ::SOAP::Mapping::MapQName
           :TYPE_MAP
         else
@@ -107,7 +106,7 @@ class ComplexType < Info
         end
       end
     end
-    if check_array_content
+    if map_as_array?
       return element_simpletype(elements[0])
     end
     raise RuntimeError.new("Assert: Unknown array definition.")
@@ -117,7 +116,7 @@ class ComplexType < Info
     unless compoundtype == :TYPE_ARRAY
       raise RuntimeError.new("Assert: not for array")
     end
-    if check_array_content
+    if map_as_array?
       return nested_elements[0]
     end
     nil # use default item name
@@ -143,8 +142,8 @@ private
     end
   end
 
-  def check_array_content
-    e = elements
+  def map_as_array?
+    e = nested_elements
     e.size == 1 and e[0].map_as_array?
   end
 

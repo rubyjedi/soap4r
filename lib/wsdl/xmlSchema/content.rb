@@ -41,6 +41,10 @@ class Content < Info
     false
   end
 
+  def map_as_array?
+    maxoccurs.nil? or maxoccurs != 1
+  end
+
   def nested_elements
     elements = XSD::NamedElements.new
     @elements.each do |ele|

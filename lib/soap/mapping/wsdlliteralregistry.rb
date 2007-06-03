@@ -173,7 +173,7 @@ private
 
   def complexobj2soapchildren_array(obj, ele, child_ele, allow_nil_value)
     child = Mapping.get_attribute(obj, child_ele.name.name)
-    if child.nil? and obj.respond_to?(:each)
+    if child.nil? and obj.is_a?(::Array)
       child = obj
     end
     if child.nil?
@@ -226,7 +226,8 @@ private
     elsif ele.minoccurs == 0
       nil       # intends no element
     else
-      raise MappingError.new("nil not allowed: #{ele.name.name}")
+      warn("nil not allowed: #{ele.name.name}")
+      nil
     end
   end
 end

@@ -36,7 +36,7 @@ module ClassDefCreatorSupport
     ::SOAP::TypeMap[name]
   end
 
-  def dump_method_signature(operation)
+  def dump_method_signature(operation, element_definitions)
     name = operation.name
     input = operation.input
     output = operation.output
@@ -47,16 +47,16 @@ module ClassDefCreatorSupport
 #   #{name}#{dump_inputparam(input)}
 #
 # ARGS
-#{dump_inout_type(input).chomp}
+#{dump_inout_type(input, element_definitions).chomp}
 #
 # RETURNS
-#{dump_inout_type(output).chomp}
+#{dump_inout_type(output, element_definitions).chomp}
 #
 __EOD__
     unless fault.empty?
       str <<<<__EOD__
 # RAISES
-#{dump_fault_type(fault)}
+#{dump_fault_type(fault, element_definitions)}
 #
 __EOD__
     end
@@ -85,7 +85,7 @@ __EOD__
 
 private
 
-  def dump_inout_type(param)
+  def dump_inout_type(param, element_definitions)
     if param
       message = param.find_message
       params = ""
@@ -93,10 +93,18 @@ private
         name = safevarname(part.name)
         if part.type
           typename = safeconstname(part.type.name)
-          params << add_at("#   #{name}", "#{typename} - #{part.type}\n", 20)
+          qname = part.type
+          params << add_at("#   #{name}", "#{typename} - #{qname}\n", 20)
         elsif part.element
-          typename = safeconstname(part.element.name)
-          params << add_at("#   #{name}", "#{typename} - #{part.element}\n", 20)
+          ele = element_definitions[part.element]
+          if ele.type
+            typename = safeconstname(ele.type.name)
+            qname = ele.type
+          else
+            typename = safeconstname(ele.name.name)
+            qname = ele.name
+          end
+          params << add_at("#   #{name}", "#{typename} - #{qname}\n", 20)
         end
       end
       unless params.empty?
@@ -128,9 +136,9 @@ private
     end
   end
 
-  def dump_fault_type(fault)
+  def dump_fault_type(fault, element_definitions)
     fault.collect { |ele|
-      dump_inout_type(ele).chomp
+      dump_inout_type(ele, element_definitions).chomp
     }.join("\n")
   end
 end

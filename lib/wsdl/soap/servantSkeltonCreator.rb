@@ -54,6 +54,7 @@ private
   def dump_porttype(name)
     class_name = create_class_name(name)
     c = XSD::CodeGen::ClassDef.new(class_name)
+    element_definitions = @definitions.collect_elements
     operations = @definitions.porttype(name).operations
     operations.each do |operation|
       name = safemethodname(operation.name)
@@ -66,7 +67,7 @@ private
             raise NotImplementedError.new
           EOD
         end
-      m.comment = dump_method_signature(operation)
+      m.comment = dump_method_signature(operation, element_definitions)
       c.add_method(m)
     end
     c.dump

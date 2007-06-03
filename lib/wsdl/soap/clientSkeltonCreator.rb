@@ -61,8 +61,9 @@ obj = #{ drv_name }.new(endpoint_url)
 obj.wiredump_dev = STDERR if $DEBUG
 
 __EOD__
+    element_definitions = @definitions.collect_elements
     @definitions.porttype(name).operations.each do |operation|
-      result << dump_method_signature(operation)
+      result << dump_method_signature(operation, element_definitions)
       result << dump_input_init(operation.input) << "\n"
       result << dump_operation(operation) << "\n\n"
     end
