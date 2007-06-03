@@ -15,7 +15,8 @@ module XMLSchema
 
 class Element < Info
   def map_as_array?
-    maxoccurs.nil? or maxoccurs != 1
+    # parent sequence / choice may be marked as maxOccurs="unbounded"
+    maxoccurs.nil? or maxoccurs != 1 or (parent and parent.map_as_array?)
   end
 
   def attributes

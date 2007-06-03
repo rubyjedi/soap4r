@@ -436,7 +436,6 @@ module Mapping
         default_ns = elename.namespace if elename
         default_ns ||= type.namespace if type
         definition.elements = parse_schema_definition(schema_element, default_ns)
-        # needed?
         if klass < ::Array
           definition.elements.set_array
         end
@@ -458,9 +457,6 @@ module Mapping
     schema_element.each do |ele|
       element_definition = parse_schema_element_definition(ele, default_ns)
       definition << element_definition
-      if element_definition.as_array?
-        definition.set_array
-      end
     end
     definition
   end
