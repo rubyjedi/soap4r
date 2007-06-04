@@ -35,7 +35,8 @@ class CGIStub < Logger::Application
 
     def meta_vars; end
 
-    def cookies; end
+    EMPTY_COOKIES = [].freeze
+    def cookies; EMPTY_COOKIES; end
 
     def user; end
   end
@@ -61,6 +62,8 @@ class CGIStub < Logger::Application
     def cookies
       if cookie = ENV['HTTP_Cookie'] || ENV['Cookie']
         [WEBrick::Cookie.parse(cookie)]
+      else
+        EMPTY_COOKIES
       end
     end
 
@@ -90,6 +93,8 @@ class CGIStub < Logger::Application
     def cookies
       if cookie = @request.env['HTTP_Cookie'] || @request.env['Cookie']
         [WEBrick::Cookie.parse(cookie)]
+      else
+        EMPTY_COOKIES
       end
     end
 

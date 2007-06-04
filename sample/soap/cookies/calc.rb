@@ -40,7 +40,7 @@ private
       cookie.expires = Time.now + 3600
       SOAP::RPC::SOAPlet.cookies << cookie
     end
-    p [SOAP::RPC::SOAPlet.cookies, Thread.current]
+    p "assined client id: #{client_id}"
     client_id
   end
 
