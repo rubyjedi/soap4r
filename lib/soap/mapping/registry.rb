@@ -207,8 +207,8 @@ module RegistrySupport
   end
 
   def find_node_definition(node)
-    schema_definition_from_elename(node.elename) ||
-      schema_definition_from_type(node.type) ||
+    schema_definition_from_type(node.type) ||
+      schema_definition_from_elename(node.elename) ||
       find_schema_definition(node.elename.name) ||
       find_schema_definition(node.type.name)
   end

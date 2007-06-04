@@ -22,6 +22,7 @@
         </sequence>
       </complexType>
 
+      <element name="Author" type="tns:Author"/>
       <complexType abstract="true" name="Author">
         <sequence>
           <element name="firstname" type="xsd:string"/>
@@ -89,6 +90,14 @@
     <wsdl:part name="return" type="tns:Book"/>
   </wsdl:message>
 
+  <wsdl:message name="echoLiteralRequest">
+    <wsdl:part name="author" element="tns:Author"/>
+  </wsdl:message>
+
+  <wsdl:message name="echoLiteralResponse">
+    <wsdl:part name="return" element="tns:Author"/>
+  </wsdl:message>
+
   <wsdl:message name="echoDerivedRequest">
     <wsdl:part name="parameter" type="tns:BaseClass"/>
   </wsdl:message>
@@ -103,6 +112,11 @@
       <wsdl:output message="tns:echoResponse" name="echoResponse"/>
     </wsdl:operation>
 
+    <wsdl:operation name="echoLiteral">
+      <wsdl:input message="tns:echoLiteralRequest"/>
+      <wsdl:output message="tns:echoLiteralResponse"/>
+    </wsdl:operation>
+
     <wsdl:operation name="echoDerived">
       <wsdl:input message="tns:echoDerivedRequest" name="echoDerivedRequest"/>
       <wsdl:output message="tns:echoDerivedResponse" name="echoDerivedResponse"/>
@@ -112,11 +126,10 @@
   <wsdl:binding name="AbstractServiceSoapBinding"
     type="tns:AbstractService">
 
-    <wsdlsoap:binding style="rpc"
-      transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdlsoap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
 
     <wsdl:operation name="echo">
-      <wsdlsoap:operation soapAction=""/>
+      <wsdlsoap:operation style="rpc" soapAction=""/>
       <wsdl:input name="echoRequest">
         <wsdlsoap:body
           encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
@@ -129,8 +142,18 @@
       </wsdl:output>
     </wsdl:operation>
 
+    <wsdl:operation name="echoLiteral">
+      <wsdlsoap:operation style="document" soapAction=""/>
+      <wsdl:input name="echoLiteralRequest">
+        <wsdlsoap:body namespace="urn:www.example.org:abstract" use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="echoLiteralResponse">
+        <wsdlsoap:body namespace="urn:www.example.org:abstract" use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
     <wsdl:operation name="echoDerived">
-      <wsdlsoap:operation soapAction=""/>
+      <wsdlsoap:operation style="rpc" soapAction=""/>
       <wsdl:input name="echoDerivedRequest">
         <wsdlsoap:body
           encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"

@@ -48,9 +48,8 @@ class LiteralRegistry
 
   # node should be a SOAPElement
   def soap2obj(node, obj_class = nil)
-    # obj_class is given when rpc/literal service.  but ignored for now.
     begin
-      return any2obj(node)
+      return any2obj(node, obj_class)
     rescue MappingError
     end
     if @excn_handler_soap2obj
@@ -72,9 +71,11 @@ private
     ele = nil
     if obj.is_a?(SOAP::Mapping::Object)
       ele = mappingobj2soap(obj, qname)
-    elsif definition = schema_definition_from_elename(qname)
-      ele = stubobj2soap(obj, qname, definition)
     elsif definition = schema_definition_from_class(obj.class)
+      # search with class first.  obj can be an instance of a subclass of
+      # defined class.
+      ele = stubobj2soap(obj, qname, definition)
+    elsif definition = schema_definition_from_elename(qname)
       ele = stubobj2soap(obj, qname, definition)
     else
       ele = anyobj2soap(obj, qname)
@@ -189,7 +190,11 @@ private
     if obj_class
       definition = schema_definition_from_class(obj_class)
     else
-      definition = schema_definition_from_elename(node.elename)
+      if node.is_a?(::SOAP::SOAPStruct)
+        definition = find_node_definition(node)
+      else
+        definition = schema_definition_from_elename(node.elename)
+      end
       if definition
         obj_class = definition.class_for
       end
