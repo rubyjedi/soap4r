@@ -16,6 +16,14 @@ class Echo_port_type < ::SOAP::RPC::Driver
         :response_style => :document, :response_use => :literal,
         :faults => {} }
     ],
+    [ XSD::QName.new("urn:example.com:echo", "echoAny"),
+      "urn:example.com:echoAny",
+      "echoAny",
+      [ ["retval", "echoany_return", [nil]] ],
+      { :request_style =>  :rpc, :request_use =>  :encoded,
+        :response_style => :rpc, :response_use => :encoded,
+        :faults => {} }
+    ],
     [ "urn:example.com:echo",
       "setOutputAndComplete",
       [ ["in", "parameters", ["::SOAP::SOAPElement", "urn:example.com:echo-type", "setOutputAndCompleteRequest"]],

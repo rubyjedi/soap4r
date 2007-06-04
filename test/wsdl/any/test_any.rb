@@ -35,6 +35,15 @@ class TestAny < Test::Unit::TestCase
         XSD::QName.new(TypeNamespace, 'foo.bar'),
         XSD::QName.new(TypeNamespace, 'foo.bar')
       )
+      add_rpc_operation(self, 
+        XSD::QName.new("urn:example.com:echo", "echoAny"),
+        "urn:example.com:echoAny",
+        "echoAny",
+        [ ["retval", "echoany_return", [XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType")]] ],
+        { :request_style =>  :rpc, :request_use =>  :encoded,
+          :response_style => :rpc, :response_use => :encoded,
+          :faults => {} }
+      )
     end
   
     def echo(arg)
@@ -45,6 +54,11 @@ class TestAny < Test::Unit::TestCase
       ])
       res
       # TODO: arg
+    end
+
+    AnyStruct = Struct.new(:a, :b)
+    def echoAny
+      AnyStruct.new(1, Time.mktime(2007, 1, 1))
     end
   end
 
@@ -130,6 +144,16 @@ class TestAny < Test::Unit::TestCase
 
   def compare(expected, actual)
     TestUtil.filecompare(pathname(expected), pathname(actual))
+  end
+
+  def test_anyreturl_wsdl
+    wsdl = File.join(DIR, 'any.wsdl')
+    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = STDOUT if $DEBUG
+    res = @client.echoAny
+    assert_equal(1, res.a)
+    assert_equal(2007, res.b.year)
   end
 
   def test_wsdl
