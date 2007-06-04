@@ -154,8 +154,9 @@ private
 
   def setup_res(conn_data, req, res)
     res['content-type'] = conn_data.send_contenttype
-    if cookies = SOAPlet.cookies
-      res['set-cookie'] = cookies.to_s
+    cookies = SOAPlet.cookies
+    unless cookies.empty?
+      res['set-cookie'] = cookies.collect { |cookie| cookie.to_s }
     end
     if conn_data.is_nocontent
       res.status = WEBrick::HTTPStatus::RC_ACCEPTED
