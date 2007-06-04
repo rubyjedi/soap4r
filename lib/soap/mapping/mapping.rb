@@ -395,8 +395,8 @@ module Mapping
   end
 
   def self.schema_definition_classdef(klass)
-    if definition = Thread.current[:SOAPMapping][:SchemaDefinition][klass]
-      return definition
+    if Thread.current[:SOAPMapping][:SchemaDefinition].key?(klass)
+      return Thread.current[:SOAPMapping][:SchemaDefinition][klass]
     end
     ns = schema_ns_definition(klass)
     name = schema_name_definition(klass)

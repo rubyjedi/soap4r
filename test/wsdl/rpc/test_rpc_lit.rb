@@ -354,8 +354,8 @@ class TestRPCLIT < Test::Unit::TestCase
     # response contains only 1 part.
     result = drv.echoNestedStruct(SOAPStructStruct.new("str", 1, 1.0, SOAPStruct.new("str", 1, 1.0)))[0]
     assert_equal('str', result.varString)
-    assert_equal('1', result.varInt)
-    assert_equal('+1', result.varFloat)
+    assert_equal(1, result.varInt)
+    assert_equal(1.0, result.varFloat)
     assert_equal('str', result.structItem.varString)
     assert_equal(1, result.structItem.varInt)
     assert_equal(1.0, result.structItem.varFloat)
@@ -369,7 +369,7 @@ class TestRPCLIT < Test::Unit::TestCase
     drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoNestedStruct(SOAPStructStruct.new("str", nil, 1.0, SOAPStruct.new("str", ::SOAP::SOAPNil.new, 1.0)))[0]
-    assert(!result.respond_to?(:varInt))
+    assert(result.respond_to?(:varInt))
     assert(result.respond_to?(:varString))
     assert_equal(ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str),
       [ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str)].join("\n\n"))
