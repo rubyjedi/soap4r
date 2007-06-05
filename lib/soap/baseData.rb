@@ -751,6 +751,17 @@ class SOAPRawData < SOAPElement
 end
 
 
+class SOAPREXMLElementWrap
+  def initialize(ele)
+    @ele = ele
+  end
+
+  def to_xml
+    @ele.to_s
+  end
+end
+
+
 class SOAPArray < XSD::NSDBase
   include SOAPCompoundtype
   include Enumerable
