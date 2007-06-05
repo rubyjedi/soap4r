@@ -396,20 +396,16 @@ class WSDLDriver
     end
 
     def create_request_header
-      headers = @proxy.headerhandler.on_outbound
-      if headers.empty?
-	nil
-      else
-	h = SOAPHeader.new
-	headers.each do |header|
-	  h.add(header.elename.name, header)
-	end
-	h
+      header = SOAPHeader.new
+      items = @proxy.headerhandler.on_outbound(header)
+      items.each do |item|
+        header.add(item.elename.name, item)
       end
+      header
     end
 
-    def receive_headers(headers)
-      @proxy.headerhandler.on_inbound(headers) if headers
+    def receive_headers(header)
+      @proxy.headerhandler.on_inbound(header) if header
     end
 
     def create_request_body(op_info, *values)

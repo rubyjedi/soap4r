@@ -274,20 +274,16 @@ private
   end
 
   def call_headers(headerhandler)
-    headers = headerhandler.on_outbound
-    if headers.empty?
-      nil
-    else
-      h = ::SOAP::SOAPHeader.new
-      headers.each do |header|
-        h.add(header.elename.name, header)
-      end
-      h
+    header = ::SOAP::SOAPHeader.new
+    items = headerhandler.on_outbound(header)
+    items.each do |item|
+      header.add(item.elename.name, item)
     end
+    header
   end
 
-  def receive_headers(headerhandler, headers)
-    headerhandler.on_inbound(headers) if headers
+  def receive_headers(headerhandler, header)
+    headerhandler.on_inbound(header) if header
   end
 
   def unmarshal(conn_data)

@@ -36,8 +36,9 @@ class Handler
     # do something.
   end
 
-  def on_outbound_headeritem
-    item = on_outbound
+  def on_outbound_headeritem(header)
+    arity = self.method(:on_outbound).arity
+    item = (arity == 0) ? on_outbound : on_outbound(header)
     if item.nil?
       nil
     elsif item.is_a?(::SOAP::SOAPHeaderItem)
@@ -50,8 +51,8 @@ class Handler
     end
   end
 
-  def on_inbound_headeritem(header)
-    on_inbound(header.element, header.mustunderstand)
+  def on_inbound_headeritem(header, item)
+    on_inbound(item.element, item.mustunderstand)
   end
 end
 
