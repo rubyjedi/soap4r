@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'soap/rpc/standaloneServer'
 require 'soap/rpc/driver'
+require 'soap/header/handler'
 
 
 module SOAP
@@ -8,6 +9,15 @@ module SOAP
 
 class TestEmpty < Test::Unit::TestCase
   Port = 17171
+
+  class EmptyHeaderHandler < SOAP::Header::Handler
+    def on_outbound(header)
+      # dump Header even if no header item given.
+      header.force_encode = true
+      # no additional header item
+      nil
+    end
+  end
 
   class NopServer < SOAP::RPC::StandaloneServer
     def initialize(*arg)
@@ -48,8 +58,15 @@ class TestEmpty < Test::Unit::TestCase
 <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <env:Body>
-  </env:Body>
+  <env:Body></env:Body>
+</env:Envelope>]
+
+  EMPTY_HEADER_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
+<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <env:Header></env:Header>
+  <env:Body></env:Body>
 </env:Envelope>]
 
   def test_nop
@@ -64,6 +81,13 @@ class TestEmpty < Test::Unit::TestCase
     @client.nop_nil
     assert_equal(EMPTY_XML, parse_requestxml(str))
     assert_equal(EMPTY_XML, parse_responsexml(str))
+  end
+
+  def test_empty_header
+    @client.headerhandler << EmptyHeaderHandler.new(nil)
+    @client.wiredump_dev = str = ''
+    @client.nop
+    assert_equal(EMPTY_HEADER_XML, parse_requestxml(str))
   end
 
   def parse_requestxml(str)

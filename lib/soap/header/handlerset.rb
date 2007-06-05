@@ -38,20 +38,20 @@ class HandlerSet
   end
 
   # returns: Array of SOAPHeaderItem
-  def on_outbound
+  def on_outbound(header)
     @store.collect { |handler|
-      handler.on_outbound_headeritem
+      handler.on_outbound_headeritem(header)
     }.compact
   end
 
-  # headers: SOAPHeaderItem enumerable object
-  def on_inbound(headers)
-    headers.each do |name, item|
+  # header: SOAPHeaderItem enumerable object
+  def on_inbound(header)
+    header.each do |name, item|
       handler = @store.find { |handler|
         handler.elename == item.element.elename
       }
       if handler
-        handler.on_inbound_headeritem(item)
+        handler.on_inbound_headeritem(header, item)
       elsif item.mustunderstand
         raise UnhandledMustUnderstandHeaderError.new(item.element.elename.to_s)
       end

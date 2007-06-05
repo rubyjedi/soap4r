@@ -102,6 +102,11 @@ class SOAPBody < SOAPStruct
     @elename = EleBodyName
     @encodingstyle = nil
     if data
+      if data.respond_to?(:to_xml)
+        data = SOAP::SOAPRawData.new(data)
+      elsif defined?(::REXML) and data.is_a?(::REXML::Element)
+        data = SOAP::SOAPRawData.new(SOAP::SOAPREXMLElementWrap.new(data))
+      end
       if data.respond_to?(:elename)
         add(data.elename.name, data)
       else
@@ -119,7 +124,7 @@ class SOAPBody < SOAPStruct
     @data.each do |data|
       yield(data)
     end
-    generator.encode_tag_end(name, true)
+    generator.encode_tag_end(name, @data.size > 0)
   end
 
   def root_node
@@ -184,10 +189,13 @@ end
 class SOAPHeader < SOAPStruct
   include SOAPEnvelopeElement
 
+  attr_writer :force_encode
+
   def initialize
     super(nil)
     @elename = EleHeaderName
     @encodingstyle = nil
+    @force_encode = false
   end
 
   def encode(generator, ns, attrs = {})
@@ -196,7 +204,7 @@ class SOAPHeader < SOAPStruct
     @data.each do |data|
       yield(data)
     end
-    generator.encode_tag_end(name, true)
+    generator.encode_tag_end(name, @data.size > 0)
   end
 
   def add(name, value)
@@ -211,6 +219,10 @@ class SOAPHeader < SOAPStruct
     @data.length
   end
   alias size length
+
+  def encode?
+    @force_encode or length > 0
+  end
 end
 
 
@@ -248,10 +260,8 @@ class SOAPEnvelope < XSD::NSDBase
     SOAPGenerator.assign_ns(attrs, ns, elename.namespace, SOAPNamespaceTag)
     name = ns.name(@elename)
     generator.encode_tag(name, attrs)
-
-    yield(@header) if @header and @header.length > 0
+    yield(@header) if @header and @header.encode?
     yield(@body)
-
     generator.encode_tag_end(name, true)
   end
 
