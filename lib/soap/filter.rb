@@ -7,4 +7,4 @@
 
 
 require 'soap/filter/filterchain'
-require 'soap/filter/filterbase'
+require 'soap/filter/handler'
