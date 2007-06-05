@@ -6,7 +6,7 @@
 # either the dual license version in 2003, or any later version.
 
 
-require 'soap/filter/filterbase'
+require 'soap/filter/handler'
 
 
 module SOAP

@@ -10,7 +10,7 @@ module SOAP
 module Filter
 
 
-class FilterBase
+class Handler
 
   # should return envelope.  opt can be updated for other filters.
   def on_outbound(envelope, opt)

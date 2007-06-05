@@ -23,7 +23,7 @@ class TestFilter < Test::Unit::TestCase
       end
     end
 
-    class ServerFilter1 < SOAP::Filter::FilterBase
+    class ServerFilter1 < SOAP::Filter::Handler
       # 15 -> 30
       def on_outbound(envelope, opt)
         unless envelope.body.is_fault
@@ -41,7 +41,7 @@ class TestFilter < Test::Unit::TestCase
       end
     end
 
-    class ServerFilter2 < SOAP::Filter::FilterBase
+    class ServerFilter2 < SOAP::Filter::Handler
       # 5 -> 15
       def on_outbound(envelope, opt)
         unless envelope.body.is_fault
@@ -102,7 +102,7 @@ class TestFilter < Test::Unit::TestCase
     @client.reset_stream
   end
 
-  class ClientFilter1 < SOAP::Filter::FilterBase
+  class ClientFilter1 < SOAP::Filter::Handler
     # 1 -> 2
     def on_outbound(envelope, opt)
       param = envelope.body.root_node.inparam
@@ -118,7 +118,7 @@ class TestFilter < Test::Unit::TestCase
     end
   end
 
-  class ClientFilter2 < SOAP::Filter::FilterBase
+  class ClientFilter2 < SOAP::Filter::Handler
     # 2 -> 4
     def on_outbound(envelope, opt)
       param = envelope.body.root_node.inparam
