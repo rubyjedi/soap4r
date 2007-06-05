@@ -44,6 +44,7 @@ class TestSOAPTYPE < Test::Unit::TestCase
     unless $DEBUG
       File.unlink(pathname('echo.rb'))
       File.unlink(pathname('echoMappingRegistry.rb'))
+      File.unlink(pathname('echoDriver.rb'))
     end
     @client.reset_stream if @client
   end
