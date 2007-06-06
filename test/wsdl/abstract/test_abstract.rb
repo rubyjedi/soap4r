@@ -140,6 +140,7 @@ class TestAbstract < Test::Unit::TestCase
     assert_equal(author.firstname, ret.firstname)
     assert_equal(author.lastname, ret.lastname)
     assert_equal(author.nonuserid, ret.nonuserid)
+    assert_equal(NonUserAuthor, ret.class)
   end
 
   def test_stub_derived
