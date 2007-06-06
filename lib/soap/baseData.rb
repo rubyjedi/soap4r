@@ -512,6 +512,10 @@ public
     @array
   end
 
+  def have_member
+    !@array.empty?
+  end
+
   def to_obj
     hash = {}
     proptype = {}
@@ -567,33 +571,21 @@ end
 # SOAPElement is not typed so it is not derived from NSDBase.
 class SOAPElement
   include Enumerable
+  include SOAPCompoundtype
 
-  attr_accessor :encodingstyle
-
-  attr_accessor :elename
-  attr_accessor :id
-  attr_reader :precedents
-  attr_accessor :root
-  attr_accessor :parent
-  attr_accessor :position
-  attr_accessor :extraattr
-
-  attr_accessor :qualified
+  attr_accessor :type
+  # Text interface.
+  attr_accessor :text
+  alias data text
 
   def initialize(elename, text = nil)
+    super()
     if !elename.is_a?(XSD::QName)
       elename = XSD::QName.new(nil, elename)
     end
     @encodingstyle = LiteralNamespace
     @elename = elename
-    @id = nil
-    @precedents = []
-    @root = false
-    @parent = nil
-    @position = nil
-    @extraattr = {}
-
-    @qualified = nil
+    @type = nil
 
     @array = []
     @data = []
@@ -605,10 +597,6 @@ class SOAPElement
       (@text ? " #{@text.inspect}" : '') +
       @data.collect { |ele| "\n#{ele.inspect}" }.join.gsub(/^/, '  ')
   end
-
-  # Text interface.
-  attr_accessor :text
-  alias data text
 
   def set(value)
     @text = value
@@ -642,6 +630,10 @@ class SOAPElement
 
   def members
     @array
+  end
+
+  def have_member
+    !@array.empty?
   end
 
   def to_obj
@@ -794,6 +786,10 @@ public
 
   def add(value)
     self[*(@offset)] = value
+  end
+
+  def have_member
+    !@data.empty?
   end
 
   def [](*idxary)
