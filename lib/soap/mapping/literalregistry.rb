@@ -187,19 +187,21 @@ private
   end
 
   def any2obj(node, obj_class = nil)
-    if obj_class
-      definition = schema_definition_from_class(obj_class)
-    else
-      if node.is_a?(::SOAP::SOAPStruct)
-        definition = find_node_definition(node)
-      else
-        definition = schema_definition_from_elename(node.elename)
-      end
-      if definition
-        obj_class = definition.class_for
-      end
+    is_compound = node.is_a?(::SOAP::SOAPCompoundtype)
+    # trust xsi:type first
+    if is_compound and node.type
+      definition = schema_definition_from_type(node.type)
     end
-    if node.is_a?(::SOAP::SOAPElement) or node.is_a?(::SOAP::SOAPStruct)
+    # element name next
+    definition ||= schema_definition_from_elename(node.elename)
+    # class defined in parent type last
+    if obj_class
+      definition ||= schema_definition_from_class(obj_class)
+    end
+    if definition
+      obj_class = definition.class_for
+    end
+    if is_compound
       if definition
         return elesoap2stubobj(node, obj_class, definition)
       else
