@@ -100,8 +100,7 @@ class LiteralHandler < Handler
     # literalHandler (which is used for literal service)
     return nil if data.is_a?(SOAPExternalReference)
     name = generator.encode_name_end(ns, data)
-    cr = (data.is_a?(SOAPCompoundtype) or
-      (data.is_a?(SOAPElement) and !data.members.empty?))
+    cr = (data.is_a?(SOAPCompoundtype) and data.have_member)
     generator.encode_tag_end(name, cr)
   end
 
@@ -116,6 +115,9 @@ class LiteralHandler < Handler
       o = SOAPNil.decode(elename)
     else
       o = SOAPElement.decode(elename)
+    end
+    if definedtype = extraattrs[XSD::AttrTypeName]
+      o.type = ns.parse(definedtype)
     end
     o.parent = parent
     o.extraattr.update(extraattrs)

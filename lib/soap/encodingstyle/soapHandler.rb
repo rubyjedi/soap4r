@@ -72,7 +72,7 @@ class SOAPHandler < Handler
 
   def encode_data_end(generator, ns, data, parent)
     name = generator.encode_name_end(ns, data)
-    cr = data.is_a?(SOAPCompoundtype)
+    cr = (data.is_a?(SOAPCompoundtype) and data.have_member)
     generator.encode_tag_end(name, cr)
   end
 

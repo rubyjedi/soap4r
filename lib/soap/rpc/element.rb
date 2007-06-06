@@ -100,6 +100,10 @@ class SOAPMethod < SOAPStruct
     init_param(@param_def) if @param_def
   end
 
+  def have_member
+    true
+  end
+
   def have_outparam?
     @outparam_names.size > 0
   end
