@@ -737,8 +737,8 @@ class SOAPRawData < SOAPElement
     @obj = obj
   end
 
-  def to_xml
-    @obj.to_xml
+  def to_xmlpart
+    @obj.to_xmlpart
   end
 end
 
@@ -748,7 +748,7 @@ class SOAPREXMLElementWrap
     @ele = ele
   end
 
-  def to_xml
+  def to_xmlpart
     @ele.to_s
   end
 end
