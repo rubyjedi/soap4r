@@ -75,7 +75,7 @@ class TestASPDotNet < Test::Unit::TestCase
 __XML__
     ele = REXML::Document.new(xml)
     assert_equal("Hello Mike", @client.sayHello(ele))
-    def xml.to_xml; to_s; end
+    def xml.to_xmlpart; to_s; end
     assert_equal("Hello Mike", @client.sayHello(xml))
   end
 

@@ -102,7 +102,7 @@ class SOAPBody < SOAPStruct
     @elename = EleBodyName
     @encodingstyle = nil
     if data
-      if data.respond_to?(:to_xml)
+      if data.respond_to?(:to_xmlpart)
         data = SOAP::SOAPRawData.new(data)
       elsif defined?(::REXML) and data.is_a?(::REXML::Element)
         data = SOAP::SOAPRawData.new(SOAP::SOAPREXMLElementWrap.new(data))

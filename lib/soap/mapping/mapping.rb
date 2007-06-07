@@ -120,7 +120,7 @@ module Mapping
   end
 
   def self._obj2soap(obj, registry, type = nil)
-    if obj.respond_to?(:to_xml)
+    if obj.respond_to?(:to_xmlpart)
       SOAPRawData.new(obj)
     elsif defined?(::REXML) and obj.is_a?(::REXML::Element)
       SOAPRawData.new(SOAPREXMLElementWrap.new(obj))

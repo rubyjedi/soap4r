@@ -10,6 +10,7 @@ require 'xsd/ns'
 require 'soap/soap'
 require 'soap/baseData'
 require 'soap/encodingstyle/handler'
+require 'xsd/codegen/gensupport'
 
 
 module SOAP
@@ -20,6 +21,7 @@ module SOAP
 #
 class SOAPGenerator
   include SOAP
+  include XSD::CodeGen::GenSupport
 
   class FormatEncodeError < Error; end
 
@@ -68,8 +70,11 @@ public
   end
 
   def encode_data(ns, obj, parent)
-    if obj.respond_to?(:to_xml)
-      @buf << "\n#{obj.to_xml}"
+    if obj.respond_to?(:to_xmlpart)
+      formatted = trim_eol(obj.to_xmlpart)
+      formatted = trim_indent(formatted)
+      formatted = formatted.gsub(/^/, @indent).sub(/\n+\z/, '')
+      @buf << "\n#{formatted}"
       return
     elsif obj.is_a?(SOAPEnvelopeElement)
       encode_element(ns, obj, parent)
