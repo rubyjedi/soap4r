@@ -62,6 +62,120 @@ class TestSOAP < Test::Unit::TestCase
     end
   end
 
+  def test_SOAPNormalizedString
+    XSD::Charset.module_eval { @encoding_backup = @internal_encoding; @internal_encoding = "NONE" }
+    begin
+      o = SOAP::SOAPNormalizedString.new
+      assert_equal(XSD::Namespace, o.type.namespace)
+      assert_equal(XSD::NormalizedStringLiteral, o.type.name)
+      assert_equal(nil, o.data)
+      assert_equal(true, o.is_nil)
+
+      str = "abc"
+      assert_equal(str, SOAP::SOAPNormalizedString.new(str).data)
+      assert_equal(str, SOAP::SOAPNormalizedString.new(str).to_s)
+      back = SOAP::SOAPString.strict_ces_validation
+      SOAP::SOAPString.strict_ces_validation = true
+      begin
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPNormalizedString.new("\0")
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPNormalizedString.new("\xC0\xC0").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPNormalizedString.new("a\tb").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPNormalizedString.new("a\r").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPNormalizedString.new("\nb").to_s
+        end
+      ensure
+        SOAP::SOAPString.strict_ces_validation = back
+      end
+    ensure
+      XSD::Charset.module_eval { @internal_encoding = @encoding_backup }
+    end
+  end
+
+  def test_SOAPToken
+    XSD::Charset.module_eval { @encoding_backup = @internal_encoding; @internal_encoding = "NONE" }
+    begin
+      o = SOAP::SOAPToken.new
+      assert_equal(XSD::Namespace, o.type.namespace)
+      assert_equal(XSD::TokenLiteral, o.type.name)
+      assert_equal(nil, o.data)
+      assert_equal(true, o.is_nil)
+
+      str = "abc"
+      assert_equal(str, SOAP::SOAPToken.new(str).data)
+      assert_equal(str, SOAP::SOAPToken.new(str).to_s)
+      back = XSD::XSDString.strict_ces_validation
+      XSD::XSDString.strict_ces_validation = true
+      begin
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPToken.new("\0")
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPToken.new("\xC0\xC0").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPToken.new("a\tb").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPToken.new("a\r").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPToken.new("\nb").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPToken.new(" a").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPToken.new("b ").to_s
+        end
+        assert_raises(XSD::ValueSpaceError) do
+          SOAP::SOAPToken.new("a  b").to_s
+        end
+        assert_equal("a b", SOAP::SOAPToken.new("a b").data)
+      ensure
+        XSD::XSDString.strict_ces_validation = back
+      end
+    ensure
+      XSD::Charset.module_eval { @internal_encoding = @encoding_backup }
+    end
+  end
+
+  def test_SOAPLanguage
+    o = SOAP::SOAPLanguage.new
+    assert_equal(XSD::Namespace, o.type.namespace)
+    assert_equal(XSD::LanguageLiteral, o.type.name)
+    assert_equal(nil, o.data)
+    assert_equal(true, o.is_nil)
+
+    str = "ja"
+    assert_equal(str, SOAP::SOAPLanguage.new(str).data)
+    assert_equal(str, SOAP::SOAPLanguage.new(str).to_s)
+    str = "ja-jp"
+    assert_equal(str, SOAP::SOAPLanguage.new(str).data)
+    assert_equal(str, SOAP::SOAPLanguage.new(str).to_s)
+    assert_raises(XSD::ValueSpaceError) do
+      SOAP::SOAPLanguage.new("ja-jp-")
+    end
+    assert_raises(XSD::ValueSpaceError) do
+      SOAP::SOAPLanguage.new("-ja-")
+    end
+    assert_raises(XSD::ValueSpaceError) do
+      SOAP::SOAPLanguage.new("ja-")
+    end
+    assert_raises(XSD::ValueSpaceError) do
+      SOAP::SOAPLanguage.new("a1-01")
+    end
+    assert_equal("aA-01", SOAP::SOAPLanguage.new("aA-01").to_s)
+  end
+
   def test_SOAPBoolean
     o = SOAP::SOAPBoolean.new
     assert_equal(XSD::Namespace, o.type.namespace)

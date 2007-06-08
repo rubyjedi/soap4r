@@ -239,6 +239,24 @@ class SOAPString < XSD::XSDString
   SOAPENCType = QName.new(EncodingNamespace, StringLiteral)
 end
 
+class SOAPNormalizedString < XSD::XSDNormalizedString
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, NormalizedStringLiteral)
+end
+
+class SOAPToken < XSD::XSDToken
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, TokenLiteral)
+end
+
+class SOAPLanguage < XSD::XSDLanguage
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, LanguageLiteral)
+end
+
 class SOAPBoolean < XSD::XSDBoolean
   include SOAPBasetype
   extend SOAPModuleUtils
