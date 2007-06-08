@@ -101,7 +101,6 @@ class TestXSD < Test::Unit::TestCase
     end
   end
 
-=begin not implemented for now
   def test_XSDNormalizedString
     XSD::Charset.module_eval { @encoding_backup = @internal_encoding; @internal_encoding = "NONE" }
     begin
@@ -186,23 +185,35 @@ class TestXSD < Test::Unit::TestCase
     ensure
       XSD::Charset.module_eval { @internal_encoding = @encoding_backup }
     end
-
-    def test_XSDLanguage
-      o = XSD::XSDLanguage.new
-      assert_equal(XSD::Namespace, o.type.namespace)
-      assert_equal(XSD::LanguageLiteral, o.type.name)
-      assert_equal(nil, o.data)
-      assert_equal(true, o.is_nil)
-
-      str = "ja"
-      assert_equal(str, XSD::XSDLanguage.new(str).data)
-      assert_equal(str, XSD::XSDLanguage.new(str).to_s)
-      assert_raises(XSD::ValueSpaceError) do
-        XSD::XSDLanguage.new("jb")
-      end
-    end
   end
-=end
+
+  def test_XSDLanguage
+    o = XSD::XSDLanguage.new
+    assert_equal(XSD::Namespace, o.type.namespace)
+    assert_equal(XSD::LanguageLiteral, o.type.name)
+    assert_equal(nil, o.data)
+    assert_equal(true, o.is_nil)
+
+    str = "ja"
+    assert_equal(str, XSD::XSDLanguage.new(str).data)
+    assert_equal(str, XSD::XSDLanguage.new(str).to_s)
+    str = "ja-jp"
+    assert_equal(str, XSD::XSDLanguage.new(str).data)
+    assert_equal(str, XSD::XSDLanguage.new(str).to_s)
+    assert_raises(XSD::ValueSpaceError) do
+      XSD::XSDLanguage.new("ja-jp-")
+    end
+    assert_raises(XSD::ValueSpaceError) do
+      XSD::XSDLanguage.new("-ja-")
+    end
+    assert_raises(XSD::ValueSpaceError) do
+      XSD::XSDLanguage.new("ja-")
+    end
+    assert_raises(XSD::ValueSpaceError) do
+      XSD::XSDLanguage.new("a1-01")
+    end
+    assert_equal("aA-01", XSD::XSDLanguage.new("aA-01").to_s)
+  end
 
   def test_XSDBoolean
     o = XSD::XSDBoolean.new

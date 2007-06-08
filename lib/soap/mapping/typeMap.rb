@@ -13,6 +13,9 @@ TypeMap = {
   XSD::XSDAnySimpleType::Type => SOAPAnySimpleType,
 
   XSD::XSDString::Type => SOAPString,
+  XSD::XSDNormalizedString::Type => SOAPNormalizedString,
+  XSD::XSDToken::Type => SOAPToken,
+  XSD::XSDLanguage::Type => SOAPLanguage,
   XSD::XSDBoolean::Type => SOAPBoolean,
   XSD::XSDDecimal::Type => SOAPDecimal,
   XSD::XSDFloat::Type => SOAPFloat,
@@ -46,6 +49,9 @@ TypeMap = {
 
   # soap4r does not use soapenc types actively but it should be accepted.
   SOAP::SOAPString::SOAPENCType => SOAPString,
+  SOAP::SOAPNormalizedString::Type => SOAPNormalizedString,
+  SOAP::SOAPToken::Type => SOAPToken,
+  SOAP::SOAPLanguage::Type => SOAPLanguage,
   SOAP::SOAPBoolean::SOAPENCType => SOAPBoolean,
   SOAP::SOAPDecimal::SOAPENCType => SOAPDecimal,
   SOAP::SOAPFloat::SOAPENCType => SOAPFloat,

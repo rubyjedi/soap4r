@@ -46,8 +46,8 @@ AnyURILiteral = 'anyURI'
 QNameLiteral = 'QName'
 
 NormalizedStringLiteral = 'normalizedString'
-#3.3.2 token
-##3.3.3 language
+TokenLiteral = 'token'
+LanguageLiteral = 'language'
 #3.3.4 NMTOKEN
 #3.3.5 NMTOKENS
 #3.3.6 Name
@@ -1007,10 +1007,48 @@ class XSDNormalizedString < XSDString
 private
 
   def screen_data(value)
+    super
     if /[\t\r\n]/ =~ value
       raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
     end
+    value
+  end
+end
+
+class XSDToken < XSDNormalizedString
+  Type = QName.new(Namespace, TokenLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
     super
+    if /\A / =~ value or / \Z/ =~ value or value.index('  ')
+      raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
+    end
+    value
+  end
+end
+
+class XSDLanguage < XSDToken
+  Type = QName.new(Namespace, LanguageLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    super
+    # RFC 3066 syntax check
+    if /\A[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})?\z/ !~ value
+      raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
+    end
+    value
   end
 end
 
