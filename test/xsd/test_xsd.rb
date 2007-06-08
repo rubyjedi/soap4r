@@ -101,6 +101,7 @@ class TestXSD < Test::Unit::TestCase
     end
   end
 
+=begin not implemented for now
   def test_XSDNormalizedString
     XSD::Charset.module_eval { @encoding_backup = @internal_encoding; @internal_encoding = "NONE" }
     begin
@@ -201,6 +202,7 @@ class TestXSD < Test::Unit::TestCase
       end
     end
   end
+=end
 
   def test_XSDBoolean
     o = XSD::XSDBoolean.new
