@@ -685,23 +685,41 @@ class SOAPElement
     }
   end
 
+  # when obj is a Hash or an Array:
+  #   when key starts with "xmlattr_":
+  #     value is added as an XML attribute with the key name however the
+  #     "xmlattr_" is dropped from the name.
+  #   when key starts with "xmlele_":
+  #     value is added as an XML element with the key name however the
+  #     "xmlele_" is dropped from the name.
+  #   if else:
+  #     value is added as an XML element with the key name.
   def self.from_obj(obj, namespace = nil)
     o = SOAPElement.new(nil)
     case obj
     when nil
       o.text = nil
     when Hash, Array
-      obj.each do |elename, value|
+      obj.each do |name, value|
+        addname, is_attr = parse_name(name, namespace)
         if value.is_a?(Array)
           value.each do |subvalue|
-            child = from_obj(subvalue, namespace)
-            child.elename = to_elename(elename, namespace)
-            o.add(child)
+            if is_attr
+              o.extraattr[addname] = subvalue
+            else
+              child = from_obj(subvalue, namespace)
+              child.elename = addname
+              o.add(child)
+            end
           end
         else
-          child = from_obj(value, namespace)
-          child.elename = to_elename(elename, namespace)
-          o.add(child)
+          if is_attr
+            o.extraattr[addname] = value
+          else
+            child = from_obj(value, namespace)
+            child.elename = addname
+            o.add(child)
+          end
         end
       end
     else
@@ -710,7 +728,20 @@ class SOAPElement
     o
   end
 
-  def self.to_elename(obj, namespace = nil)
+  def self.parse_name(obj, namespace = nil)
+    qname = to_qname(obj, namespace)
+    if /\Axmlele_/ =~ qname.name
+      qname = XSD::QName.new(qname.namespace, qname.name.sub(/\Axmlele_/, ''))
+      return qname, false
+    elsif /\Axmlattr_/ =~ qname.name
+      qname = XSD::QName.new(qname.namespace, qname.name.sub(/\Axmlattr_/, ''))
+      return qname, true
+    else
+      return qname, false
+    end
+  end
+
+  def self.to_qname(obj, namespace = nil)
     if obj.is_a?(XSD::QName)
       obj
     elsif /\A(.+):([^:]+)\z/ =~ obj.to_s
