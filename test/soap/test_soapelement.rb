@@ -114,6 +114,24 @@ class TestSOAPElement < Test::Unit::TestCase
     source = nil
     assert_equal(nil, SOAPElement.from_obj(source).to_obj)
   end
+
+  def test_from_obj_xmlattr
+    source = { "xmlattr_c1" => "t1",
+      "ymlattr_c2" => {
+        XSD::QName.new("urn:foo", "xmlattr_c2") => "t2",
+        XSD::QName.new("urn:foo", "ymlattr_c3") => "t3" }}
+    obj = SOAPElement.from_obj(source)
+    assert_equal("t1", obj.extraattr[XSD::QName.new(nil, "c1")])
+    assert_equal("t2", obj["ymlattr_c2"].extraattr[XSD::QName.new("urn:foo", "c2")])
+    assert_equal("t3", obj["ymlattr_c2"]["ymlattr_c3"].text)
+    #
+    source = { "xmlattr_xmlattr_c1" => "t1",
+      "xmlele_xmlattr_c2" => {
+        XSD::QName.new("urn:foo", "xmlele_xmlele_c3") => "t3" }}
+    obj = SOAPElement.from_obj(source)
+    assert_equal("t1", obj.extraattr[XSD::QName.new(nil, "xmlattr_c1")])
+    assert_equal("t3", obj["xmlattr_c2"]["xmlele_c3"].text)
+  end
 end
 
 
