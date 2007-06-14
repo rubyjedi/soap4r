@@ -28,8 +28,8 @@ h1 {
 
 h2 {
     color: #666;
-    background: white;
-    margin-top: 2em;
+    background: #ddd;
+    margin-top: 3ex;
 }
 
 h2 span.content {
@@ -41,8 +41,8 @@ h2 span.content {
 
 h3 {
     color: #666;
-    background: white;
-    margin-top: 0ex;
+    background: #ddd;
+    margin-top: 2ex;
 }
 
 h3 span.content {
@@ -88,7 +88,7 @@ address {
 }
 
 pre {
-    font-size: 80%;
+    font-size: 90%;
     border-style: inset;
     border-width: 1px;
     border-color: #666;

@@ -4,7 +4,7 @@
     "DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <link rev="MADE" href="mailto:nahi@ruby-lang.org" />
 <link rel="StyleSheet" href="rubyStyle.css" type="text/css" media="screen" />
@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: Sep 15, 2005<br />
+Last modified: Jun 14, 2007<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.5.5
+Target SOAP4R version: SOAP4R/1.5.6
 </p>
 
 <ol>
@@ -43,7 +43,6 @@ Target SOAP4R version: SOAP4R/1.5.5
 <li><a href="#whats">What is SOAP4R?</a></li>
 <li><a href="#dependencies">Dependencies</a></li>
 <li><a href="#samples">Samples</a></li>
-<li><a href="#restrictions">Restrictions</a></li>
 <li><a href="#resources">Resources</a></li>
 <li><a href="#history">History</a></li>
 <li><a href="#author">Author</a></li>
@@ -53,56 +52,203 @@ Target SOAP4R version: SOAP4R/1.5.5
 <h2 id="changes" name="changes"><span class="content">1. Changes</span></h2>
 
 <p>
-Here are changes in 1.5.5 from 1.5.4. 
+Here are changes in 1.5.6 from 1.5.5.
 </p>
-<ul><li>SOAP
-<ul><li>allow to configure an envelope namespace of SOAP request. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/124" title="configuable envelope namespace (closed)">#124</a>)
-<pre class="wiki">TemporaryNamespace = 'http://www.w3.org/2003/05/soap-envelope'
-@client.options[&#34;soap.envelope.requestnamespace&#34;] = TemporaryNamespace
-@client.options[&#34;soap.envelope.responsenamespace&#34;] = TemporaryNamespace
-@client.do_proc(...)
-</pre>
-</li><li>let SOAP request XML indent space configuable.  see "soap.envelope.no_indent" option. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/130" title="A server dislike indent spaces in XML instance (closed)">#130</a>)
-
-</li><li>let external CES configuable.  ex. client["soap.mapping.external_ces"] = 'SJIS'.  $KCODE is used by default. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/133" title="let $KCODE free (closed)">#133</a>)
-<pre class="wiki">external CES ::= CES used in Ruby object of client and server
-internal CES ::= CES used in SOAP/OM
-</pre>
-</li><li>add iso-8859-1 external CES support. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/106" title="iso-8859-1 encoded response (closed)">#106</a>)
-</li><li>fixed illegal 'qualified' handling of elements.  it caused ASP.NET inteoperability problem. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/144" title="soap4r and ASP.NET problems about 'qualified' (closed)">#144</a>)
-</li><li>added 'soap.envelope.use_numeric_character_reference' (boolean) option to let query XML use numeric character reference in XML, not plain UTF-8 character.  GoogleSearch server seems to not allow plain UTF-8 character since 2005-08-15 update. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/147" title="GoogleWebSearch does not work with UTF-8 query (closed)">#147</a>)
-</li><li>SOAP::Header::SimpleHeader (de)serialization throws an exception on SimpleHeader.on_(in|out)bound when header is a String.  so we could not use a simple single element headerItem.  fixed.  thanks to emil. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/129" title="SOAP::Header::SimpleHeader deserialization throws on ... (closed)">#129</a>)
-
-</li><li>out parameter of rpc operation did not work.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/132" title="outparameter causes NameError (closed)">#132</a>)
-</li><li>follow HTTP redirect only if using http-access2.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/125" title="follow http/https redirection (closed)">#125</a>) (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/145" title="an error from streamHandler.rb:37 that claims an uninitialized constant ... (closed)">#145</a>)
-</li><li>add a workaround for importing an WSDL whose path begins with drive letter.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/115" title="RuntimeError: Cannot connect to ... (closed)">#115</a>)
-</li></ul></li><li>WSDL
-<ul><li>SOAP Data which is defined as a simpletype was not mapped correctly to Ruby obj when using wsdl2ruby.rb generated classdef file. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/123" title="soap4r mapping problem when using google adwords api (closed)">#123</a>)
-</li><li>rpc/literal support. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/118" title="soap encoding is used for rpc/literal services (closed)">#118</a>)
-
-</li><li>re-implemented local element qualify/unqualify control.  handles elementFormDefault and form in WSDL.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/119" title="Cannot talk to doc/literal service which is has ... (closed)">#119</a>)
-</li><li>Array of an element which has simpleType causes a crash. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/128" title="Array of a element which has simpleType causes a crash (closed)">#128</a>)
-</li><li>prarmeterOrder may not contain return part so it can be shorter than parts size.  Thanks to Hugh.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/139" title="prarmeterOrder may not contain return part (closed)">#139</a>)
-</li></ul></li><li>Samples
-<ul><li>added BasicAuth client sample. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/117" title="add BasicAuth sample not only in test dir but also in sample dir (closed)">#117</a>)
-</li><li>added Base64 client/server sample.
-</li><li>added Flickr SOAP interface client sample. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/122" title="Flickr SOAP API support (closed)">#122</a>)
-
-</li><li>added SalesForce client sample. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/135" title="how to set session id in SOAP header (sforce WSDL) (closed)">#135</a>)
-</li><li>updated Thawte CA certificate for GoogleAdWords sample.
-</li><li>updated a client script with the newer version made by Johan.  thanks!
-</li><li>shortened long file names. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/120" title="long file name (closed)">#120</a>)
-</li><li>fixed typo in authheader sample. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/129" title="SOAP::Header::SimpleHeader deserialization throws on ... (closed)">#129</a>)
-</li><li>updated deprecated method usage.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/138" title="create_driver in sample should be replaced with create_rpc_driver (closed)">#138</a>)
+<ul><li>SOAP/Ruby mapping
+<ul><li>specify sending XML document over SOAP by REXML::Element or to_xmlproc -able object. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/21" title="send XML Document over SOAP (closed)">#21</a>)
+</li><li>encode or decode of single basetype parameter according to type definition in rpc/encoded service. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/14" title="wsdlRouter: return value must be converted to the specified element name (closed)">#14</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/98" title="param_def for rpc service (closed)">#98</a>)
+</li><li>determining rpc method paramaters and outputs at runtime with MethodDefCreator" rel="nofollow">MethodDefCreator#{collect_rpcparameter|collect_documentparameter} (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/142" title="Determining rpc method paramaters and outputs at runtime (closed)">#142</a>)
+</li><li>support an array element name other than 'item' in document/literal service. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/150" title="SOAP::FaultError - Index was outside the bounds of the array (closed)">#150</a>)
+</li><li>let document/literal service proxy generated by
+WSDLDriverFactory accept key-value pair array of array ([['k1', 'v1'],
+...]) as same as a hash ({'k1' =&gt; 'v1', ...}). (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/156" title="consider to add ordering support for simple Ruby &lt;-&gt; XML interface (closed)">#156</a>)
+</li><li>allow an XSD::QName as a value of extraattr such as &lt;elename xmlns:n1="urn:valuenamespace"&gt;n1:value&lt;/elename&gt;. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/157" title="QName as a value (closed)">#157</a>)
+</li><li>SwA and doc/lit service. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/165" title="SwA and doc/lit service (closed)">#165</a>)
+</li><li>allow to define an empty SOAP Body service.  Thanks, emil.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/174" title="Minor change in SOAP::RPC::Driver.add_document_method (closed)">#174</a>)
+</li><li>method overloading support. allow to define methods which have
+same name and different signatures, and let Router invoke a method
+according to SOAPAction. you need to define methods with different
+SOAPAction. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/233" title="Method overloading and generated drivers (closed)">#233</a>)
+</li><li>let Driver#generate_explicit_type work for ltieral service, too. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/234" title="generate_explicit_type for ltieral service (closed)">#234</a>)
+</li><li>get the raw XML from the response.  you get a result as an XML string when you set Driver#return_response_as_xml = true.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/250" title="get the raw XML from the response (closed)">#250</a>)
+</li><li>do not validate CES of String by default to avoid consuming
+memory. let XML processor check it instead. (you can turn it on by
+XSD::XSDString.strict_ces_check = true) (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/265" title="String encoding validation (closed)">#265</a>)
+</li><li>allow SOAP::Mapping::Object to dump/load with marshal_dump/marshal_load. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/266" title="SOAP::Mapping::Object: 'singleton can't be dumped' (closed)">#266</a>)
+</li><li>handle CDATA correctly with xmlscan and rexml (only xmlparser worked). (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/332" title="CDATA in response (closed)">#332</a>)
+</li><li>defined omit element / xsi:nil="true" elemet control. nil
+means xsi:nil="true" for encoded service and nil means element omission
+for literal service. pass SOAPNil.new to pass xsi:nil="true" for
+literal service. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/343" title="omit element / xsi:nil=&quot;true&quot; elemet control (closed)">#343</a>)
+</li><li>one-way service support. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/200" title="one-way service support (`dump_method': undefined method `soapbody_use'  ... (closed)">#200</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/346" title="oneway service + WSDLDriverFactory (closed)">#346</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/347" title="Onewy service should return 202 Accepted / service client should accept it (closed)">#347</a>)
+</li><li>offer clearly defined message interceptor API. see test/soap/filter for more detail. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/350" title="offer clearly defined message interceptor API (chain) (closed)">#350</a>)
+</li><li>SOAPElement.from_obj(obj): allow to set XML attribute. this
+method is called when you pass a Hash or [['key1', 'value1'], ...] to
+literal service so you can easily add XML attribute to a request. see <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/331" title="attributes with namespaces (closed)">#331</a> for more detail. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/331" title="attributes with namespaces (closed)">#331</a>)
+</li></ul></li></ul><ul><li>Payload
+<ul><li>merged a patch from Ernie that enables httpserver to serve WSDL. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/161" title="merge a patch that enables httpserver to serve WSDL (closed)">#161</a>)
+</li><li>allow user to set own streamhandler of a SOAP::RPC::Driver. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/180" title="Create a request and pipe it to another program (closed)">#180</a>)
+</li><li>let Driver#test_loopback_response work under soap4r + net/http. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/181" title="Driver#test_loopback_response under soap4r + net/http (closed)">#181</a>)
+</li><li>allow to define basic_auth parameters with property file. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/198" title="define basic_auth with property file (closed)">#198</a>)
+</li><li>follow HTTP redirection even with net/http. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/280" title="Follow HTTP redirection even with net/http (closed)">#280</a>)
+</li><li>[ruby-Bugs-7532] make SOAP::HTTPStreamHandler handle gzipped content.  Thanks, John Anderson.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/310" title="[ ruby-Bugs-7532 ] patch to make SOAP::HTTPStreamHandler handle gzipped  ... (closed)">#310</a>)
+</li></ul></li></ul><ul><li>SOAP format
+<ul><li>SOAP actor name can be set through HeaderHandler. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/19" title="actor support (closed)">#19</a>)
+</li><li>support xsd:token and xsd:language. Thanks, Jirka Pech. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/252" title="Complete implementation of data types (xsd, soap) (closed)">#252</a>)
+</li><li>let XSD::QName immutable. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/274" title="let XSD::QName immutable (closed)">#274</a>)
+</li><li>allow Header::Handler to access SOAPHeader from inside of on_outbound. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/354" title="sending Empty SOAPHeader (closed)">#354</a>)
+</li></ul></li></ul><ul><li>WSDL
+<ul><li>support &lt;xsd:list&gt; of &lt;xsd:simpleType&gt;. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/3" title="&lt;xsd:list&gt; of &lt;xsd:simpleType&gt; (closed)">#3</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/248" title="String should be allowed xsd:list of xsd:simpleType (closed)">#248</a>)
+</li><li>support &lt;xsd:union&gt; of memberTypes. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/6" title="&lt;xsd:union&gt; of memberTypes (closed)">#6</a>)
+</li><li>support &lt;xsd:extension&gt; for &lt;xsd:complexContent&gt;. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/72" title="&lt;xsd:extension&gt; support for &lt;xsd:complexContent&gt; (closed)">#72</a>)
+</li><li>support &lt;any&gt;. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/148" title="SForce sample:  how to create? (closed)">#148</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/155" title="&lt;any&gt; support (closed)">#155</a>)
+</li><li>support &lt;xsd:restriction&gt; for &lt;xsd:complexContent&gt;. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/167" title="&lt;xsd:restriction&gt; support for &lt;xsd:complexContent&gt; (closed)">#167</a>)
+</li><li>support &lt;choice&gt;. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/168" title="&lt;choice&gt; support (closed)">#168</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/205" title="sequence of choice not supported (was Unable to parse wsdl) (closed)">#205</a>)
+</li><li>support simpleContent + attribute extension. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/176" title="simpleContent + attribute extension (closed)">#176</a>)
+</li><li>generate Array classdef for maxOccurs="unbounded" element. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/182" title="classdef generation of element(untyped) array (closed)">#182</a>)
+</li><li>support minLength and maxLength attributes. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/185" title="support minLength and maxLength attributes (closed)">#185</a>)
+</li><li>support abstract attribute of complexTypes. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/195" title="wsdl2rb should not ignore the &quot;abstract&quot; attribute of complexTypes (closed)">#195</a>)
+</li><li>moved @@schema_* things in classdef definition generated by
+wsdl2ruby.rb to mapping registry. Mapping registries for each classdef
+are defined in independent file and required from driver and server.
+NOTE: old classdef files should still work but it should be
+re-generated by new wsdl2ruby.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/175" title="move @@schema_* things to MappingRegistry (closed)">#175</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/267" title="Missing 'wsdl/soap/literalMappingRegistryCreator' in driverCreator.rb (closed)">#267</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/270" title="respect ruby namespaces (closed)">#270</a>) 
+</li><li>support wsdl:fault definitions.  Thanks, Peter Gardfjall. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/319" title="[PATCH] correct handling of wsdl:fault definitions (closed)">#319</a>)
+</li></ul></li></ul><ul><li>Samples
+<ul><li>add a demo how to call from Excel a simple soap service running
+in apache (sample/soap/mssoap/) Thanks, an 'anonymous contributor from
+Wall St.' (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/143" title="a self contained example how to setup apache web server to service a wsdl  ... (closed)">#143</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/154" title="add a demo how to call from Excel a simple soap service running in apache (closed)">#154</a>)
+</li><li>a sample to send an integer as Long type. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/160" title="add a sample to send an integer as Long type (closed)">#160</a>)
+</li><li>an eBaySvc sample by Greg. Thanks! (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/183" title="add eBaySvc sample by Greg (closed)">#183</a>)
+</li><li>basicauth client + server sample. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/249" title="basicauth server sample (closed)">#249</a>)
+</li><li>cookie client + server sample. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/321" title="client + cookie sample (closed)">#321</a>)
+</li></ul></li></ul><ul><li>misc
+<ul><li>add a --prefix option in install.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/255" title="support for a --prefix option in install.rb (closed)">#255</a>)
+</li><li>warn misusage of lib/wsdl/soap/wsdl2ruby.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/339" title="warn misusage of lib/wsdl/soap/wsdl2ruby.rb (closed)">#339</a>)
+</li><li>wsdl2ruby --classdef could have an optional classname argument. Thanks, P@.  (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/173" title="wsdl2ruby --classdef could have an optional classname argument  (closed)">#173</a>)
+</li><li>putting the classes that support a web service into a service-specific module.  check --module_path (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/279" title="putting the classes that support a web service into a service-specific  ... (closed)">#279</a>)
+</li></ul></li></ul><ul><li>Bug fixes
+<ul><li>SOAP/Ruby mapping: <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/184" title="undefined method `each' for  #&lt;SOAP::SOAPString:0x405d8eec&gt;  ... (closed)">#184</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/186" title="xml document with a class tag seems to cause infinite loop (closed)">#186</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/187" title="Axis enumerations and soap4r (closed)">#187</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/188" title="AWSECommerceService client sample raises &quot;unknown class/module: Header&quot; (closed)">#188</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/190" title="salesforce.com - undefined string maps to #&lt;SOAP::Mapping::Object:0x...&gt;  ... (closed)">#190</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/220" title="'.' in Method names produces an exception (closed)">#220</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/224" title="huge memory usage with the Ebay API (closed)">#224</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/225" title="`struct2soap': You have a nil object when you didn't expect it! (closed)">#225</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/226" title="a problem about extraattr when using SOAP::SOAPHeaderItem (closed)">#226</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/228" title="@@schema_element does not work in rpc service (closed)">#228</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/229" title="Incorrect obj2soap mapping (Case-Sensitivity) (closed)">#229</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/230" title="arrayType default namespace seems wrong (closed)">#230</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/238" title="rpc serialize + @@schema_element definition in class causes mapping error:  ... (closed)">#238</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/241" title="do not dump XML attribute which value is nil (closed)">#241</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/242" title="handling anonymous class crashes under Ruby/1.9 (closed)">#242</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/254" title="parameter is not submitted if &quot;name&quot; attribute contains uppercase  ... (closed)">#254</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/268" title="Allow safe method names with =, ?, !, or self. (closed)">#268</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/289" title="unqualified element generated from Hash parameter (closed)">#289</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/302" title="soap4r will redefine &quot;class&quot; (closed)">#302</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/311" title="Bad extraattr in Envelope, Body and Header (closed)">#311</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/312" title="Generator not working with HeaderItem childs. (closed)">#312</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/316" title="false children get dropped and not added to SOAP request (closed)">#316</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/328" title="xsd:date + WSDL generated stub (closed)">#328</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/333" title="[PATCH] MappingRegistryCreator missing require (closed)">#333</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/336" title="Element must have no character or element information item [children] (closed)">#336</a>
+</li><li>Payload: <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/172" title="Converter not found: X_ISO_8859_1 -&gt; UTF8  ... (closed)">#172</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/215" title="improved end-of-line handling withing MIME messages (closed)">#215</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/236" title="netHttpClient.rb + no_proxy bug (closed)">#236</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/264" title="intermittent error: &quot;get_status must be called at the beginning of a  ... (closed)">#264</a>
+</li><li>SOAP format: <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/177" title="SOAP Fault Codes support (closed)">#177</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/237" title="cannot parse xml:lang etc in SOAP response (closed)">#237</a>
+</li><li>WSDL: <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/151" title="soap4r-1_5_5 wsdl2ruby.rb fails (elementFormDefault (closed)">#151</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/152" title="add_elements2stubobj -- elename may not be set (closed)">#152</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/158" title="wsdl2ruby fails to generate a class definition (closed)">#158</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/162" title="parameters are set to nil in request SOAP envelope (closed)">#162</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/163" title="WSDL2Ruby generates module definition for simpleType enumeration twice (closed)">#163</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/169" title="wsdl2ruby should support proxy when wsdl location is a URL (closed)">#169</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/170" title="wsdl2ruby.rb cannot handle WSDL using soapenc:* types (closed)">#170</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/178" title="wsdl2ruby.rb may generate illegal derived class definition for  ... (closed)">#178</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/189" title="WSDLLiteralRegistry wrongly decodes empty string and nil to  ... (closed)">#189</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/191" title="Problem with the documentliteral/echo.wsdl (closed)">#191</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/194" title="extending types seems to confuse wsdl2rb (closed)">#194</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/199" title="Abstract WSDL definition(no binding) causes NameError (closed)">#199</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/201" title="undefined method `namespace' for nil:NilClass (NoMethodError) from  ... (closed)">#201</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/203" title="classes not defined for simple types using restriction base (closed)">#203</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/204" title="when xsd: is not specified wsdl2ruby generates a wrong method (closed)">#204</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/216" title="Case-Sensitivity in WSDL Driver (closed)">#216</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/227" title="undefined method `ports' for nil:NilClass (NoMethodError) in wsdl2ruby.rb (closed)">#227</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/231" title="classDefCreator fails with simpleContent extension (closed)">#231</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/232" title="WSDLLiteralRegistry fails to map XML instance to Array: element override (closed)">#232</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/239" title="Possible patch to wsdl/soap/mappingRegistryCreator.rb (closed)">#239</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/240" title="accessing doc-lit service returns [response] only in Ruby/1.9 (closed)">#240</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/245" title="schema import location is not inherited (closed)">#245</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/246" title="not all portType are bound in the given WSDL (closed)">#246</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/247" title="name attribute of wsdl:operation should not be qualified (closed)">#247</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/258" title="PayPal WSDL generates an error (closed)">#258</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/260" title="'form=&quot;unqualified&quot;' (closed)">#260</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/262" title="no parameters generated in classes for extensions in complex types (closed)">#262</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/263" title="patch for #262 (closed)">#263</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/267" title="Missing 'wsdl/soap/literalMappingRegistryCreator' in driverCreator.rb (closed)">#267</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/271" title="wsdl2ruby.rb generates duplicated class definitions (closed)">#271</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/272" title="choice definition breakage in encoded service (closed)">#272</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/273" title="wsdl2ruby.rb --classdef argument not explained in usage (closed)">#273</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/275" title="problem with receiving subclasses using wsdl2ruby (closed)">#275</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/284" title="wsdl2rb produces incomplete mapping (closed)">#284</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/285" title="illegal mapping definition about a type 'xsd:schema' (closed)">#285</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/300" title="Problem in Port Init (closed)">#300</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/304" title="Marshalling of simple data types ends up with the wrong data type in Ruby (closed)">#304</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/306" title="String subclass is generated wrongly from simpleContent (closed)">#306</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/309" title="Bug in complexContent.rb (closed)">#309</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/313" title="wsdl2ruby exception with Google Adwords AdService.xml (closed)">#313</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/317" title="value cannot be resolved (closed)">#317</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/322" title="xsd2ruby generates BadURIError (closed)">#322</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/325" title="part: value cannot be resolved (RuntimeError) (closed)">#325</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/326" title="inheritance hierarchy not maintained from wsdl, problems with complexType  ... (closed)">#326</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/327" title="wsdl2ruby: fatal - undefined method `namespace' for  ... (closed)">#327</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/335" title="issues when generating a mapping registry, specifically; a literal mapping  ... (closed)">#335</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/337" title="wsdl2ruby produces code that overrides system classes (closed)">#337</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/342" title="EncodingStyle not supported (closed)">#342</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/344" title="ref + min/maxOccurs does not work (closed)">#344</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/348" title="XSD::ValueSpaceError when SOAP response contains empty elements (closed)">#348</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/349" title="ClassDefCreator must sort complextypes: base class first, derived classes  ... (closed)">#349</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/352" title="abstract type is added to the Mapping Registry, which causes malfunction (closed)">#352</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/353" title="private method `sub' called for #&lt;XSD::QName:...XMLSchema}anyType&gt;  ... (closed)">#353</a>
+</li><li>misc: <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/153" title="warnings in test such as: WSDLDriverFactory#create_driver is depricated.   ... (closed)">#153</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/192" title="GoogleAdwords Sample doesn't work (closed)">#192</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/251" title="typo: 'depricated' in wsdlDriver.rb (closed)">#251</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/277" title="rubygems xml parser fallback broken due to rubygems 'require' bug (closed)">#277</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/282" title="wsdl2ruby.rb argument order dependency (closed)">#282</a>,
+<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/329" title="property file and non UTF-8 encoding chars (closed)">#329</a>
 </li></ul></li></ul>
 
 <p>
-For details, see ChangeLog.
+Thanks to all of soap4r-ml members and soap4r users for their support.
+And special thanks to following contributors;
 </p>
-
-<p>
-Thanks to all of soap4r ML members and soap4r users for their support.
-</p>
+<pre>
+'Aaron Pfeifer' for contributing a patch for safemethodname.
+'Andi Wundsam' for contributing a patch for net/http + no_proxy.
+'anonymous contributor from Wall St.' for contributing a MSSOAP + Excel sample.
+'Emil Marceta' for contributing a patch for one-way service support.
+'Ernie' for contributing a helloworld WSDL sample and WSDL service feature of HTTPServer.
+'Felipe Contreras' for contributing an union + memberType sample and patches for missing 'require'.
+'Greg Lappen' for contributing an eBaySvc sample.
+'Ger Apeldoorn' for contributing a sample of complex type + MIME attachment.
+'Jamie Herre' for contributing a SwA implementation.
+'John Anderson' for contributing a patch for handling gzipped HTTP content.
+'Junichi Uekawa' for contributing a HTTP redirection patch for net/http.
+'Kent Sibilev' for contributing a patch for correct extraattr handling of SOAPHeaderItem.
+'Leo邸 Bitto' for contributing a patch for XML pretty print.
+'Michael Neumann' for contributing an original implementation of standaloneServer.
+'Oliver M. Bolzer' for contributing a patch for net/http + SSL.
+'Owen Fraser-Green' for contributing a patch for MIME CRLF handling.
+'Patrick Chanezon' for contributing a patch for wsdl2ruby classdef name option.
+'Peter Gardfj辰l' for contributing a patch for wsdl:fault handling.
+'Sandi Metz' for contributing a patch for SwA in document/literal service.
+'SHINAGAWA, Norihide' for contributing a patch for emx platform.
+'Tadayoshi Funaba' for contributing a patch for date/time XMLSchema datatypes.
+'UENO Katsuhiro' for xmlscan implementation.
+'Walter Korman' for contributing soap4r.gemspec and a workaround patch for gem's require problem.
+'wrex' for contributing a patch for soap4r to work with SalesForce service.
+</pre>
 
 <h2 id="install" name="install"><span class="content">2. Install</span></h2>
 
@@ -174,11 +320,8 @@ You have to install Ruby itself.
 Ruby/1.6 series or later is required.
 </p>
 <ul>
-  <li>ruby-1.8.2</li>
-  <li>ruby-1.8.1</li>
+  <li>ruby-1.8.6</li>
   <li>ruby-1.6.8</li>
-  <li>developing version of ruby-1.9.x at Ruby's CVS repository(HEAD)</li>
-  <li>developing version of ruby-1.8.x at Ruby's CVS repository(ruby_1_8)</li>
 </ul>
 
 <p>
@@ -187,7 +330,7 @@ SOAP4R depends on following Ruby modules in
 You also have to install these modules to use SOAP4R.
 </p>
 
-<h3>for ruby-1.8.2, ruby-1.8.1, developing versions of ruby-1.9.x and ruby-1.8.x</h3>
+<h3><span class="content">for ruby-1.8.6</span></h3>
 
 <dl>
 <dt class="path"><a href="http://raa.ruby-lang.org/project/http-access2/">[RAA:http-access2]</a> (2.0.5) (required for SSL)</dt>
@@ -204,7 +347,7 @@ Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
 
 </dl>
 
-<h3>for ruby-1.6.8</h3>
+<h3><span class="content">for ruby-1.6.8</span></h3>
 
 <dl>
 <dt class="path"><a href="http://raa.ruby-lang.org/project/webrick/">[RAA:webrick]</a> (1.3.1)</dt>
@@ -244,10 +387,30 @@ $ setenv SOAP_USE_PROXY on
 $ setenv HTTP_PROXY http://myproxyserver:8080
 </pre>
 
-<dl>
-  <dt class="path">soap/</dt>
-  <dd>
+<h3><span class="content">basic/ ... basic samples</span></h3>
+
     <dl>
+      <dt class="path">babelfish.rb</dt>
+      <dd>a SOAP client sample to connect to a babelfish server.</dd>
+      <dt class="path">whois.rb</dt>
+      <dd>a SOAP client sample to connect to a whois server.</dd>
+      <dt class="path">flickr.rb</dt>
+      <dd>a SOAP client sample to connect to the flickr SOAP server and extract data from XML response.</dd>
+      <dt class="path">yahooNewsSearch.rb</dt>
+      <dd>a HTTP client sample to connect to the Yahoo news search REST service and extract data from XML response.</dd>
+
+      <dt class="path">helloworld/</dt>
+      <dd>a SOAP server and client sample of 'Hello World'.
+          To run the server;
+<pre class="path">
+$ ./server.rb
+</pre>
+          And to connect to the server, run the client;
+<pre class="path">
+$ ./client.rb
+</pre>
+      </dd>
+
       <dt class="path">calc/</dt>
       <dd>Calc service contains 2 servers and 2 clients.
         calc.rb is hosted by server.rb, calc2.rb is hosted by server2.rb.
@@ -344,68 +507,6 @@ $ ./client.rb
         </dl>
       </dd>
 
-      <dt class="path">authheader/</dt>
-      <dd>It contains a sample to utilize SOAP Header handler.  Send
-        userid/passwd and receive sessionid via SOAP Header</dd>
-
-      <dt class="path">raa2.4/</dt>
-      <dd>sample/soap/raa2.4/sample.rb is a sample client to retrieve project
-        information on RAA.  It uses raaDriver.rb which is generated by
-        wsdl2ruby.rb from WSDL at
-        <a href="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/">http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/</a>.
-        You'll find wsdlDriver.rb in sample/wsdl/raa2.4/wsdlDriver.rb which
-        loads the WSDL at runtime to connect.</dd>
-
-      <dt class="path">scopesample/</dt>
-      <dd>SOAP server sample which shows a different behavior of SOAP server scope settings; Request scope vs Application scope.
-        sample/soap/scopesample/servant.rb is a servant which holds push-ed
-        object that can be pop-ed afterward.
-        See sample/soap/scopesample/server.rb how to define a servant as
-        a Request scope servant or an Application scope servant.
-        Application scope servant works as we expected because the servant
-        object is living from beginning to the time server terminated.
-        In contrast, request scope servant(s) does not work because a servant
-        object is created for each request.
-      </dd>
-
-      <dt class="path">ssl/</dt>
-      <dd>SSL SOAP server and client samples.
-        <dl>
-          <dt class="path">sslserver.rb</dt>
-          <dd>SSL server sample which hosts "hello world" service.
-            This server uses SSL server certificate in files/ directory
-            (SSL client should check this certificate for SSL server
-            authentication).</dd>
-          <dt class="path">sslserver_noauth.rb</dt>
-          <dd>This server generates SSL server certificate
-            at runtime.  No security.</dd>
-          <dt class="path">sslserver_require_clientauth.rb</dt>
-          <dd>This server users SSL server certificate in files/ directory
-            and requires SSL client authentication (clients must
-            have SSL client certificate and send it to the server).</dd>
-          <dt class="path">sslclient.rb</dt>
-          <dd>SSL client sample which calls "hello world" service via HTTPS.
-            This client checks SSL server certificate sent from SSL server.</dd>
-          <dt class="path">sslclient_require_noserverauth.rb</dt>
-          <dd>This client does not check SSL server certificate.
-            No security.</dd>
-          <dt class="path">sslclient_with_clientauth.rb</dt>
-          <dd>This client sends SSL client certificate in files/ directory
-            and checks SSL server certificate.</dd>
-        </dl>
-      </dd>
-
-      <dt class="path">swa/</dt>
-      <dd>SOAP server and client sample of SwA (SOAP with Attachments).</dd>
-
-      <dt class="path">digraph.rb</dt>
-      <dd>A sample of SOAP marshalling/unmarshalling.
-        It creates a digraph that contains multi-ref-ed nodes at first
-        and marshals this object to get serialized XML instance.
-        Then reads and unmarshals this XML instance to recover a object
-        which has the same links among nodes in the digraph.
-      </dd>
-
       <dt class="path">sampleStruct/</dt>
       <dd>A sample to transmit complex structured object which has recursive
         object reference.
@@ -441,6 +542,138 @@ $ ./client.rb
         </dl>
       </dd>
 
+      <dt class="path">wsdl_helloworld/</dt>
+      <dd>A sample 'Hello World' SOAP client and server which utilize WSDL.
+      See wsdl_helloworld/README for more detail</dd>
+    </dl>
+
+<h3><span class="content">payload/ ... various payload configuration</span></h3>
+
+    <dl>
+      <dt class="path">basicauth/</dt>
+      <dd>BasicAuth server and client sample.</dd>
+
+      <dt class="path">cookies/</dt>
+      <dd>HTTP-Cookies server and client sample.</dd>
+
+      <dt class="path">ssl/</dt>
+      <dd>SSL SOAP server and client samples.
+        <dl>
+          <dt class="path">sslserver.rb</dt>
+          <dd>SSL server sample which hosts "hello world" service.
+            This server uses SSL server certificate in files/ directory
+            (SSL client should check this certificate for SSL server
+            authentication).</dd>
+          <dt class="path">sslserver_noauth.rb</dt>
+          <dd>This server generates SSL server certificate
+            at runtime.  No security.</dd>
+          <dt class="path">sslserver_require_clientauth.rb</dt>
+          <dd>This server users SSL server certificate in files/ directory
+            and requires SSL client authentication (clients must
+            have SSL client certificate and send it to the server).</dd>
+          <dt class="path">sslclient.rb</dt>
+          <dd>SSL client sample which calls "hello world" service via HTTPS.
+            This client checks SSL server certificate sent from SSL server.</dd>
+          <dt class="path">sslclient_require_noserverauth.rb</dt>
+          <dd>This client does not check SSL server certificate.
+            No security.</dd>
+          <dt class="path">sslclient_with_clientauth.rb</dt>
+          <dd>This client sends SSL client certificate in files/ directory
+            and checks SSL server certificate.</dd>
+        </dl>
+      </dd>
+
+      <dt class="path">gzipped/</dt>
+      <dd>gzipped content negotiation server and client sample.</dd>
+    </dl>
+
+<h3><span class="content">soapheader/ ... SOAPHeader configuration</span></h3>
+
+    <dl>
+      <dt class="path">authheader/</dt>
+      <dd>It contains a sample to utilize SOAP Header handler.  Send
+        userid/passwd and receive sessionid via SOAP Header</dd>
+
+      <dt class="path">soapext_basicauth/</dt>
+      <dd>It contains a sample to do BasicAuth in SOAPHeader.  (http://soap-authentication.org/basic/2001/10/)</dd>
+    </dl>
+
+<h3><span class="content">attachment/ ... SOAP with Attachment (SwA)</span></h3>
+
+    <dl>
+      <dt class="path">swa/</dt>
+      <dd>SOAP server and client sample of SwA (SOAP with Attachments).</dd>
+
+      <dt class="path">complexmime/</dt>
+      <dd>SOAP server and client sample of Complex Type + SwA</dd>
+    </dl>
+
+<h3><span class="content">howto/ ... various other configuration</span></h3>
+
+    <dl>
+      <dt class="path">as_xml/</dt>
+      <dd>Sample client to send a request with XML, and receive a response as XML.</dd>
+
+      <dt class="path">base64/</dt>
+      <dd>Sample client to send/receive base64 data.</dd>
+
+      <dt class="path">documentliteral/</dt>
+      <dd>Sample client and server of document/literal service.  See README.txt in this directory to run this sample.</dd>
+
+      <dt class="path">filter/</dt>
+      <dd>Sample client and server of filtering request/response before sending/receiving.</dd>
+
+      <dt class="path">scopesample/</dt>
+      <dd>SOAP server sample which shows a different behavior of SOAP server scope settings; Request scope vs Application scope.
+        sample/soap/scopesample/servant.rb is a servant which holds push-ed
+        object that can be pop-ed afterward.
+        See sample/soap/scopesample/server.rb how to define a servant as
+        a Request scope servant or an Application scope servant.
+        Application scope servant works as we expected because the servant
+        object is living from beginning to the time server terminated.
+        In contrast, request scope servant(s) does not work because a servant
+        object is created for each request.
+      </dd>
+
+      <dt class="path">styleuse/</dt>
+      <dd>Sample client and server of SOAP style and use combination, especially rpc/literal and document/encoded.</dd>
+
+      <dt class="path">wsdl_fault/</dt>
+      <dd>Sample client and server of handling SOAP fault specified in a WSDL.  See wsdl_fault/README.txt for more detail.</dd>
+
+      <dt class="path">wsdl_hash/</dt>
+      <dd>Sample client and server of sending/receiving Hash struct defined in a WSDL.</dd>
+    </dl>
+
+<h3><span class="content">marshal/ ... object &lt;-&gt; XML marshalling</span></h3>
+
+    <dl>
+      <dt class="path">digraph.rb</dt>
+      <dd>A sample of SOAP marshalling/unmarshalling.
+        It creates a digraph that contains multi-ref-ed nodes at first
+        and marshals this object to get serialized XML instance.
+        Then reads and unmarshals this XML instance to recover a object
+        which has the same links among nodes in the digraph.
+      </dd>
+
+      <dt class="path">customfactory.rb</dt>
+      <dd>Sample program for customizing mapping registry.</dd>
+
+      <dt class="path">enum/</dt>
+      <dd>Sample program to demonstrate how xsd2ruby.rb works.</dd>
+    </dl>
+
+<h3><span class="content">showcase/ ... showcase sample to demonstrate</span></h3>
+
+    <dl>
+      <dt class="path">raa2.4/</dt>
+      <dd>sample/soap/raa2.4/sample.rb is a sample client to retrieve project
+        information on RAA.  It uses raaDriver.rb which is generated by
+        wsdl2ruby.rb from WSDL at
+        <a href="http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/">http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/</a>.
+        You'll find wsdlDriver.rb in sample/wsdl/raa2.4/wsdlDriver.rb which
+        loads the WSDL at runtime to connect.</dd>
+
       <dt class="path">icd/</dt>
       <dd>A client for
         <a href="http://www.iwebmethod.net/">Insider's Computer Dictionary Web Service</a>.
@@ -459,20 +692,12 @@ $ ./icd.rb
           </dd>
         </dl>
       </dd>
-    </dl>
-  </dd>
 
-  <dt class="path">wsdl/</dt>
-  <dd>
-    <dl>
       <dt class="path">googleSearch/</dt>
       <dd>Sample client to search with <a href="http://www.google.com/apis/">Google Web API</a> using WSDL.  You need to get a developer's key to use it.  See wsdlDriver.rb.</dd>
 
       <dt class="path">amazon/</dt>
       <dd>Sample client to connect with <a href="http://associates.amazon.com/exec/panama/associates/ntg/browse/-/1067662/086-5207681-4585409">AmazonWebServices</a> using WSDL.  See wsdlDriver.rb.</dd>
-
-      <dt class="path">documentliteral/</dt>
-      <dd>Sample client and server of document/literal service.  See README.txt in this directory to run this sample.</dd>
 
       <dt class="path">noaa/</dt>
       <dd>Sample client of National Weather Service digital weather forecast data service at http://weather.gov/</dd>
@@ -498,34 +723,12 @@ $ ./icd.rb
         NOT tested.  Please tell me (nahi@ruby-lang.org) if you will get
         good/bad result in communicating with AWSECommerce Server.</dd>
     </dl>
-  </dd>
-
-</dl>
-</dd>
-
-</dl>
-
-<h2 id="restrictions" name="restrictions"><span class="content">7. Restrictions</span></h2>
 
 <p>
-The following features of the
-<a href="http://www.w3.org/TR/SOAP/">SOAP 1.1 (W3C Note)</a>
-spec are <strong>NOT</strong> currently supported:
+There are more samples in this directory.
 </p>
 
-<ul>
-<li style="margin-top: 2ex;">SOAP Envelope
-<ul>
-<li>SOAP actor attribute</li>
-<li>SOAP Fault Codes</li>
-</ul></li>
-<li style="margin-top: 2ex;">Othres
-<ul>
-<li>Transport binding except HTTP server and client</li>
-</ul></li>
-</ul>
-
-<h2 id="resources" name="resources"><span class="content">8. Resources</span></h2>
+<h2 id="resources" name="resources"><span class="content">7. Resources</span></h2>
 
 <dl>
 <dt class="path"><a href="http://dev.ctor.org/soap4r">soap4r project page</a></dt>
@@ -534,7 +737,7 @@ spec are <strong>NOT</strong> currently supported:
 <dt class="path"><a href="http://raa.ruby-lang.org/project/soap4r">[RAA:soap4r]</a></dt>
 <dd>RAA meta information</dd>
 
-<dt class="path"><a href="http://groups-beta.google.com/group/soap4r">soap4r Mailing List on Google Groups</a></dt>
+<dt class="path"><a href="http://groups.google.com/group/soap4r">soap4r-ml on Google Groups</a></dt>
 <dd>Feel free to join the list to ask any question and comment about soap4r.
   You can browse messages archive.  Bear in mind that Google Groups is still
   in [beta] stage.</dd>
@@ -548,7 +751,7 @@ svn checkout http://dev.ctor.org/svn/soap4r/trunk soap4r
   CVS repository of soap4r which was located at cvs.ruby-lang.org is pending since 2004-05-27. </dd>
 </dl>
 
-<h2 id="history" name="history"><span class="content">9. History</span></h2>
+<h2 id="history" name="history"><span class="content">8. History</span></h2>
 
 <dl>
 <dt>1.5.5 - Sep 15, 2005</dt>
@@ -1588,7 +1791,7 @@ around SOAP arrays.</dd>
 <dd>It is the initial released version of SOAP4R. :-)</dd>
 </dl>
 
-<h2 id="author" name="author"><span class="content">10. Author</span></h2>
+<h2 id="author" name="author"><span class="content">9. Author</span></h2>
 
 <dl>
 <dt>Name</dt>
@@ -1598,11 +1801,11 @@ around SOAP arrays.</dd>
 <dd><a href="mailto:nahi@ruby-lang.org" class="path">nahi@ruby-lang.org</a></dd>
 </dl>
 
-<h2 id="copyright" name="copyright"><span class="content">11. Copyright</span></h2>
+<h2 id="copyright" name="copyright"><span class="content">10. Copyright</span></h2>
 
 <p style="text-align: center;">
 SOAP4R<br />
-Copyright &copy; 2000-2005 NAKAMURA, Hiroshi &lt;nahi@ruby-lang.org&gt;.
+Copyright &copy; 2000-2007 NAKAMURA, Hiroshi &lt;nahi@ruby-lang.org&gt;.
 </p>
 
 <p>
@@ -1618,9 +1821,8 @@ version.
 
 <div class="footer">
 <address>
-<a href="http://rrr.jin.gr.jp/rwiki?cmd=view&name=soap4r">SOAP4R</a>.<br />
-Copyright &copy; 2000, 2001, 2002, 2003, 2004, 2005
-<a href="http://www.jin.gr.jp/~nahi/">NAKAMURA, Hiroshi</a>.
+<a href="http://dev.ctor.org/soap4r">SOAP4R</a>.<br />
+Copyright &copy; 2000-2007 NAKAMURA, Hiroshi.
 </address>
 </div>
 </body>
