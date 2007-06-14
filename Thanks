@@ -1,4 +1,4 @@
-Thanks to all of soap4r-ml members and soap4r users for their support.
+﻿Thanks to all of soap4r-ml members and soap4r users for their support.
 And special thanks to following contributors;
 
 'Aaron Pfeifer' for contributing a patch for safemethodname.
@@ -13,12 +13,12 @@ And special thanks to following contributors;
 'John Anderson' for contributing a patch for handling gzipped HTTP content.
 'Junichi Uekawa' for contributing a HTTP redirection patch for net/http.
 'Kent Sibilev' for contributing a patch for correct extraattr handling of SOAPHeaderItem.
-'Leo邸 Bitto' for contributing a patch for XML pretty print.
+'Leoš Bitto' for contributing a patch for XML pretty print.
 'Michael Neumann' for contributing an original implementation of standaloneServer.
 'Oliver M. Bolzer' for contributing a patch for net/http + SSL.
 'Owen Fraser-Green' for contributing a patch for MIME CRLF handling.
 'Patrick Chanezon' for contributing a patch for wsdl2ruby classdef name option.
-'Peter Gardfj辰l' for contributing a patch for wsdl:fault handling.
+'Peter Gardfjäll' for contributing a patch for wsdl:fault handling.
 'Sandi Metz' for contributing a patch for SwA in document/literal service.
 'SHINAGAWA, Norihide' for contributing a patch for emx platform.
 'Tadayoshi Funaba' for contributing a patch for date/time XMLSchema datatypes.
