@@ -70,17 +70,25 @@ private
   def any2soap(obj, qname)
     ele = nil
     if obj.is_a?(SOAP::Mapping::Object)
-      ele = mappingobj2soap(obj, qname)
-    elsif definition = schema_definition_from_class(obj.class)
-      # search with class first.  obj can be an instance of a subclass of
-      # defined class.
-      ele = stubobj2soap(obj, qname, definition)
-    elsif definition = schema_definition_from_elename(qname)
-      ele = stubobj2soap(obj, qname, definition)
-    else
-      ele = anyobj2soap(obj, qname)
+      return mappingobj2soap(obj, qname)
     end
-    ele
+    class_definition = schema_definition_from_class(obj.class)
+    elename_definition = schema_definition_from_elename(qname)
+    if !class_definition and !elename_definition
+      # no definition found
+      return anyobj2soap(obj, qname)
+    end
+    if !class_definition or !elename_definition
+      # use found one
+      return stubobj2soap(obj, qname, class_definition || elename_definition)
+    end
+    # found both:
+    if class_definition.class_for == elename_definition.class_for
+      # if two definitions are for the same class, give qname a priority.
+      return stubobj2soap(obj, qname, elename_definition)
+    end
+    # it should be a derived class
+    return stubobj2soap(obj, qname, class_definition)
   end
 
   def anyobj2soap(obj, qname)

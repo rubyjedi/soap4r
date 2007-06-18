@@ -185,7 +185,10 @@ module RegistrySupport
   def register(definition)
     obj_class = definition[:class]
     definition = Mapping.create_schema_definition(obj_class, definition)
-    @class_schema_definition[obj_class] = definition
+    # give complexType definition a priority explicitly
+    if !@class_schema_definition[obj_class] or definition.type
+      @class_schema_definition[obj_class] = definition
+    end
     if definition.elename
       @elename_schema_definition[definition.elename] = definition
     end
