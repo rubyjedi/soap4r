@@ -21,10 +21,21 @@ class TestArray < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echo'),
         XSD::QName.new(Namespace, 'echoResponse')
       )
+      add_document_method(
+        self,
+        Namespace + 'echo2',
+        'echo2',
+        XSD::QName.new(Namespace, 'echo2'),
+        XSD::QName.new(Namespace, 'echo2Response')
+      )
       self.literal_mapping_registry = DoubleMappingRegistry::LiteralRegistry
     end
   
     def echo(arg)
+      arg
+    end
+  
+    def echo2(arg)
       arg
     end
   end
@@ -44,6 +55,7 @@ class TestArray < Test::Unit::TestCase
     unless $DEBUG
       File.unlink(pathname('double.rb'))
       File.unlink(pathname('doubleMappingRegistry.rb'))
+      File.unlink(pathname('doubleDriver.rb'))
     end
     @client.reset_stream if @client
   end
@@ -61,10 +73,11 @@ class TestArray < Test::Unit::TestCase
     gen.logger.level = Logger::FATAL
     gen.opt['classdef'] = nil
     gen.opt['mapping_registry'] = nil
+    gen.opt['driver'] = nil
     gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['force'] = true
     gen.run
-    TestUtil.require(DIR, 'doubleMappingRegistry.rb', 'double.rb')
+    TestUtil.require(DIR, 'doubleDriver.rb', 'doubleMappingRegistry.rb', 'double.rb')
   end
 
   def teardown_server
@@ -78,6 +91,25 @@ class TestArray < Test::Unit::TestCase
   end
 
   def test_stub
+    @client = PricerSoap.new
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = STDOUT if $DEBUG
+    arg = ArrayOfComplex[c1 = Complex.new, c2 = Complex.new, c3 = Complex.new]
+    c1.string = "str_c1"
+    c1.double = 1.1
+    c2.string = "str_c2"
+    c2.double = 2.2
+    c3.string = "str_c3"
+    c3.double = 3.3
+    ret = @client.echo2(Echo2.new(arg))
+    assert_equal(ArrayOfComplex, ret.arg.class)
+    assert_equal(Complex, ret.arg[0].class)
+    assert_equal(arg[0].string, ret.arg[0].string)
+    assert_equal(arg[1].string, ret.arg[1].string)
+    assert_equal(arg[2].string, ret.arg[2].string)
+  end
+
+  def test_wsdl_stubclassdef
     wsdl = File.join(DIR, 'double.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"

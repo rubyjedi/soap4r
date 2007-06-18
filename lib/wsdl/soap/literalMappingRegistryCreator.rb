@@ -160,8 +160,12 @@ private
     child_element = typedef.find_aryelement
     if child_type == XSD::AnyTypeName
       type = nil
-    elsif child_element and (klass = element_basetype(child_element))
-      type = klass.name
+    elsif child_element
+      if klass = element_basetype(child_element)
+        type = klass.name
+      else
+        type = create_class_name(child_element.name, @modulepath)
+      end
     elsif child_type
       type = create_class_name(child_type, @modulepath)
     else
