@@ -580,7 +580,9 @@ class SOAPElement
 
   def initialize(elename, text = nil)
     super()
-    if !elename.is_a?(XSD::QName)
+    if elename.nil?
+      elename = XSD::QName::EMPTY
+    elsif !elename.is_a?(XSD::QName)
       elename = XSD::QName.new(nil, elename)
     end
     @encodingstyle = LiteralNamespace

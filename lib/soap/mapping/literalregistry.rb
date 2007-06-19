@@ -127,6 +127,9 @@ private
     if definition.type
       ele.extraattr[XSD::AttrTypeName] = definition.type
     end
+    if qname.nil? and definition.elename
+      ele.elename = definition.elename
+    end
     stubobj2soap_elements(obj, ele, definition.elements)
     if definition.attributes
       definition.attributes.each do |qname, param|

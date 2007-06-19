@@ -12,7 +12,7 @@ class TestSection < Test::Unit::TestCase
   RUBY = Config::CONFIG['RUBY_INSTALL_NAME']
 
   def setup
-    system("cd #{DIR} && #{RUBY} #{pathname("../../../../../bin/xsd2ruby.rb")} --xsd #{pathname("section.xsd")} --force --quiet")
+    system("cd #{DIR} && #{RUBY} #{pathname("../../../../../bin/xsd2ruby.rb")} --xsd #{pathname("section.xsd")} --classdef --force --quiet")
   end
 
   def teardown
