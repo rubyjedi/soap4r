@@ -13,7 +13,7 @@ private
     ['--module_path','-m', GetoptLong::REQUIRED_ARGUMENT],
     ['--type','-t', GetoptLong::REQUIRED_ARGUMENT],
     ['--classdef','-e', GetoptLong::OPTIONAL_ARGUMENT],
-    ['--mapping_registry','-r', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--mapping_registry','-r', GetoptLong::NO_ARGUMENT],
     ['--client_skelton','-c', GetoptLong::OPTIONAL_ARGUMENT],
     ['--servant_skelton','-s', GetoptLong::OPTIONAL_ARGUMENT],
     ['--cgi_stub','-g', GetoptLong::OPTIONAL_ARGUMENT],
