@@ -2,11 +2,12 @@
 <schema
     xmlns="http://www.w3.org/2001/XMLSchema"
     xmlns:txd="urn:org.example.enumsample"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     targetNamespace="urn:org.example.enumsample">
 
-  <complexType name="hobit.type">
+  <complexType name="hobbit.type">
     <sequence>
-      <element name="name" type="txd:hobbit.name"/>
+      <element name="name" type="txd:hobbit.name.type"/>
       <element name="age" type="xsd:int"/>
     </sequence>
   </complexType>
