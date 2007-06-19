@@ -38,11 +38,9 @@ class MappingRegistryCreator
     m = XSD::CodeGen::ModuleDef.new(module_name)
     m.def_require("soap/mapping")
     varname = 'EncodedRegistry'
-    methodname = 'define_encoded_mapping'
     m.def_const(varname, '::SOAP::Mapping::EncodedRegistry.new')
     m.def_code(encoded_creator.dump(varname))
     varname = 'LiteralRegistry'
-    methodname = 'define_literal_mapping'
     m.def_const(varname, '::SOAP::Mapping::LiteralRegistry.new')
     m.def_code(literal_creator.dump(varname))
     m.dump
