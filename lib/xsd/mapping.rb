@@ -18,23 +18,40 @@ module XSD
 
 module Mapping
   MappingRegistry = SOAP::Mapping::LiteralRegistry.new
-  MappingOpt = {:default_encodingstyle => SOAP::LiteralNamespace}
 
   def self.obj2xml(obj, elename = nil, io = nil)
-    if !elename.nil? and !elename.is_a?(XSD::QName)
-      elename = XSD::QName.new(nil, elename)
-    end
-    elename ||= XSD::QName.new(nil, SOAP::Mapping.name2elename(obj.class.to_s))
-    soap = SOAP::Mapping.obj2soap(obj, MappingRegistry)
-    soap.elename = elename
-    generator = SOAP::SOAPGenerator.new(MappingOpt)
-    generator.generate(soap, io)
+    Mapper.new(MappingRegistry).obj2xml(obj, elename, io)
   end
 
-  def self.xml2obj(stream)
-    parser = SOAP::Parser.new(MappingOpt)
-    soap = parser.parse(stream)
-    SOAP::Mapping.soap2obj(soap, MappingRegistry)
+  def self.xml2obj(stream, klass = nil)
+    Mapper.new(MappingRegistry).xml2obj(stream, klass)
+  end
+
+  class Mapper
+    MAPPING_OPT = {:default_encodingstyle => SOAP::LiteralNamespace}
+
+    def initialize(registry)
+      @registry = registry
+    end
+
+    def obj2xml(obj, elename = nil, io = nil)
+      if !elename.nil? and !elename.is_a?(XSD::QName)
+        elename = XSD::QName.new(nil, elename)
+      end
+      soap = SOAP::Mapping.obj2soap(obj, @registry, elename)
+      if soap.elename == XSD::QName::EMPTY
+        soap.elename =
+          XSD::QName.new(nil, SOAP::Mapping.name2elename(obj.class.to_s))
+      end
+      generator = SOAP::SOAPGenerator.new(MAPPING_OPT)
+      generator.generate(soap, io)
+    end
+
+    def xml2obj(stream, klass = nil)
+      parser = SOAP::Parser.new(MAPPING_OPT)
+      soap = parser.parse(stream)
+      SOAP::Mapping.soap2obj(soap, @registry, klass)
+    end
   end
 end
 

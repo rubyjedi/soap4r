@@ -10,7 +10,10 @@ private
 
   OptSet = [
     ['--xsd','-x', GetoptLong::REQUIRED_ARGUMENT],
-    ['--classname','-n', GetoptLong::NO_ARGUMENT],
+    ['--module_path','-m', GetoptLong::REQUIRED_ARGUMENT],
+    ['--classdef','-e', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--mapping_registry','-r', GetoptLong::NO_ARGUMENT],
+    ['--mapper','-p', GetoptLong::NO_ARGUMENT],
     ['--force','-f', GetoptLong::NO_ARGUMENT],
     ['--quiet','-q', GetoptLong::NO_ARGUMENT],
   ]
@@ -43,11 +46,14 @@ Usage: #{ $0 } --xsd xsd_location [options]
   xsd_location: filename or URL
 
 Example:
-  #{ $0 } --xsd myapp.xsd --classname Foo
+  #{ $0 } --xsd myapp.xsd --classdef foo
 
 Options:
   --xsd xsd_location
-  --classname classname
+  --classdef [filenameprefix]
+  --mapping_registry
+  --mapper
+  --module_path [Module::Path::Name]
   --force
   --quiet
 __EOU__
@@ -62,7 +68,9 @@ __EOU__
        	case name
 	when "--xsd"
 	  xsd = arg
-	when "--classname"
+        when "--module_path"
+          opt['module_path'] = arg
+	when "--classdef", "--mapping_registry", "--mapper"
   	  opt[name.sub(/^--/, '')] = arg.empty? ? nil : arg
 	when "--force"
 	  opt['force'] = true
