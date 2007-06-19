@@ -1,7 +1,7 @@
 require 'xsd/qname'
 
-# {urn:org.example.enumsample}hobit.type
-class HobitType
+# {urn:org.example.enumsample}hobbit.type
+class HobbitType
   attr_accessor :name
   attr_accessor :age
 
