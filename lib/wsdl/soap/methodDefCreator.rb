@@ -161,15 +161,18 @@ __EOD__
       when :TYPE_STRUCT, :TYPE_EMPTY    # ToDo: empty should be treated as void.
         type = create_class_name(part.type, @modulepath)
 	[type, part.type.namespace, part.type.name]
-      when :TYPE_MAP
-	[Hash.name, part.type.namespace, part.type.name]
       when :TYPE_ARRAY
 	arytype = definedtype.find_arytype || XSD::AnyTypeName
 	arytypename = arytype.name.sub(/\[(?:,)*\]$/, '')
         arytypedef = create_class_name(XSD::QName.new(nil, arytypename), @modulepath)
 	[arytypedef + '[]', part.type.namespace, part.type.name]
+      when :TYPE_SIMPLE
+        type = create_class_name(part.type, @modulepath)
+	[type, part.type.namespace, part.type.name]
+      when :TYPE_MAP
+	[Hash.name, part.type.namespace, part.type.name]
       else
-	raise NotImplementedError.new("must not reach here")
+	raise NotImplementedError.new("must not reach here: #{definedtype.compoundtype}")
       end
     elsif part.type == XSD::AnyTypeName
       [nil]
