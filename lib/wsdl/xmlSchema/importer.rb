@@ -6,6 +6,7 @@
 # either the dual license version in 2003, or any later version.
 
 
+require 'soap/soap'
 require 'soap/httpconfigloader'
 require 'wsdl/xmlSchema/parser'
 
@@ -15,6 +16,8 @@ module XMLSchema
 
 
 class Importer
+  DO_NOT_IMPORT = [::SOAP::EncodingNamespace]
+
   def self.import(location, originalroot = nil)
     new.import(location, originalroot)
   end
@@ -24,6 +27,9 @@ class Importer
   end
 
   def import(location, originalroot = nil)
+    if DO_NOT_IMPORT.include?(location.to_s)
+      return nil
+    end
     unless location.is_a?(URI)
       location = URI.parse(location)
     end
