@@ -39,7 +39,7 @@ module Mapping
         elename = XSD::QName.new(nil, elename)
       end
       soap = SOAP::Mapping.obj2soap(obj, @registry, elename)
-      if soap.elename == XSD::QName::EMPTY
+      if soap.elename.nil? or soap.elename == XSD::QName::EMPTY
         soap.elename =
           XSD::QName.new(nil, SOAP::Mapping.name2elename(obj.class.to_s))
       end
