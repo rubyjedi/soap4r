@@ -15,6 +15,7 @@ class DatetimePortType
   #
   def now(now)
     #raise NotImplementedError.new
+    return nil if now.nil?
     now + 1
   end
 end

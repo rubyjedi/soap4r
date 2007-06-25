@@ -43,6 +43,7 @@ class TestRPC < Test::Unit::TestCase
     end
 
     def echo_basetype(arg1, arg2)
+      return nil if arg1.nil? and arg2.nil?
       raise unless arg1.is_a?(Date)
       arg1
     end
@@ -158,6 +159,8 @@ class TestRPC < Test::Unit::TestCase
     assert_nil(ret.family_name)
     assert_nil(ret.given_name)
     assert_nil(ret.age)
+    #
+    assert_nil(@client.echo_basetype(nil, nil))
   end
 
   def test_basetype_stub

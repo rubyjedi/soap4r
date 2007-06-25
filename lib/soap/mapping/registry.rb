@@ -240,6 +240,7 @@ module RegistrySupport
   end
 
   def base2soap(obj, type, qualified = nil)
+    return SOAPNil.new if obj.nil?
     soap_obj = nil
     if type <= XSD::XSDString
       str = XSD::Charset.encoding_conv(obj.to_s,

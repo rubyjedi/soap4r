@@ -75,6 +75,10 @@ class TestDatetime < Test::Unit::TestCase
     assert_equal(d1.sec, d2.sec)
     assert_equal(d1.sec, d2.sec)
   end
+
+  def test_nil
+    assert_nil(@client.now(nil))
+  end
 end
 
 
