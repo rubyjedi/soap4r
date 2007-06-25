@@ -37,7 +37,7 @@ __EOP__
       @client.options['protocol.http.basic_auth'] <<
         ['http://www.example.com/foo3/', 'user3', 'password3']
       h = @client.streamhandler.client
-      basic_auth = h.instance_eval { @basic_auth }
+      basic_auth = h.www_auth.basic_auth
       cred1 = ["user1:password1"].pack('m').tr("\n", '')
       cred2 = ["user2:password2"].pack('m').tr("\n", '')
       cred3 = ["user3:password3"].pack('m').tr("\n", '')
