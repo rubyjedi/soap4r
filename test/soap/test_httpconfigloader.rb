@@ -14,6 +14,20 @@ class TestHTTPConfigLoader < Test::Unit::TestCase
     @client = SOAP::RPC::Driver.new(nil, nil)
   end
 
+  class Request
+    class Header
+      attr_reader :request_uri
+      def initialize(request_uri)
+        @request_uri = request_uri
+      end
+    end
+
+    attr_reader :header
+    def initialize(request_uri)
+      @header = Header.new(request_uri)
+    end
+  end
+
   def test_property
     testpropertyname = File.join(DIR, 'soapclient.properties')
     File.open(testpropertyname, "w") do |f|
@@ -41,9 +55,10 @@ __EOP__
       cred1 = ["user1:password1"].pack('m').tr("\n", '')
       cred2 = ["user2:password2"].pack('m').tr("\n", '')
       cred3 = ["user3:password3"].pack('m').tr("\n", '')
-      assert_equal(cred1, basic_auth.get(URI.parse("http://www.example.com/foo1/baz")))
-      assert_equal(cred2, basic_auth.get(URI.parse("http://www.example.com/foo2/")))
-      assert_equal(cred3, basic_auth.get(URI.parse("http://www.example.com/foo3/baz/qux")))
+      basic_auth.challenge(URI.parse("http://www.example.com/"), nil)
+      assert_equal(cred1, basic_auth.get(Request.new(URI.parse("http://www.example.com/foo1/baz"))))
+      assert_equal(cred2, basic_auth.get(Request.new(URI.parse("http://www.example.com/foo2/"))))
+      assert_equal(cred3, basic_auth.get(Request.new(URI.parse("http://www.example.com/foo3/baz/qux"))))
     ensure
       File.unlink(testpropertyname)
     end
