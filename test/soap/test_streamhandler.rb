@@ -42,6 +42,16 @@ class TestStreamHandler < Test::Unit::TestCase
       '/',
       WEBrick::HTTPServlet::ProcHandler.new(method(:do_server_proc).to_proc)
     )
+    htpasswd = File.join(File.dirname(__FILE__), 'htpasswd')
+    htpasswd_userdb = WEBrick::HTTPAuth::Htpasswd.new(htpasswd)
+    @basic_auth = WEBrick::HTTPAuth::BasicAuth.new(
+      :Realm => 'auth',
+      :UserDB => htpasswd_userdb
+    )
+    @server.mount(
+      '/basic_auth',
+      WEBrick::HTTPServlet::ProcHandler.new(method(:do_server_proc_basic_auth).to_proc)
+    )
     @server_thread = TestUtil.start_server_thread(@server)
   end
 
@@ -58,6 +68,7 @@ class TestStreamHandler < Test::Unit::TestCase
   def setup_client
     @client = SOAP::RPC::Driver.new(@url, '')
     @client.add_method("do_server_proc")
+    @client.add_method("do_server_proc_basic_auth")
   end
 
   def teardown_server
@@ -88,6 +99,11 @@ class TestStreamHandler < Test::Unit::TestCase
   </env:Body>
 </env:Envelope>
 __EOX__
+  end
+
+  def do_server_proc_basic_auth(req, res)
+    @basic_auth.authenticate(req, res)
+    do_server_proc(req, res)
   end
 
   def parse_req_header(str)
@@ -147,12 +163,11 @@ __EOX__
       assert(true)
       return
     end
+    @client.endpoint_url = @url + 'basic_auth'
     str = ""
     @client.wiredump_dev = str
-    @client.options["protocol.http.basic_auth"] << [@url, "foo", "bar"]
-    assert_nil(@client.do_server_proc)
-    r, h = parse_req_header(str)
-    assert_equal("Basic Zm9vOmJhcg==", h["authorization"])
+    @client.options["protocol.http.basic_auth"] << [@url, "admin", "admin"]
+    assert_nil(@client.do_server_proc_basic_auth)
   end
 
   def test_proxy
