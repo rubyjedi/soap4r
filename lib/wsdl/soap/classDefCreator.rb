@@ -84,6 +84,8 @@ private
         dump_complextypedef(ele.name, ele.local_complextype, qualified)
       elsif ele.local_simpletype
         dump_simpletypedef(ele.name, ele.local_simpletype, qualified)
+      elsif ele.empty?
+        dump_simpleclassdef(ele.name, nil)
       else
         nil
       end
@@ -198,7 +200,7 @@ private
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     init_lines = []
-    unless type_or_element.attributes.empty?
+    if type_or_element and !type_or_element.attributes.empty?
       define_attribute(c, type_or_element.attributes)
       init_lines << "@__xmlattr = {}"
     end
@@ -363,7 +365,7 @@ private
   end
 
   def check_classname(classname)
-    if @modulepath.nil? and Module.constants.include?(classname)
+    if @modulepath.nil? and Object.constants.include?(classname)
       warn("created definition re-opens an existing toplevel class: #{classname}")
     end
   end

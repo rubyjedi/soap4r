@@ -35,7 +35,7 @@ module MysampleMappingRegistry
     :schema_ns => "urn:mysample",
     :schema_type => "sectionArray",
     :schema_element => [
-      ["element", ["XSD::XSD2Ruby::Element[]", XSD::QName.new(nil, "element")], [1, nil]]
+      ["element", ["XSD::XSD2Ruby::Section[]", XSD::QName.new(nil, "element")], [1, nil]]
     ]
   )
 

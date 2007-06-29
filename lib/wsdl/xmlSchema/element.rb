@@ -69,6 +69,10 @@ class Element < Info
     @refelement = nil
   end
 
+  def empty?
+    !(local_simpletype || local_complextype || constraint || type)
+  end
+
   def refelement
     @refelement ||= (@ref ? root.collect_elements[@ref] : nil)
   end
