@@ -32,13 +32,14 @@ class LiteralHandler < Handler
     data.extraattr.each do |key, value|
       next if !@generate_explicit_type and key == XSD::AttrTypeName
       # ToDo: check generator.attributeformdefault here
+      keytag = key
       if key.is_a?(XSD::QName)
-        key = encode_qname(attrs, ns, key)
+        keytag = encode_qname(attrs, ns, key)
       end
       if value.is_a?(XSD::QName)
         value = encode_qname(attrs, ns, value)
       end
-      attrs[key] = value
+      attrs[keytag] = value
     end
     case data
     when SOAPExternalReference

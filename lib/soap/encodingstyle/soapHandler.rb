@@ -297,12 +297,17 @@ private
 	attrs[ns.name(XSD::AttrTypeName)] = ns.name(data.type)
       end
     end
-
     data.extraattr.each do |key, value|
+      keytag = key
       if key.is_a?(XSD::QName)
         keytag = encode_qname(attrs, ns, key)
       end
-      attrs[keytag] = encode_attr_value(generator, ns, key, value)
+      if value.is_a?(XSD::QName)
+        value = encode_qname(attrs, ns, value)
+      else
+        value = encode_attr_value(generator, ns, key, value)
+      end
+      attrs[keytag] = value
     end
     if data.id
       attrs['id'] = data.id
@@ -316,8 +321,6 @@ private
       ref = SOAPReference.new(value)
       generator.add_reftarget(qname.name, value)
       ref.refidstr
-    when XSD::QName
-      encode_qname(attrs, ns, value)
     else
       value.to_s
     end
