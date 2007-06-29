@@ -433,7 +433,7 @@ private
     when ::Array
       array2soap(obj, definition)
     else
-      return unknownstubobj2soap(obj, definition)
+      unknownstubobj2soap(obj, definition)
     end
   end
 
@@ -453,6 +453,7 @@ private
     if definition.elements.size == 0
       ele = Mapping.obj2soap(obj)
       ele.elename = definition.elename if definition.elename
+      ele.extraattr[XSD::AttrTypeName] = definition.type if definition.type
       return ele
     else
       ele = SOAPStruct.new(definition.type)
