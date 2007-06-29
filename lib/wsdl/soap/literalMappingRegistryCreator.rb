@@ -164,7 +164,8 @@ private
       if klass = element_basetype(child_element)
         type = klass.name
       else
-        type = create_class_name(child_element.name, @modulepath)
+        typename = child_element.type || child_element.name
+        type = create_class_name(typename, @modulepath)
       end
     elsif child_type
       type = create_class_name(child_type, @modulepath)
