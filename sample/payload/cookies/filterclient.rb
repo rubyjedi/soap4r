@@ -10,11 +10,11 @@ class CookieFilter < SOAP::Filter::StreamHandler
     @cookie_value = nil
   end
 
-  def on_httppost_outbound(req)
+  def on_http_outbound(req)
     req.header['Cookie'] = @cookie_value if @cookie_value
   end
 
-  def on_httppost_inbound(req, res)
+  def on_http_inbound(req, res)
     # this sample filter only caputures the first cookie.
     cookie = res.header['Set-Cookie'][0]
     cookie.sub!(/;.*\z/, '') if cookie

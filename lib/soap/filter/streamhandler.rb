@@ -13,12 +13,12 @@ module Filter
 class StreamHandler
 
   # no returning value expected.
-  def on_httppost_outbound(req)
+  def on_http_outbound(req)
     # do something.
   end
 
   # no returning value expected.
-  def on_httppost_inbound(req, res)
+  def on_http_inbound(req, res)
     # do something.
   end
 
