@@ -40,6 +40,11 @@ module_function
     basic_auth.add_hook do |key, value|
       set_basic_auth(client, basic_auth)
     end
+    auth = options["auth"] ||= ::SOAP::Property.new
+    set_auth(client, auth)
+    auth.add_hook do |key, value|
+      set_auth(client, auth)
+    end
     options.add_hook("connect_timeout") do |key, value|
       client.connect_timeout = value
     end
@@ -53,13 +58,23 @@ module_function
 
   def set_basic_auth(client, basic_auth)
     basic_auth.values.each do |ele|
-      if ele.is_a?(::Array)
-        url, userid, passwd = ele
-      else
-        url, userid, passwd = ele[:url], ele[:userid], ele[:password]
-      end
-      client.set_basic_auth(url, userid, passwd)
+      client.set_basic_auth(*authele_to_triplets(ele))
     end
+  end
+
+  def set_auth(client, auth)
+    auth.values.each do |ele|
+      client.set_auth(*authele_to_triplets(ele))
+    end
+  end
+
+  def authele_to_triplets(ele)
+    if ele.is_a?(::Array)
+      url, userid, passwd = ele
+    else
+      url, userid, passwd = ele[:url], ele[:userid], ele[:password]
+    end
+    return url, userid, passwd
   end
 
   def set_ssl_config(client, ssl_config)

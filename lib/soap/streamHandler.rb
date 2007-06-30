@@ -195,9 +195,11 @@ private
     end
     ssl_config = @options["http.ssl_config"]
     basic_auth = @options["http.basic_auth"]
+    auth = @options["http.auth"]
     @options["http"].lock(true)
     ssl_config.unlock
     basic_auth.unlock
+    auth.unlock
   end
 
   def set_cookie_store_file(value)
