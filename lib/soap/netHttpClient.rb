@@ -30,12 +30,14 @@ class NetHttpClient
   attr_accessor :send_timeout           # ignored for now.
   attr_accessor :receive_timeout
   attr_reader :test_loopback_response
+  attr_reader :request_filter           # ignored for now.
 
   def initialize(proxy = nil, agent = nil)
     @proxy = proxy ? URI.parse(proxy) : nil
     @agent = agent
     @debug_dev = nil
     @test_loopback_response = []
+    @request_filter = Filter::FilterChain.new
     @session_manager = SessionManager.new
     @no_proxy = @ssl_config = @protocol_version = nil
     @connect_timeout = @send_timeout = @receive_timeout = nil

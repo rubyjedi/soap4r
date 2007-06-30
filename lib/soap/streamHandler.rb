@@ -8,6 +8,7 @@
 
 require 'soap/soap'
 require 'soap/httpconfigloader'
+require 'soap/filter/filterchain'
 begin
   require 'stringio'
   require 'zlib'
@@ -21,6 +22,8 @@ module SOAP
 
 class StreamHandler
   RUBY_VERSION_STRING = "ruby #{ RUBY_VERSION } (#{ RUBY_RELEASE_DATE }) [#{ RUBY_PLATFORM }]"
+
+  attr_reader :filterchain
 
   class ConnectionData
     attr_accessor :send_string
@@ -42,6 +45,10 @@ class StreamHandler
     end
   end
 
+  def initialize
+    @filterchain = Filter::FilterChain.new
+  end
+
   def self.parse_media_type(str)
     if /^#{ MediaType }(?:\s*;\s*charset=([^"]+|"[^"]+"))?$/i !~ str
       return nil
@@ -55,13 +62,13 @@ class StreamHandler
     "#{ MediaType }; charset=#{ charset }"
   end
 
-  def send(endpoint_url, conn_data, soapaction = nil, charset = nil)
-    # send a ConnectionData to specified endpoint_url.
+  def send(url, conn_data, soapaction = nil, charset = nil)
+    # send a ConnectionData to specified url.
     # return value is a ConnectionData with receive_* property filled.
     # You can fill values of given conn_data and return it.
   end
 
-  def reset(endpoint_url = nil)
+  def reset(url = nil)
     # for initializing connection status if needed.
     # return value is not expected.
   end
@@ -98,6 +105,23 @@ class HTTPStreamHandler < StreamHandler
     RETRYABLE = false
   end
 
+  class HttpPostRequestFilter
+    def initialize(filterchain)
+      @filterchain = filterchain
+    end
+
+    def filter_request(req)
+      @filterchain.each do |filter|
+        filter.on_httppost_outbound(req)
+      end
+    end
+
+    def filter_response(req, res)
+      @filterchain.each do |filter|
+        filter.on_httppost_inbound(req, res)
+      end
+    end
+  end
 
 public
   
@@ -113,6 +137,7 @@ public
   def initialize(options)
     super()
     @client = Client.new(nil, "SOAP4R/#{ Version }")
+    @client.request_filter << HttpPostRequestFilter.new(@filterchain)
     @wiredump_file_base = nil
     @charset = @wiredump_dev = nil
     @options = options
@@ -134,18 +159,18 @@ public
     "#<#{self.class}>"
   end
 
-  def send(endpoint_url, conn_data, soapaction = nil, charset = @charset)
+  def send(url, conn_data, soapaction = nil, charset = @charset)
     conn_data.soapaction ||= soapaction # for backward conpatibility
-    conn_data = send_post(endpoint_url, conn_data, charset)
+    conn_data = send_post(url, conn_data, charset)
     @client.save_cookie_store if @cookie_store
     conn_data
   end
 
-  def reset(endpoint_url = nil)
-    if endpoint_url.nil?
+  def reset(url = nil)
+    if url.nil?
       @client.reset_all
     else
-      @client.reset(endpoint_url)
+      @client.reset(url)
     end
     @client.save_cookie_store if @cookie_store
   end
@@ -181,7 +206,7 @@ private
     @client.set_cookie_store(@cookie_store) if @cookie_store
   end
 
-  def send_post(endpoint_url, conn_data, charset)
+  def send_post(url, conn_data, charset)
     conn_data.send_contenttype ||= StreamHandler.create_media_type(charset)
 
     if @wiredump_file_base
@@ -191,29 +216,29 @@ private
       f.close
     end
 
-    extra = {}
-    extra['Content-Type'] = conn_data.send_contenttype
-    extra['SOAPAction'] = "\"#{ conn_data.soapaction }\""
-    extra['Accept-Encoding'] = 'gzip' if send_accept_encoding_gzip?
+    extheader = {}
+    extheader['Content-Type'] = conn_data.send_contenttype
+    extheader['SOAPAction'] = "\"#{ conn_data.soapaction }\""
+    extheader['Accept-Encoding'] = 'gzip' if send_accept_encoding_gzip?
     send_string = conn_data.send_string
     @wiredump_dev << "Wire dump:\n\n" if @wiredump_dev
     begin
       retry_count = 0
       while true
-        res = @client.post(endpoint_url, send_string, extra)
+        res = @client.post(url, send_string, extheader)
         if RETRYABLE and HTTP::Status.redirect?(res.status)
           retry_count += 1
           if retry_count >= MAX_RETRY_COUNT
             raise HTTPStreamError.new("redirect count exceeded")
           end
-          endpoint_url = res.header["location"][0]
-          puts "redirected to #{endpoint_url}" if $DEBUG
+          url = res.header["location"][0]
+          puts "redirected to #{url}" if $DEBUG
         else
           break
         end
       end
     rescue
-      @client.reset(endpoint_url)
+      @client.reset(url)
       raise
     end
     @wiredump_dev << "\n\n" if @wiredump_dev
