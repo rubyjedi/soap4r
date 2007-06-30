@@ -112,13 +112,13 @@ class HTTPStreamHandler < StreamHandler
 
     def filter_request(req)
       @filterchain.each do |filter|
-        filter.on_httppost_outbound(req)
+        filter.on_http_outbound(req)
       end
     end
 
     def filter_response(req, res)
       @filterchain.each do |filter|
-        filter.on_httppost_inbound(req, res)
+        filter.on_http_inbound(req, res)
       end
     end
   end

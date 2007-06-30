@@ -18,14 +18,14 @@ class TestCookie < Test::Unit::TestCase
       @cookie_value = nil
     end
 
-    def on_httppost_outbound(req)
+    def on_http_outbound(req)
       if @cookie_value
         req.header.delete('Cookie')
         req.header['Cookie'] = @cookie_value
       end
     end
 
-    def on_httppost_inbound(req, res)
+    def on_http_inbound(req, res)
       # this sample filter only caputures the first cookie.
       cookie = res.header['Set-Cookie'][0]
       cookie.sub!(/;.*\z/, '') if cookie
