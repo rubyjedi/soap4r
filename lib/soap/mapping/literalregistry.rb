@@ -29,12 +29,12 @@ class LiteralRegistry
     @excn_handler_soap2obj = nil
   end
 
-  def obj2soap(obj, qname)
+  def obj2soap(obj, qname, obj_class = nil)
     soap_obj = nil
     if obj.is_a?(SOAPElement)
       soap_obj = obj
     else
-      soap_obj = any2soap(obj, qname)
+      soap_obj = any2soap(obj, qname, obj_class)
     end
     return soap_obj if soap_obj
     if @excn_handler_obj2soap
@@ -67,12 +67,16 @@ private
 
   MAPPING_OPT = { :no_reference => true }
 
-  def any2soap(obj, qname)
+  def definedobj2soap(obj, definition)
+    obj2soap(obj, definition.elename, definition.mapped_class)
+  end
+
+  def any2soap(obj, qname, obj_class)
     ele = nil
     if obj.is_a?(SOAP::Mapping::Object)
       return mappingobj2soap(obj, qname)
     end
-    class_definition = schema_definition_from_class(obj.class)
+    class_definition = schema_definition_from_class(obj_class || obj.class)
     elename_definition = schema_definition_from_elename(qname)
     if !class_definition and !elename_definition
       # no definition found
@@ -162,7 +166,7 @@ private
         end
       elsif obj.respond_to?(:each) and definition.as_array?
         obj.each do |item|
-          ele.add(obj2soap(item, definition.elename))
+          ele.add(definedobj2soap(item, definition))
         end
       else
         child = Mapping.get_attribute(obj, definition.varname)
@@ -171,10 +175,10 @@ private
         else
           if child.respond_to?(:each) and definition.as_array?
             child.each do |item|
-              ele.add(obj2soap(item, definition.elename))
+              ele.add(definedobj2soap(item, definition))
             end
           else
-            ele.add(obj2soap(child, definition.elename))
+            ele.add(definedobj2soap(child, definition))
           end
         end
       end
