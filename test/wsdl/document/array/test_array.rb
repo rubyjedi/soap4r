@@ -126,12 +126,7 @@ class TestArray < Test::Unit::TestCase
     @client.literal_mapping_registry = DoubleMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
     double = [0.1, 0.2, 0.3]
-    arg = {
-      :ary => {
-        XSD::QName.new("http://tempuri.org/", "double") => double
-      }
-    }
-    assert_equal(double, @client.echo(arg).ary)
+    assert_equal(double, @client.echo(:ary => double).ary)
   end
 end
 
