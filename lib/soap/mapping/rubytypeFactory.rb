@@ -420,6 +420,9 @@ private
     end
     typestr = Mapping.elename2name(node.type.name)
     klass = Mapping.class_from_name(typestr)
+    if klass.respond_to?(:soap_marshallable) and !klass.soap_marshallable
+      return nil
+    end
     if klass.nil? and @allow_untyped_struct
       klass = Mapping.class_from_name(typestr, true)    # lenient
     end
