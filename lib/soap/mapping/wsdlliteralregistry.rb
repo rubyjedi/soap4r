@@ -54,7 +54,7 @@ class WSDLLiteralRegistry < LiteralRegistry
   def soap2obj(node, obj_class = nil)
     # obj_class is given when rpc/literal service.  but ignored for now.
     begin
-      return any2obj(node)
+      return any2obj(node, obj_class)
     rescue MappingError
     end
     if @excn_handler_soap2obj
