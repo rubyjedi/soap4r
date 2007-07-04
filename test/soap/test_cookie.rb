@@ -31,7 +31,6 @@ class TestCookie < Test::Unit::TestCase
       cookie.sub!(/;.*\z/, '') if cookie
       @cookie_value = cookie
       # do not save cookie value.
-      puts "new cookie value: #{@cookie_value}"
     end
   end
 

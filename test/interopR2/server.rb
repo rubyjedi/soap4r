@@ -8,6 +8,7 @@ $KCODE = "SJIS"
 
 require 'soap/rpc/standaloneServer'
 require 'base'
+require 'xsd/xmlparser/rexmlparser'
 
 class InteropApp < SOAP::RPC::StandaloneServer
   include SOAP
