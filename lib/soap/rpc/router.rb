@@ -359,22 +359,26 @@ private
     # normal program exception, it is wrapped inside a custom SOAP4R
     # SOAP exception element.
     detail = nil
-    if (wsdl_fault_details)
-      registry = wsdl_fault_details[:use] == "literal" ?
-        @literal_mapping_registry : @mapping_registry
-      faultQName = XSD::QName.new(
-        wsdl_fault_details[:ns], wsdl_fault_details[:name]
-      )
-      detail = Mapping.obj2soap(e, registry, faultQName)
-      # wrap fault element (SOAPFault swallows top-level element)
-      wrapper = SOAP::SOAPElement.new(faultQName)
-      wrapper.add(detail)
-      detail = wrapper
-    else
-      # Exception is a normal program exception. Wrap it.
-      detail = Mapping.obj2soap(Mapping::SOAPException.new(e),
-                                @mapping_registry)
-      detail.elename ||= XSD::QName::EMPTY # for literal mappingregstry
+    begin
+      if (wsdl_fault_details)
+        registry = wsdl_fault_details[:use] == "literal" ?
+          @literal_mapping_registry : @mapping_registry
+        faultQName = XSD::QName.new(
+          wsdl_fault_details[:ns], wsdl_fault_details[:name]
+        )
+        detail = Mapping.obj2soap(e, registry, faultQName)
+        # wrap fault element (SOAPFault swallows top-level element)
+        wrapper = SOAP::SOAPElement.new(faultQName)
+        wrapper.add(detail)
+        detail = wrapper
+      else
+        # Exception is a normal program exception. Wrap it.
+        detail = Mapping.obj2soap(Mapping::SOAPException.new(e),
+                                  @mapping_registry)
+        detail.elename ||= XSD::QName::EMPTY # for literal mappingregstry
+      end
+    rescue
+      detail = SOAPString.new("failed to serialize detail object: #{$!}")
     end
 
     SOAPFault.new(
