@@ -5,6 +5,7 @@ require 'soap/rpc/driver'
 require 'soap/mapping'
 require 'base'
 require 'interopResultBase'
+require 'xsd/xmlparser/rexmlparser'
 #XSD::Charset.encoding = 'EUC'
 
 class Float
@@ -100,7 +101,11 @@ class SOAPBuildersTest < Test::Unit::TestCase
       soap_action = InterfaceNS
       @@drv = RPC::Driver.new(location, namespace, soap_action)
       @@drv.mapping_registry = SOAPBuildersInterop::MappingRegistry
-      @@drv.wiredump_dev = @@log
+      if $DEBUG
+        @@drv.wiredump_dev = STDOUT
+      else
+        @@drv.wiredump_dev = @@log
+      end
       method_def(@@drv, soap_action)
     end
 
@@ -1222,7 +1227,8 @@ class SOAPBuildersTest < Test::Unit::TestCase
 end
 
 if $0 == __FILE__
-  name = ARGV.shift || 'localhost'
-  location = ARGV.shift || 'http://localhost:10080/'
+  #name = ARGV.shift || 'localhost'
+  #location = ARGV.shift || 'http://localhost:10080/'
+  name = 'localhsot'; location = 'http://localhost:10080/'
   SOAPBuildersTest.setup(name, location)
 end

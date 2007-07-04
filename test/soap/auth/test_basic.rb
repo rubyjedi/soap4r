@@ -9,7 +9,7 @@ require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testuti
 module SOAP; module Auth
 
 
-class TestStreamHandler < Test::Unit::TestCase
+class TestBasic < Test::Unit::TestCase
   Port = 17171
   ProxyPort = 17172
 
