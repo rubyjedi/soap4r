@@ -29,7 +29,7 @@ class WSDLLiteralRegistry < LiteralRegistry
     @definedelements = definedelements
   end
 
-  def obj2soap(obj, qname)
+  def obj2soap(obj, qname, obj_class = nil)
     soap_obj = nil
     if obj.is_a?(SOAPElement)
       soap_obj = obj
@@ -38,7 +38,7 @@ class WSDLLiteralRegistry < LiteralRegistry
     elsif type = @definedtypes[qname]
       soap_obj = obj2typesoap(obj, type)
     else
-      soap_obj = any2soap(obj, qname)
+      soap_obj = any2soap(obj, qname, obj_class)
     end
     return soap_obj if soap_obj
     if @excn_handler_obj2soap
