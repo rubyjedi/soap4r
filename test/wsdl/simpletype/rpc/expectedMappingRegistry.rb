@@ -10,7 +10,7 @@ module Echo_versionMappingRegistry
     :schema_ns => "urn:example.com:simpletype-rpc-type",
     :schema_type => "version_struct",
     :schema_element => [
-      ["version", ["SOAP::SOAPString", XSD::QName.new(nil, "version")]],
+      ["version", ["Version", XSD::QName.new(nil, "version")]],
       ["msg", ["SOAP::SOAPString", XSD::QName.new(nil, "msg")]]
     ]
   )
@@ -39,7 +39,7 @@ module Echo_versionMappingRegistry
     :schema_type => "version_struct",
     :schema_qualified => false,
     :schema_element => [
-      ["version", ["SOAP::SOAPString", XSD::QName.new(nil, "version")]],
+      ["version", ["Version", XSD::QName.new(nil, "version")]],
       ["msg", ["SOAP::SOAPString", XSD::QName.new(nil, "msg")]]
     ]
   )

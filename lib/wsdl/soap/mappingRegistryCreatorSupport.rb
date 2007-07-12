@@ -78,6 +78,8 @@ module MappingRegistryCreatorSupport
       when XMLSchema::Element
         if element.type == XSD::AnyTypeName
           type = nil
+        elsif @simpletypes[element.type]
+          type = create_class_name(element.type, @modulepath)
         elsif klass = element_basetype(element)
           type = klass.name
         elsif element.type
