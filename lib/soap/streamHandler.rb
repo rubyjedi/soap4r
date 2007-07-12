@@ -137,7 +137,9 @@ public
   def initialize(options)
     super()
     @client = Client.new(nil, "SOAP4R/#{ Version }")
-    @client.request_filter << HttpPostRequestFilter.new(@filterchain)
+    if @client.respond_to?(:request_filter)
+      @client.request_filter << HttpPostRequestFilter.new(@filterchain)
+    end
     @wiredump_file_base = nil
     @charset = @wiredump_dev = nil
     @options = options
