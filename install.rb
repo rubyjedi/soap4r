@@ -77,7 +77,7 @@ begin
 
   # xmlscan
   xmlscansrcdir = File.join('redist', 'xmlscan', 'xmlscan-20050522', 'lib')
-  if File.exists?(xmlscansrcdir)
+  if File.exist?(xmlscansrcdir)
     install_dir(xmlscansrcdir, 'xmlscan')
   end
 
