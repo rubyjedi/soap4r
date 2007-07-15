@@ -119,9 +119,9 @@ module Env
     ENV[name.downcase] || ENV[name.upcase]
   end
 
-  use_proxy = getenv('soap_use_proxy') == 'on'
-  HTTP_PROXY = use_proxy ? getenv('http_proxy') : nil
-  NO_PROXY = use_proxy ? getenv('no_proxy') : nil
+  is_cgi = !getenv('request_method').nil?
+  HTTP_PROXY = is_cgi ? getenv('cgi_http_proxy') : getenv('http_proxy')
+  NO_PROXY = getenv('no_proxy')
 end
 
 
