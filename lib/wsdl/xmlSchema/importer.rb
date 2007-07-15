@@ -76,17 +76,23 @@ private
   end
 
   def web_client
-    @web_client ||= begin
-	require 'http-access2'
-	if HTTPAccess2::VERSION < "2.0"
-	  raise LoadError.new("http-access/2.0 or later is required.")
-	end
-	HTTPAccess2::Client
+    return @web_client if @web_client
+    begin
+      require 'httpclient'
+      @web_client = HTTPClient
+    rescue LoadError
+      begin
+        require 'http-access2'
+        if HTTPAccess2::VERSION < "2.0"
+          raise LoadError.new("http-access/2.0 or later is required.")
+        end
+        @web_client = HTTPAccess2::Client
       rescue LoadError
-	warn("Loading http-access2 failed.  Net/http is used.") if $DEBUG
-	require 'soap/netHttpClient'
-	::SOAP::NetHttpClient
+        warn("Loading http-access2 failed.  Net/http is used.") if $DEBUG
+        require 'soap/netHttpClient'
+        @web_client = ::SOAP::NetHttpClient
       end
+    end
     @web_client
   end
 end

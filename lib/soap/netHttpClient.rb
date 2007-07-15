@@ -61,6 +61,10 @@ class NetHttpClient
     @proxy
   end
 
+  def set_auth(uri, user_id, passwd)
+    raise NotImplementedError.new("auth is not supported under soap4r + net/http.")
+  end
+
   def set_basic_auth(uri, user_id, passwd)
     # net/http does not handle url.
     @basic_auth = [user_id, passwd]

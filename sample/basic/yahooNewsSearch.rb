@@ -9,7 +9,7 @@ class MyXMLHandler < SOAP::EncodingStyle::SOAPHandler
   end
 end
 
-require 'http-access2'
+require 'httpclient'
 appid = 'soap4r-dev'
 url = 'http://api.search.yahoo.com/NewsSearchService/V1/newsSearch'
 type = 'all'    # any, phrase
@@ -25,7 +25,7 @@ param = {
   'results_sort' => results_sort
 }
 proxy = ENV['http_proxy'] || ENV['HTTP_PROXY']
-result = HTTPAccess2::Client.new(proxy).get_content(url, param)
+result = HTTPClient.new(proxy).get_content(url, param)
 
 opt = {:default_encodingstyle => 'urn:myxmlhandler'}
 soap = SOAP::Processor.unmarshal(result, opt)
