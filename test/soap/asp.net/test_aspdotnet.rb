@@ -87,7 +87,7 @@ __XML__
     assert_equal("Hello Mike", @client.sayHello("Mike"))
   end
 
-  if defined?(HTTPAccess2)
+  if defined?(HTTPClient)
 
     # qualified!
     REQUEST_ASPDOTNETHANDLER =

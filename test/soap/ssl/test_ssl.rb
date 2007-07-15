@@ -1,11 +1,11 @@
 require 'test/unit'
 begin
-  require 'http-access2'
+  require 'httpclient'
 rescue LoadError
 end
 require 'soap/rpc/driver'
 
-if defined?(HTTPAccess2) and defined?(OpenSSL)
+if defined?(HTTPClient) and defined?(OpenSSL)
 
 module SOAP; module SSL
 
@@ -58,7 +58,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert(/certificate verify failed/ =~ ssle.message)
       assert(@verify_callback_called)
     end
     #
@@ -69,7 +69,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert(/certificate verify failed/ =~ ssle.message)
       assert(@verify_callback_called)
     end
     #
@@ -79,7 +79,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert(/certificate verify failed/ =~ ssle.message)
       assert(@verify_callback_called)
     end
     #
@@ -94,7 +94,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert(/certificate verify failed/ =~ ssle.message)
       assert(@verify_callback_called)
     end
     #
@@ -105,7 +105,7 @@ class TestSSL < Test::Unit::TestCase
       @client.hello_world("ssl client")
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
-      assert_equal("certificate verify failed", ssle.message)
+      assert(/certificate verify failed/ =~ ssle.message)
     end
     #
     cfg["protocol.http.ssl_config.verify_mode"] = ""
@@ -135,7 +135,7 @@ __EOP__
         @client.hello_world("ssl client")
         assert(false)
       rescue OpenSSL::SSL::SSLError => ssle
-        assert_equal("certificate verify failed", ssle.message)
+        assert(/certificate verify failed/ =~ ssle.message)
         assert(@verify_callback_called)
       end
       # NG with Integer
@@ -144,7 +144,7 @@ __EOP__
         @client.hello_world("ssl client")
         assert(false)
       rescue OpenSSL::SSL::SSLError => ssle
-        assert_equal("certificate verify failed", ssle.message)
+        assert(/certificate verify failed/ =~ ssle.message)
         assert(@verify_callback_called)
       end
       # OK with empty

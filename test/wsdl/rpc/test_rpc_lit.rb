@@ -5,7 +5,7 @@ require 'soap/wsdlDriver'
 require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
-if defined?(HTTPAccess2) and defined?(OpenSSL)
+if defined?(HTTPClient) and defined?(OpenSSL)
 
 module WSDL; module RPC
 

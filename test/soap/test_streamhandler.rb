@@ -107,9 +107,6 @@ __EOX__
   end
 
   def parse_req_header(str)
-    if ::SOAP::HTTPStreamHandler::Client.to_s == 'SOAP::NetHttpClient'
-      str = eval(str.split(/\r?\n/)[4][3..-1])
-    end
     parse_req_header_http_access2(str)
   end
 
@@ -157,9 +154,9 @@ __EOX__
   end
 
   def test_basic_auth
-    unless Object.const_defined?('HTTPAccess2')
+    unless Object.const_defined?('HTTPClient')
       # soap4r + net/http + basic_auth is not supported.
-      # use http-access2 instead.
+      # use httpclient instead.
       assert(true)
       return
     end
@@ -171,9 +168,9 @@ __EOX__
   end
 
   def test_proxy
-    if Object.const_defined?('HTTPAccess2')
-      backup = HTTPAccess2::Client::NO_PROXY_HOSTS.dup
-      HTTPAccess2::Client::NO_PROXY_HOSTS.clear
+    if Object.const_defined?('HTTPClient')
+      backup = HTTPClient::NO_PROXY_HOSTS.dup
+      HTTPClient::NO_PROXY_HOSTS.clear
     else
       backup = SOAP::NetHttpClient::NO_PROXY_HOSTS.dup
       SOAP::NetHttpClient::NO_PROXY_HOSTS.clear
@@ -190,8 +187,8 @@ __EOX__
       @client.options["protocol.http.proxy"] = 'ftp://foo:8080'
     end
   ensure
-    if Object.const_defined?('HTTPAccess2')
-      HTTPAccess2::Client::NO_PROXY_HOSTS.replace(backup)
+    if Object.const_defined?('HTTPClient')
+      HTTPClient::NO_PROXY_HOSTS.replace(backup)
     else
       SOAP::NetHttpClient::NO_PROXY_HOSTS.replace(backup)
     end

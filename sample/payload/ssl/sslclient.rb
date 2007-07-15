@@ -1,4 +1,4 @@
-require 'http-access2'
+require 'httpclient'
 require 'soap/rpc/driver'
 
 # setup driver

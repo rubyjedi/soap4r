@@ -2,7 +2,7 @@ require 'test/unit'
 require 'soap/rpc/standaloneServer'
 require 'soap/rpc/driver'
 
-if defined?(HTTPAccess2)
+if defined?(HTTPClient)
 
 module SOAP
 

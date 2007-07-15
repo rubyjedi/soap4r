@@ -5,7 +5,7 @@ require 'soap/wsdlDriver'
 require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
-if defined?(HTTPAccess2)
+if defined?(HTTPClient)
 
 module WSDL
 
