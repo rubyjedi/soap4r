@@ -4,8 +4,8 @@
 require 'rubygems'
 SPEC = Gem::Specification.new do |s|
   s.name = "soap4r"
-  s.version = "1.5.6.90.20070704"
-  s.date = "2007-07-04"
+  s.version = "1.5.7"
+  s.date = "2007-07-16"
   s.author = "NAKAMURA, Hiroshi"
   s.email = "nahi@ruby-lang.org"
   s.homepage = "http://dev.ctor.org/soap4r"
@@ -18,5 +18,5 @@ SPEC = Gem::Specification.new do |s|
   s.test_file = "test/runner.rb"
   # disable rdoc generation until we've got more
   s.has_rdoc = false
-  # s.add_dependency("http-access2", ">= 1.0.0")
+  s.add_dependency("httpclient", ">= 2.1.0")
 end
