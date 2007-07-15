@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: Jul 8, 2007<br />
+Last modified: Jul 16, 2007<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -55,25 +55,28 @@ Target SOAP4R version: SOAP4R/1.5.7
 Version 1.5.7 mainly intends to fix regression problems introduced in 1.5.6.
 Here are changes in 1.5.7 from 1.5.6.
 </p>
-<ul><li>SOAP/Ruby mapping
+<ul><li>Environment
+<ul><li>soap4r gem depends on httpclient &gt;= 2.1.0. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/379" title="let soap4r gem depends on httpclient &gt;= 2.1.0 (closed)">#379</a>)
+</li><li>let soap4r http clients (SOAP::RPC::Driver and WSDL/XSD importers) do not check soap_use_proxy environment variable and use only http_proxy/HTTP_PROXY and no_proxy/NO_PROXY envvars for proxy configuration.  no need to set 'soap_use_proxy=on' envvar anymore.  But to avoid proxy injection problem, when a library is used on CGI environment (with checking REQUEST_METHOD envvar existence), soap4r http clients use cgi_http_proxy/CGI_HTTP_PROXY envvar instead of http_proxy/HTTP_PROXY. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/378" title="change HTTP_PROXY/NO_PROXY envvar behavior to follow httpclient (closed)">#378</a>)
+</li></ul></li></ul><ul><li>SOAP/Ruby mapping
 <ul><li>try to call klass.soap_marshallable before mapping an XML element to the klass while unmarshalling. to avoid auto-mapping from element name, define klass.soap_marshallable method let it return false. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/223" title="avoid the AutoMapping (closed)">#223</a>)
+</li><li>let xsd2ruby.rb generate a mapping registry and a mapper from XML Schema definition. the mapper has obj2xml and xml2obj which uses the generated mapping registry. you can use this instead of XSD::Mapping.obj2xml and XSD::Mapping.xml2obj which does not know anything about mapping. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/362" title="classname parameter for bin/xsd2ruby.rb (closed)">#362</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/363" title="mapping xml&lt;-&gt;obj based on XML Schema (closed)">#363</a>)
+
 </li><li>[BUG] Array or Struct was not properly marshalled when literal service + generated stub combination. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/360" title="Array or Struct is not properly marshalled through stub definition for  ... (closed)">#360</a>)
 </li><li>[BUG] derived class was marshalled without xsi:type for literal service. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/361" title="derived class  is marshalled without xsi:type for literal service (closed)">#361</a>)
 </li><li>[BUG] passing nil as a basetype through generated mapping registry was broken in 1.5.6. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/369" title="nil passed as attribute to axis service gets sent as an empty string  ... (closed)">#369</a>)
 </li><li>[BUG] an rpc/encoded parameter could be wrongly typed when the parameter is typed as a derived type from a base type of XML Schema datatypes. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/371" title="an rpc/encoded parameter wrongly typed (closed)">#371</a>)
-
 </li><li>[BUG] under the earlier versions, we could use [] instead of CountryTargets[]. from 1.5.6-GA it doesn't work. let LiteralRegistry decide how the class should be mapped to according to the defined class in the parent complexType. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/373" title="generic Array cannot be used instead of a custom array (closed)">#373</a>)
+
 </li></ul></li></ul><ul><li>RPC
 <ul><li>allow xsi:nil="true" element as an RPC request though I don't think it's SOAP spec compliant. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/374" title="SOAP::Lite incompatibility (closed)">#374</a>)
 </li></ul></li></ul><ul><li>Payload
 <ul><li>added an API for filtering streamhandler to capture/generate HTTP header. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/276" title="streamHandler filter to capture/create HTTP header (closed)">#276</a>)
-</li><li>added 'protocol.http.auth' option to set authentication information for both BasicAuth and DigestAuth. with the latest http-access2, now soap4r client can connect to DigestAuth server. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/345" title="Client Digest Authentication Implemented (closed)">#345</a>)
+</li><li>added 'protocol.http.auth' option to set authentication information for both BasicAuth and DigestAuth. with the latest httpclient (formerly known as http-access2), now soap4r client can connect to DigestAuth server. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/345" title="Client Digest Authentication Implemented (closed)">#345</a>)
 
 </li></ul></li></ul><ul><li>WSDL
-<ul><li>[BUG] error when simpleType element usage as "part" definition directly. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/367" title="error when simpleType element usage as &#34;part&#34; definition directly (closed)">#367</a>)
-</li></ul></li></ul><ul><li>misc
-<ul><li>let xsd2ruby.rb generate a mapping registry and a mapper from XML Schema definition. the mapper has obj2xml and xml2obj which uses the generated mapping registry. you can use this instead of XSD::Mapping.obj2xml and XSD::Mapping.xml2obj which does not know anything about mapping. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/362" title="classname parameter for bin/xsd2ruby.rb (closed)">#362</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/363" title="mapping xml&lt;-&gt;obj based on XML Schema (closed)">#363</a>)
-</li><li>importer should not import <a class="ext-link" href="http://schemas.xmlsoap.org/soap/encoding/"><span class="icon">http://schemas.xmlsoap.org/soap/encoding/</span></a>. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/366" title="importer should not import http://schemas.xmlsoap.org/soap/encoding/ (closed)">#366</a>)
+<ul><li>importer should not import <a class="ext-link" href="http://schemas.xmlsoap.org/soap/encoding/"><span class="icon">http://schemas.xmlsoap.org/soap/encoding/</span></a>. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/366" title="importer should not import http://schemas.xmlsoap.org/soap/encoding/ (closed)">#366</a>)
+</li><li>[BUG] error when simpleType element usage as "part" definition directly. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/367" title="error when simpleType element usage as &#34;part&#34; definition directly (closed)">#367</a>)
 </li><li>[BUG] wsdl2ruby.rb did not generate a classdef entry for empty element definition such as &lt;element name="foo"/&gt;. let wsdl2ruby.rb generate 'class Foo &lt; String'. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/370" title="empty element definition causes 'cannot find mapped class' warning (closed)">#370</a>)
 </li></ul></li></ul>
 
@@ -172,14 +175,15 @@ Feel free sending mail to
 <h2 id="dependencies" name="dependencies"><span class="content">5. Dependencies</span></h2>
 
 <p>
-SOAP4R is written in <a href="http://www.ruby-lang.org">Ruby</a> and
-aims to use with Ruby application.
-You have to install Ruby itself.
-Ruby/1.6 series or later is required.
+SOAP4R is written in <a href="http://www.ruby-lang.org">Ruby</a> and aims to use with Ruby application.
+You have to install ruby itself.  Tested against the following ruby versions.
 </p>
+
 <ul>
+  <li>ruby-1.8.5</li>
+  <li>ruby-1.8.5 patchlevel 52</li>
   <li>ruby-1.8.6</li>
-  <li>ruby-1.6.8</li>
+  <li>ruby-1.8.6 patchlevel 36</li>
 </ul>
 
 <p>
@@ -188,39 +192,12 @@ SOAP4R depends on following Ruby modules in
 You also have to install these modules to use SOAP4R.
 </p>
 
-<h3><span class="content">for ruby-1.8.6</span></h3>
-
 <dl>
-<dt class="path"><a href="http://raa.ruby-lang.org/project/http-access2/">[RAA:http-access2]</a> (2.0.5) (required for SSL)</dt>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/httpclient/">[RAA:httpclient]</a> (2.1.0 or later)</dt>
 <dd>Yet another HTTP client implementation by NaHi.
-It's not required when you don't use SSL, but it's recommended to use.
-The author always runs and checks soap4r with http-access2.</dd>
+httpclient is formerly known as http-access2.</dd>
 
 <dt class="path"><a href="http://raa.ruby-lang.org/project/uconv/">[RAA:uconv]</a> (0.4.10) (not required but needed if your Ruby doesn't have iconv module and you need UTF-8 encoded Japanese chars)</dt>
-<dd>by Yoshida Masato.
-It is requred when you want automatic CES conversion between
-SJIS &lt;-&gt; UTF8 and EUC &lt;-&gt; UTF8.
-Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
-</dd>
-
-</dl>
-
-<h3><span class="content">for ruby-1.6.8</span></h3>
-
-<dl>
-<dt class="path"><a href="http://raa.ruby-lang.org/project/webrick/">[RAA:webrick]</a> (1.3.1)</dt>
-<dd>TCP server toolkit by Gotoyuzo.</dd>
-
-<dt class="path"><a href="http://raa.ruby-lang.org/project/http-access2/">[RAA:http-access2]</a> (2.0.5)</dt>
-<dd>Yet another HTTP client implementation by NaHi.</dd>
-
-<dt class="path"><a href="http://raa.ruby-lang.org/project/devel-logger/">[RAA:devel-logger]</a> (1.1.0)</dt>
-<dd>Logging utility by NaHi.</dd>
-
-<dt class="path"><a href="http://raa.ruby-lang.org/project/date2/">[RAA:date2]</a> (3.2)</dt>
-<dd>Date and DateTime implementation by Todayoshi Funaba.</dd>
-
-<dt class="path"><a href="http://raa.ruby-lang.org/project/uconv/">[RAA:uconv]</a> (0.4.10) (required for UTF-8 handling)</dt>
 <dd>by Yoshida Masato.
 It is requred when you want automatic CES conversion between
 SJIS &lt;-&gt; UTF8 and EUC &lt;-&gt; UTF8.
@@ -234,14 +211,12 @@ Note: SJIS &lt;-&gt; EUC uses NKF module which is in standard distribution.
 <p>
 Samples are in sample/ directory of distribution.
 Some samples try to connect to public servers.
-Set environment variable SOAP_USE_PROXY and HTTP_PROXY if you are in a firewall and you have
+Set environment variable HTTP_PROXY if you are in a firewall and you have
 http proxy to the internet like;
 </p>
 <pre class="path">
-$ export SOAP_USE_PROXY=on
 $ export HTTP_PROXY=http://myproxyserver:8080
   or
-$ setenv SOAP_USE_PROXY on
 $ setenv HTTP_PROXY http://myproxyserver:8080
 </pre>
 
