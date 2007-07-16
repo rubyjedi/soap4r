@@ -68,8 +68,10 @@ Here are changes in 1.5.7 from 1.5.6.
 </li><li>[BUG] an rpc/encoded parameter could be wrongly typed when the parameter is typed as a derived type from a base type of XML Schema datatypes. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/371" title="an rpc/encoded parameter wrongly typed (closed)">#371</a>)
 </li><li>[BUG] under the earlier versions, we could use [] instead of CountryTargets[]. from 1.5.6-GA it doesn't work. let LiteralRegistry decide how the class should be mapped to according to the defined class in the parent complexType. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/373" title="generic Array cannot be used instead of a custom array (closed)">#373</a>)
 
-</li></ul></li></ul><ul><li>RPC
+</li></ul></li></ul><ul><li>SOAP
 <ul><li>allow xsi:nil="true" element as an RPC request though I don't think it's SOAP spec compliant. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/374" title="SOAP::Lite incompatibility (closed)">#374</a>)
+</li><li>allow to customize default ns definition of SOAP Envelope. SOAPGenerator.new gets option hash as 'opt' and treats opt[:default_ns] as a XSD::NS which stores default ns definition of SOAP Envelope. See how it works in test/soap/test_custom_ns.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/380" title="default XSD::NS for SOAPGenerator (closed)">#380</a>)
+
 </li></ul></li></ul><ul><li>Payload
 <ul><li>added an API for filtering streamhandler to capture/generate HTTP header. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/276" title="streamHandler filter to capture/create HTTP header (closed)">#276</a>)
 </li><li>added 'protocol.http.auth' option to set authentication information for both BasicAuth and DigestAuth. with the latest httpclient (formerly known as http-access2), now soap4r client can connect to DigestAuth server. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/345" title="Client Digest Authentication Implemented (closed)">#345</a>)
