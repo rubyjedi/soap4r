@@ -46,6 +46,7 @@ public
     @use_numeric_character_reference = opt[:use_numeric_character_reference]
     @indentstr = opt[:no_indent] ? '' : '  '
     @buf = @indent = @curr = nil
+    @default_ns = opt[:default_ns]
   end
 
   def generate(obj, io = nil)
@@ -58,6 +59,11 @@ public
     end
 
     ns = XSD::NS.new
+    if @default_ns
+      @default_ns.each_ns do |default_ns, default_tag|
+        SOAPGenerator.assign_ns(obj.extraattr, ns, default_ns, default_tag)
+      end
+    end
     @buf << xmldecl
     encode_data(ns, obj, nil)
 
