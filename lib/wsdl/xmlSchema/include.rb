@@ -8,6 +8,7 @@
 
 require 'wsdl/info'
 require 'wsdl/xmlSchema/importer'
+require 'wsdl/xmlSchema/importHandler'
 
 
 module WSDL
@@ -15,13 +16,17 @@ module XMLSchema
 
 
 class Include < Info
-  attr_reader :schemalocation
-  attr_reader :content
-
   def initialize
     super
-    @schemalocation = nil
-    @content = nil
+    @handler = ImportHandler.new
+  end
+
+  def schemalocation
+    @handler.schemalocation
+  end
+
+  def content
+    @handler.content
   end
 
   def parse_element(element)
@@ -31,21 +36,10 @@ class Include < Info
   def parse_attr(attr, value)
     case attr
     when SchemaLocationAttrName
-      @schemalocation = URI.parse(value.source)
-      if @schemalocation.relative?
-        @schemalocation = parent.location + @schemalocation
-      end
-      @content = import(@schemalocation)
-      @schemalocation
+      @handler.parse_schemalocation(value.source, root, parent)
     else
       nil
     end
-  end
-
-private
-
-  def import(location)
-    Importer.import(location)
   end
 end
 
