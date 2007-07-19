@@ -8,6 +8,7 @@
 
 require 'wsdl/info'
 require 'wsdl/xmlSchema/importer'
+require 'wsdl/xmlSchema/importHandler'
 
 
 module WSDL
@@ -16,14 +17,19 @@ module XMLSchema
 
 class Import < Info
   attr_reader :namespace
-  attr_reader :schemalocation
-  attr_reader :content
 
   def initialize
     super
     @namespace = nil
-    @schemalocation = nil
-    @content = nil
+    @handler = ImportHandler.new
+  end
+
+  def schemalocation
+    @handler.schemalocation
+  end
+
+  def content
+    @handler.content
   end
 
   def parse_element(element)
@@ -35,28 +41,10 @@ class Import < Info
     when NamespaceAttrName
       @namespace = value.source
     when SchemaLocationAttrName
-      @schemalocation = URI.parse(value.source)
-      if @schemalocation.relative? and !parent.location.nil? and
-          !parent.location.relative?
-        @schemalocation = parent.location + @schemalocation
-      end
-      if root.importedschema.key?(@schemalocation)
-        @content = root.importedschema[@schemalocation]
-      else
-        root.importedschema[@schemalocation] = nil      # placeholder
-        @content = import(@schemalocation)
-        root.importedschema[@schemalocation] = @content
-      end
-      @schemalocation
+      @handler.parse_schemalocation(value.source, root, parent)
     else
       nil
     end
-  end
-
-private
-
-  def import(location)
-    Importer.import(location, root)
   end
 end
 
