@@ -4,6 +4,7 @@ module XSD::XSD2Ruby
 
 
 # {urn:mysample}question
+#   something - SOAP::SOAPString
 class Question
   attr_accessor :something
 
@@ -13,6 +14,11 @@ class Question
 end
 
 # {urn:mysample}section
+#   sectionID - SOAP::SOAPInt
+#   name - SOAP::SOAPString
+#   description - SOAP::SOAPString
+#   index - SOAP::SOAPInt
+#   firstQuestion - XSD::XSD2Ruby::Question
 class Section
   attr_accessor :sectionID
   attr_accessor :name
@@ -34,6 +40,11 @@ class SectionArray < ::Array
 end
 
 # {urn:mysample}sectionElement
+#   sectionID - SOAP::SOAPInt
+#   name - SOAP::SOAPString
+#   description - SOAP::SOAPString
+#   index - SOAP::SOAPInt
+#   firstQuestion - XSD::XSD2Ruby::Question
 class SectionElement
   attr_accessor :sectionID
   attr_accessor :name

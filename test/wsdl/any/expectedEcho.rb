@@ -4,6 +4,8 @@ module WSDL::Any
 
 
 # {urn:example.com:echo-type}foo.bar
+#   before - SOAP::SOAPString
+#   after - SOAP::SOAPString
 class FooBar
   attr_accessor :before
   attr_reader :__xmlele_any
@@ -21,6 +23,9 @@ class FooBar
 end
 
 # {urn:example.com:echo-type}setOutputAndCompleteRequest
+#   taskId - SOAP::SOAPString
+#   data - (any)
+#   participantToken - SOAP::SOAPString
 class SetOutputAndCompleteRequest
   attr_accessor :taskId
   attr_accessor :data

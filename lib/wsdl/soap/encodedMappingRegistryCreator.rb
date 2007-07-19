@@ -19,7 +19,7 @@ class EncodedMappingRegistryCreator
 
   attr_reader :definitions
 
-  def initialize(definitions, modulepath)
+  def initialize(definitions, modulepath, defined_const)
     @definitions = definitions
     @modulepath = modulepath
     @simpletypes = definitions.collect_simpletypes
@@ -27,6 +27,7 @@ class EncodedMappingRegistryCreator
     @complextypes = definitions.collect_complextypes
     @complextypes.uniq!
     @varname = nil
+    @defined_const = defined_const
   end
 
   def dump(varname)
@@ -93,6 +94,7 @@ private
   def dump_array_typemap(qname, typedef)
     arytype = typedef.find_arytype || XSD::AnyTypeName
     type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
+    assign_const(type.namespace, 'Ns')
     return <<__EOD__
 #{@varname}.set(
   #{create_class_name(qname, @modulepath)},

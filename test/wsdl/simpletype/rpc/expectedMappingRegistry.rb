@@ -4,6 +4,7 @@ require 'soap/mapping'
 module Echo_versionMappingRegistry
   EncodedRegistry = ::SOAP::Mapping::EncodedRegistry.new
   LiteralRegistry = ::SOAP::Mapping::LiteralRegistry.new
+  NsSimpletypeRpcType = "urn:example.com:simpletype-rpc-type"
 
   EncodedRegistry.register(
     :class => Version_struct,
@@ -17,25 +18,25 @@ module Echo_versionMappingRegistry
 
   EncodedRegistry.register(
     :class => Version,
-    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_ns => NsSimpletypeRpcType,
     :schema_type => "version"
   )
 
   EncodedRegistry.register(
     :class => StateType,
-    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_ns => NsSimpletypeRpcType,
     :schema_type => "stateType"
   )
 
   EncodedRegistry.register(
     :class => ZipIntType,
-    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_ns => NsSimpletypeRpcType,
     :schema_type => "zipIntType"
   )
 
   LiteralRegistry.register(
     :class => Version_struct,
-    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_ns => NsSimpletypeRpcType,
     :schema_type => "version_struct",
     :schema_qualified => false,
     :schema_element => [
@@ -46,19 +47,19 @@ module Echo_versionMappingRegistry
 
   LiteralRegistry.register(
     :class => Version,
-    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_ns => NsSimpletypeRpcType,
     :schema_type => "version"
   )
 
   LiteralRegistry.register(
     :class => StateType,
-    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_ns => NsSimpletypeRpcType,
     :schema_type => "stateType"
   )
 
   LiteralRegistry.register(
     :class => ZipIntType,
-    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_ns => NsSimpletypeRpcType,
     :schema_type => "zipIntType"
   )
 end

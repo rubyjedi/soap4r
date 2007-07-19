@@ -13,6 +13,7 @@ module WSDL
 module SOAP
 
 
+# requires @defined_const = {}
 module MappingRegistryCreatorSupport
   include ClassDefCreatorSupport
   include XSD::CodeGen
@@ -47,10 +48,27 @@ module MappingRegistryCreatorSupport
 
   def dump_type(name, type)
     if name
+      assign_const(name.namespace, 'Ns')
       '[' + ndq(type) + ', ' + dqname(name) + ']'
     else
       ndq(type)
     end
+  end
+
+  def assign_const(value, prefix = '')
+    return if value.nil? or @defined_const.key?(value)
+    name = value.scan(/[^:\/]+\z/)[0] || ''
+    tag = prefix + safeconstname(name)
+    if @defined_const.value?(tag)
+      idx = 0
+      while true
+        tag = prefix + safeconstname(name + "_#{idx}")
+        break unless @defined_const.value?(tag)
+        idx += 1
+        raise RuntimeError.new("too much similar names") if idx > 100
+      end
+    end
+    @defined_const[value] = tag
   end
 
   def dump_occurrence(occurrence)
@@ -76,27 +94,8 @@ module MappingRegistryCreatorSupport
         occurrence = nil
         schema_element << [varname, eleqname, type, occurrence]
       when XMLSchema::Element
-        if element.type == XSD::AnyTypeName
-          type = nil
-        elsif @simpletypes[element.type]
-          type = create_class_name(element.type, @modulepath)
-        elsif klass = element_basetype(element)
-          type = klass.name
-        elsif element.type
-          type = create_class_name(element.type, @modulepath)
-        elsif element.ref
-          next if element.ref == SchemaName
-          type = create_class_name(element.ref, @modulepath)
-        else
-          type = nil      # means anyType.
-          # do we define a class for local complexType from it's name?
-          #   type = create_class_name(element.name, @modulepath)
-          # <element>
-          #   <complexType>
-          #     <seq...>
-          #   </complexType>
-          # </element>
-        end
+        next if element.ref == SchemaName
+        type = create_type_name(element)
         name = name_element(element).name
         varname = safevarname(name)
         if element.map_as_array?
@@ -170,6 +169,7 @@ module MappingRegistryCreatorSupport
     end
     "{\n    " +
       schema_attribute.collect { |name, type|
+        assign_const(name.namespace, 'Ns')
         dqname(name) + ' => ' + ndq(type)
       }.join(",\n    ") +
     "\n  }"
@@ -205,7 +205,11 @@ module MappingRegistryCreatorSupport
   def dump_entry_item(var, key, as_string = false)
     if var.key?(key)
       if as_string
-        ":#{key} => #{ndq(var[key])}"
+        if @defined_const.key?(var[key])
+          ":#{key} => #{@defined_const[var[key]]}"
+        else
+          ":#{key} => #{ndq(var[key])}"
+        end
       else
         ":#{key} => #{var[key]}"
       end
@@ -244,6 +248,7 @@ module MappingRegistryCreatorSupport
       var[:schema_type] = qname.name
       var[:schema_ns] = qname.namespace
     end
+    assign_const(var[:schema_ns], 'Ns')
     dump_entry(@varname, var)
   end
 

@@ -1,6 +1,7 @@
 require 'xsd/qname'
 
 # {urn:mysample}question
+#   something - SOAP::SOAPString
 class Question
   attr_accessor :something
 
@@ -10,6 +11,11 @@ class Question
 end
 
 # {urn:mysample}section
+#   sectionID - SOAP::SOAPInt
+#   name - SOAP::SOAPString
+#   description - SOAP::SOAPString
+#   index - SOAP::SOAPInt
+#   firstQuestion - Question
 class Section
   attr_accessor :sectionID
   attr_accessor :name

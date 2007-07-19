@@ -1,6 +1,8 @@
 require 'xsd/qname'
 
 # {urn:example.com:simpletype-rpc-type}version_struct
+#   version - Version
+#   msg - SOAP::SOAPString
 class Version_struct
   attr_accessor :version
   attr_accessor :msg

@@ -111,6 +111,7 @@ class TestRef < Test::Unit::TestCase
     gen.location = pathname("product.wsdl")
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
     gen.opt['classdef'] = nil
     gen.opt['force'] = true
     TestUtil.silent do

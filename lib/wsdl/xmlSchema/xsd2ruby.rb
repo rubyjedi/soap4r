@@ -9,6 +9,7 @@
 require 'xsd/codegen/gensupport'
 require 'wsdl/xmlSchema/importer'
 require 'wsdl/soap/classDefCreator'
+require 'wsdl/soap/classDefCreatorSupport'
 require 'wsdl/soap/literalMappingRegistryCreator'
 require 'logger'
 
@@ -18,6 +19,8 @@ module XMLSchema
 
 
 class XSD2Ruby
+  include WSDL::SOAP::ClassDefCreatorSupport
+
   attr_accessor :location
   attr_reader :opt
   attr_accessor :logger
@@ -78,7 +81,8 @@ private
   end
 
   def dump_mapping_registry
-    creator = WSDL::SOAP::LiteralMappingRegistryCreator.new(@xsd, @modulepath)
+    defined_const = {}
+    creator = WSDL::SOAP::LiteralMappingRegistryCreator.new(@xsd, @modulepath, defined_const)
     module_name = XSD::CodeGen::GenSupport.safeconstname(
       @name + 'MappingRegistry')
     if @modulepath
@@ -90,6 +94,10 @@ private
     varname = 'Registry'
     m.def_const(varname, '::SOAP::Mapping::LiteralRegistry.new')
     m.def_code(creator.dump(varname))
+    #
+    defined_const.each do |ns, tag|
+      m.def_const(tag, dq(ns))
+    end
     m.dump
   end
 
