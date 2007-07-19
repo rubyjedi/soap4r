@@ -1,6 +1,11 @@
 require 'xsd/qname'
 
 # {http://www.jin.gr.jp/~nahi/xmlns/sample/Person}Person
+#   familyname - SOAP::SOAPString
+#   givenname - SOAP::SOAPString
+#   var1 - SOAP::SOAPInt
+#   var2 - SOAP::SOAPDouble
+#   var3 - SOAP::SOAPString
 class Person
   attr_accessor :familyname
   attr_accessor :givenname

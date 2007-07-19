@@ -28,8 +28,9 @@ class MappingRegistryCreator
   end
 
   def dump
-    encoded_creator = EncodedMappingRegistryCreator.new(@definitions, @modulepath)
-    literal_creator = LiteralMappingRegistryCreator.new(@definitions, @modulepath)
+    defined_const = {}
+    encoded_creator = EncodedMappingRegistryCreator.new(@definitions, @modulepath, defined_const)
+    literal_creator = LiteralMappingRegistryCreator.new(@definitions, @modulepath, defined_const)
     wsdl_name = @definitions.name ? @definitions.name.name : 'default'
     module_name = safeconstname(wsdl_name + 'MappingRegistry')
     if @modulepath
@@ -43,6 +44,10 @@ class MappingRegistryCreator
     varname = 'LiteralRegistry'
     m.def_const(varname, '::SOAP::Mapping::LiteralRegistry.new')
     m.def_code(literal_creator.dump(varname))
+    #
+    defined_const.each do |ns, tag|
+      m.def_const(tag, dq(ns))
+    end
     m.dump
   end
 end

@@ -9,6 +9,7 @@
 require 'wsdl/data'
 require 'wsdl/soap/classDefCreatorSupport'
 require 'xsd/codegen'
+require 'set'
 
 
 module WSDL
@@ -34,6 +35,7 @@ class ClassDefCreator
     if definitions.respond_to?(:collect_faulttypes)
       @faulttypes = definitions.collect_faulttypes
     end
+    @defined_const = {}
   end
 
   def dump(type = nil)
@@ -283,6 +285,7 @@ private
         else
           init_params << "#{varname} = nil"
         end
+        c.comment << "\n  #{attrname} - #{create_type_name(element) || '(any)'}"
       when WSDL::XMLSchema::Sequence
         child_init_lines, child_init_params =
           parse_elements(c, element.elements, base_namespace)
@@ -330,17 +333,31 @@ private
   end
 
   def define_attribute(c, attributes)
+    const = {}
+    unless attributes.empty?
+      c.def_method("__xmlattr") do <<-__EOD__
+          @__xmlattr ||= {}
+        __EOD__
+      end
+    end
     attributes.each do |attribute|
       name = name_attribute(attribute)
       methodname = safemethodname('xmlattr_' + name.name)
+      constname = 'Attr' + safeconstname(name.name)
+      const[constname] ||= 0
+      if (const[constname] += 1) > 1
+        constname += "_#{const[constname]}"
+      end
+      c.def_const(constname, dqname(name))
       c.def_method(methodname) do <<-__EOD__
-          (@__xmlattr ||= {})[#{dqname(name)}]
+          __xmlattr[#{constname}]
         __EOD__
       end
       c.def_method(methodname + '=', 'value') do <<-__EOD__
-          (@__xmlattr ||= {})[#{dqname(name)}] = value
+          __xmlattr[#{constname}] = value
         __EOD__
       end
+      c.comment << "\n  #{methodname} - #{attribute_basetype(attribute) || '(any)'}"
     end
   end
 

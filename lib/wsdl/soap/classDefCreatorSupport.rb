@@ -16,6 +16,7 @@ module WSDL
 module SOAP
 
 
+# requires @defined_const and @modulepath
 module ClassDefCreatorSupport
   include XSD::CodeGen::GenSupport
 
@@ -80,7 +81,36 @@ __EOD__
   end
 
   def dqname(qname)
-    qname.dump
+    if @defined_const.key?(qname.namespace)
+      qname.dump(@defined_const[qname.namespace])
+    else
+      qname.dump
+    end
+  end
+
+  def create_type_name(element)
+    if element.type == XSD::AnyTypeName
+      nil
+    elsif @simpletypes[element.type]
+      create_class_name(element.type, @modulepath)
+    elsif klass = element_basetype(element)
+      klass.name
+    elsif element.type
+      create_class_name(element.type, @modulepath)
+    elsif element.ref
+      create_class_name(element.ref, @modulepath)
+    else
+      nil
+      # nil means anyType.
+      # TODO: do we define a class for local complexType from it's name?
+      #   create_class_name(element.name, @modulepath)
+      #
+      # <element>
+      #   <complexType>
+      #     <seq...>
+      #   </complexType>
+      # </element>
+    end
   end
 
 private

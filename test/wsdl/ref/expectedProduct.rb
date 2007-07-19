@@ -1,6 +1,11 @@
 require 'xsd/qname'
 
+module WSDL::Ref
+
+
 # {urn:ref}Product
+#   name - SOAP::SOAPString
+#   rating - SOAP::SOAPString
 class Product
   attr_accessor :name
   attr_accessor :rating
@@ -12,13 +17,20 @@ class Product
 end
 
 # {urn:ref}Comment
+#   xmlattr_msgid - SOAP::SOAPString
 class Comment < ::String
+  AttrMsgid = XSD::QName.new(nil, "msgid")
+
+  def __xmlattr
+    @__xmlattr ||= {}
+  end
+
   def xmlattr_msgid
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "msgid")]
+    __xmlattr[AttrMsgid]
   end
 
   def xmlattr_msgid=(value)
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "msgid")] = value
+    __xmlattr[AttrMsgid] = value
   end
 
   def initialize(*arg)
@@ -28,13 +40,20 @@ class Comment < ::String
 end
 
 # {urn:ref}_point
+#   xmlattr_unit - SOAP::SOAPString
 class C__point < ::String
+  AttrUnit = XSD::QName.new(nil, "unit")
+
+  def __xmlattr
+    @__xmlattr ||= {}
+  end
+
   def xmlattr_unit
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "unit")]
+    __xmlattr[AttrUnit]
   end
 
   def xmlattr_unit=(value)
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "unit")] = value
+    __xmlattr[AttrUnit] = value
   end
 
   def initialize(*arg)
@@ -44,13 +63,20 @@ class C__point < ::String
 end
 
 # {urn:ref}Document
+#   xmlattr_ID - SOAP::SOAPString
 class Document < ::String
+  AttrID = XSD::QName.new(nil, "ID")
+
+  def __xmlattr
+    @__xmlattr ||= {}
+  end
+
   def xmlattr_ID
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")]
+    __xmlattr[AttrID]
   end
 
   def xmlattr_ID=(value)
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")] = value
+    __xmlattr[AttrID] = value
   end
 
   def initialize(*arg)
@@ -60,24 +86,35 @@ class Document < ::String
 end
 
 # {urn:ref}DerivedChoice_BaseSimpleContent
+#   varStringExt - SOAP::SOAPString
+#   varFloatExt - SOAP::SOAPFloat
+#   xmlattr_ID - SOAP::SOAPString
+#   xmlattr_attrStringExt - SOAP::SOAPString
 class DerivedChoice_BaseSimpleContent < Document
+  AttrAttrStringExt = XSD::QName.new(nil, "attrStringExt")
+  AttrID = XSD::QName.new(nil, "ID")
+
   attr_accessor :varStringExt
   attr_accessor :varFloatExt
 
+  def __xmlattr
+    @__xmlattr ||= {}
+  end
+
   def xmlattr_ID
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")]
+    __xmlattr[AttrID]
   end
 
   def xmlattr_ID=(value)
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "ID")] = value
+    __xmlattr[AttrID] = value
   end
 
   def xmlattr_attrStringExt
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "attrStringExt")]
+    __xmlattr[AttrAttrStringExt]
   end
 
   def xmlattr_attrStringExt=(value)
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "attrStringExt")] = value
+    __xmlattr[AttrAttrStringExt] = value
   end
 
   def initialize(varStringExt = nil, varFloatExt = nil)
@@ -95,7 +132,17 @@ class Rating < ::String
 end
 
 # {urn:ref}Product-Bag
+#   bag - WSDL::Ref::Product
+#   rating - SOAP::SOAPString
+#   comment_1 - (any)
+#   comment_2 - WSDL::Ref::Comment
+#   m___point - WSDL::Ref::C__point
+#   xmlattr_version - SOAP::SOAPString
+#   xmlattr_yesno - SOAP::SOAPString
 class ProductBag
+  AttrVersion = XSD::QName.new("urn:ref", "version")
+  AttrYesno = XSD::QName.new("urn:ref", "yesno")
+
   attr_accessor :bag
   attr_accessor :rating
   attr_accessor :comment_1
@@ -109,20 +156,24 @@ class ProductBag
     @v___point = value
   end
 
+  def __xmlattr
+    @__xmlattr ||= {}
+  end
+
   def xmlattr_version
-    (@__xmlattr ||= {})[XSD::QName.new("urn:ref", "version")]
+    __xmlattr[AttrVersion]
   end
 
   def xmlattr_version=(value)
-    (@__xmlattr ||= {})[XSD::QName.new("urn:ref", "version")] = value
+    __xmlattr[AttrVersion] = value
   end
 
   def xmlattr_yesno
-    (@__xmlattr ||= {})[XSD::QName.new("urn:ref", "yesno")]
+    __xmlattr[AttrYesno]
   end
 
   def xmlattr_yesno=(value)
-    (@__xmlattr ||= {})[XSD::QName.new("urn:ref", "yesno")] = value
+    __xmlattr[AttrYesno] = value
   end
 
   def initialize(bag = [], rating = [], comment_1 = [], comment_2 = [], v___point = nil)
@@ -136,13 +187,20 @@ class ProductBag
 end
 
 # {urn:ref}Creator
+#   xmlattr_Role - SOAP::SOAPString
 class Creator < ::String
+  AttrRole = XSD::QName.new(nil, "Role")
+
+  def __xmlattr
+    @__xmlattr ||= {}
+  end
+
   def xmlattr_Role
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "Role")]
+    __xmlattr[AttrRole]
   end
 
   def xmlattr_Role=(value)
-    (@__xmlattr ||= {})[XSD::QName.new(nil, "Role")] = value
+    __xmlattr[AttrRole] = value
   end
 
   def initialize(*arg)
@@ -155,4 +213,7 @@ end
 class Yesno < ::String
   N = Yesno.new("N")
   Y = Yesno.new("Y")
+end
+
+
 end

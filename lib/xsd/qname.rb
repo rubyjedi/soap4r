@@ -24,8 +24,9 @@ class QName
     XSD::QName.new(@namespace, name)
   end
 
-  def dump
-    ns = @namespace.nil? ? 'nil' : @namespace.dump
+  def dump(predefined_ns = nil)
+    ns = predefined_ns
+    ns ||= @namespace.nil? ? 'nil' : @namespace.dump
     name = @name.nil? ? 'nil' : @name.dump
     "XSD::QName.new(#{ns}, #{name})"
   end
