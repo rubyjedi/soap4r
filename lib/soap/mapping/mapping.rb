@@ -204,18 +204,20 @@ module Mapping
   def self.const_from_name(name, lenient = false)
     const = ::Object
     name.sub(/\A::/, '').split('::').each do |const_str|
-      begin
-        if const.const_defined?(const_str)
-          const = const.const_get(const_str)
-          next
-        end
-      rescue NameError
-        if lenient
-          const_str = XSD::CodeGen::GenSupport.safeconstname(const_str)
+      if /\A[A-Z]/ =~ const_str
+        begin
           if const.const_defined?(const_str)
             const = const.const_get(const_str)
             next
           end
+        rescue NameError
+        end
+      end
+      if lenient
+        const_str = XSD::CodeGen::GenSupport.safeconstname(const_str)
+        if const.const_defined?(const_str)
+          const = const.const_get(const_str)
+          next
         end
       end
       return nil
