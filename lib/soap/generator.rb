@@ -6,8 +6,8 @@
 # either the dual license version in 2003, or any later version.
 
 
-require 'xsd/ns'
 require 'soap/soap'
+require 'soap/ns'
 require 'soap/baseData'
 require 'soap/encodingstyle/handler'
 require 'xsd/codegen/gensupport'
@@ -47,6 +47,7 @@ public
     @indentstr = opt[:no_indent] ? '' : '  '
     @buf = @indent = @curr = nil
     @default_ns = opt[:default_ns]
+    @default_ns_tag = opt[:default_ns_tag]
   end
 
   def generate(obj, io = nil)
@@ -58,10 +59,15 @@ public
       handler.encode_prologue
     end
 
-    ns = XSD::NS.new
+    ns = SOAP::NS.new
     if @default_ns
       @default_ns.each_ns do |default_ns, default_tag|
         SOAPGenerator.assign_ns(obj.extraattr, ns, default_ns, default_tag)
+      end
+    end
+    if @default_ns_tag
+      @default_ns_tag.each_ns do |default_ns, default_tag|
+        ns.known_tag[default_ns] = default_tag
       end
     end
     @buf << xmldecl
@@ -136,10 +142,9 @@ public
     else
       if obj.is_a?(SOAPEnvelope)
         # xsi:nil="true" can appear even if dumping without explicit type.
-        SOAPGenerator.assign_ns(attrs, ns,
-	  XSD::InstanceNamespace, XSINamespaceTag)
+        SOAPGenerator.assign_ns(attrs, ns, XSD::InstanceNamespace)
         if @generate_explicit_type
-          SOAPGenerator.assign_ns(attrs, ns, XSD::Namespace, XSDNamespaceTag)
+          SOAPGenerator.assign_ns(attrs, ns, XSD::Namespace)
         end
       end
       obj.encode(self, ns, attrs) do |child|

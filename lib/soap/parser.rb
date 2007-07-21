@@ -6,9 +6,9 @@
 # either the dual license version in 2003, or any later version.
 
 
-require 'xsd/ns'
 require 'xsd/xmlparser'
 require 'soap/soap'
+require 'soap/ns'
 require 'soap/baseData'
 require 'soap/encodingstyle/handler'
 
@@ -120,7 +120,7 @@ public
       parent = lastframe.node
       parent_encodingstyle = lastframe.encodingstyle
     else
-      ns = XSD::NS.new
+      ns = SOAP::NS.new
       parent = ParseFrame::NodeContainer.new(nil)
       parent_encodingstyle = nil
     end

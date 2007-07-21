@@ -257,7 +257,7 @@ class SOAPEnvelope < XSD::NSDBase
   end
 
   def encode(generator, ns, attrs = {})
-    SOAPGenerator.assign_ns(attrs, ns, elename.namespace, SOAPNamespaceTag)
+    SOAPGenerator.assign_ns(attrs, ns, elename.namespace)
     name = ns.name(@elename)
     generator.encode_tag(name, attrs)
     yield(@header) if @header and @header.encode?

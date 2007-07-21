@@ -13,7 +13,7 @@ require 'xsd/charset'
 module SOAP
 
 
-VERSION = Version = '1.5.7'
+VERSION = Version = '1.5.8-SNAPSHOT'
 PropertyName = 'soap/property'
 
 EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
@@ -58,10 +58,6 @@ AttrPositionName = XSD::QName.new(EncodingNamespace, AttrPosition).freeze
 ValueArrayName = XSD::QName.new(EncodingNamespace, ValueArray).freeze
 
 Base64Literal = 'base64'
-
-SOAPNamespaceTag = 'env'
-XSDNamespaceTag = 'xsd'
-XSINamespaceTag = 'xsi'
 
 MediaType = 'text/xml'
 
