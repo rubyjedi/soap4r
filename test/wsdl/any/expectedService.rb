@@ -6,6 +6,8 @@ require 'soap/rpc/standaloneServer'
 module WSDL; module Any
 
 class Echo_port_type
+  NsEcho = "urn:example.com:echo"
+
   Methods = [
     [ "urn:example.com:echo",
       "echo",
@@ -15,7 +17,7 @@ class Echo_port_type
         :response_style => :document, :response_use => :literal,
         :faults => {} }
     ],
-    [ XSD::QName.new("urn:example.com:echo", "echoAny"),
+    [ XSD::QName.new(NsEcho, "echoAny"),
       "urn:example.com:echoAny",
       "echoAny",
       [ ["retval", "echoany_return", [nil]] ],

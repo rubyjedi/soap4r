@@ -4,8 +4,10 @@ require 'echo_versionMappingRegistry.rb'
 require 'soap/rpc/standaloneServer'
 
 class Echo_version_port_type
+  NsSimpletypeRpc = "urn:example.com:simpletype-rpc"
+
   Methods = [
-    [ XSD::QName.new("urn:example.com:simpletype-rpc", "echo_version"),
+    [ XSD::QName.new(NsSimpletypeRpc, "echo_version"),
       "urn:example.com:simpletype-rpc",
       "echo_version",
       [ ["in", "version", [nil, "urn:example.com:simpletype-rpc-type", "version"]],
@@ -14,7 +16,7 @@ class Echo_version_port_type
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
     ],
-    [ XSD::QName.new("urn:example.com:simpletype-rpc", "echo_version_r"),
+    [ XSD::QName.new(NsSimpletypeRpc, "echo_version_r"),
       "urn:example.com:simpletype-rpc",
       "echo_version_r",
       [ ["in", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
