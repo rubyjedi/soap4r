@@ -48,15 +48,15 @@ QNameLiteral = 'QName'
 NormalizedStringLiteral = 'normalizedString'
 TokenLiteral = 'token'
 LanguageLiteral = 'language'
-#3.3.4 NMTOKEN
-#3.3.5 NMTOKENS
-#3.3.6 Name
-#3.3.7 NCName
-#3.3.8 ID
-#3.3.9 IDREF
-#3.3.10 IDREFS
-#3.3.11 ENTITY
-#3.3.12 ENTITIES
+NMTOKENLiteral = 'NMTOKEN'
+NMTOKENSLiteral = 'NMTOKENS'
+NameLiteral = 'Name'
+NCNameLiteral = 'NCName'
+IDLiteral = 'ID'
+IDREFLiteral = 'IDREF'
+IDREFSLiteral = 'IDREFS'
+ENTITYLiteral = 'ENTITY'
+ENTITIESLiteral = 'ENTITIES'
 IntegerLiteral = 'integer'
 NonPositiveIntegerLiteral = 'nonPositiveInteger'
 NegativeIntegerLiteral = 'negativeInteger'
@@ -1048,6 +1048,150 @@ private
     if /\A[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})?\z/ !~ value
       raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
     end
+    value
+  end
+end
+
+class XSDNMTOKEN < XSDToken
+  Type = QName.new(Namespace, NMTOKENLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    super
+    # TODO: check lexical space and convert to a value
+    value
+  end
+end
+
+class XSDNMTOKENS < XSDNMTOKEN
+  Type = QName.new(Namespace, NMTOKENSLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    # derived by list
+    # TODO: check lexical space and convert to a value
+    value
+  end
+end
+
+class XSDName < XSDToken
+  Type = QName.new(Namespace, NameLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    super
+    # TODO: check lexical space and convert to a value
+    value
+  end
+end
+
+class XSDNCName < XSDName
+  Type = QName.new(Namespace, NCNameLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    super
+    # TODO: check lexical space and convert to a value
+    value
+  end
+end
+
+class XSDID < XSDNCName
+  Type = QName.new(Namespace, IDLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    super
+    # TODO: check lexical space and convert to a value
+    value
+  end
+end
+
+class XSDIDREF < XSDNCName
+  Type = QName.new(Namespace, IDREFLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    super
+    # TODO: check lexical space and convert to a value
+    value
+  end
+end
+
+class XSDIDREFS < XSDIDREF
+  Type = QName.new(Namespace, IDREFSLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    # derived by list
+    # TODO: check lexical space and convert to a value
+    value
+  end
+end
+
+class XSDENTITY < XSDNCName
+  Type = QName.new(Namespace, ENTITYLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    super
+    # TODO: check lexical space and convert to a value
+    value
+  end
+end
+
+class XSDENTITIES < XSDENTITY
+  Type = QName.new(Namespace, ENTITIESLiteral)
+
+  def initialize(value = nil)
+    init(Type, value)
+  end
+
+private
+
+  def screen_data(value)
+    # derived by list
+    # TODO: check lexical space and convert to a value
     value
   end
 end
