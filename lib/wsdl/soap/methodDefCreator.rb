@@ -20,7 +20,7 @@ class MethodDefCreator
 
   attr_reader :definitions
 
-  def initialize(definitions, modulepath)
+  def initialize(definitions, modulepath, defined_const)
     @definitions = definitions
     @modulepath = modulepath
     @simpletypes = @definitions.collect_simpletypes
@@ -29,6 +29,7 @@ class MethodDefCreator
     @types = []
     @encoded = false
     @literal = false
+    @defined_const = defined_const
   end
 
   def dump(porttype)
@@ -138,8 +139,9 @@ __EOD__
       @literal = true
     end
     if style == :rpc
+      assign_const(qname.namespace, 'Ns')
       return <<__EOD__
-[ #{qname.dump},
+[ #{dqname(qname)},
   #{definitions}]
 __EOD__
     else
@@ -158,15 +160,7 @@ __EOD__
       [nil, part.element.namespace, part.element.name]
     elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
-      when :TYPE_STRUCT, :TYPE_EMPTY    # ToDo: empty should be treated as void.
-        type = create_class_name(part.type, @modulepath)
-	[type, part.type.namespace, part.type.name]
-      when :TYPE_ARRAY
-	arytype = definedtype.find_arytype || XSD::AnyTypeName
-	arytypename = arytype.name.sub(/\[(?:,)*\]$/, '')
-        arytypedef = create_class_name(XSD::QName.new(nil, arytypename), @modulepath)
-	[arytypedef + '[]', part.type.namespace, part.type.name]
-      when :TYPE_SIMPLE
+      when :TYPE_STRUCT, :TYPE_EMPTY, :TYPE_ARRAY, :TYPE_SIMPLE
         type = create_class_name(part.type, @modulepath)
 	[type, part.type.namespace, part.type.name]
       when :TYPE_MAP

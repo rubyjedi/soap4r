@@ -88,6 +88,7 @@ private
     end
     parsed_element = parse_elements(typedef.elements, qname.namespace)
     var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
+    assign_const(var[:schema_ns], 'Ns')
     dump_entry(@varname, var)
   end
 
@@ -110,6 +111,7 @@ __EOD__
     var[:class] = create_class_name(qname, @modulepath)
     var[:schema_ns] = qname.namespace
     var[:schema_type] = qname.name
+    assign_const(var[:schema_ns], 'Ns')
     dump_entry(@varname, var)
   end
 end
