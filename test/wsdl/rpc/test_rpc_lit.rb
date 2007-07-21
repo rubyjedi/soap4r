@@ -193,7 +193,7 @@ class TestRPCLIT < Test::Unit::TestCase
       [ECHO_STRING_ARRAY_REQUEST, parse_requestxml(str)].join("\n\n"))
     assert_equal(ECHO_STRING_ARRAY_RESPONSE, parse_responsexml(str),
       [ECHO_STRING_ARRAY_RESPONSE, parse_responsexml(str)].join("\n\n"))
-    assert_equal(["a", "b", "c"], result.stringItem)
+    assert_equal(ArrayOfstring["a", "b", "c"], result)
   end
 
   ECHO_STRING_ARRAY_INLINE_REQUEST =
@@ -232,7 +232,7 @@ class TestRPCLIT < Test::Unit::TestCase
     drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoStringArrayInline(ArrayOfstringInline["a", "b", "c"])[0]
-    assert_equal(["a", "b", "c"], result.stringItem)
+    assert_equal(ArrayOfstring["a", "b", "c"], result)
     assert_equal(ECHO_STRING_ARRAY_INLINE_REQUEST, parse_requestxml(str),
       [ECHO_STRING_ARRAY_INLINE_REQUEST, parse_requestxml(str)].join("\n\n"))
     assert_equal(ECHO_STRING_ARRAY_INLINE_RESPONSE, parse_responsexml(str))

@@ -1,8 +1,8 @@
 require 'product.rb'
 require 'productMappingRegistry.rb'
+require 'soap/rpc/driver'
 
 module WSDL::Ref
-require 'soap/rpc/driver'
 
 class Ref_porttype < ::SOAP::RPC::Driver
   DefaultEndpointUrl = "http://localhost:17171/"

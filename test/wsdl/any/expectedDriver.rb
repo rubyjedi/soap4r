@@ -1,11 +1,12 @@
 require 'echo.rb'
 require 'echoMappingRegistry.rb'
+require 'soap/rpc/driver'
 
 module WSDL::Any
-require 'soap/rpc/driver'
 
 class Echo_port_type < ::SOAP::RPC::Driver
   DefaultEndpointUrl = "http://localhost:10080"
+  NsEcho = "urn:example.com:echo"
 
   Methods = [
     [ "urn:example.com:echo",
@@ -16,7 +17,7 @@ class Echo_port_type < ::SOAP::RPC::Driver
         :response_style => :document, :response_use => :literal,
         :faults => {} }
     ],
-    [ XSD::QName.new("urn:example.com:echo", "echoAny"),
+    [ XSD::QName.new(NsEcho, "echoAny"),
       "urn:example.com:echoAny",
       "echoAny",
       [ ["retval", "echoany_return", [nil]] ],

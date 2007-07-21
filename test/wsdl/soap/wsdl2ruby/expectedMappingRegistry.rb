@@ -8,7 +8,7 @@ module Echo_versionMappingRegistry
 
   EncodedRegistry.register(
     :class => Version_struct,
-    :schema_ns => "urn:example.com:simpletype-rpc-type",
+    :schema_ns => NsSimpletypeRpcType,
     :schema_type => "version_struct",
     :schema_element => [
       ["version", ["Version", XSD::QName.new(nil, "version")]],
