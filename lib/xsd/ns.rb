@@ -15,12 +15,23 @@ module XSD
 class NS
   Namespace = 'http://www.w3.org/XML/1998/namespace'
 
+  KNOWN_TAG = {
+    XSD::Namespace => 'xsd',
+    XSD::InstanceNamespace => 'xsi',
+  }
+
   class Assigner
-    def initialize
+    attr_reader :known_tag
+
+    def initialize(known_tag)
+      @known_tag = known_tag
       @count = 0
     end
 
     def assign(ns)
+      if @known_tag.key?(ns)
+        return @known_tag[ns]
+      end
       @count += 1
       "n#{@count}"
     end
@@ -34,18 +45,22 @@ public
 
   def initialize(tag2ns = nil)
     @tag2ns = tag2ns || ns_default
-    @assigner = nil
-    @ns2tag = {}
     @ns2tag = @tag2ns.invert
+    @assigner = nil
     @default_namespace = nil
   end
 
+  def known_tag
+    @assigner ||= Assigner.new(default_known_tag)
+    @assigner.known_tag
+  end
+
   def assign(ns, tag = nil)
-    if (tag == '')
+    if tag == ''
       @default_namespace = ns
       tag
     else
-      @assigner ||= Assigner.new
+      @assigner ||= Assigner.new(default_known_tag)
       tag ||= @assigner.assign(ns)
       @ns2tag[ns] = tag
       @tag2ns[tag] = ns
@@ -62,7 +77,7 @@ public
   end
 
   def clone_ns
-    cloned = NS.new(@tag2ns.dup)
+    cloned = self.class.new(@tag2ns.dup)
     cloned.assigner = @assigner
     cloned.assign(@default_namespace, '') if @default_namespace
     cloned
@@ -139,6 +154,10 @@ private
 
   def ns_default
     {'xml' => Namespace}
+  end
+
+  def default_known_tag
+    KNOWN_TAG
   end
 end
 

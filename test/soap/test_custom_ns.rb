@@ -16,7 +16,9 @@ class TestCustomNs < Test::Unit::TestCase
           env:mustUnderstand="0">hi</n1:headeritem>
   </env:Header>
   <env:Body>
-    <n2:test xmlns:n2="my:foo">bi</n2:test>
+    <n2:test xmlns:n2="my:foo"
+        xmlns:n3="my:bar"
+        n3:baz="qux">bi</n2:test>
   </env:Body>
 </env:Envelope>
 __XML__
@@ -31,7 +33,8 @@ __XML__
       <myns:headeritem ENV:mustUnderstand="0">hi</myns:headeritem>
   </ENV:Header>
   <ENV:Body>
-    <myns:test>bi</myns:test>
+    <myns:test xmlns:bar="my:bar"
+        bar:baz="qux">bi</myns:test>
   </ENV:Body>
 </ENV:Envelope>
 __XML__
@@ -43,17 +46,21 @@ __XML__
     header.add("test", hi)
     body = SOAP::SOAPBody.new()
     bi = SOAP::SOAPElement.new(XSD::QName.new("my:foo", "bodyitem"), 'bi')
+    bi.extraattr[XSD::QName.new('my:bar', 'baz')] = 'qux'
     body.add("test", bi)
     env = SOAP::SOAPEnvelope.new(header, body)
     # normal
     opt = {}
     result = SOAP::Processor.marshal(env, opt)
     assert_equal(NORMAL_XML, result)
-    # ns customize
+    # Envelope ns customize
     ns = XSD::NS.new
     ns.assign(SOAP::EnvelopeNamespace, 'ENV')
     ns.assign('my:foo', 'myns')
-    opt = { :default_ns => ns }
+    # tag customize
+    tag = XSD::NS.new
+    tag.assign('my:bar', 'bar')
+    opt = { :default_ns => ns, :default_ns_tag => tag }
     result = SOAP::Processor.marshal(env, opt)
     assert_equal(CUSTOM_NS_XML, result)
   end

@@ -7,10 +7,10 @@
 
 
 require 'xsd/qname'
-require 'xsd/ns'
 require 'xsd/charset'
 require 'xsd/datatypes'
 require 'xsd/xmlparser'
+require 'soap/ns'
 require 'wsdl/wsdl'
 require 'wsdl/data'
 require 'wsdl/xmlSchema/data'
@@ -77,7 +77,7 @@ public
       ns = lastframe.ns
       parent = lastframe.node
     else
-      ns = XSD::NS.new
+      ns = ::SOAP::NS.new
       parent = nil
     end
     # ns might be the same
