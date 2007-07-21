@@ -61,7 +61,7 @@ private
     create_servant_skelton(@opt['servant_skelton']) if @opt.key?('servant_skelton')
     create_cgi_stub(@opt['cgi_stub']) if @opt.key?('cgi_stub')
     create_standalone_server_stub(@opt['standalone_server_stub']) if @opt.key?('standalone_server_stub')
-    create_driver(@opt['driver'], @opt['drivername_postfix']) if @opt.key?('driver')
+    create_driver(@opt['driver'], @opt['drivername_postfix'] || '') if @opt.key?('driver')
     create_client_skelton(@opt['client_skelton']) if @opt.key?('client_skelton')
   end
 
