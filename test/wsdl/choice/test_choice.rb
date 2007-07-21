@@ -28,6 +28,13 @@ class TestChoice < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echoele_complex'),
         XSD::QName.new(Namespace, 'echo_complex_response')
       )
+      add_document_method(
+        self,
+        Namespace + ':echo_complex_emptyArrayAtFirst',
+        'echo_complex_emptyArrayAtFirst',
+        XSD::QName.new(Namespace, 'echoele_complex_emptyArrayAtFirst'),
+        XSD::QName.new(Namespace, 'echoele_complex_emptyArrayAtFirst')
+      )
       @router.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
     end
   
@@ -37,6 +44,10 @@ class TestChoice < Test::Unit::TestCase
 
     def echo_complex(arg)
       Echo_complex_response.new(arg.data)
+    end
+
+    def echo_complex_emptyArrayAtFirst(arg)
+      arg
     end
   end
 
@@ -77,7 +88,7 @@ class TestChoice < Test::Unit::TestCase
     gen.opt['driver'] = nil
     gen.opt['force'] = true
     gen.run
-    TestUtil.require(DIR, 'choiceMappingRegistry.rb', 'choice.rb')
+    TestUtil.require(DIR, 'choiceDriver.rb', 'choiceMappingRegistry.rb', 'choice.rb')
   end
 
   def teardown_server
@@ -176,6 +187,18 @@ class TestChoice < Test::Unit::TestCase
     assert_equal("B3b", ret.data.b3b)
     assert_equal("C1", ret.data.c1)
     assert_equal("C2", ret.data.c2)
+  end
+
+  def test_stub_emptyArrayAtFirst
+    @client = Choice_porttype.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDOUT if $DEBUG
+    #
+    arg = EmptyArrayAtFirst.new
+    arg.b1 = "b1"
+    ret = @client.echo_complex_emptyArrayAtFirst(arg)
+    assert_nil(ret.a)
+    assert_equal("b1", ret.b1)
+    assert_nil(ret.b2)
   end
 end
 

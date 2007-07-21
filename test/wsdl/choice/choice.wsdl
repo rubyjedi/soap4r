@@ -29,6 +29,16 @@
         </xsd:sequence>
       </xsd:complexType>
 
+      <xsd:complexType name="emptyArrayAtFirst">
+        <xsd:sequence>
+          <xsd:choice>
+            <xsd:element name="A" maxOccurs="unbounded" type="xsd:string"/>
+            <xsd:element name="B1" type="xsd:string"/>
+            <xsd:element name="B2" type="xsd:string"/>
+          </xsd:choice>
+        </xsd:sequence>
+      </xsd:complexType>
+
       <xsd:element name="terminalID" minOccurs="1" maxOccurs="1">
         <xsd:complexType>
           <xsd:choice>
@@ -69,6 +79,14 @@
           </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
+
+      <xsd:element name="echoele_complex_emptyArrayAtFirst">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="data" type="tns:emptyArrayAtFirst"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
     </xsd:schema>
   </types>
 
@@ -84,6 +102,12 @@
   <message name="echo_complex_out">
     <part name="parameters" element="tns:echo_complex_response" />
   </message>
+  <message name="echo_complex_emptyArrayAtFirst_in">
+    <part name="parameters" element="tns:echoele_complex_emptyArrayAtFirst" />
+  </message>
+  <message name="echo_complex_emptyArrayAtFirst_out">
+    <part name="parameters" element="tns:echoele_complex_emptyArrayAtFirst" />
+  </message>
 
   <portType name="choice_porttype">
     <operation name="echo">
@@ -94,6 +118,11 @@
     <operation name="echo_complex">
       <input message="tns:echo_complex_in" />
       <output message="tns:echo_complex_out" />
+    </operation>
+
+    <operation name="echo_complex_emptyArrayAtFirst">
+      <input message="tns:echo_complex_emptyArrayAtFirst_in" />
+      <output message="tns:echo_complex_emptyArrayAtFirst_out" />
     </operation>
   </portType>
 
@@ -111,6 +140,16 @@
 
     <operation name="echo_complex">
       <soap:operation soapAction="urn:choice:echo_complex" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+
+    <operation name="echo_complex_emptyArrayAtFirst">
+      <soap:operation soapAction="urn:choice:echo_complex_emptyArrayAtFirst" style="document" />
       <input>
         <soap:body use="literal" />
       </input>
