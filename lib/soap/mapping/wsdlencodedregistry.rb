@@ -56,7 +56,11 @@ class WSDLEncodedRegistry < EncodedRegistry
   # map anything for now: must refer WSDL while mapping.  [ToDo]
   def soap2obj(node, obj_class = nil)
     begin
-      return any2obj(node, obj_class)
+      unless obj_class
+        typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
+        obj_class = Mapping.class_from_name(typestr)
+      end
+      return Mapping._soap2obj(node, Mapping::DefaultRegistry, obj_class)
     rescue MappingError
     end
     if @excn_handler_soap2obj
@@ -197,54 +201,6 @@ private
       soap_obj.add(name,
         Mapping._obj2soap(child_obj, self, element.type || element.name))
     end
-  end
-
-  def any2obj(node, obj_class)
-    unless obj_class
-      typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
-      obj_class = Mapping.class_from_name(typestr)
-    end
-    if obj_class and obj_class.class_variables.include?('@@schema_element')
-      soap2stubobj(node, obj_class)
-    else
-      Mapping._soap2obj(node, Mapping::DefaultRegistry, obj_class)
-    end
-  end
-
-  def soap2stubobj(node, obj_class)
-    obj = Mapping.create_empty_object(obj_class)
-    unless node.is_a?(SOAPNil)
-      add_elements2stubobj(node, obj)
-    end
-    obj
-  end
-
-  def add_elements2stubobj(node, obj)
-    definition = Mapping.schema_definition_classdef(obj.class)
-    vars = {}
-    node.each do |name, value|
-      item = definition.elements.find { |k, v| k.elename == value.elename }
-      if item and item.mapped_class
-        # klass must be a SOAPBasetype or a class
-        if item.mapped_class.include?(::SOAP::SOAPBasetype)
-          if value.respond_to?(:data)
-            child = item.mapped_class.new(value.data).data
-          else
-            child = item.mapped_class.new(nil).data
-          end
-        else
-          child = Mapping._soap2obj(value, self, item.mapped_class)
-        end
-      else      # untyped element is treated as anyType.
-        child = Mapping._soap2obj(value, self)
-      end
-      if item and item.as_array?
-        (vars[name] ||= []) << child
-      else
-        vars[name] = child
-      end
-    end
-    Mapping.set_attributes(obj, vars)
   end
 end
 

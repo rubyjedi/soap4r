@@ -55,22 +55,6 @@ module MappingRegistryCreatorSupport
     end
   end
 
-  def assign_const(value, prefix = '')
-    return if value.nil? or @defined_const.key?(value)
-    name = value.scan(/[^:\/]+\z/)[0] || ''
-    tag = prefix + safeconstname(name)
-    if @defined_const.value?(tag)
-      idx = 0
-      while true
-        tag = prefix + safeconstname(name + "_#{idx}")
-        break unless @defined_const.value?(tag)
-        idx += 1
-        raise RuntimeError.new("too much similar names") if idx > 100
-      end
-    end
-    @defined_const[value] = tag
-  end
-
   def dump_occurrence(occurrence)
     if occurrence and occurrence != [1, 1] # default
       minoccurs, maxoccurs = occurrence

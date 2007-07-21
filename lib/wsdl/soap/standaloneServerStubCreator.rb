@@ -48,7 +48,8 @@ private
 
   def dump_porttype(name)
     class_name = create_class_name(name, @modulepath)
-    result = MethodDefCreator.new(@definitions, @modulepath).dump(name)
+    defined_const = {}
+    result = MethodDefCreator.new(@definitions, @modulepath, defined_const).dump(name)
     methoddef = result[:methoddef]
 
     wsdl_name = @definitions.name ? @definitions.name.name : 'default'
@@ -61,6 +62,9 @@ Methods = [
 #{methoddef.gsub(/^/, "  ")}
 ]
     EOD
+    defined_const.each do |ns, tag|
+      c1.def_const(tag, dq(ns))
+    end
     c2 = XSD::CodeGen::ClassDef.new(class_name + "App",
       "::SOAP::RPC::StandaloneServer")
     c2.def_method("initialize", "*arg") do

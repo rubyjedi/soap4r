@@ -141,6 +141,7 @@ private
     unless typedef.attributes.empty?
       var[:schema_attribute] = define_attribute(typedef.attributes)
     end
+    assign_const(var[:schema_ns], 'Ns')
     dump_entry(@varname, var)
   end
 
@@ -186,6 +187,7 @@ private
     parsed_element = []
     parsed_element << [child_element_name.name, child_element_name, type, occurrence]
     var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
+    assign_const(var[:schema_ns], 'Ns')
     dump_entry(@varname, var)
   end
 
@@ -205,6 +207,7 @@ private
     unless type_or_element.attributes.empty?
       var[:schema_attribute] = define_attribute(type_or_element.attributes)
     end
+    assign_const(var[:schema_ns], 'Ns')
     dump_entry(@varname, var)
   end
 end

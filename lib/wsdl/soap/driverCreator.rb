@@ -28,12 +28,12 @@ class DriverCreator
   end
 
   def dump(porttype = nil)
-    result = ''
+    result = "require 'soap/rpc/driver'\n\n"
     if @modulepath
-      result << "\n"
       @modulepath.each do |name|
         result << "module #{name}\n"
       end
+      result << "\n"
     end
     if porttype.nil?
       @definitions.porttypes.each do |type|
@@ -56,7 +56,8 @@ private
 
   def dump_porttype(porttype)
     class_name = create_class_name(porttype)
-    result = MethodDefCreator.new(@definitions, @modulepath).dump(porttype)
+    defined_const = {}
+    result = MethodDefCreator.new(@definitions, @modulepath, defined_const).dump(porttype)
     methoddef = result[:methoddef]
     binding = @definitions.bindings.find { |item| item.type == porttype }
     if binding.nil? or binding.soapbinding.nil?
@@ -66,7 +67,6 @@ private
     address = @definitions.porttype(porttype).locations[0]
 
     c = XSD::CodeGen::ClassDef.new(class_name, "::SOAP::RPC::Driver")
-    c.def_require("soap/rpc/driver")
     c.def_const("DefaultEndpointUrl", ndq(address))
     c.def_code <<-EOD
 Methods = [
@@ -100,6 +100,9 @@ Methods = [
           end
         end
       EOD
+    end
+    defined_const.each do |ns, tag|
+      c.def_const(tag, dq(ns))
     end
     c.dump
   end
