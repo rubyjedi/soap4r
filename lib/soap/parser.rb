@@ -222,11 +222,20 @@ private
       o = SOAPBody.new
       parent.node.body = o
     elsif ele.name == EleFault
-      unless parent.node.is_a?(SOAPBody)
-	raise FormatDecodeError.new("Fault should be a child of Body.")
+      if parent.node.is_a?(SOAPBody)
+        o = SOAPFault.new
+        parent.node.fault = o
+      elsif parent.node.is_a?(SOAPEnvelope)
+        # live.com server returns SOAPFault as a direct child of SOAPEnvelope.
+        # support it even if it's not spec compliant.
+        warn("Fault must be a child of Body.")
+        body = SOAPBody.new
+        parent.node.body = body
+        o = SOAPFault.new
+        body.fault = o
+      else
+        raise FormatDecodeError.new("Fault should be a child of Body.")
       end
-      o = SOAPFault.new
-      parent.node.fault = o
     end
     o.extraattr.update(attrs) if o
     o
