@@ -61,7 +61,7 @@ private
     create_servant_skelton(@opt['servant_skelton']) if @opt.key?('servant_skelton')
     create_cgi_stub(@opt['cgi_stub']) if @opt.key?('cgi_stub')
     create_standalone_server_stub(@opt['standalone_server_stub']) if @opt.key?('standalone_server_stub')
-    create_driver(@opt['driver']) if @opt.key?('driver')
+    create_driver(@opt['driver'], @opt['drivername_postfix']) if @opt.key?('driver')
     create_client_skelton(@opt['client_skelton']) if @opt.key?('client_skelton')
   end
 
@@ -136,15 +136,16 @@ private
     end
   end
 
-  def create_driver(porttypename)
+  def create_driver(porttypename, drivername_postfix)
     @logger.info { "Creating driver." }
     @driver_filename = (porttypename || @name) + 'Driver.rb'
+    creator = WSDL::SOAP::DriverCreator.new(@wsdl, @modulepath)
+    creator.drivername_postfix = drivername_postfix
     check_file(@driver_filename) or return
     write_file(@driver_filename) do |f|
       f << "require '#{@classdef_filename}'\n" if @classdef_filename
       f << "require '#{@mr_filename}'\n" if @mr_filename
-      f << WSDL::SOAP::DriverCreator.new(@wsdl, @modulepath).dump(
-	create_name(porttypename))
+      f << creator.dump(create_name(porttypename))
     end
   end
 

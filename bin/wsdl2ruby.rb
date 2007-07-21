@@ -19,6 +19,7 @@ private
     ['--cgi_stub','-g', GetoptLong::OPTIONAL_ARGUMENT],
     ['--standalone_server_stub','-a', GetoptLong::OPTIONAL_ARGUMENT],
     ['--driver','-d', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--drivername_postfix','-n', GetoptLong::REQUIRED_ARGUMENT],
     ['--force','-f', GetoptLong::NO_ARGUMENT],
     ['--quiet','-q', GetoptLong::NO_ARGUMENT],
   ]
@@ -70,7 +71,8 @@ Options:
   --cgi_stub [servicename]
   --standalone_server_stub [servicename]
   --driver [porttypename]
-  --module_path [Module::Path::Name]
+  --drivername_postfix driver_classname_postfix
+  --module_path Module::Path::Name
   --force
   --quiet
 
@@ -113,6 +115,8 @@ __EOU__
             "--cgi_stub", "--standalone_server_stub",
             "--driver"
   	  opt[name.sub(/^--/, '')] = arg.empty? ? nil : arg
+        when "--drivername_postfix"
+          opt['drivername_postfix'] = arg
 	when "--force"
 	  opt['force'] = true
         when "--quiet"

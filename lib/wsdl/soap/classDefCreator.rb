@@ -163,7 +163,8 @@ private
 
   def dump_simpletypedef_union(qname, typedef, qualified)
     union = typedef.union
-    c = ClassDef.new(create_class_name(qname), '::String')
+    classname = create_class_name(qname)
+    c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     if union.member_types
       # fixme

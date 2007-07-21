@@ -21,10 +21,12 @@ class DriverCreator
   include ClassDefCreatorSupport
 
   attr_reader :definitions
+  attr_accessor :drivername_postfix
 
   def initialize(definitions, modulepath = nil)
     @definitions = definitions
     @modulepath = modulepath
+    @drivername_postfix = ''
   end
 
   def dump(porttype = nil)
@@ -55,7 +57,8 @@ class DriverCreator
 private
 
   def dump_porttype(porttype)
-    class_name = create_class_name(porttype)
+    qname = XSD::QName.new(nil, porttype.name + @drivername_postfix)
+    class_name = create_class_name(qname)
     defined_const = {}
     result = MethodDefCreator.new(@definitions, @modulepath, defined_const).dump(porttype)
     methoddef = result[:methoddef]
