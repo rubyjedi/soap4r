@@ -219,10 +219,7 @@ private
 
   def init_param(param_def)
     param_def.each do |io_type, name, param_type|
-      mapped_class, nsdef, namedef = param_type
-      if mapped_class.is_a?(String)
-        mapped_class = Mapping.class_from_name(mapped_class)
-      end
+      mapped_class, nsdef, namedef = SOAPMethod.parse_param_type(param_type)
       if nsdef && namedef
         type_qname = XSD::QName.new(nsdef, namedef)
       elsif mapped_class
@@ -243,12 +240,27 @@ private
           raise MethodDefinitionError.new('duplicated retval')
         end
         @retval_name = name
-        @retval_class_name = nil
         @retval_class_name = mapped_class
       else
         raise MethodDefinitionError.new("unknown type: #{io_type}")
       end
     end
+  end
+
+  def self.parse_param_type(param_type)
+    mapped_class, nsdef, namedef = param_type
+    # the first element of typedef in param_def can be a String like
+    # "::SOAP::SOAPStruct" or "CustomClass[]".  turn this String to a class if
+    # we can.
+    if mapped_class.is_a?(String)
+      if /\[\]\Z/ =~ mapped_class
+        # when '[]' is added, ignore this.
+        mapped_class = nil
+      else
+        mapped_class = Mapping.class_from_name(mapped_class)
+      end
+    end
+    [mapped_class, nsdef, namedef]
   end
 end
 
