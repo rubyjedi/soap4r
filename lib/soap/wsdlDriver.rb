@@ -26,7 +26,7 @@ class WSDLDriverFactory
 
   def initialize(wsdl)
     @wsdl = import(wsdl)
-    @methoddefcreator = WSDL::SOAP::MethodDefCreator.new(@wsdl, nil)
+    @methoddefcreator = WSDL::SOAP::MethodDefCreator.new(@wsdl, nil, {})
   end
   
   def inspect
@@ -133,9 +133,8 @@ private
     end
     # the first element of typedef in param_def is a String like
     # "::SOAP::SOAPStruct".  turn this String to a class.
-    param_def.collect { |io, name, typedef|
-      typedef[0] = Mapping.class_from_name(typedef[0]) if typedef[0]
-      [io, name, typedef]
+    param_def.collect { |io_type, name, param_type|
+      [io_type, name, ::SOAP::RPC::SOAPMethod.parse_param_type(param_type)]
     }
   end
 
