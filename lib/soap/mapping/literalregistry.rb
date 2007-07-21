@@ -174,8 +174,12 @@ private
           added = false
         else
           if child.respond_to?(:each) and definition.as_array?
-            child.each do |item|
-              ele.add(definedobj2soap(item, definition))
+            if child.empty?
+              added = false
+            else
+              child.each do |item|
+                ele.add(definedobj2soap(item, definition))
+              end
             end
           else
             ele.add(definedobj2soap(child, definition))
