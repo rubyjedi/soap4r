@@ -257,6 +257,60 @@ class SOAPLanguage < XSD::XSDLanguage
   SOAPENCType = QName.new(EncodingNamespace, LanguageLiteral)
 end
 
+class SOAPNMTOKEN < XSD::XSDNMTOKEN
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, NMTOKENLiteral)
+end
+
+class SOAPNMTOKENS < XSD::XSDNMTOKENS
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, NMTOKENSLiteral)
+end
+
+class SOAPName < XSD::XSDName
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, NameLiteral)
+end
+
+class SOAPNCName < XSD::XSDNCName
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, NCNameLiteral)
+end
+
+class SOAPID < XSD::XSDID
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, IDLiteral)
+end
+
+class SOAPIDREF < XSD::XSDIDREF
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, IDREFLiteral)
+end
+
+class SOAPIDREFS < XSD::XSDIDREFS
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, IDREFSLiteral)
+end
+
+class SOAPENTITY < XSD::XSDENTITY
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, ENTITYLiteral)
+end
+
+class SOAPENTITIES < XSD::XSDENTITIES
+  include SOAPBasetype
+  extend SOAPModuleUtils
+  SOAPENCType = QName.new(EncodingNamespace, ENTITIESLiteral)
+end
+
 class SOAPBoolean < XSD::XSDBoolean
   include SOAPBasetype
   extend SOAPModuleUtils
