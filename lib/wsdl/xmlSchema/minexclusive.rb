@@ -27,7 +27,7 @@ class MinExclusive < Info
     when FixedAttrName
       parent.fixed[:minexclusive] = to_boolean(value)
     when ValueAttrName
-      parent.minexclusive = to_int(value)
+      parent.minexclusive = value.source
     end
   end
 end

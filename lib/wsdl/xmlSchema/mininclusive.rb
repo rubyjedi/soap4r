@@ -27,7 +27,7 @@ class MinInclusive < Info
     when FixedAttrName
       parent.fixed[:mininclusive] = to_boolean(value)
     when ValueAttrName
-      parent.mininclusive = to_int(value)
+      parent.mininclusive = value.source
     end
   end
 end

@@ -27,7 +27,7 @@ class MaxExclusive < Info
     when FixedAttrName
       parent.fixed[:maxexclusive] = to_boolean(value)
     when ValueAttrName
-      parent.maxexclusive = to_int(value)
+      parent.maxexclusive = value.source
     end
   end
 end

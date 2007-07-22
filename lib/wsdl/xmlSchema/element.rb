@@ -52,6 +52,7 @@ class Element < Info
   attr_reader_ref :local_complextype
   attr_reader_ref :constraint
   attr_reader_ref :nillable
+  attr_reader_ref :default
 
   attr_accessor :ref
 
@@ -65,6 +66,7 @@ class Element < Info
     @maxoccurs = 1
     @minoccurs = 1
     @nillable = nil
+    @default = nil
     @ref = nil
     @refelement = nil
   end
@@ -148,6 +150,8 @@ class Element < Info
       @minoccurs = Integer(value.source)
     when NillableAttrName
       @nillable = (value.source == 'true')
+    when DefaultAttrName
+      @default = value.source
     else
       nil
     end
