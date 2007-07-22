@@ -16,11 +16,19 @@ module XMLSchema
 
 class SimpleRestriction < Info
   attr_reader :base
-  attr_reader :enumeration
   attr_accessor :length
-  attr_accessor :maxlength
   attr_accessor :minlength
+  attr_accessor :maxlength
   attr_accessor :pattern
+  attr_reader :enumeration
+  attr_reader :whitespace
+  attr_reader :maxinclusive
+  attr_reader :maxexlusive
+  attr_reader :minexlusive
+  attr_reader :mininclusive
+  attr_reader :totaldigits
+  attr_reader :fractiondigits
+  attr_reader :fixed
 
   def initialize
     super
@@ -30,6 +38,7 @@ class SimpleRestriction < Info
     @maxlength = nil
     @minlength = nil
     @pattern = nil
+    @fixed = {}
   end
   
   def valid?(value)
@@ -43,16 +52,30 @@ class SimpleRestriction < Info
 
   def parse_element(element)
     case element
-    when EnumerationName
-      Enumeration.new
     when LengthName
       Length.new
-    when PatternName
-      Pattern.new
-    when MaxLengthName
-      MaxLength.new
     when MinLengthName
       MinLength.new
+    when MaxLengthName
+      MaxLength.new
+    when PatternName
+      Pattern.new
+    when EnumerationName
+      Enumeration.new
+    when WhiteSpaceName
+      WhiteSpace.new
+    when MaxInclusiveName
+      MaxInclusive.new
+    when MaxExlusiveName
+      MaxExlusive.new
+    when MinExlusiveName
+      MinExlusive.new
+    when MinInclusiveName
+      MinInclusive.new
+    when TotalDigitsName
+      TotalDigitsName.new
+    when FractionDigitsName
+      FractionDigitsName.new
     end
   end
 

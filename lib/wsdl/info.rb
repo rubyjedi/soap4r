@@ -33,6 +33,17 @@ class Info
   def parse_attr(attr, value); end	# abstract
 
   def parse_epilogue; end		# abstract
+
+private
+
+  def to_int(value)
+    Integer(value.source)
+  end
+
+  def to_boolean(value)
+    s = value.source
+    s == "true" or s == "1"
+  end
 end
 
 

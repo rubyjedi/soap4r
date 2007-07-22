@@ -24,8 +24,10 @@ class MinLength < Info
 
   def parse_attr(attr, value)
     case attr
+    when FixedAttrName
+      parent.fixed[:minlength] = to_boolean(value)
     when ValueAttrName
-      parent.minlength = Integer(value.source)
+      parent.minlength = to_int(value)
     end
   end
 end
