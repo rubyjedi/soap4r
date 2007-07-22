@@ -53,6 +53,7 @@ class Element < Info
   attr_reader_ref :constraint
   attr_reader_ref :nillable
   attr_reader_ref :default
+  attr_reader_ref :abstract
 
   attr_accessor :ref
 
@@ -67,6 +68,7 @@ class Element < Info
     @minoccurs = 1
     @nillable = nil
     @default = nil
+    @abstract = false
     @ref = nil
     @refelement = nil
   end
@@ -149,9 +151,11 @@ class Element < Info
       end
       @minoccurs = Integer(value.source)
     when NillableAttrName
-      @nillable = (value.source == 'true')
+      @nillable = to_boolean(value)
     when DefaultAttrName
       @default = value.source
+    when AbstractAttrName
+      @abstract = to_boolean(value)
     else
       nil
     end

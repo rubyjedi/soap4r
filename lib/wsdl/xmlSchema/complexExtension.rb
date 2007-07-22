@@ -17,6 +17,7 @@ module XMLSchema
 class ComplexExtension < Info
   attr_accessor :base
   attr_reader :content
+  attr_accessor :anyattribute
 
   def initialize
     super
@@ -24,6 +25,7 @@ class ComplexExtension < Info
     @basetype = nil
     @content = nil
     @attributes = XSD::NamedElements.new
+    @anyattribute = nil
   end
 
   def targetnamespace
@@ -85,6 +87,8 @@ class ComplexExtension < Info
       o = Attribute.new
       @attributes << o
       o
+    when AnyAttributeName
+      @anyattribute = AnyAttribute.new
     end
   end
 

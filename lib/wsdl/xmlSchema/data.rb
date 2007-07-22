@@ -105,6 +105,7 @@ TargetNamespaceAttrName = XSD::QName.new(nil, 'targetNamespace')
 TypeAttrName = XSD::QName.new(nil, 'type')
 UseAttrName = XSD::QName.new(nil, 'use')
 ValueAttrName = XSD::QName.new(nil, 'value')
+VersionAttrName = XSD::QName.new(nil, 'version')
 
 
 end
