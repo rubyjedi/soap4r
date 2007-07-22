@@ -27,7 +27,7 @@ class MaxInclusive < Info
     when FixedAttrName
       parent.fixed[:maxinclusive] = to_boolean(value)
     when ValueAttrName
-      parent.maxinclusive = to_int(value)
+      parent.maxinclusive = value.source
     end
   end
 end

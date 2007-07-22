@@ -21,13 +21,13 @@ class SimpleRestriction < Info
   attr_accessor :maxlength
   attr_accessor :pattern
   attr_reader :enumeration
-  attr_reader :whitespace
-  attr_reader :maxinclusive
-  attr_reader :maxexlusive
-  attr_reader :minexlusive
-  attr_reader :mininclusive
-  attr_reader :totaldigits
-  attr_reader :fractiondigits
+  attr_accessor :whitespace
+  attr_accessor :maxinclusive
+  attr_accessor :maxexlusive
+  attr_accessor :minexlusive
+  attr_accessor :mininclusive
+  attr_accessor :totaldigits
+  attr_accessor :fractiondigits
   attr_reader :fixed
 
   def initialize
@@ -66,16 +66,16 @@ class SimpleRestriction < Info
       WhiteSpace.new
     when MaxInclusiveName
       MaxInclusive.new
-    when MaxExlusiveName
+    when MaxExclusiveName
       MaxExlusive.new
-    when MinExlusiveName
+    when MinExclusiveName
       MinExlusive.new
     when MinInclusiveName
       MinInclusive.new
     when TotalDigitsName
-      TotalDigitsName.new
+      TotalDigits.new
     when FractionDigitsName
-      FractionDigitsName.new
+      FractionDigits.new
     end
   end
 
