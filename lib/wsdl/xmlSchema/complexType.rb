@@ -23,6 +23,7 @@ class ComplexType < Info
   attr_accessor :final
   attr_accessor :mixed
   attr_accessor :abstract
+  attr_accessor :anyattribute
 
   def initialize(name = nil)
     super()
@@ -34,6 +35,7 @@ class ComplexType < Info
     @mixed = false
     @abstract = false
     @attributes = XSD::NamedElements.new
+    @anyattribute = nil
   end
 
   def targetnamespace
@@ -134,6 +136,8 @@ class ComplexType < Info
       o = Attribute.new
       @attributes << o
       o
+    when AnyAttributeName
+      @anyattribute = AnyAttribute.new
     else
       nil
     end
