@@ -24,8 +24,10 @@ class MaxLength < Info
 
   def parse_attr(attr, value)
     case attr
+    when FixedAttrName
+      parent.fixed[:maxlength] = to_boolean(value)
     when ValueAttrName
-      parent.maxlength = Integer(value.source)
+      parent.maxlength = to_int(value)
     end
   end
 end

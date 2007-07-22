@@ -28,11 +28,19 @@ require 'wsdl/xmlSchema/list'
 require 'wsdl/xmlSchema/attribute'
 require 'wsdl/xmlSchema/union'
 require 'wsdl/xmlSchema/unique'
-require 'wsdl/xmlSchema/enumeration'
+
 require 'wsdl/xmlSchema/length'
-require 'wsdl/xmlSchema/maxlength'
 require 'wsdl/xmlSchema/minlength'
+require 'wsdl/xmlSchema/maxlength'
 require 'wsdl/xmlSchema/pattern'
+require 'wsdl/xmlSchema/enumeration'
+require 'wsdl/xmlSchema/whitespace'
+require 'wsdl/xmlSchema/maxinclusive'
+require 'wsdl/xmlSchema/maxexclusive'
+require 'wsdl/xmlSchema/minexclusive'
+require 'wsdl/xmlSchema/mininclusive'
+require 'wsdl/xmlSchema/totaldigits'
+require 'wsdl/xmlSchema/fractiondigits'
 
 module WSDL
 module XMLSchema
@@ -46,15 +54,10 @@ ChoiceName = XSD::QName.new(XSD::Namespace, 'choice')
 ComplexContentName = XSD::QName.new(XSD::Namespace, 'complexContent')
 ComplexTypeName = XSD::QName.new(XSD::Namespace, 'complexType')
 ElementName = XSD::QName.new(XSD::Namespace, 'element')
-EnumerationName = XSD::QName.new(XSD::Namespace, 'enumeration')
 ExtensionName = XSD::QName.new(XSD::Namespace, 'extension')
 ImportName = XSD::QName.new(XSD::Namespace, 'import')
 IncludeName = XSD::QName.new(XSD::Namespace, 'include')
-LengthName = XSD::QName.new(XSD::Namespace, 'length')
 ListName = XSD::QName.new(XSD::Namespace, 'list')
-MaxLengthName = XSD::QName.new(XSD::Namespace, 'maxLength')
-MinLengthName = XSD::QName.new(XSD::Namespace, 'minLength')
-PatternName = XSD::QName.new(XSD::Namespace, 'pattern')
 RestrictionName = XSD::QName.new(XSD::Namespace, 'restriction')
 SequenceName = XSD::QName.new(XSD::Namespace, 'sequence')
 SchemaName = XSD::QName.new(XSD::Namespace, 'schema')
@@ -62,6 +65,19 @@ SimpleContentName = XSD::QName.new(XSD::Namespace, 'simpleContent')
 SimpleTypeName = XSD::QName.new(XSD::Namespace, 'simpleType')
 UnionName = XSD::QName.new(XSD::Namespace, 'union')
 UniqueName = XSD::QName.new(XSD::Namespace, 'unique')
+
+LengthName = XSD::QName.new(XSD::Namespace, 'length')
+MinLengthName = XSD::QName.new(XSD::Namespace, 'minLength')
+MaxLengthName = XSD::QName.new(XSD::Namespace, 'maxLength')
+PatternName = XSD::QName.new(XSD::Namespace, 'pattern')
+EnumerationName = XSD::QName.new(XSD::Namespace, 'enumeration')
+WhiteSpaceName = XSD::QName.new(XSD::Namespace, 'whiteSpace')
+MaxInclusiveName = XSD::QName.new(XSD::Namespace, 'maxInclusive')
+MaxExclusiveName = XSD::QName.new(XSD::Namespace, 'maxExclusive')
+MinExclusiveName = XSD::QName.new(XSD::Namespace, 'minExclusive')
+MinInclusiveName = XSD::QName.new(XSD::Namespace, 'minInclusive')
+TotalDigitsName = XSD::QName.new(XSD::Namespace, 'totalDigits')
+FractionDigitsName = XSD::QName.new(XSD::Namespace, 'fractionDigits')
 
 AbstractAttrName = XSD::QName.new(nil, 'abstract')
 AttributeFormDefaultAttrName = XSD::QName.new(nil, 'attributeFormDefault')

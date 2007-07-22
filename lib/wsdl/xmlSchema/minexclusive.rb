@@ -1,4 +1,4 @@
-# WSDL4R - XMLSchema length definition for WSDL.
+# WSDL4R - XMLSchema minExclusive definition for WSDL.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
@@ -13,7 +13,7 @@ module WSDL
 module XMLSchema
 
 
-class Length < Info
+class MinExclusive < Info
   def initialize
     super
   end
@@ -25,9 +25,9 @@ class Length < Info
   def parse_attr(attr, value)
     case attr
     when FixedAttrName
-      parent.fixed[:length] = to_boolean(value)
+      parent.fixed[:minexclusive] = to_boolean(value)
     when ValueAttrName
-      parent.length = to_int(value)
+      parent.minexclusive = to_int(value)
     end
   end
 end

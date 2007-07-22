@@ -8,6 +8,7 @@
 
 require 'xsd/datatypes'
 require 'xsd/ns'
+require 'soap/soap'
 
 
 module SOAP
