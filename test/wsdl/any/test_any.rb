@@ -132,6 +132,7 @@ class TestAny < Test::Unit::TestCase
       gen.run
     end
     compare("expectedEcho.rb", "echo.rb")
+    compare("expectedMappingRegistry.rb", "echoMappingRegistry.rb")
     compare("expectedDriver.rb", "echoDriver.rb")
     compare("expectedService.rb", "echo_service.rb")
 

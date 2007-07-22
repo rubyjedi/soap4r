@@ -20,6 +20,7 @@ require 'wsdl/xmlSchema/complexRestriction'
 require 'wsdl/xmlSchema/complexExtension'
 require 'wsdl/xmlSchema/simpleContent'
 require 'wsdl/xmlSchema/any'
+require 'wsdl/xmlSchema/anyAttribute'
 require 'wsdl/xmlSchema/element'
 require 'wsdl/xmlSchema/all'
 require 'wsdl/xmlSchema/choice'
@@ -49,6 +50,7 @@ module XMLSchema
 AllName = XSD::QName.new(XSD::Namespace, 'all')
 AnnotationName = XSD::QName.new(XSD::Namespace, 'annotation')
 AnyName = XSD::QName.new(XSD::Namespace, 'any')
+AnyAttributeName = XSD::QName.new(XSD::Namespace, 'anyAttribute')
 AttributeName = XSD::QName.new(XSD::Namespace, 'attribute')
 ChoiceName = XSD::QName.new(XSD::Namespace, 'choice')
 ComplexContentName = XSD::QName.new(XSD::Namespace, 'complexContent')
