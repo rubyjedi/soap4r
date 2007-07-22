@@ -146,11 +146,11 @@ class ComplexType < Info
   def parse_attr(attr, value)
     case attr
     when AbstractAttrName
-      @abstract = (value.source == 'true')
+      @abstract = to_boolean(value)
     when FinalAttrName
       @final = value.source
     when MixedAttrName
-      @mixed = (value.source == 'true')
+      @mixed = to_boolean(value)
     when NameAttrName
       @name = XSD::QName.new(targetnamespace, value.source)
     else

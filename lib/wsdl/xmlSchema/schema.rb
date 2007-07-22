@@ -23,6 +23,7 @@ class Schema < Info
   attr_reader :imports
   attr_accessor :attributeformdefault
   attr_accessor :elementformdefault
+  attr_accessor :version
 
   attr_reader :importedschema
 
@@ -39,6 +40,7 @@ class Schema < Info
     @importedschema = {}
     @location = nil
     @root = self
+    @version = nil
   end
 
   def location
@@ -89,6 +91,8 @@ class Schema < Info
       @attributeformdefault = value.source
     when ElementFormDefaultAttrName
       @elementformdefault = value.source
+    when VersionAttrName
+      @version = value.source
     else
       nil
     end

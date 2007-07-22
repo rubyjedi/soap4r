@@ -17,11 +17,13 @@ module XMLSchema
 class SimpleExtension < Info
   attr_reader :base
   attr_reader :attributes
+  attr_accessor :anyattribute
 
   def initialize
     super
     @base = nil
     @attributes = XSD::NamedElements.new
+    @anyattribute = nil
   end
 
   def targetnamespace
@@ -38,6 +40,8 @@ class SimpleExtension < Info
       o = Attribute.new
       @attributes << o
       o
+    when AnyAttributeName
+      @anyattribute = AnyAttribute.new
     end
   end
 

@@ -29,6 +29,7 @@ class SimpleRestriction < Info
   attr_accessor :totaldigits
   attr_accessor :fractiondigits
   attr_reader :fixed
+  attr_accessor :anyattribute
 
   def initialize
     super
@@ -39,6 +40,7 @@ class SimpleRestriction < Info
     @minlength = nil
     @pattern = nil
     @fixed = {}
+    @anyattribute = nil
   end
   
   def valid?(value)
@@ -76,6 +78,8 @@ class SimpleRestriction < Info
       TotalDigits.new
     when FractionDigitsName
       FractionDigits.new
+    when AnyAttributeName
+      @anyattribute = AnyAttribute.new
     end
   end
 

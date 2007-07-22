@@ -85,7 +85,7 @@ class ComplexContent < Info
   def parse_attr(attr, value)
     case attr
     when MixedAttrName
-      @mixed = (value.source == 'true')
+      @mixed = to_boolean(value)
     else
       nil
     end
