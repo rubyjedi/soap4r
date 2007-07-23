@@ -39,6 +39,10 @@ class Choice < Content
       o = Choice.new
       @elements << o
       o
+    when GroupName
+      o = Group.new
+      @elements << o
+      o
     when AnyName
       raise ElementConstraintError.new("duplicated element: any") if @any
       @any = Any.new

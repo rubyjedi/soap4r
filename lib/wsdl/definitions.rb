@@ -63,6 +63,19 @@ class Definitions < Info
     result
   end
 
+  def collect_modelgroups
+    result = XSD::NamedElements.new
+    if @types
+      @types.schemas.each do |schema|
+	result.concat(schema.collect_modelgroups)
+      end
+    end
+    @imports.each do |import|
+      result.concat(import.content.collect_modelgroups)
+    end
+    result
+  end
+
   def collect_elements
     result = XSD::NamedElements.new
     if @types

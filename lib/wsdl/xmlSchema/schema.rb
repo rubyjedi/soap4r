@@ -20,6 +20,7 @@ class Schema < Info
   attr_reader :simpletypes
   attr_reader :elements
   attr_reader :attributes
+  attr_reader :modelgroups
   attr_reader :imports
   attr_accessor :attributeformdefault
   attr_accessor :elementformdefault
@@ -34,6 +35,7 @@ class Schema < Info
     @simpletypes = XSD::NamedElements.new
     @elements = XSD::NamedElements.new
     @attributes = XSD::NamedElements.new
+    @modelgroups = XSD::NamedElements.new
     @imports = []
     @attributeformdefault = "unqualified"
     @elementformdefault = "unqualified"
@@ -78,6 +80,10 @@ class Schema < Info
       o = Attribute.new
       @attributes << o
       o
+    when GroupName
+      o = Group.new
+      @modelgroups << o
+      o
     else
       nil
     end
@@ -103,6 +109,15 @@ class Schema < Info
     result.concat(@attributes)
     @imports.each do |import|
       result.concat(import.content.collect_attributes) if import.content
+    end
+    result
+  end
+
+  def collect_modelgroups
+    result = XSD::NamedElements.new
+    result.concat(@modelgroups)
+    @imports.each do |import|
+      result.concat(import.content.collect_modelgroups) if import.content
     end
     result
   end

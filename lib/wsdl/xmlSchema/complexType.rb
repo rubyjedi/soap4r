@@ -128,6 +128,8 @@ class ComplexType < Info
       @content = Sequence.new
     when ChoiceName
       @content = Choice.new
+    when GroupName
+      @content = Group.new
     when ComplexContentName
       @complexcontent = ComplexContent.new
     when SimpleContentName
