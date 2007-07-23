@@ -1,4 +1,4 @@
-# WSDL4R - XMLSchema element definition.
+# WSDL4R - XMLSchema group definition.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
 # This program is copyrighted free software by NAKAMURA, Hiroshi.  You can
@@ -13,7 +13,7 @@ module WSDL
 module XMLSchema
 
 
-class Element < Info
+class Group < Info
   class << self
     if RUBY_VERSION > "1.7.0"
       def attr_reader_ref(symbol)
@@ -36,49 +36,27 @@ class Element < Info
   end
 
   attr_writer :name	# required
-  attr_writer :form
-  attr_writer :type
-  attr_writer :local_simpletype
-  attr_writer :local_complextype
-  attr_writer :constraint
   attr_accessor :maxoccurs
   attr_accessor :minoccurs
-  attr_writer :nillable
+  attr_writer :content
 
   attr_reader_ref :name
-  attr_reader_ref :form
-  attr_reader_ref :type
-  attr_reader_ref :local_simpletype
-  attr_reader_ref :local_complextype
-  attr_reader_ref :constraint
-  attr_reader_ref :nillable
-  attr_reader_ref :default
-  attr_reader_ref :abstract
+  attr_reader_ref :content
 
   attr_accessor :ref
 
-  def initialize(name = nil, type = nil)
+  def initialize(name = nil)
     super()
     @name = name
-    @form = nil
-    @type = type
-    @local_simpletype = @local_complextype = nil
-    @constraint = nil
     @maxoccurs = 1
     @minoccurs = 1
-    @nillable = nil
-    @default = nil
-    @abstract = false
+    @content = nil
     @ref = nil
     @refelement = nil
   end
 
-  def empty?
-    !(local_simpletype || local_complextype || constraint || type)
-  end
-
   def refelement
-    @refelement ||= (@ref ? root.collect_elements[@ref] : nil)
+    @refelement ||= (@ref ? root.collect_modelgroups[@ref] : nil)
   end
 
   def targetnamespace
@@ -89,22 +67,14 @@ class Element < Info
     parent.elementformdefault
   end
 
-  def elementform
-    self.form.nil? ? parent.elementformdefault : self.form
-  end
-
   def parse_element(element)
     case element
-    when SimpleTypeName
-      @local_simpletype = SimpleType.new
-      @local_simpletype
-    when ComplexTypeName
-      @type = nil
-      @local_complextype = ComplexType.new
-      @local_complextype
-    when UniqueName
-      @constraint = Unique.new
-      @constraint
+    when AllName
+      @content = All.new
+    when SequenceName
+      @content = Sequence.new
+    when ChoiceName
+      @content = Choice.new
     else
       nil
     end
@@ -119,14 +89,6 @@ class Element < Info
       else
         @name = XSD::QName.new(nil, value.source)
       end
-    when FormAttrName
-      @form = value.source
-      if @form != 'qualified' and @name.namespace
-        @name = XSD::QName.new(nil, @name.name)
-      end
-      @form
-    when TypeAttrName
-      @type = value
     when RefAttrName
       @ref = value
     when MaxOccursAttrName
@@ -150,12 +112,6 @@ class Element < Info
 	end
       end
       @minoccurs = Integer(value.source)
-    when NillableAttrName
-      @nillable = to_boolean(value)
-    when DefaultAttrName
-      @default = value.source
-    when AbstractAttrName
-      @abstract = to_boolean(value)
     else
       nil
     end

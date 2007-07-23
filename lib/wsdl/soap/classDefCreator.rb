@@ -31,6 +31,8 @@ class ClassDefCreator
     @simpletypes.uniq!
     @complextypes = definitions.collect_complextypes
     @complextypes.uniq!
+    @modelgroups = definitions.collect_modelgroups
+    @modelgroups.uniq!
     @faulttypes = nil
     if definitions.respond_to?(:collect_faulttypes)
       @faulttypes = definitions.collect_faulttypes
@@ -48,6 +50,11 @@ class ClassDefCreator
     if type
       result << dump_classdef(type.name, type)
     else
+      str = dump_group
+      unless str.empty?
+        result << "\n" unless result.empty?
+        result << str
+      end
       str = dump_complextype
       unless str.empty?
         result << "\n" unless result.empty?
@@ -111,6 +118,12 @@ private
   def dump_complextype
     definitions = sort_dependency(@complextypes).collect { |type|
       dump_complextypedef(type.name, type)
+    }.compact.join("\n")
+  end
+
+  def dump_group
+    definitions = @modelgroups.collect { |group|
+      # ???
     }.compact.join("\n")
   end
 
@@ -295,6 +308,15 @@ private
       when WSDL::XMLSchema::Choice
         child_init_lines, child_init_params =
           parse_elements(c, element.elements, base_namespace)
+        init_lines.concat(child_init_lines)
+        init_params.concat(child_init_params)
+      when WSDL::XMLSchema::Group
+        if element.content.nil?
+          warn("no group definition found: #{element}")
+          next
+        end
+        child_init_lines, child_init_params =
+          parse_elements(c, element.content.elements, base_namespace)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       else

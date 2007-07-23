@@ -103,6 +103,13 @@ module MappingRegistryCreatorSupport
         child_schema_element = parse_elements(element.elements, base_namespace)
         child_schema_element.unshift(:choice)
         schema_element << child_schema_element
+      when WSDL::XMLSchema::Group
+        if element.content.nil?
+          warn("no group definition found: #{element}")
+          next
+        end
+        child_schema_element = parse_elements(element.content.elements, base_namespace)
+        schema_element.concat(child_schema_element)
       else
         raise RuntimeError.new("unknown type: #{element}")
       end

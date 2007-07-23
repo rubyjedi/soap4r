@@ -29,6 +29,7 @@ require 'wsdl/xmlSchema/list'
 require 'wsdl/xmlSchema/attribute'
 require 'wsdl/xmlSchema/union'
 require 'wsdl/xmlSchema/unique'
+require 'wsdl/xmlSchema/group'
 
 require 'wsdl/xmlSchema/length'
 require 'wsdl/xmlSchema/minlength'
@@ -57,6 +58,7 @@ ComplexContentName = XSD::QName.new(XSD::Namespace, 'complexContent')
 ComplexTypeName = XSD::QName.new(XSD::Namespace, 'complexType')
 ElementName = XSD::QName.new(XSD::Namespace, 'element')
 ExtensionName = XSD::QName.new(XSD::Namespace, 'extension')
+GroupName = XSD::QName.new(XSD::Namespace, 'group')
 ImportName = XSD::QName.new(XSD::Namespace, 'import')
 IncludeName = XSD::QName.new(XSD::Namespace, 'include')
 ListName = XSD::QName.new(XSD::Namespace, 'list')
