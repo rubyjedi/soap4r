@@ -76,7 +76,10 @@ private
     if obj.is_a?(SOAP::Mapping::Object)
       return mappingobj2soap(obj, qname)
     end
-    class_definition = schema_definition_from_class(obj_class || obj.class)
+    class_definition = schema_definition_from_class(obj.class)
+    if class_definition.nil? and obj_class
+      class_definition = schema_definition_from_class(obj_class)
+    end
     elename_definition = schema_definition_from_elename(qname)
     if !class_definition and !elename_definition
       # no definition found
