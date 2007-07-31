@@ -476,7 +476,7 @@ private
 
     def request_rpc(body, mapping_registry, literal_mapping_registry, opt)
       request = body.request
-      unless request.is_a?(SOAPStruct)
+      unless request.is_a?(SOAPNameAccessible)
         if request.is_a?(SOAPNil)
           # SOAP::Lite/0.69 seems to send xsi:nil="true" element as a request.
           request = SOAPStruct.new(request.elename)

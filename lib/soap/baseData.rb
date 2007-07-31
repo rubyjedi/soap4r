@@ -106,6 +106,10 @@ module SOAPCompoundtype
   end
 end
 
+# marker for compound types which have named accessor
+module SOAPNameAccessible
+end
+
 
 ###
 ## Convenience datatypes.
@@ -508,8 +512,9 @@ end
 ## Compound datatypes.
 #
 class SOAPStruct < XSD::NSDBase
-  include SOAPCompoundtype
   include Enumerable
+  include SOAPCompoundtype
+  include SOAPNameAccessible
 
 public
 
@@ -626,6 +631,7 @@ end
 class SOAPElement
   include Enumerable
   include SOAPCompoundtype
+  include SOAPNameAccessible
 
   attr_accessor :type
   # Text interface.
@@ -693,7 +699,7 @@ class SOAPElement
   end
 
   def to_obj
-    if members.empty?
+    if !have_member
       @text
     else
       hash = {}

@@ -226,7 +226,7 @@ private
     if is_compound
       if definition
         return elesoap2stubobj(node, obj_class, definition)
-      else
+      elsif node.is_a?(::SOAP::SOAPNameAccessible)
         return elesoap2plainobj(node)
       end
     end
@@ -249,7 +249,7 @@ private
 
   def elesoap2plainobj(node)
     obj = nil
-    if node.members.empty?
+    if !node.have_member
       obj = base2obj(node, ::SOAP::SOAPString)
     else
       obj = anytype2obj(node)

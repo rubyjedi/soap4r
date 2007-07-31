@@ -324,7 +324,7 @@ private
 
   def _obj2soap(obj, type_qname = nil)
     ret = nil
-    if obj.is_a?(SOAPStruct) or obj.is_a?(SOAPArray)
+    if obj.is_a?(SOAPCompoundtype)
       obj.replace do |ele|
         Mapping._obj2soap(ele, self)
       end
@@ -365,7 +365,7 @@ private
     else
       klass = definition.class_for if definition
     end
-    if definition and node.is_a?(::SOAP::SOAPStruct)
+    if definition and node.is_a?(::SOAP::SOAPNameAccessible)
       return elesoap2stubobj(node, klass, definition)
     end
     if node.extraattr.key?(RubyTypeName)
