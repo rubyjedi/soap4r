@@ -141,7 +141,7 @@ private
 
   def dump_simpletypedef_restriction(qname, typedef, qualified)
     restriction = typedef.restriction
-    if restriction.enumeration.empty?
+    unless restriction.enumeration?
       # not supported.  minlength?
       return nil
     end

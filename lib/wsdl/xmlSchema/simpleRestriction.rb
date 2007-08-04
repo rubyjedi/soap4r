@@ -52,6 +52,10 @@ class SimpleRestriction < Info
     true
   end
 
+  def enumeration?
+    !@enumeration.empty?
+  end
+
   def parse_element(element)
     case element
     when LengthName

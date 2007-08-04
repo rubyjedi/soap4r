@@ -223,7 +223,7 @@ module MappingRegistryCreatorSupport
 
   def dump_simpletypedef_restriction(qname, typedef, as_element, qualified)
     restriction = typedef.restriction
-    if restriction.enumeration.empty?
+    unless restriction.enumeration?
       # not supported.  minlength?
       return nil
     end
