@@ -107,8 +107,12 @@ __EOD__
   def create_type_name(element)
     if element.type == XSD::AnyTypeName
       nil
-    elsif @simpletypes[element.type]
-      create_class_name(element.type, @modulepath)
+    elsif simpletype = @simpletypes[element.type]
+      if simpletype.restriction and simpletype.restriction.enumeration?
+        create_class_name(element.type, @modulepath)
+      else
+        nil
+      end
     elsif klass = element_basetype(element)
       klass.name
     elsif element.type
