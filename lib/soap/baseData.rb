@@ -1021,7 +1021,7 @@ private
   def traverse_data(data, rank = 1)
     idx = 0
     while idx < ranksize(rank)
-      if rank < @rank
+      if rank < @rank and data[idx]
 	traverse_data(data[idx], rank + 1) do |*v|
 	  v[1, 0] = idx
        	  yield(*v)
