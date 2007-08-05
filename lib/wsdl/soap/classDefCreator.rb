@@ -326,35 +326,6 @@ private
     [init_lines, init_params]
   end
 
-  def element_basetype(ele)
-    if klass = basetype_class(ele.type)
-      klass
-    elsif ele.local_simpletype
-      basetype_class(ele.local_simpletype.base)
-    else
-      nil
-    end
-  end
-
-  def attribute_basetype(attr)
-    if klass = basetype_class(attr.type)
-      klass
-    elsif attr.local_simpletype
-      basetype_class(attr.local_simpletype.base)
-    else
-      nil
-    end
-  end
-
-  def basetype_class(type)
-    return nil if type.nil?
-    if simpletype = @simpletypes[type]
-      basetype_mapped_class(simpletype.base)
-    else
-      basetype_mapped_class(type)
-    end
-  end
-
   def define_attribute(c, attributes)
     const = {}
     unless attributes.empty?
@@ -384,30 +355,12 @@ private
     end
   end
 
-  def name_element(element)
-    return element.name if element.name 
-    return element.ref if element.ref
-    raise RuntimeError.new("cannot define name of #{element}")
-  end
-
-  def name_attribute(attribute)
-    return attribute.name if attribute.name 
-    return attribute.ref if attribute.ref
-    raise RuntimeError.new("cannot define name of #{attribute}")
-  end
-
   def dump_arraydef(qname, complextype)
     classname = create_class_name(qname)
     check_classname(classname)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
     c.dump
-  end
-
-  def check_classname(classname)
-    if @modulepath.nil? and Object.constants.include?(classname)
-      warn("created definition re-opens an existing toplevel class: #{classname}")
-    end
   end
 
   def sort_dependency(types)

@@ -16,7 +16,7 @@ module WSDL
 module SOAP
 
 
-# requires @defined_const and @modulepath
+# requires @defined_const, @simpletypes, and @modulepath
 module ClassDefCreatorSupport
   include XSD::CodeGen::GenSupport
 
@@ -190,6 +190,53 @@ private
     fault.collect { |ele|
       dump_inout_type(ele, element_definitions).chomp
     }.join("\n")
+  end
+
+  def element_basetype(ele)
+    if klass = basetype_class(ele.type)
+      klass
+    elsif ele.local_simpletype
+      basetype_class(ele.local_simpletype.base)
+    else
+      nil
+    end
+  end
+
+  def attribute_basetype(attr)
+    if klass = basetype_class(attr.type)
+      klass
+    elsif attr.local_simpletype
+      basetype_class(attr.local_simpletype.base)
+    else
+      nil
+    end
+  end
+
+  def basetype_class(type)
+    return nil if type.nil?
+    if simpletype = @simpletypes[type]
+      basetype_mapped_class(simpletype.base)
+    else
+      basetype_mapped_class(type)
+    end
+  end
+
+  def name_element(element)
+    return element.name if element.name 
+    return element.ref if element.ref
+    raise RuntimeError.new("cannot define name of #{element}")
+  end
+
+  def name_attribute(attribute)
+    return attribute.name if attribute.name 
+    return attribute.ref if attribute.ref
+    raise RuntimeError.new("cannot define name of #{attribute}")
+  end
+
+  def check_classname(classname)
+    if @modulepath.nil? and Object.constants.include?(classname)
+      warn("created definition re-opens an existing toplevel class: #{classname}")
+    end
   end
 end
 
