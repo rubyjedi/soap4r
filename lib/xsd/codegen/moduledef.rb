@@ -19,6 +19,8 @@ class ModuleDef
   include GenSupport
   include CommentDef
 
+  attr_reader :innermodule
+
   def initialize(name)
     @name = name
     @comment = nil
@@ -26,6 +28,7 @@ class ModuleDef
     @code = []
     @requirepath = []
     @methoddef = []
+    @innermodule = []
   end
 
   def def_require(path)
@@ -77,6 +80,11 @@ class ModuleDef
       spacer = true
       buf << dump_const
     end
+    unless @innermodule.empty?
+      buf << dump_emptyline # always add 1 empty line
+      spacer = true
+      buf << dump_innermodule
+    end
     unless @code.empty?
       buf << dump_emptyline if spacer
       spacer = true
@@ -106,6 +114,14 @@ private
     dump_static(
       @const.sort.collect { |var, value|
         %Q(#{var} = #{dump_value(value)})
+      }.join("\n")
+    )
+  end
+
+  def dump_innermodule
+    dump_static(
+      @innermodule.collect { |moduledef|
+        moduledef.dump
       }.join("\n")
     )
   end

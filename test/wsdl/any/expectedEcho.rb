@@ -24,9 +24,24 @@ end
 
 # {urn:example.com:echo-type}setOutputAndCompleteRequest
 #   taskId - SOAP::SOAPString
-#   data - (any)
+#   data - SetOutputAndCompleteRequest::C_Data
 #   participantToken - SOAP::SOAPString
 class SetOutputAndCompleteRequest
+
+  # inner class for member: data
+  # {}data
+  class C_Data
+    attr_reader :__xmlele_any
+
+    def set_any(elements)
+      @__xmlele_any = elements
+    end
+
+    def initialize
+      @__xmlele_any = nil
+    end
+  end
+
   attr_accessor :taskId
   attr_accessor :data
   attr_accessor :participantToken

@@ -13,10 +13,68 @@ module WSDL
 module SOAP
 
 
-# requires @defined_const = {}
+# requires @defined_const = {}, @dump_struct_typemap_innerstruct
 module MappingRegistryCreatorSupport
   include ClassDefCreatorSupport
   include XSD::CodeGen
+
+  def dump_struct_typemap(qname, typedef, as_element = nil, qualified = nil)
+    @dump_struct_typemap_innerstruct = []
+    @dump_struct_typemap_innerstruct.unshift(
+      dump_complex_typemap(qname, typedef, @modulepath, as_element, qualified))
+    @dump_struct_typemap_innerstruct.join("\n")
+  end
+
+  def dump_complex_typemap(qname, typedef, parentmodule, as_element = nil, qualified = nil)
+    var = {}
+    var[:class] = create_class_name(qname, parentmodule)
+    if as_element
+      var[:schema_name] = as_element.name
+      var[:schema_ns] = as_element.namespace
+    elsif typedef.name.nil?
+      var[:schema_name] = qname.name
+      var[:schema_ns] = qname.namespace
+    else
+      var[:schema_type] = qname.name
+      var[:schema_ns] = qname.namespace
+    end
+    # true, false, or nil
+    unless qualified.nil?
+      var[:schema_qualified] = qualified.to_s
+    end
+    parentmodule = var[:class]
+    parsed_element = parse_elements(typedef.elements, qname.namespace,
+      parentmodule, qualified)
+    if typedef.choice?
+      parsed_element.unshift(:choice)
+    end
+    var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
+    unless typedef.attributes.empty?
+      var[:schema_attribute] = define_attribute(typedef.attributes)
+    end
+    assign_const(var[:schema_ns], 'Ns')
+    dump_entry(@varname, var)
+  end
+
+  def dump_simple_typemap(qname, typedef, as_element = nil, qualified = nil)
+    var = {}
+    var[:class] = create_class_name(qname, @modulepath)
+    if as_element
+      var[:schema_name] = as_element.name
+      var[:schema_ns] = as_element.namespace
+    elsif typedef.name.nil?
+      var[:schema_name] = qname.name
+      var[:schema_ns] = qname.namespace
+    else
+      var[:schema_type] = qname.name
+      var[:schema_ns] = qname.namespace
+    end
+    unless typedef.attributes.empty?
+      var[:schema_attribute] = define_attribute(typedef.attributes)
+    end
+    assign_const(var[:schema_ns], 'Ns')
+    dump_entry(@varname, var)
+  end
 
   def dump_schema_element_definition(definition, indent = 0)
     return '[]' if definition.empty?
@@ -63,7 +121,7 @@ module MappingRegistryCreatorSupport
     end
   end
 
-  def parse_elements(elements, base_namespace)
+  def parse_elements(elements, base_namespace, parentmodule, qualified = false)
     schema_element = []
     any = false
     elements.each do |element|
@@ -79,7 +137,14 @@ module MappingRegistryCreatorSupport
         schema_element << [varname, eleqname, type, occurrence]
       when XMLSchema::Element
         next if element.ref == SchemaName
-        type = create_type_name(element)
+        typebase = @modulepath
+        if element.anonymous_type?
+          @dump_struct_typemap_innerstruct <<
+            dump_complex_typemap(element.name, element.local_complextype,
+              parentmodule, nil, qualified)
+          typebase = parentmodule
+        end
+        type = create_type_name(element, typebase)
         name = name_element(element).name
         varname = safevarname(name)
         if element.map_as_array?
@@ -97,10 +162,12 @@ module MappingRegistryCreatorSupport
         occurrence = [element.minoccurs, element.maxoccurs]
         schema_element << [varname, eleqname, type, occurrence]
       when WSDL::XMLSchema::Sequence
-        child_schema_element = parse_elements(element.elements, base_namespace)
+        child_schema_element =
+          parse_elements(element.elements, base_namespace, parentmodule, qualified)
         schema_element << child_schema_element
       when WSDL::XMLSchema::Choice
-        child_schema_element = parse_elements(element.elements, base_namespace)
+        child_schema_element =
+          parse_elements(element.elements, base_namespace, parentmodule, qualified)
         child_schema_element.unshift(:choice)
         schema_element << child_schema_element
       when WSDL::XMLSchema::Group
@@ -108,7 +175,8 @@ module MappingRegistryCreatorSupport
           warn("no group definition found: #{element}")
           next
         end
-        child_schema_element = parse_elements(element.content.elements, base_namespace)
+        child_schema_element =
+          parse_elements(element.content.elements, base_namespace, parentmodule, qualified)
         schema_element.concat(child_schema_element)
       else
         raise RuntimeError.new("unknown type: #{element}")

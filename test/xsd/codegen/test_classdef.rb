@@ -91,6 +91,36 @@ class TestClassDefCreator < Test::Unit::TestCase
     EOD
   end
 
+  def test_innermodule
+    c = ClassDef.new("Foo")
+    c.def_const("BAR", 1)
+    c.def_method('baz') { "Qux.new.quxx" }
+    c2 = ClassDef.new("Qux")
+    c2.def_method('quxx') { "Quxx::QUXXX" }
+    m3 = ModuleDef.new("Quxx")
+    m3.def_const("QUXXX", 2)
+    c.innermodule << c2 << m3
+    assert_equal(format(<<-EOD), c.dump)
+      class Foo
+        BAR = 1
+
+        class Qux
+          def quxx
+            Quxx::QUXXX
+          end
+        end
+
+        module Quxx
+          QUXXX = 2
+        end
+
+        def baz
+          Qux.new.quxx
+        end
+      end
+    EOD
+  end
+
   def test_full
     c = ClassDef.new("Foo::Bar::HobbitName", String)
     c.def_require("foo/bar")

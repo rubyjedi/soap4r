@@ -51,8 +51,18 @@ module EchoMappingRegistry
     :schema_qualified => true,
     :schema_element => [
       ["taskId", ["SOAP::SOAPString", XSD::QName.new(nil, "taskId")]],
-      ["data", [nil, XSD::QName.new(nil, "data")]],
+      ["data", ["WSDL::Any::SetOutputAndCompleteRequest::C_Data", XSD::QName.new(nil, "data")]],
       ["participantToken", ["SOAP::SOAPString", XSD::QName.new(nil, "participantToken")]]
+    ]
+  )
+
+  LiteralRegistry.register(
+    :class => WSDL::Any::SetOutputAndCompleteRequest::C_Data,
+    :schema_ns => nil,
+    :schema_name => "data",
+    :schema_qualified => true,
+    :schema_element => [
+      ["any", [nil, XSD::QName.new(NsXMLSchema, "anyType")]]
     ]
   )
 end
