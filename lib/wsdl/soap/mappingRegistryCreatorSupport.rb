@@ -117,35 +117,6 @@ module MappingRegistryCreatorSupport
     schema_element
   end
 
-  def element_basetype(ele)
-    if klass = basetype_class(ele.type)
-      klass
-    elsif ele.local_simpletype
-      basetype_class(ele.local_simpletype.base)
-    else
-      nil
-    end
-  end
-
-  def attribute_basetype(attr)
-    if klass = basetype_class(attr.type)
-      klass
-    elsif attr.local_simpletype
-      basetype_class(attr.local_simpletype.base)
-    else
-      nil
-    end
-  end
-
-  def basetype_class(type)
-    return nil if type.nil?
-    if simpletype = @simpletypes[type]
-      basetype_mapped_class(simpletype.base)
-    else
-      basetype_mapped_class(type)
-    end
-  end
-
   def define_attribute(attributes)
     schema_attribute = []
     attributes.each do |attribute|
@@ -164,18 +135,6 @@ module MappingRegistryCreatorSupport
         dqname(name) + ' => ' + ndq(type)
       }.join(",\n    ") +
     "\n  }"
-  end
-
-  def name_element(element)
-    return element.name if element.name 
-    return element.ref if element.ref
-    raise RuntimeError.new("cannot define name of #{element}")
-  end
-
-  def name_attribute(attribute)
-    return attribute.name if attribute.name 
-    return attribute.ref if attribute.ref
-    raise RuntimeError.new("cannot define name of #{attribute}")
   end
 
   def dump_entry(regname, var)
