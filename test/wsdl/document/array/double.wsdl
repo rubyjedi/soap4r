@@ -18,16 +18,14 @@
       <s:element name="echo">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="ary"
-              type="tns:ArrayOfDouble"/>
+            <s:element nilleble="true" maxOccurs="1" name="ary" type="tns:ArrayOfDouble"/>
           </s:sequence>
         </s:complexType>
       </s:element>
       <s:element name="echoResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="ary"
-              type="tns:ArrayOfDouble"/>
+            <s:element nilleble="true" maxOccurs="1" name="ary" type="tns:ArrayOfDouble"/>
           </s:sequence>
         </s:complexType>
       </s:element>

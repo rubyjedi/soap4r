@@ -128,6 +128,19 @@ class TestArray < Test::Unit::TestCase
     double = [0.1, 0.2, 0.3]
     assert_equal(double, @client.echo(:ary => double).ary)
   end
+
+  def test_stub
+    @client = ::WSDL::Document::PricerSoap.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDOUT if $DEBUG
+    double = [0.1, 0.2, 0.3]
+    assert_equal(double, @client.echo(:ary => double).ary)
+  end
+
+  def test_stub_nil
+    @client = ::WSDL::Document::PricerSoap.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDOUT if $DEBUG
+    assert_equal(nil, @client.echo(Echo.new).ary)
+  end
 end
 
 

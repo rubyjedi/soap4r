@@ -125,7 +125,10 @@ private
   end
 
   def stubobj2soap(obj, qname, definition)
-    if obj.is_a?(::String)
+    if obj.nil?
+      ele = SOAPNil.new
+      ele.elename = qname
+    elsif obj.is_a?(::String)
       ele = SOAPElement.new(qname, obj)
     else
       ele = SOAPElement.new(qname)
@@ -137,6 +140,7 @@ private
     if qname.nil? and definition.elename
       ele.elename = definition.elename
     end
+    return ele if obj.nil?
     stubobj2soap_elements(obj, ele, definition.elements)
     if definition.attributes
       definition.attributes.each do |qname, param|
