@@ -104,32 +104,27 @@ __EOD__
     @defined_const[value] = tag
   end
 
-  def create_type_name(element)
+  def create_type_name(element, modulepath = @modulepath)
     if element.type == XSD::AnyTypeName
+      # nil means anyType.
       nil
     elsif simpletype = @simpletypes[element.type]
       if simpletype.restriction and simpletype.restriction.enumeration?
-        create_class_name(element.type, @modulepath)
+        create_class_name(element.type, modulepath)
       else
         nil
       end
     elsif klass = element_basetype(element)
       klass.name
     elsif element.type
-      create_class_name(element.type, @modulepath)
+      create_class_name(element.type, modulepath)
     elsif element.ref
-      create_class_name(element.ref, @modulepath)
+      create_class_name(element.ref, modulepath)
+    elsif element.anonymous_type?
+      # inner class
+      create_class_name(element.name, modulepath)
     else
       nil
-      # nil means anyType.
-      # TODO: do we define a class for local complexType from it's name?
-      #   create_class_name(element.name, @modulepath)
-      #
-      # <element>
-      #   <complexType>
-      #     <seq...>
-      #   </complexType>
-      # </element>
     end
   end
 

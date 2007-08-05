@@ -75,23 +75,6 @@ private
     end
   end
 
-  def dump_struct_typemap(qname, typedef)
-    var = {}
-    var[:class] = create_class_name(qname, @modulepath)
-    var[:schema_ns] = qname.namespace
-    if typedef.name.nil?
-      # local complextype of a element
-      var[:schema_name] = qname.name
-    else
-      # named complextype
-      var[:schema_type] = qname.name
-    end
-    parsed_element = parse_elements(typedef.elements, qname.namespace)
-    var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
-    assign_const(var[:schema_ns], 'Ns')
-    dump_entry(@varname, var)
-  end
-
   def dump_array_typemap(qname, typedef)
     arytype = typedef.find_arytype || XSD::AnyTypeName
     type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
@@ -104,15 +87,6 @@ private
   { :type => #{dqname(type)} }
 )
 __EOD__
-  end
-
-  def dump_simple_typemap(qname, typedef)
-    var = {}
-    var[:class] = create_class_name(qname, @modulepath)
-    var[:schema_ns] = qname.namespace
-    var[:schema_type] = qname.name
-    assign_const(var[:schema_ns], 'Ns')
-    dump_entry(@varname, var)
   end
 end
 

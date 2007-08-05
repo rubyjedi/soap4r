@@ -118,33 +118,6 @@ private
     end
   end
 
-  def dump_struct_typemap(qname, typedef, as_element = nil, qualified = false)
-    var = {}
-    var[:class] = create_class_name(qname, @modulepath)
-    if as_element
-      var[:schema_name] = as_element.name
-      var[:schema_ns] = as_element.namespace
-    elsif typedef.name.nil?
-      var[:schema_name] = qname.name
-      var[:schema_ns] = qname.namespace
-    else
-      var[:schema_type] = qname.name
-      var[:schema_ns] = qname.namespace
-    end
-    var[:schema_qualified] = qualified.to_s
-
-    parsed_element = parse_elements(typedef.elements, qname.namespace)
-    if typedef.choice?
-      parsed_element.unshift(:choice)
-    end
-    var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
-    unless typedef.attributes.empty?
-      var[:schema_attribute] = define_attribute(typedef.attributes)
-    end
-    assign_const(var[:schema_ns], 'Ns')
-    dump_entry(@varname, var)
-  end
-
   DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
 
   def dump_array_typemap(qname, typedef)
@@ -187,26 +160,6 @@ private
     parsed_element = []
     parsed_element << [child_element_name.name, child_element_name, type, occurrence]
     var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
-    assign_const(var[:schema_ns], 'Ns')
-    dump_entry(@varname, var)
-  end
-
-  def dump_simple_typemap(qname, type_or_element, as_element, qualified)
-    var = {}
-    var[:class] = create_class_name(qname, @modulepath)
-    if as_element
-      var[:schema_name] = as_element.name
-      var[:schema_ns] = as_element.namespace
-    elsif type_or_element.name.nil?
-      var[:schema_name] = qname.name
-      var[:schema_ns] = qname.namespace
-    else
-      var[:schema_type] = qname.name
-      var[:schema_ns] = qname.namespace
-    end
-    unless type_or_element.attributes.empty?
-      var[:schema_attribute] = define_attribute(type_or_element.attributes)
-    end
     assign_const(var[:schema_ns], 'Ns')
     dump_entry(@varname, var)
   end

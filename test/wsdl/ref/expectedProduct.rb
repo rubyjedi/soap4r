@@ -134,7 +134,7 @@ end
 # {urn:ref}Product-Bag
 #   bag - WSDL::Ref::Product
 #   rating - SOAP::SOAPString
-#   comment_1 - (any)
+#   comment_1 - ProductBag::Comment_1
 #   comment_2 - WSDL::Ref::Comment
 #   m___point - WSDL::Ref::C__point
 #   xmlattr_version - SOAP::SOAPString
@@ -142,6 +142,29 @@ end
 class ProductBag
   AttrVersion = XSD::QName.new("urn:ref", "version")
   AttrYesno = XSD::QName.new("urn:ref", "yesno")
+
+  # inner class for member: Comment_1
+  # {}Comment_1
+  #   xmlattr_msgid - SOAP::SOAPString
+  class Comment_1
+    AttrMsgid = XSD::QName.new(nil, "msgid")
+
+    def __xmlattr
+      @__xmlattr ||= {}
+    end
+
+    def xmlattr_msgid
+      __xmlattr[AttrMsgid]
+    end
+
+    def xmlattr_msgid=(value)
+      __xmlattr[AttrMsgid] = value
+    end
+
+    def initialize
+      @__xmlattr = {}
+    end
+  end
 
   attr_accessor :bag
   attr_accessor :rating

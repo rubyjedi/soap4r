@@ -60,6 +60,11 @@ class ClassDef < ModuleDef
       spacer = true
       buf << dump_const
     end
+    unless @innermodule.empty?
+      buf << dump_emptyline # always add 1 empty line
+      spacer = true
+      buf << dump_innermodule
+    end
     unless @code.empty?
       buf << dump_emptyline if spacer
       spacer = true

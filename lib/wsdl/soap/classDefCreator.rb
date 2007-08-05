@@ -244,6 +244,10 @@ private
   end
 
   def dump_classdef(qname, typedef, qualified = false)
+    create_classdef(qname, typedef, qualified).dump
+  end
+
+  def create_classdef(qname, typedef, qualified = false)
     classname = create_class_name(qname)
     check_classname(classname)
     baseclassname = nil
@@ -260,7 +264,7 @@ private
     c.comment = "#{qname}"
     c.comment << "\nabstract" if typedef.abstract
     init_lines, init_params =
-      parse_elements(c, typedef.elements, qname.namespace)
+      parse_elements(c, typedef.elements, qname.namespace, classname)
     unless typedef.attributes.empty?
       define_attribute(c, typedef.attributes)
       init_lines << "@__xmlattr = {}"
@@ -268,10 +272,10 @@ private
     c.def_method('initialize', *init_params) do
       init_lines.join("\n")
     end
-    c.dump
+    c
   end
 
-  def parse_elements(c, elements, base_namespace)
+  def parse_elements(c, elements, base_namespace, parentmodule)
     init_lines = []
     init_params = []
     any = false
@@ -290,6 +294,13 @@ private
       when XMLSchema::Element
         next if element.ref == SchemaName
         name = name_element(element).name
+        typebase = @modulepath
+        if element.anonymous_type?
+          inner = create_classdef(element.name, element.local_complextype)
+          inner.comment = "inner class for member: #{name}\n" + inner.comment
+          c.innermodule << inner
+          typebase = parentmodule
+        end
         attrname = safemethodname(name)
         varname = safevarname(name)
         c.def_attr(attrname, true, varname)
@@ -299,15 +310,15 @@ private
         else
           init_params << "#{varname} = nil"
         end
-        c.comment << "\n  #{attrname} - #{create_type_name(element) || '(any)'}"
+        c.comment << "\n  #{attrname} - #{create_type_name(element, typebase) || '(any)'}"
       when WSDL::XMLSchema::Sequence
         child_init_lines, child_init_params =
-          parse_elements(c, element.elements, base_namespace)
+          parse_elements(c, element.elements, base_namespace, parentmodule)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Choice
         child_init_lines, child_init_params =
-          parse_elements(c, element.elements, base_namespace)
+          parse_elements(c, element.elements, base_namespace, parentmodule)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Group
@@ -316,7 +327,7 @@ private
           next
         end
         child_init_lines, child_init_params =
-          parse_elements(c, element.content.elements, base_namespace)
+          parse_elements(c, element.content.elements, base_namespace, parentmodule)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       else
