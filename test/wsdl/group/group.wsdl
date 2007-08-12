@@ -7,38 +7,51 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
     xmlns="http://schemas.xmlsoap.org/wsdl/">
-  <types>
-    <xsd:schema elementFormDefault="unqualified" targetNamespace="urn:grouptype">
+    <types>
+      <xsd:schema elementFormDefault="unqualified" targetNamespace="urn:grouptype">
 
-      <xsd:element name="comment" type="xsd:string"/>
+        <xsd:element name="comment" type="xsd:string"/>
 
-      <xsd:group name="common">
-        <xsd:sequence>
-          <xsd:element ref="txd:comment" minOccurs="0"/>
-          <xsd:any namespace="##any" minOccurs="0"/>
-        </xsd:sequence>
-      </xsd:group>
+        <xsd:simpleType name="attr_type">
+          <xsd:restriction base="xsd:decimal">
+            <xsd:maxInclusive value="-50"/>
+            <xsd:minInclusive value="50"/>
+          </xsd:restriction>
+        </xsd:simpleType>
 
-      <xsd:group name="common_element">
-        <xsd:sequence>
-          <xsd:group ref="txd:common"/>
-          <xsd:choice>
-            <xsd:element name="element" type="xsd:string"/>
-            <xsd:element name="eletype" type="xsd:string"/>
-          </xsd:choice>
-        </xsd:sequence>
-      </xsd:group>
+        <xsd:group name="common">
+          <xsd:sequence>
+            <xsd:element ref="txd:comment" minOccurs="0"/>
+            <xsd:any namespace="##any" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:group>
 
-      <xsd:complexType name="groupele_type">
-        <xsd:sequence>
-          <xsd:group ref="txd:common_element"/>
-          <xsd:element name="var" type="xsd:string"/>
-        </xsd:sequence>
-      </xsd:complexType>
+        <xsd:attributeGroup name="common_attr">
+          <xsd:attribute name="attr_min" type="txd:attr_type" default="0"/>
+          <xsd:attribute name="attr_max" type="txd:attr_type" default="0"/>
+        </xsd:attributeGroup>
 
-      <xsd:element name="groupele" type="txd:groupele_type"/>
-    </xsd:schema>
-  </types>
+        <xsd:group name="common_element">
+          <xsd:sequence>
+            <xsd:group ref="txd:common"/>
+            <xsd:choice>
+              <xsd:element name="element" type="xsd:string"/>
+              <xsd:element name="eletype" type="xsd:string"/>
+            </xsd:choice>
+          </xsd:sequence>
+        </xsd:group>
+
+        <xsd:complexType name="groupele_type">
+          <xsd:sequence>
+            <xsd:group ref="txd:common_element"/>
+            <xsd:element name="var" type="xsd:string"/>
+          </xsd:sequence>
+          <xsd:attributeGroup ref="txd:common_attr"/>
+        </xsd:complexType>
+
+        <xsd:element name="groupele" type="txd:groupele_type"/>
+      </xsd:schema>
+    </types>
 
   <message name="echo_in">
     <part name="parameters" element="txd:groupele" />

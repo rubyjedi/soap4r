@@ -18,7 +18,6 @@ class ComplexRestriction < Info
   attr_accessor :base
   attr_reader :content
   attr_reader :attributes
-  attr_accessor :anyattribute
 
   def initialize
     super
@@ -26,7 +25,6 @@ class ComplexRestriction < Info
     @basetype = nil
     @content = nil
     @attributes = XSD::NamedElements.new
-    @anyattribute = nil
   end
 
   def targetnamespace
@@ -76,8 +74,14 @@ class ComplexRestriction < Info
       o = Attribute.new
       @attributes << o
       o
+    when AttributeGroupName
+      o = AttributeGroup.new
+      @attributes << o
+      o
     when AnyAttributeName
-      @anyattribute = AnyAttribute.new
+      o = AnyAttribute.new
+      @attributes << o
+      o
     end
   end
 

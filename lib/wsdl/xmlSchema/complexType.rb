@@ -23,7 +23,6 @@ class ComplexType < Info
   attr_accessor :final
   attr_accessor :mixed
   attr_accessor :abstract
-  attr_accessor :anyattribute
 
   def initialize(name = nil)
     super()
@@ -35,7 +34,6 @@ class ComplexType < Info
     @mixed = false
     @abstract = false
     @attributes = XSD::NamedElements.new
-    @anyattribute = nil
   end
 
   def targetnamespace
@@ -73,13 +71,30 @@ class ComplexType < Info
   end
 
   def attributes
+    attrs = nil
     if @complexcontent
-      @complexcontent.attributes + @attributes
+      attrs = @complexcontent.attributes + @attributes
     elsif @simplecontent
-      @simplecontent.attributes + @attributes
+      attrs = @simplecontent.attributes + @attributes
     else
-      @attributes
+      attrs = @attributes
     end
+    found = XSD::NamedElements.new
+    attrs.each do |attr|
+      case attr
+      when Attribute
+        found << attr
+      when AttributeGroup
+        if attr.attributes
+          found.concat(attr.attributes)
+        end
+      when AnyAttribute
+        # ignored
+      else
+        warn("unknown attribute: #{attr}")
+      end
+    end
+    found
   end
 
   def nested_elements
@@ -138,8 +153,14 @@ class ComplexType < Info
       o = Attribute.new
       @attributes << o
       o
+    when AttributeGroupName
+      o = AttributeGroup.new
+      @attributes << o
+      o
     when AnyAttributeName
-      @anyattribute = AnyAttribute.new
+      o = AnyAttribute.new
+      @attributes << o
+      o
     else
       nil
     end
