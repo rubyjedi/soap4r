@@ -21,7 +21,11 @@ module EchoMappingRegistry
         ["eletype", ["SOAP::SOAPString", XSD::QName.new(nil, "eletype")]]
       ],
       ["var", ["SOAP::SOAPString", XSD::QName.new(nil, "var")]]
-    ]
+    ],
+    :schema_attribute => {
+      XSD::QName.new(nil, "attr_min") => "SOAP::SOAPDecimal",
+      XSD::QName.new(nil, "attr_max") => "SOAP::SOAPDecimal"
+    }
   )
 
   LiteralRegistry.register(
@@ -37,7 +41,11 @@ module EchoMappingRegistry
         ["eletype", ["SOAP::SOAPString", XSD::QName.new(nil, "eletype")]]
       ],
       ["var", ["SOAP::SOAPString", XSD::QName.new(nil, "var")]]
-    ]
+    ],
+    :schema_attribute => {
+      XSD::QName.new(nil, "attr_min") => "SOAP::SOAPDecimal",
+      XSD::QName.new(nil, "attr_max") => "SOAP::SOAPDecimal"
+    }
   )
 
   LiteralRegistry.register(
@@ -53,7 +61,11 @@ module EchoMappingRegistry
         ["eletype", ["SOAP::SOAPString", XSD::QName.new(nil, "eletype")]]
       ],
       ["var", ["SOAP::SOAPString", XSD::QName.new(nil, "var")]]
-    ]
+    ],
+    :schema_attribute => {
+      XSD::QName.new(nil, "attr_min") => "SOAP::SOAPDecimal",
+      XSD::QName.new(nil, "attr_max") => "SOAP::SOAPDecimal"
+    }
   )
 end
 

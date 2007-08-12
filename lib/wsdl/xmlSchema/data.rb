@@ -30,6 +30,7 @@ require 'wsdl/xmlSchema/attribute'
 require 'wsdl/xmlSchema/union'
 require 'wsdl/xmlSchema/unique'
 require 'wsdl/xmlSchema/group'
+require 'wsdl/xmlSchema/attributeGroup'
 
 require 'wsdl/xmlSchema/length'
 require 'wsdl/xmlSchema/minlength'
@@ -53,6 +54,7 @@ AnnotationName = XSD::QName.new(XSD::Namespace, 'annotation')
 AnyName = XSD::QName.new(XSD::Namespace, 'any')
 AnyAttributeName = XSD::QName.new(XSD::Namespace, 'anyAttribute')
 AttributeName = XSD::QName.new(XSD::Namespace, 'attribute')
+AttributeGroupName = XSD::QName.new(XSD::Namespace, 'attributeGroup')
 ChoiceName = XSD::QName.new(XSD::Namespace, 'choice')
 ComplexContentName = XSD::QName.new(XSD::Namespace, 'complexContent')
 ComplexTypeName = XSD::QName.new(XSD::Namespace, 'complexType')

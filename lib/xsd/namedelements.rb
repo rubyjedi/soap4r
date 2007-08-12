@@ -94,6 +94,14 @@ class NamedElements
     @cache.clear
   end
 
+  def find_all
+    o = NamedElements.new
+    each do |ele|
+      o << ele if yield(ele)
+    end
+    o
+  end
+
   Empty = NamedElements.new.freeze
 
 protected

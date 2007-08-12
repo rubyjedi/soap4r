@@ -28,6 +28,8 @@ class TestGroup < Test::Unit::TestCase
       # arg
       # need to convert for 'any'
       ret = Groupele_type.new(arg.comment, arg.element, arg.eletype, arg.var)
+      ret.xmlattr_attr_max = arg.xmlattr_attr_max
+      ret.xmlattr_attr_min = arg.xmlattr_attr_min
       ret.set_any([::SOAP::SOAPElement.new("foo", arg.foo)])
       ret
     end
@@ -127,6 +129,8 @@ class TestGroup < Test::Unit::TestCase
     )
     arg.eletype = "eletype"
     arg.var = "var"
+    arg.xmlattr_attr_min = -3
+    arg.xmlattr_attr_max = 3
     ret = @client.echo(arg)
     assert_equal(arg.comment, ret.comment)
     assert_equal(arg.eletype, ret.eletype)

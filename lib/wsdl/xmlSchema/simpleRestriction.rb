@@ -29,7 +29,7 @@ class SimpleRestriction < Info
   attr_accessor :totaldigits
   attr_accessor :fractiondigits
   attr_reader :fixed
-  attr_accessor :anyattribute
+  attr_reader :attributes
 
   def initialize
     super
@@ -40,7 +40,7 @@ class SimpleRestriction < Info
     @minlength = nil
     @pattern = nil
     @fixed = {}
-    @anyattribute = nil
+    @attributes = XSD::NamedElements.new
   end
   
   def valid?(value)
@@ -82,8 +82,18 @@ class SimpleRestriction < Info
       TotalDigits.new
     when FractionDigitsName
       FractionDigits.new
+    when AttributeName
+      o = Attribute.new
+      @attributes << o
+      o
+    when AttributeGroupName
+      o = AttributeGroup.new
+      @attributes << o
+      o
     when AnyAttributeName
-      @anyattribute = AnyAttribute.new
+      o = AnyAttribute.new
+      @attributes << o
+      o
     end
   end
 

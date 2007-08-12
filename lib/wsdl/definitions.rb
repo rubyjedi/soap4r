@@ -51,68 +51,28 @@ class Definitions < Info
   end
 
   def collect_attributes
-    result = XSD::NamedElements.new
-    if @types
-      @types.schemas.each do |schema|
-	result.concat(schema.collect_attributes)
-      end
-    end
-    @imports.each do |import|
-      result.concat(import.content.collect_attributes)
-    end
-    result
+    collect_imports(:collect_attributes)
   end
 
   def collect_modelgroups
-    result = XSD::NamedElements.new
-    if @types
-      @types.schemas.each do |schema|
-	result.concat(schema.collect_modelgroups)
-      end
-    end
-    @imports.each do |import|
-      result.concat(import.content.collect_modelgroups)
-    end
-    result
+    collect_imports(:collect_modelgroups)
+  end
+
+  def collect_attributegroups
+    collect_imports(:collect_attributegroups)
   end
 
   def collect_elements
-    result = XSD::NamedElements.new
-    if @types
-      @types.schemas.each do |schema|
-	result.concat(schema.collect_elements)
-      end
-    end
-    @imports.each do |import|
-      result.concat(import.content.collect_elements)
-    end
-    result
+    collect_imports(:collect_elements)
   end
 
   def collect_complextypes
-    result = @anontypes.dup
-    if @types
-      @types.schemas.each do |schema|
-	result.concat(schema.collect_complextypes)
-      end
-    end
-    @imports.each do |import|
-      result.concat(import.content.collect_complextypes)
-    end
-    result
+    result = collect_imports(:collect_complextypes)
+    @anontypes.dup.concat(result)
   end
 
   def collect_simpletypes
-    result = XSD::NamedElements.new
-    if @types
-      @types.schemas.each do |schema|
-	result.concat(schema.collect_simpletypes)
-      end
-    end
-    @imports.each do |import|
-      result.concat(import.content.collect_simpletypes)
-    end
-    result
+    collect_imports(:collect_simpletypes)
   end
 
   # ToDo: simpletype must be accepted...
@@ -256,6 +216,19 @@ class Definitions < Info
   end
 
 private
+
+  def collect_imports(method)
+    result = XSD::NamedElements.new
+    if @types
+      @types.schemas.each do |schema|
+	result.concat(schema.send(method))
+      end
+    end
+    @imports.each do |import|
+      result.concat(import.content.send(method))
+    end
+    result
+  end
 
 end
 
