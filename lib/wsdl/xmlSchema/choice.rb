@@ -44,7 +44,6 @@ class Choice < Content
       @elements << o
       o
     when AnyName
-      raise ElementConstraintError.new("duplicated element: any") if @any
       @any = Any.new
       @elements << @any
       @any
