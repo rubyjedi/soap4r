@@ -454,8 +454,8 @@ private
     unless Regexp.last_match
       raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
     end
-    if ($5 and ((!$2 and !$3 and !$4) or (!$6 and !$7 and !$8)))
-      # Should we allow 'PT5S' here?
+    if $5 and !$6 and !$7 and !$8
+      # allows durations lower than a day such as 'PT5S'.
       raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
     end
     sign = $1
@@ -491,11 +491,11 @@ private
     r << "#{ @min }M" if @min.nonzero?
     r << "#{ @sec }S" if @sec.nonzero?
     str << l
-    if l.empty?
-      str << "0D"
-    end
     unless r.empty?
       str << "T" << r
+    end
+    if l.empty? and r.empty?
+      str << "0D"
     end
     str
   end
