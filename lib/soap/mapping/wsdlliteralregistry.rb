@@ -52,9 +52,11 @@ class WSDLLiteralRegistry < LiteralRegistry
 
   # node should be a SOAPElement
   def soap2obj(node, obj_class = nil)
+    cause = nil
     begin
       return any2obj(node, obj_class)
     rescue MappingError
+      cause = $!
     end
     if @excn_handler_soap2obj
       begin
@@ -65,9 +67,9 @@ class WSDLLiteralRegistry < LiteralRegistry
       end
     end
     if node.respond_to?(:type)
-      raise MappingError.new("cannot map #{node.type.name} to Ruby object")
+      raise MappingError.new("cannot map #{node.type.name} to Ruby object", cause)
     else
-      raise MappingError.new("cannot map #{node.elename.name} to Ruby object")
+      raise MappingError.new("cannot map #{node.elename.name} to Ruby object", cause)
     end
   end
 

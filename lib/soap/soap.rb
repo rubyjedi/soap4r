@@ -8,6 +8,7 @@
 
 require 'xsd/qname'
 require 'xsd/charset'
+require 'soap/nestedexception'
 
 
 module SOAP
@@ -61,7 +62,7 @@ Base64Literal = 'base64'
 
 MediaType = 'text/xml'
 
-class Error < StandardError; end
+class Error < StandardError; include NestedException; end
 
 class StreamError < Error; end
 class HTTPStreamError < StreamError; end

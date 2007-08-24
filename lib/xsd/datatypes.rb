@@ -8,6 +8,7 @@
 
 require 'xsd/qname'
 require 'xsd/charset'
+require 'soap/nestedexception'
 require 'uri'
 
 
@@ -77,7 +78,7 @@ AttrNilName = QName.new(InstanceNamespace, NilLiteral)
 AnyTypeName = QName.new(Namespace, AnyTypeLiteral)
 AnySimpleTypeName = QName.new(Namespace, AnySimpleTypeLiteral)
 
-class Error < StandardError; end
+class Error < StandardError; include ::SOAP::NestedException; end
 class ValueSpaceError < Error; end
 
 
@@ -343,7 +344,7 @@ private
       begin
   	return narrow32bit(Float(str))
       rescue ArgumentError
-  	raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.")
+  	raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.", $!)
       end
     end
   end
@@ -409,10 +410,10 @@ private
 	  begin
 	    return Float(str + '0')
 	  rescue ArgumentError
-	    raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.")
+	    raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.", $!)
 	  end
 	else
-	  raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.")
+	  raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.", $!)
 	end
       end
     end
@@ -950,7 +951,7 @@ private
     begin
       URI.parse(value.to_s.strip)
     rescue URI::InvalidURIError
-      raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.")
+      raise ValueSpaceError.new("#{ type }: cannot accept '#{ value }'.", $!)
     end
   end
 end
@@ -1209,7 +1210,7 @@ private
     begin
       data = Integer(str)
     rescue ArgumentError
-      raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.")
+      raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.", $!)
     end
     unless validate(data)
       raise ValueSpaceError.new("#{ type }: cannot accept '#{ str }'.")

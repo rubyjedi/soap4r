@@ -68,6 +68,16 @@ __XML__
     assert_equal(SOAP::Mapping::Object, obj.class)
   end
 
+  def test_nestedexception
+    ele = Thread.new {}
+    obj = [ele]
+    begin
+      SOAP::Marshal.dump(obj)
+    rescue ::SOAP::Mapping::MappingError => e
+      assert(e.backtrace.find { |line| /\[NESTED\]/ =~ line })
+    end
+  end
+
   def test_date
     targets = [
       ["2002-12-31",
