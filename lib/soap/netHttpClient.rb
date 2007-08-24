@@ -7,6 +7,7 @@
 
 
 require 'net/http'
+require 'soap/filter/filterchain'
 
 
 module SOAP
