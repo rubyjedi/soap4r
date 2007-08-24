@@ -334,6 +334,7 @@ private
     elsif type_qname && type = TypeMap[type_qname]
       return base2soap(obj, type)
     end
+    cause = nil
     begin 
       if definition = schema_definition_from_class(obj.class)
         return stubobj2soap(obj, definition)
@@ -342,6 +343,7 @@ private
         @default_factory.obj2soap(nil, obj, nil, self)
       return ret if ret
     rescue MappingError
+      cause = $!
     end
     if @excn_handler_obj2soap
       ret = @excn_handler_obj2soap.call(obj) { |yield_obj|
@@ -349,7 +351,7 @@ private
       }
       return ret if ret
     end
-    raise MappingError.new("Cannot map #{ obj.class.name } to SOAP/OM.")
+    raise MappingError.new("Cannot map #{ obj.class.name } to SOAP/OM.", cause)
   end
 
   # Might return nil as a mapping result.
@@ -376,15 +378,17 @@ private
     return obj if conv
     conv, obj = @default_factory.soap2obj(nil, node, nil, self)
     return obj if conv
+    cause = nil
     if @excn_handler_soap2obj
       begin
         return @excn_handler_soap2obj.call(node) { |yield_node|
 	    Mapping._soap2obj(yield_node, self)
 	  }
       rescue Exception
+        cause = $!
       end
     end
-    raise MappingError.new("Cannot map #{ node.type.name } to Ruby object.")
+    raise MappingError.new("Cannot map #{ node.type.name } to Ruby object.", cause)
   end
 
   def addiv2obj(obj, attr)

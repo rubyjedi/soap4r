@@ -7,6 +7,7 @@
 
 
 require 'xsd/qname'
+require 'soap/nestedexception'
 
 
 module WSDL
@@ -17,7 +18,7 @@ Version = '0.0.2'
 Namespace = 'http://schemas.xmlsoap.org/wsdl/'
 SOAPBindingNamespace ='http://schemas.xmlsoap.org/wsdl/soap/'
 
-class Error < StandardError; end
+class Error < StandardError; include ::SOAP::NestedException; end
 
 
 end

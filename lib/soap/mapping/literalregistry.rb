@@ -48,9 +48,11 @@ class LiteralRegistry
 
   # node should be a SOAPElement
   def soap2obj(node, obj_class = nil)
+    cause = nil
     begin
       return any2obj(node, obj_class)
     rescue MappingError
+      cause = $!
     end
     if @excn_handler_soap2obj
       begin
@@ -60,7 +62,7 @@ class LiteralRegistry
       rescue Exception
       end
     end
-    raise MappingError.new("cannot map #{node.elename.name}/#{node.type.name} to Ruby object")
+    raise MappingError.new("cannot map #{node.elename.name}/#{node.type.name} to Ruby object", cause)
   end
 
 private

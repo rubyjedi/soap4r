@@ -55,6 +55,7 @@ class WSDLEncodedRegistry < EncodedRegistry
 
   # map anything for now: must refer WSDL while mapping.  [ToDo]
   def soap2obj(node, obj_class = nil)
+    cause = nil
     begin
       unless obj_class
         typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
@@ -62,6 +63,7 @@ class WSDLEncodedRegistry < EncodedRegistry
       end
       return Mapping._soap2obj(node, Mapping::DefaultRegistry, obj_class)
     rescue MappingError
+      cause = $!
     end
     if @excn_handler_soap2obj
       begin
@@ -71,7 +73,7 @@ class WSDLEncodedRegistry < EncodedRegistry
       rescue Exception
       end
     end
-    raise MappingError.new("cannot map #{node.type.name} to Ruby object")
+    raise MappingError.new("cannot map #{node.type.name} to Ruby object", cause)
   end
 
 private
