@@ -32,13 +32,13 @@ class MethodDefCreator
     @defined_const = defined_const
   end
 
-  def dump(porttype)
+  def dump(name)
     @types.clear
     @encoded = false
     @literal = false
     methoddef = ""
-    port = @definitions.porttype(porttype)
-    binding = port.find_binding
+    porttype = @definitions.porttype(name)
+    binding = porttype.find_binding
     if binding
       binding.operations.each do |op_bind|
         next unless op_bind # no binding is defined
