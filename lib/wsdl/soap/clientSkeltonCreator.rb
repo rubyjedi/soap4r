@@ -36,7 +36,7 @@ class ClientSkeltonCreator
       result << "\n\n"
     end
     services.ports.each do |port|
-      result << dump_porttype(port.porttype.name)
+      result << dump_porttype(port.porttype)
       result << "\n"
     end
     if @modulepath
@@ -49,8 +49,8 @@ class ClientSkeltonCreator
 
 private
 
-  def dump_porttype(name)
-    drv_name = create_class_name(name)
+  def dump_porttype(porttype)
+    drv_name = create_class_name(porttype.name)
 
     result = ""
     result << <<__EOD__
@@ -62,7 +62,7 @@ obj.wiredump_dev = STDERR if $DEBUG
 
 __EOD__
     element_definitions = @definitions.collect_elements
-    @definitions.porttype(name).operations.each do |operation|
+    porttype.operations.each do |operation|
       result << dump_method_signature(operation, element_definitions)
       result << dump_input_init(operation.input) << "\n"
       result << dump_operation(operation) << "\n\n"

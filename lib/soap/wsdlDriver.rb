@@ -14,12 +14,15 @@ require 'soap/mapping/wsdlencodedregistry'
 require 'soap/mapping/wsdlliteralregistry'
 require 'soap/rpc/driver'
 require 'wsdl/soap/methodDefCreator'
+require 'wsdl/soap/classDefCreatorSupport'
 
 
 module SOAP
 
 
 class WSDLDriverFactory
+  include WSDL::SOAP::ClassDefCreatorSupport
+
   class FactoryError < StandardError; end
 
   attr_reader :wsdl
@@ -30,7 +33,7 @@ class WSDLDriverFactory
   end
   
   def inspect
-    "#<#{self.class}:#{@wsdl.name}>"
+    sprintf("#<%s:%s:0x%x\n\n%s>", self.class.name, @wsdl.name, __id__, dump_method_signatures)
   end
 
   def create_rpc_driver(servicename = nil, portname = nil)
@@ -50,6 +53,19 @@ class WSDLDriverFactory
 
   # Backward compatibility.
   alias createDriver create_driver
+
+  def dump_method_signatures
+    sig = nil
+    element_definitions = @wsdl.collect_elements
+    @wsdl.services.each do |service|
+      service.ports.each do |port|
+        sig = port.porttype.operations.collect { |operation|
+          dump_method_signature(operation, element_definitions).gsub(/^#/, ' ')
+        }.join("\n")
+      end
+    end
+    sig
+  end
 
 private
 

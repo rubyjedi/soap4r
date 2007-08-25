@@ -40,15 +40,15 @@ class CGIStubCreator
     if port.porttype.nil?
       raise RuntimeError.new("porttype not found for #{port}")
     end
-    dump_porttype(port.porttype.name)
+    dump_porttype(port.porttype)
   end
 
 private
 
-  def dump_porttype(name)
-    class_name = create_class_name(name, @modulepath)
+  def dump_porttype(porttype)
+    class_name = create_class_name(porttype.name, @modulepath)
     defined_const = {}
-    result = MethodDefCreator.new(@definitions, @modulepath, defined_const).dump(name)
+    result = MethodDefCreator.new(@definitions, @modulepath, defined_const).dump(porttype.name)
     methoddef = result[:methoddef]
     wsdl_name = @definitions.name ? @definitions.name.name : 'default'
     mrname = safeconstname(wsdl_name + 'MappingRegistry')
