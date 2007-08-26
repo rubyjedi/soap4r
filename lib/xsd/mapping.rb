@@ -32,6 +32,7 @@ module Mapping
 
     def initialize(registry)
       @registry = registry
+      @registry.generate_explicit_type = true
     end
 
     def obj2xml(obj, elename = nil, io = nil)

@@ -12,14 +12,15 @@ module WSDL; module Group
 class TestGroup < Test::Unit::TestCase
   class Server < ::SOAP::RPC::StandaloneServer
     Namespace = 'urn:group'
+    TypeNamespace = 'urn:grouptype'
 
     def on_init
       add_document_method(
         self,
         Namespace + ':echo',
         'echo',
-        XSD::QName.new(Namespace, 'groupele'),
-        XSD::QName.new(Namespace, 'groupele')
+        XSD::QName.new(TypeNamespace, 'groupele'),
+        XSD::QName.new(TypeNamespace, 'groupele')
       )
       self.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     end
@@ -106,8 +107,8 @@ class TestGroup < Test::Unit::TestCase
   def test_naive
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
     @client.add_document_method('echo', 'urn:group:echo',
-      XSD::QName.new('urn:group', 'groupele'),
-      XSD::QName.new('urn:group', 'groupele'))
+      XSD::QName.new('urn:grouptype', 'groupele'),
+      XSD::QName.new('urn:grouptype', 'groupele'))
     @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
     #

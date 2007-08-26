@@ -62,6 +62,12 @@ class ComplexType < Info
     end
   end
 
+  def base
+    if c = @complexcontent || @simplecontent
+      c.base
+    end
+  end
+
   def elements
     if c = @complexcontent || @content
       c.elements

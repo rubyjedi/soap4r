@@ -141,6 +141,7 @@ class SchemaDefinition
   attr_reader :class_for
   attr_reader :elename, :type
   attr_reader :qualified
+  attr_accessor :basetype
   attr_accessor :attributes
   attr_accessor :elements
 
@@ -149,6 +150,7 @@ class SchemaDefinition
     @elename = elename
     @type = type
     @qualified = qualified
+    @basetype = nil
     @elements = EMPTY
     @attributes = nil
   end

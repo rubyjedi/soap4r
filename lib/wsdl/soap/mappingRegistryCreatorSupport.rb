@@ -36,6 +36,7 @@ module MappingRegistryCreatorSupport
       schema_ns = qname.namespace
     else
       var[:schema_type] = qname
+      var[:schema_basetype] = typedef.base if typedef.base
       schema_ns = qname.namespace
     end
     # true, false, or nil
@@ -212,6 +213,7 @@ module MappingRegistryCreatorSupport
         dump_entry_item(var, :soap_class),
         dump_entry_item(var, :schema_name, :qname),
         dump_entry_item(var, :schema_type, :qname),
+        dump_entry_item(var, :schema_basetype, :qname),
         dump_entry_item(var, :schema_qualified),
         dump_entry_item(var, :schema_element),
         dump_entry_item(var, :schema_attribute)
