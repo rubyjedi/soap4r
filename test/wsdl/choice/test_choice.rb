@@ -195,10 +195,10 @@ class TestChoice < Test::Unit::TestCase
     #
     arg = EmptyArrayAtFirst.new
     arg.b1 = "b1"
-    ret = @client.echo_complex_emptyArrayAtFirst(arg)
-    assert_nil(ret.a)
-    assert_equal("b1", ret.b1)
-    assert_nil(ret.b2)
+    ret = @client.echo_complex_emptyArrayAtFirst(Echoele_complex_emptyArrayAtFirst.new(arg))
+    assert_nil(ret.data.a)
+    assert_equal("b1", ret.data.b1)
+    assert_nil(ret.data.b2)
   end
 end
 

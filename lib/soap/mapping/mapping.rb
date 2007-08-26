@@ -422,15 +422,18 @@ module Mapping
     schema_ns = definition[:schema_ns]
     schema_name = definition[:schema_name]
     schema_type = definition[:schema_type]
+    schema_basetype = definition[:schema_basetype]
     # wrap if needed for backward compatibility
     if schema_ns
       schema_name = Mapping.to_qname(schema_name, schema_ns) if schema_name
       schema_type = Mapping.to_qname(schema_type, schema_ns) if schema_type
+      # no need for schema_basetype bacause it's introduced later
     end
     schema_qualified = definition[:schema_qualified]
     schema_element = definition[:schema_element]
     schema_attributes = definition[:schema_attribute]
     definition = SchemaDefinition.new(klass, schema_name, schema_type, schema_qualified)
+    definition.basetype = schema_basetype
     definition.attributes = schema_attributes
     if schema_element
       if schema_element.respond_to?(:is_concrete_definition) and
