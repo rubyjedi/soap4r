@@ -8,8 +8,7 @@ module Echo_versionMappingRegistry
 
   EncodedRegistry.register(
     :class => Version_struct,
-    :schema_ns => NsSimpletypeRpcType,
-    :schema_type => "version_struct",
+    :schema_type => XSD::QName.new(NsSimpletypeRpcType, "version_struct"),
     :schema_element => [
       ["version", ["Version", XSD::QName.new(nil, "version")]],
       ["msg", ["SOAP::SOAPString", XSD::QName.new(nil, "msg")]]
@@ -18,26 +17,22 @@ module Echo_versionMappingRegistry
 
   EncodedRegistry.register(
     :class => Version,
-    :schema_ns => NsSimpletypeRpcType,
-    :schema_type => "version"
+    :schema_type => XSD::QName.new(NsSimpletypeRpcType, "version")
   )
 
   EncodedRegistry.register(
     :class => StateType,
-    :schema_ns => NsSimpletypeRpcType,
-    :schema_type => "stateType"
+    :schema_type => XSD::QName.new(NsSimpletypeRpcType, "stateType")
   )
 
   EncodedRegistry.register(
     :class => ZipIntType,
-    :schema_ns => NsSimpletypeRpcType,
-    :schema_type => "zipIntType"
+    :schema_type => XSD::QName.new(NsSimpletypeRpcType, "zipIntType")
   )
 
   LiteralRegistry.register(
     :class => Version_struct,
-    :schema_ns => NsSimpletypeRpcType,
-    :schema_type => "version_struct",
+    :schema_type => XSD::QName.new(NsSimpletypeRpcType, "version_struct"),
     :schema_qualified => false,
     :schema_element => [
       ["version", ["Version", XSD::QName.new(nil, "version")]],
@@ -47,19 +42,16 @@ module Echo_versionMappingRegistry
 
   LiteralRegistry.register(
     :class => Version,
-    :schema_ns => NsSimpletypeRpcType,
-    :schema_type => "version"
+    :schema_type => XSD::QName.new(NsSimpletypeRpcType, "version")
   )
 
   LiteralRegistry.register(
     :class => StateType,
-    :schema_ns => NsSimpletypeRpcType,
-    :schema_type => "stateType"
+    :schema_type => XSD::QName.new(NsSimpletypeRpcType, "stateType")
   )
 
   LiteralRegistry.register(
     :class => ZipIntType,
-    :schema_ns => NsSimpletypeRpcType,
-    :schema_type => "zipIntType"
+    :schema_type => XSD::QName.new(NsSimpletypeRpcType, "zipIntType")
   )
 end

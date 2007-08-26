@@ -642,8 +642,8 @@ class SOAPElement
     super()
     if elename.nil?
       elename = XSD::QName::EMPTY
-    elsif !elename.is_a?(XSD::QName)
-      elename = XSD::QName.new(nil, elename)
+    else
+      elename = Mapping.to_qname(elename)
     end
     @encodingstyle = LiteralNamespace
     @elename = elename

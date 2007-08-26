@@ -11,8 +11,7 @@ module EchoMappingRegistry
 
   EncodedRegistry.register(
     :class => WSDL::Group::Groupele_type,
-    :schema_ns => NsGrouptype,
-    :schema_type => "groupele_type",
+    :schema_type => XSD::QName.new(NsGrouptype, "groupele_type"),
     :schema_element => [
       ["comment", "SOAP::SOAPString", [0, 1]],
       ["any", [nil, XSD::QName.new(NsXMLSchema, "anyType")]],
@@ -30,8 +29,7 @@ module EchoMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::Group::Groupele_type,
-    :schema_ns => NsGrouptype,
-    :schema_type => "groupele_type",
+    :schema_type => XSD::QName.new(NsGrouptype, "groupele_type"),
     :schema_qualified => false,
     :schema_element => [
       ["comment", "SOAP::SOAPString", [0, 1]],
@@ -50,8 +48,7 @@ module EchoMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::Group::Groupele_type,
-    :schema_ns => NsGrouptype,
-    :schema_name => "groupele",
+    :schema_name => XSD::QName.new(NsGrouptype, "groupele"),
     :schema_qualified => true,
     :schema_element => [
       ["comment", "SOAP::SOAPString", [0, 1]],

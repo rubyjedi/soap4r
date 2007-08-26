@@ -9,8 +9,7 @@ module MysampleMappingRegistry
 
   Registry.register(
     :class => XSD::XSD2Ruby::Question,
-    :schema_ns => NsMysample,
-    :schema_type => "question",
+    :schema_type => XSD::QName.new(NsMysample, "question"),
     :schema_qualified => false,
     :schema_element => [
       ["something", ["SOAP::SOAPString", XSD::QName.new(nil, "something")]]
@@ -19,8 +18,7 @@ module MysampleMappingRegistry
 
   Registry.register(
     :class => XSD::XSD2Ruby::Section,
-    :schema_ns => NsMysample,
-    :schema_type => "section",
+    :schema_type => XSD::QName.new(NsMysample, "section"),
     :schema_qualified => false,
     :schema_element => [
       ["sectionID", ["SOAP::SOAPInt", XSD::QName.new(nil, "sectionID")]],
@@ -33,8 +31,7 @@ module MysampleMappingRegistry
 
   Registry.register(
     :class => XSD::XSD2Ruby::SectionArray,
-    :schema_ns => NsMysample,
-    :schema_type => "sectionArray",
+    :schema_type => XSD::QName.new(NsMysample, "sectionArray"),
     :schema_element => [
       ["element", ["XSD::XSD2Ruby::Section[]", XSD::QName.new(nil, "element")], [1, nil]]
     ]
@@ -42,8 +39,7 @@ module MysampleMappingRegistry
 
   Registry.register(
     :class => XSD::XSD2Ruby::SectionElement,
-    :schema_ns => NsMysample,
-    :schema_name => "sectionElement",
+    :schema_name => XSD::QName.new(NsMysample, "sectionElement"),
     :schema_qualified => true,
     :schema_element => [
       ["sectionID", ["SOAP::SOAPInt", XSD::QName.new(nil, "sectionID")]],
