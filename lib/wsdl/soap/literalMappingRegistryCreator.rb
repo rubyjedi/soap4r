@@ -123,13 +123,13 @@ private
   def dump_array_typemap(qname, typedef)
     var = {}
     var[:class] = create_class_name(qname, @modulepath)
-    var[:schema_ns] = qname.namespace
+    schema_ns = qname.namespace
     if typedef.name.nil?
       # local complextype of a element
-      var[:schema_name] = qname.name
+      var[:schema_name] = qname
     else
       # named complextype
-      var[:schema_type] = qname.name
+      var[:schema_type] = qname
     end
     child_type = typedef.child_type
     child_element = typedef.find_aryelement
@@ -160,7 +160,7 @@ private
     parsed_element = []
     parsed_element << [child_element_name.name, child_element_name, type, occurrence]
     var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
-    assign_const(var[:schema_ns], 'Ns')
+    assign_const(schema_ns, 'Ns')
     dump_entry(@varname, var)
   end
 end

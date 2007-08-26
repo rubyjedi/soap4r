@@ -11,8 +11,7 @@ module EchoMappingRegistry
 
   EncodedRegistry.register(
     :class => WSDL::Any::FooBar,
-    :schema_ns => NsEchoType,
-    :schema_type => "foo.bar",
+    :schema_type => XSD::QName.new(NsEchoType, "foo.bar"),
     :schema_element => [
       ["before", ["SOAP::SOAPString", XSD::QName.new(nil, "before")]],
       ["any", [nil, XSD::QName.new(NsXMLSchema, "anyType")]],
@@ -22,8 +21,7 @@ module EchoMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::Any::FooBar,
-    :schema_ns => NsEchoType,
-    :schema_type => "foo.bar",
+    :schema_type => XSD::QName.new(NsEchoType, "foo.bar"),
     :schema_qualified => false,
     :schema_element => [
       ["before", ["SOAP::SOAPString", XSD::QName.new(nil, "before")]],
@@ -34,8 +32,7 @@ module EchoMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::Any::FooBar,
-    :schema_ns => NsEchoType,
-    :schema_name => "foo.bar",
+    :schema_name => XSD::QName.new(NsEchoType, "foo.bar"),
     :schema_qualified => true,
     :schema_element => [
       ["before", ["SOAP::SOAPString", XSD::QName.new(nil, "before")]],
@@ -46,8 +43,7 @@ module EchoMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::Any::SetOutputAndCompleteRequest,
-    :schema_ns => NsEchoType,
-    :schema_name => "setOutputAndCompleteRequest",
+    :schema_name => XSD::QName.new(NsEchoType, "setOutputAndCompleteRequest"),
     :schema_qualified => true,
     :schema_element => [
       ["taskId", ["SOAP::SOAPString", XSD::QName.new(nil, "taskId")]],
@@ -58,8 +54,7 @@ module EchoMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::Any::SetOutputAndCompleteRequest::C_Data,
-    :schema_ns => nil,
-    :schema_name => "data",
+    :schema_name => XSD::QName.new(nil, "data"),
     :schema_qualified => true,
     :schema_element => [
       ["any", [nil, XSD::QName.new(NsXMLSchema, "anyType")]]

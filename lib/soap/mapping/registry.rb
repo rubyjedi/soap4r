@@ -51,9 +51,7 @@ class Object
   end
 
   def [](qname)
-    unless qname.is_a?(XSD::QName)
-      qname = XSD::QName.new(nil, qname)
-    end
+    qname = Mapping.to_qname(qname)
     @__xmlele.each do |k, v|
       return v if k == qname
     end
@@ -65,9 +63,7 @@ class Object
   end
 
   def []=(qname, value)
-    unless qname.is_a?(XSD::QName)
-      qname = XSD::QName.new(nil, qname)
-    end
+    qname = Mapping.to_qname(qname)
     found = false
     @__xmlele.each do |pair|
       if pair[0] == qname

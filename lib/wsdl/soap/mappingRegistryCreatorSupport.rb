@@ -29,14 +29,14 @@ module MappingRegistryCreatorSupport
     var = {}
     var[:class] = create_class_name(qname, parentmodule)
     if as_element
-      var[:schema_name] = as_element.name
-      var[:schema_ns] = as_element.namespace
+      var[:schema_name] = as_element
+      chema_ns = as_element.namespace
     elsif typedef.name.nil?
-      var[:schema_name] = qname.name
-      var[:schema_ns] = qname.namespace
+      var[:schema_name] = qname
+      schema_ns = qname.namespace
     else
-      var[:schema_type] = qname.name
-      var[:schema_ns] = qname.namespace
+      var[:schema_type] = qname
+      schema_ns = qname.namespace
     end
     # true, false, or nil
     unless qualified.nil?
@@ -52,7 +52,7 @@ module MappingRegistryCreatorSupport
     unless typedef.attributes.empty?
       var[:schema_attribute] = define_attribute(typedef.attributes)
     end
-    assign_const(var[:schema_ns], 'Ns')
+    assign_const(schema_ns, 'Ns')
     dump_entry(@varname, var)
   end
 
@@ -60,19 +60,19 @@ module MappingRegistryCreatorSupport
     var = {}
     var[:class] = create_class_name(qname, @modulepath)
     if as_element
-      var[:schema_name] = as_element.name
-      var[:schema_ns] = as_element.namespace
+      var[:schema_name] = as_element
+      schema_ns = as_element.namespace
     elsif typedef.name.nil?
-      var[:schema_name] = qname.name
-      var[:schema_ns] = qname.namespace
+      var[:schema_name] = qname
+      schema_ns = qname.namespace
     else
-      var[:schema_type] = qname.name
-      var[:schema_ns] = qname.namespace
+      var[:schema_type] = qname
+      schema_ns = qname.namespace
     end
     unless typedef.attributes.empty?
       var[:schema_attribute] = define_attribute(typedef.attributes)
     end
-    assign_const(var[:schema_ns], 'Ns')
+    assign_const(schema_ns, 'Ns')
     dump_entry(@varname, var)
   end
 
@@ -210,9 +210,8 @@ module MappingRegistryCreatorSupport
       [
         dump_entry_item(var, :class),
         dump_entry_item(var, :soap_class),
-        dump_entry_item(var, :schema_ns, true),
-        dump_entry_item(var, :schema_name, true),
-        dump_entry_item(var, :schema_type, true),
+        dump_entry_item(var, :schema_name, :qname),
+        dump_entry_item(var, :schema_type, :qname),
         dump_entry_item(var, :schema_qualified),
         dump_entry_item(var, :schema_element),
         dump_entry_item(var, :schema_attribute)
@@ -220,19 +219,28 @@ module MappingRegistryCreatorSupport
     "\n)\n"
   end
 
-  def dump_entry_item(var, key, as_string = false)
+  def dump_entry_item(var, key, dump_type = :none)
     if var.key?(key)
-      if as_string
+      case dump_type
+      when :none
+        ":#{key} => #{var[key]}"
+      when :string
         if @defined_const.key?(var[key])
           ":#{key} => #{@defined_const[var[key]]}"
         else
           ":#{key} => #{ndq(var[key])}"
         end
+      when :qname
+        qname = var[key]
+        if @defined_const.key?(qname.namespace)
+          ns = @defined_const[qname.namespace]
+        else
+          ns = ndq(qname.namespace)
+        end
+        ":#{key} => XSD::QName.new(#{ns}, #{ndq(qname.name)})"
       else
-        ":#{key} => #{var[key]}"
+        raise "Unknown dump type: #{dump_type}"
       end
-    else
-      nil
     end
   end
 
@@ -257,16 +265,16 @@ module MappingRegistryCreatorSupport
     var = {}
     var[:class] = create_class_name(qname, @modulepath)
     if as_element
-      var[:schema_type] = nil
-      var[:schema_ns] = as_element.namespace
+      var[:schema_name] = as_element
+      schema_ns = as_element.namespace
     elsif typedef.name.nil?
-      var[:schema_type] = nil
-      var[:schema_ns] = qname.namespace
+      var[:schema_name] = qname
+      schema_ns = qname.namespace
     else
-      var[:schema_type] = qname.name
-      var[:schema_ns] = qname.namespace
+      var[:schema_type] = qname
+      schema_ns = qname.namespace
     end
-    assign_const(var[:schema_ns], 'Ns')
+    assign_const(schema_ns, 'Ns')
     dump_entry(@varname, var)
   end
 

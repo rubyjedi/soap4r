@@ -272,6 +272,14 @@ module Mapping
     end
   end
 
+  def self.to_qname(obj, ns = nil)
+    if obj.is_a?(XSD::QName)
+      obj
+    else
+      XSD::QName.new(ns, obj)
+    end
+  end
+
   def self.define_singleton_method(obj, name, &block)
     sclass = (class << obj; self; end)
     sclass.class_eval {
@@ -390,17 +398,18 @@ module Mapping
     if Thread.current[:SOAPMapping][:SchemaDefinition].key?(klass)
       return Thread.current[:SOAPMapping][:SchemaDefinition][klass]
     end
-    ns = schema_ns_definition(klass)
-    name = schema_name_definition(klass)
-    type = schema_type_definition(klass)
+    schema_ns = schema_ns_definition(klass)
+    schema_name = schema_name_definition(klass)
+    schema_type = schema_type_definition(klass)
     qualified = schema_qualified_definition(klass)
     elements = schema_element_definition(klass)
     attributes = schema_attribute_definition(klass)
-    return nil if ns.nil? and name.nil? and type.nil? and elements.nil? and attributes.nil?
+    return nil if schema_name.nil? and schema_type.nil?
+    schema_name = Mapping.to_qname(schema_name, schema_ns) if schema_name
+    schema_type = Mapping.to_qname(schema_type, schema_ns) if schema_type
     definition = create_schema_definition(klass,
-      :schema_ns => ns,
-      :schema_name => name,
-      :schema_type => type,
+      :schema_name => schema_name,
+      :schema_type => schema_type,
       :schema_qualified => qualified,
       :schema_element => elements,
       :schema_attribute => attributes
@@ -413,20 +422,23 @@ module Mapping
     schema_ns = definition[:schema_ns]
     schema_name = definition[:schema_name]
     schema_type = definition[:schema_type]
+    # wrap if needed for backward compatibility
+    if schema_ns
+      schema_name = Mapping.to_qname(schema_name, schema_ns) if schema_name
+      schema_type = Mapping.to_qname(schema_type, schema_ns) if schema_type
+    end
     schema_qualified = definition[:schema_qualified]
     schema_element = definition[:schema_element]
     schema_attributes = definition[:schema_attribute]
-    elename = schema_name ? XSD::QName.new(schema_ns, schema_name) : nil
-    type = schema_type ? XSD::QName.new(schema_ns, schema_type) : nil
-    definition = SchemaDefinition.new(klass, elename, type, schema_qualified)
+    definition = SchemaDefinition.new(klass, schema_name, schema_type, schema_qualified)
     definition.attributes = schema_attributes
     if schema_element
       if schema_element.respond_to?(:is_concrete_definition) and
           schema_element.is_concrete_definition
         definition.elements = schema_element
       else
-        default_ns = elename.namespace if elename
-        default_ns ||= type.namespace if type
+        default_ns = schema_name.namespace if schema_name
+        default_ns ||= schema_type.namespace if schema_type
         definition.elements = parse_schema_definition(schema_element, default_ns)
         if klass < ::Array
           definition.elements.set_array
