@@ -174,6 +174,7 @@ module RegistrySupport
   def initialize
     super()
     @class_schema_definition = {}
+    @class_elename_schema_definition = {}
     @elename_schema_definition = {}
     @type_schema_definition = {}
   end
@@ -186,6 +187,7 @@ module RegistrySupport
       @class_schema_definition[obj_class] = definition
     end
     if definition.elename
+      @class_elename_schema_definition[obj_class] = definition
       @elename_schema_definition[definition.elename] = definition
     end
     if definition.type
@@ -195,6 +197,10 @@ module RegistrySupport
 
   def schema_definition_from_class(klass)
     @class_schema_definition[klass] || Mapping.schema_definition_classdef(klass)
+  end
+
+  def elename_schema_definition_from_class(klass)
+    @class_elename_schema_definition[klass]
   end
 
   def schema_definition_from_elename(qname)
@@ -239,8 +245,7 @@ module RegistrySupport
     return SOAPNil.new if obj.nil?
     soap_obj = nil
     if type <= XSD::XSDString
-      str = XSD::Charset.encoding_conv(obj.to_s,
-        Thread.current[:SOAPMapping][:ExternalCES],
+      str = XSD::Charset.encoding_conv(obj.to_s, Mapping.external_ces,
         XSD::Charset.encoding)
       soap_obj = type.new(str)
     else

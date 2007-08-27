@@ -28,23 +28,30 @@ module Mapping
   end
 
   class Mapper
-    MAPPING_OPT = {:default_encodingstyle => SOAP::LiteralNamespace}
+    MAPPING_OPT = {
+      :default_encodingstyle => SOAP::LiteralNamespace,
+      :root_type_hint => true
+    }.freeze
 
     def initialize(registry)
       @registry = registry
-      @registry.generate_explicit_type = true
     end
 
     def obj2xml(obj, elename = nil, io = nil)
-      if !elename.nil? and !elename.is_a?(XSD::QName)
-        elename = XSD::QName.new(nil, elename)
+      opt = MAPPING_OPT.dup
+      unless elename
+        if definition = @registry.elename_schema_definition_from_class(obj.class)
+          elename = definition.elename
+          opt[:root_type_hint] = false
+        end
       end
-      soap = SOAP::Mapping.obj2soap(obj, @registry, elename)
+      elename = SOAP::Mapping.to_qname(elename) if elename
+      soap = SOAP::Mapping.obj2soap(obj, @registry, elename, opt)
       if soap.elename.nil? or soap.elename == XSD::QName::EMPTY
         soap.elename =
           XSD::QName.new(nil, SOAP::Mapping.name2elename(obj.class.to_s))
       end
-      generator = SOAP::SOAPGenerator.new(MAPPING_OPT)
+      generator = SOAP::SOAPGenerator.new(opt)
       generator.generate(soap, io)
     end
 

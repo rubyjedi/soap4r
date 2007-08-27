@@ -370,6 +370,18 @@ module Mapping
     end
   end
 
+  def self.root_type_hint
+    Thread.current[:SOAPMapping][:RootTypeHint]
+  end
+
+  def self.reset_root_type_hint
+    Thread.current[:SOAPMapping][:RootTypeHint] = false
+  end
+
+  def self.external_ces
+    Thread.current[:SOAPMapping][:ExternalCES]
+  end
+
   def self.schema_ns_definition(klass)
     class_schema_variable(:schema_ns, klass)
   end
@@ -537,6 +549,7 @@ module Mapping
         data[:MarshalKey] = {}
         data[:ExternalCES] = opt[:external_ces] || XSD::Charset.encoding
         data[:NoReference] = opt[:no_reference]
+        data[:RootTypeHint] = opt[:root_type_hint]
         data[:SchemaDefinition] = {}
         yield
       end
