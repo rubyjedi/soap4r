@@ -22,13 +22,11 @@ class LiteralRegistry
 
   attr_accessor :excn_handler_obj2soap
   attr_accessor :excn_handler_soap2obj
-  attr_accessor :generate_explicit_type
 
   def initialize
     super()
     @excn_handler_obj2soap = nil
     @excn_handler_soap2obj = nil
-    @generate_explicit_type = false
   end
 
   def obj2soap(obj, qname, obj_class = nil)
@@ -138,7 +136,8 @@ private
       ele = SOAPElement.new(qname)
     end
     ele.qualified = definition.qualified
-    if definition.type and (@generate_explicit_type or definition.basetype)
+    if definition.type and (definition.basetype or Mapping.root_type_hint)
+      Mapping.reset_root_type_hint
       ele.extraattr[XSD::AttrTypeName] = definition.type
     end
     if qname.nil? and definition.elename

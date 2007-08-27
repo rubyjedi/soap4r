@@ -105,8 +105,7 @@ class StringFactory_ < Factory
       return nil
     end
     begin
-      externalces = Thread.current[:SOAPMapping][:ExternalCES]
-      encoded = XSD::Charset.encoding_conv(obj, externalces,
+      encoded = XSD::Charset.encoding_conv(obj, Mapping.external_ces,
         XSD::Charset.encoding)
       soap_obj = soap_class.new(encoded)
     rescue XSD::ValueSpaceError
@@ -119,7 +118,7 @@ class StringFactory_ < Factory
   def soap2obj(obj_class, node, info, map)
     obj = Mapping.create_empty_object(obj_class)
     decoded = XSD::Charset.encoding_conv(node.data, XSD::Charset.encoding,
-      Thread.current[:SOAPMapping][:ExternalCES])
+      Mapping.external_ces)
     obj.replace(decoded)
     mark_unmarshalled_obj(node, obj)
     return true, obj
