@@ -163,6 +163,8 @@ __EOX__
     @client.endpoint_url = @url + 'basic_auth'
     str = ""
     @client.wiredump_dev = str
+    @client.options['protocol.http.basic_auth']['0'] = [@url, "admin", "admin"]
+    assert_nil(@client.do_server_proc_basic_auth)
     @client.options["protocol.http.basic_auth"] << [@url, "admin", "admin"]
     assert_nil(@client.do_server_proc_basic_auth)
   end
