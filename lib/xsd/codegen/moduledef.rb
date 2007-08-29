@@ -19,6 +19,7 @@ class ModuleDef
   include GenSupport
   include CommentDef
 
+  attr_reader :name
   attr_reader :innermodule
 
   def initialize(name)
