@@ -17,6 +17,7 @@ private
     ['--client_skelton','-c', GetoptLong::OPTIONAL_ARGUMENT],
     ['--servant_skelton','-s', GetoptLong::OPTIONAL_ARGUMENT],
     ['--cgi_stub','-g', GetoptLong::OPTIONAL_ARGUMENT],
+    ['--servlet_stub','-l', GetoptLong::OPTIONAL_ARGUMENT],
     ['--standalone_server_stub','-a', GetoptLong::OPTIONAL_ARGUMENT],
     ['--driver','-d', GetoptLong::OPTIONAL_ARGUMENT],
     ['--drivername_postfix','-n', GetoptLong::REQUIRED_ARGUMENT],
@@ -69,6 +70,7 @@ Options:
   --client_skelton [servicename]
   --servant_skelton [porttypename]
   --cgi_stub [servicename]
+  --servlet_stub [servicename]
   --standalone_server_stub [servicename]
   --driver [porttypename]
   --drivername_postfix driver_classname_postfix
@@ -112,7 +114,7 @@ __EOU__
   	  end
    	when "--classdef", "--mapping_registry",
             "--client_skelton", "--servant_skelton",
-            "--cgi_stub", "--standalone_server_stub",
+            "--cgi_stub", "--servlet_stub", "--standalone_server_stub",
             "--driver"
   	  opt[name.sub(/^--/, '')] = arg.empty? ? nil : arg
         when "--drivername_postfix"

@@ -14,6 +14,7 @@ require 'wsdl/soap/servantSkeltonCreator'
 require 'wsdl/soap/driverCreator'
 require 'wsdl/soap/clientSkeltonCreator'
 require 'wsdl/soap/standaloneServerStubCreator'
+require 'wsdl/soap/servletStubCreator'
 require 'wsdl/soap/cgiStubCreator'
 
 
@@ -61,6 +62,7 @@ private
     create_servant_skelton(@opt['servant_skelton']) if @opt.key?('servant_skelton')
     create_cgi_stub(@opt['cgi_stub']) if @opt.key?('cgi_stub')
     create_standalone_server_stub(@opt['standalone_server_stub']) if @opt.key?('standalone_server_stub')
+    create_servlet_stub(@opt['servlet_stub']) if @opt.key?('servlet_stub')
     create_driver(@opt['driver'], @opt['drivername_postfix'] || '') if @opt.key?('driver')
     create_client_skelton(@opt['client_skelton']) if @opt.key?('client_skelton')
   end
@@ -132,6 +134,20 @@ private
       f << "require '#{@servant_skelton_filename}'\n" if @servant_skelton_filename
       f << "require '#{@mr_filename}'\n" if @mr_filename
       f << WSDL::SOAP::StandaloneServerStubCreator.new(@wsdl, @modulepath).dump(
+	create_name(servicename))
+    end
+  end
+
+  def create_servlet_stub(servicename)
+    @logger.info { "Creating servlet stub." }
+    servicename ||= @wsdl.services[0].name.name
+    @servlet_stub_filename = servicename + 'Servlet.rb'
+    check_file(@servlet_stub_filename) or return
+    write_file(@servlet_stub_filename) do |f|
+      f << shbang << "\n"
+      f << "require '#{@servant_skelton_filename}'\n" if @servant_skelton_filename
+      f << "require '#{@mr_filename}'\n" if @mr_filename
+      f << WSDL::SOAP::ServletStubCreator.new(@wsdl, @modulepath).dump(
 	create_name(servicename))
     end
   end
