@@ -65,12 +65,9 @@ class EncodedRegistry
           return ret if ret
         end
       end
-      ancestors = klass.ancestors
-      ancestors.delete(klass)
-      ancestors.delete(::Object)
-      ancestors.delete(::Kernel)
-      ancestors.each do |klass|
-        if map = @obj2soap[klass]
+      klass.ancestors.each do |baseclass|
+        next if baseclass == klass
+        if map = @obj2soap[baseclass]
           map.each do |soap_class, factory, info|
             if info[:derived_class]
               ret = factory.obj2soap(soap_class, obj, info, @registry)

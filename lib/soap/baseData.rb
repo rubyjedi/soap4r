@@ -525,7 +525,7 @@ public
     @data = []
   end
 
-  def to_s()
+  def to_s
     str = ''
     self.each do |key, data|
       str << "#{key}: #{data}\n"
@@ -889,18 +889,14 @@ public
     if idxary.size != @rank
       raise ArgumentError.new("given #{idxary.size} params does not match rank: #{@rank}")
     end
-
     retrieve(idxary)
   end
 
   def []=(*idxary)
     value = idxary.slice!(-1)
-
     if idxary.size != @rank
-      raise ArgumentError.new("given #{idxary.size} params(#{idxary})" +
-        " does not match rank: #{@rank}")
+      raise ArgumentError.new("given #{idxary.size} params(#{idxary}) does not match rank: #{@rank}")
     end
-
     idx = 0
     while idx < idxary.size
       if idxary[idx] + 1 > @size[idx]
@@ -908,10 +904,8 @@ public
       end
       idx += 1
     end
-
     data = retrieve(idxary[0, idxary.size - 1])
     data[idxary.last] = value
-
     if value.is_a?(SOAPType)
       value.elename = ITEM_NAME
       # Sync type
@@ -921,7 +915,6 @@ public
       end
       value.type ||= @type
     end
-
     @offset = idxary
     value.parent = self if value.respond_to?(:parent=)
     offsetnext
@@ -1055,10 +1048,6 @@ private
     end
   end
 
-  # Module function
-
-public
-
   def self.decode(elename, type, arytype)
     typestr, nofary = parse_type(arytype.name)
     rank = nofary.count(',') + 1
@@ -1080,8 +1069,6 @@ public
     o.elename = elename
     o
   end
-
-private
 
   def self.create_arytype(typename, rank)
     "#{typename}[" << ',' * (rank - 1) << ']'

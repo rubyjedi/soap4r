@@ -60,7 +60,6 @@ public
     super(EleFaultName)
     @elename = EleFaultName
     @encodingstyle = EncodingNamespace
-
     if faultcode
       self.faultcode = faultcode
       self.faultstring = faultstring
@@ -139,7 +138,6 @@ class SOAPBody < SOAPStruct
 	return node
       end
     end
-
     raise Parser::FormatDecodeError.new('no root element')
   end
 end
