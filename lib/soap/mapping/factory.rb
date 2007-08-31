@@ -125,6 +125,23 @@ class StringFactory_ < Factory
   end
 end
 
+class FixnumFactory_ < Factory
+  def obj2soap(soap_class, obj, info, map)
+    soap_obj = nil
+    begin
+      soap_obj = soap_class.new(obj)
+    rescue XSD::ValueSpaceError
+      return nil
+    end
+    soap_obj
+  end
+
+  def soap2obj(obj_class, node, info, map)
+    obj = node.data
+    return true, obj
+  end
+end
+
 class BasetypeFactory_ < Factory
   def initialize(allow_original_mapping = false)
     super()
