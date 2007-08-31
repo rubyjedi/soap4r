@@ -14,7 +14,7 @@ require 'soap/nestedexception'
 module SOAP
 
 
-VERSION = Version = '1.5.8-SNAPSHOT'
+VERSION = Version = '1.5.8-RC'
 PropertyName = 'soap/property'
 
 EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
