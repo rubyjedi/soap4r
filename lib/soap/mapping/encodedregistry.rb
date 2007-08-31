@@ -123,6 +123,7 @@ class EncodedRegistry
 
   StringFactory = StringFactory_.new
   BasetypeFactory = BasetypeFactory_.new
+  FixnumFactory = FixnumFactory_.new
   DateTimeFactory = DateTimeFactory_.new
   ArrayFactory = ArrayFactory_.new
   Base64Factory = Base64Factory_.new
@@ -146,6 +147,7 @@ class EncodedRegistry
       {:derived_class => true}],
     [::Float,        ::SOAP::SOAPFloat,      BasetypeFactory,
       {:derived_class => true}],
+    [::Fixnum,       ::SOAP::SOAPInt,        FixnumFactory],
     [::Integer,      ::SOAP::SOAPInt,        BasetypeFactory,
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPLong,       BasetypeFactory,
@@ -209,6 +211,7 @@ class EncodedRegistry
       {:derived_class => true}],
     [::Float,        ::SOAP::SOAPFloat,      BasetypeFactory,
       {:derived_class => true}],
+    [::Fixnum,       ::SOAP::SOAPInt,        FixnumFactory],
     [::Integer,      ::SOAP::SOAPInt,        BasetypeFactory,
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPLong,       BasetypeFactory,
