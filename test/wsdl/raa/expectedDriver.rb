@@ -1,40 +1,11 @@
-#!/usr/bin/env ruby
-require 'soap/rpc/standaloneServer'
+require 'RAA.rb'
+require 'RAAMappingRegistry.rb'
 
-module WSDL; module RAA
+module WSDL::RAA
+require 'soap/rpc/driver'
 
-class RAABaseServicePortTypeServer
-  def getAllListings
-    ["ruby", "soap4r"]
-  end
-
-  def getProductTree
-    raise NotImplementedError.new
-  end
-  
-  def getInfoFromCategory(category)
-    raise NotImplementedError.new
-  end
-  
-  def getModifiedInfoSince(timeInstant)
-    raise NotImplementedError.new
-  end
-  
-  def getInfoFromName(productName)
-    Info.new(
-      Category.new("major", "minor"), 
-      Product.new(123, productName, "short description", "version", "status",
-        URI.parse("http://example.com/homepage"),
-        URI.parse("http://example.com/download"),
-        "license", "description"),
-      Owner.new(456, URI.parse("mailto:email@example.com"), "name"),
-      Time.now,
-      Time.now)
-  end
-  
-  def getInfoFromOwnerId(ownerId)
-    raise NotImplementedError.new
-  end
+class RAABaseServicePortType < ::SOAP::RPC::Driver
+  DefaultEndpointUrl = "http://raa.ruby-lang.org/soap/1.0.2/"
 
   Methods = [
     [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getAllListings"),
@@ -90,36 +61,35 @@ class RAABaseServicePortTypeServer
         :faults => {} }
     ]
   ]
-end
 
-end; end
-
-module WSDL; module RAA
-
-class RAABaseServicePortTypeApp < ::SOAP::RPC::StandaloneServer
-  def initialize(*arg)
-    super(*arg)
-    servant = WSDL::RAA::RAABaseServicePortTypeServer.new
-    WSDL::RAA::RAABaseServicePortType::Methods.each do |definitions|
-      opt = definitions.last
-      if opt[:request_style] == :document
-        @router.add_document_operation(servant, *definitions)
-      else
-        @router.add_rpc_operation(servant, *definitions)
-      end
-    end
+  def initialize(endpoint_url = nil)
+    endpoint_url ||= DefaultEndpointUrl
+    super(endpoint_url, nil)
     self.mapping_registry = RAAMappingRegistry::EncodedRegistry
     self.literal_mapping_registry = RAAMappingRegistry::LiteralRegistry
+    init_methods
+  end
+
+private
+
+  def init_methods
+    Methods.each do |definitions|
+      opt = definitions.last
+      if opt[:request_style] == :document
+        add_document_operation(*definitions)
+      else
+        add_rpc_operation(*definitions)
+        qname = definitions[0]
+        name = definitions[2]
+        if qname.name != name and qname.name.capitalize == name.capitalize
+          ::SOAP::Mapping.define_singleton_method(self, qname.name) do |*arg|
+            __send__(name, *arg)
+          end
+        end
+      end
+    end
   end
 end
 
-end; end
 
-if $0 == __FILE__
-  # Change listen port.
-  server = WSDL::RAA::RAABaseServicePortTypeApp.new('app', nil, '0.0.0.0', 10080)
-  trap(:INT) do
-    server.shutdown
-  end
-  server.start
 end
