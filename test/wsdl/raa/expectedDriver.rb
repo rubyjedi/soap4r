@@ -1,22 +1,23 @@
 require 'RAA.rb'
 require 'RAAMappingRegistry.rb'
+require 'soap/rpc/driver'
 
 module WSDL::RAA
-require 'soap/rpc/driver'
 
 class RAABaseServicePortType < ::SOAP::RPC::Driver
   DefaultEndpointUrl = "http://raa.ruby-lang.org/soap/1.0.2/"
+  NsC_002 = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"
 
   Methods = [
-    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getAllListings"),
+    [ XSD::QName.new(NsC_002, "getAllListings"),
       "",
       "getAllListings",
-      [ ["retval", "return", ["WSDL::RAA::C_String[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "StringArray"]] ],
+      [ ["retval", "return", ["WSDL::RAA::StringArray", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "StringArray"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
     ],
-    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getProductTree"),
+    [ XSD::QName.new(NsC_002, "getProductTree"),
       "",
       "getProductTree",
       [ ["retval", "return", ["Hash", "http://xml.apache.org/xml-soap", "Map"]] ],
@@ -24,25 +25,25 @@ class RAABaseServicePortType < ::SOAP::RPC::Driver
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
     ],
-    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromCategory"),
+    [ XSD::QName.new(NsC_002, "getInfoFromCategory"),
       "",
       "getInfoFromCategory",
       [ ["in", "category", ["WSDL::RAA::Category", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Category"]],
-        ["retval", "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
+        ["retval", "return", ["WSDL::RAA::InfoArray", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
     ],
-    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getModifiedInfoSince"),
+    [ XSD::QName.new(NsC_002, "getModifiedInfoSince"),
       "",
       "getModifiedInfoSince",
       [ ["in", "timeInstant", ["::SOAP::SOAPDateTime"]],
-        ["retval", "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
+        ["retval", "return", ["WSDL::RAA::InfoArray", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
     ],
-    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromName"),
+    [ XSD::QName.new(NsC_002, "getInfoFromName"),
       "",
       "getInfoFromName",
       [ ["in", "productName", ["::SOAP::SOAPString"]],
@@ -51,11 +52,11 @@ class RAABaseServicePortType < ::SOAP::RPC::Driver
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
     ],
-    [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromOwnerId"),
+    [ XSD::QName.new(NsC_002, "getInfoFromOwnerId"),
       "",
       "getInfoFromOwnerId",
       [ ["in", "ownerId", ["::SOAP::SOAPInt"]],
-        ["retval", "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
+        ["retval", "return", ["WSDL::RAA::InfoArray", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }

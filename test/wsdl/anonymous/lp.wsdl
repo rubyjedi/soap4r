@@ -8,6 +8,22 @@
   xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:lp">
+      <complexType name="ExtraInfo">
+        <annotation>
+          <documentation>Service specific information.</documentation>
+        </annotation>
+        <sequence>
+          <element maxOccurs="unbounded" name="Entry">
+            <complexType>
+              <sequence>
+                <element name="Key" type="xsd:string"/>
+                <element name="Value" type="xsd:string"/>
+              </sequence>
+            </complexType>
+          </element>
+        </sequence>
+      </complexType>
+
       <element name="login">
         <complexType>
           <sequence>

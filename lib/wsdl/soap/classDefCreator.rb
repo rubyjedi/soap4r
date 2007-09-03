@@ -42,9 +42,10 @@ class ClassDefCreator
 
   def dump(type = nil)
     result = "require 'xsd/qname'\n"
+    # cannot use create_class_name with @modulepath because of multiple classes
     if @modulepath
       result << "\n"
-      result << @modulepath.collect { |ele| "module #{ele}" }.join("; ")
+      result << modulepath_split(@modulepath).collect { |ele| "module #{ele}" }.join("; ")
       result << "\n\n"
     end
     if type
@@ -78,7 +79,7 @@ class ClassDefCreator
     end
     if @modulepath
       result << "\n\n"
-      result << @modulepath.collect { |ele| "end" }.join("; ")
+      result << modulepath_split(@modulepath).collect { |ele| "end" }.join("; ")
       result << "\n"
     end
     result
@@ -275,7 +276,7 @@ private
     c
   end
 
-  def parse_elements(c, elements, base_namespace, parentmodule)
+  def parse_elements(c, elements, base_namespace, parentmodule, as_array = false)
     init_lines = []
     init_params = []
     any = false
@@ -297,28 +298,32 @@ private
         typebase = @modulepath
         if element.anonymous_type?
           inner = create_classdef(element.name, element.local_complextype)
-          inner.comment = "inner class for member: #{name}\n" + inner.comment
+          unless as_array
+            inner.comment = "inner class for member: #{name}\n" + inner.comment
+          end
           c.innermodule << inner
           typebase = parentmodule
         end
-        attrname = safemethodname(name)
-        varname = safevarname(name)
-        c.def_attr(attrname, true, varname)
-        init_lines << "@#{varname} = #{varname}"
-        if element.map_as_array?
-          init_params << "#{varname} = []"
-        else
-          init_params << "#{varname} = nil"
+        unless as_array
+          attrname = safemethodname(name)
+          varname = safevarname(name)
+          c.def_attr(attrname, true, varname)
+          init_lines << "@#{varname} = #{varname}"
+          if element.map_as_array?
+            init_params << "#{varname} = []"
+          else
+            init_params << "#{varname} = nil"
+          end
+          c.comment << "\n  #{attrname} - #{create_type_name(element, typebase) || '(any)'}"
         end
-        c.comment << "\n  #{attrname} - #{create_type_name(element, typebase) || '(any)'}"
       when WSDL::XMLSchema::Sequence
         child_init_lines, child_init_params =
-          parse_elements(c, element.elements, base_namespace, parentmodule)
+          parse_elements(c, element.elements, base_namespace, parentmodule, as_array)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Choice
         child_init_lines, child_init_params =
-          parse_elements(c, element.elements, base_namespace, parentmodule)
+          parse_elements(c, element.elements, base_namespace, parentmodule, as_array)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Group
@@ -327,7 +332,7 @@ private
           next
         end
         child_init_lines, child_init_params =
-          parse_elements(c, element.content.elements, base_namespace, parentmodule)
+          parse_elements(c, element.content.elements, base_namespace, parentmodule, as_array)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       else
@@ -366,11 +371,12 @@ private
     end
   end
 
-  def dump_arraydef(qname, complextype)
+  def dump_arraydef(qname, typedef)
     classname = create_class_name(qname)
     check_classname(classname)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
+    parse_elements(c, typedef.elements, qname.namespace, classname, true)
     c.dump
   end
 
@@ -402,6 +408,14 @@ private
     end
     dep.delete(type.name)
     result
+  end
+
+  def modulepath_split(modulepath)
+    if modulepath.is_a?(::Array)
+      modulepath
+    else
+      modulepath.to_s.split('::')
+    end
   end
 end
 

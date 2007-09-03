@@ -1,7 +1,24 @@
 require 'xsd/qname'
 
-module WSDL::Anonymous
+module WSDL; module Anonymous
 
+
+# {urn:lp}ExtraInfo
+class ExtraInfo < ::Array
+
+  # {}Entry
+  #   key - SOAP::SOAPString
+  #   value - SOAP::SOAPString
+  class Entry
+    attr_accessor :key
+    attr_accessor :value
+
+    def initialize(key = nil, value = nil)
+      @key = key
+      @value = value
+    end
+  end
+end
 
 # {urn:lp}loginResponse
 #   loginResult - LoginResponse::LoginResult
@@ -54,4 +71,4 @@ class Login
 end
 
 
-end
+end; end

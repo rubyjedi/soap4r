@@ -1,6 +1,6 @@
 require 'xsd/qname'
 
-module WSDL::Ref
+module WSDL; module Ref
 
 
 # {urn:ref}Product
@@ -239,4 +239,4 @@ class Yesno < ::String
 end
 
 
-end
+end; end

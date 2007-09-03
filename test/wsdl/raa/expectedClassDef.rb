@@ -1,9 +1,11 @@
 require 'xsd/qname'
 
-module WSDL::RAA
+module WSDL; module RAA
 
 
 # {http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/}Category
+#   major - SOAP::SOAPString
+#   minor - SOAP::SOAPString
 class Category
   attr_accessor :major
   attr_accessor :minor
@@ -15,6 +17,15 @@ class Category
 end
 
 # {http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/}Product
+#   id - SOAP::SOAPInt
+#   name - SOAP::SOAPString
+#   short_description - SOAP::SOAPString
+#   version - SOAP::SOAPString
+#   status - SOAP::SOAPString
+#   homepage - SOAP::SOAPAnyURI
+#   download - SOAP::SOAPAnyURI
+#   license - SOAP::SOAPString
+#   description - SOAP::SOAPString
 class Product
   attr_accessor :id
   attr_accessor :name
@@ -40,6 +51,9 @@ class Product
 end
 
 # {http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/}Owner
+#   id - SOAP::SOAPInt
+#   email - SOAP::SOAPAnyURI
+#   name - SOAP::SOAPString
 class Owner
   attr_accessor :id
   attr_accessor :email
@@ -53,6 +67,11 @@ class Owner
 end
 
 # {http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/}Info
+#   category - WSDL::RAA::Category
+#   product - WSDL::RAA::Product
+#   owner - WSDL::RAA::Owner
+#   created - SOAP::SOAPDateTime
+#   updated - SOAP::SOAPDateTime
 class Info
   attr_accessor :category
   attr_accessor :product
@@ -78,4 +97,4 @@ class StringArray < ::Array
 end
 
 
-end
+end; end

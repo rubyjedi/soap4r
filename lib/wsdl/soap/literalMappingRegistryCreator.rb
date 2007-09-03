@@ -121,6 +121,13 @@ private
   DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
 
   def dump_array_typemap(qname, typedef)
+    @dump_struct_typemap_innerstruct = []
+    @dump_struct_typemap_innerstruct.unshift(
+      dump_literal_array_typemap(qname, typedef))
+    @dump_struct_typemap_innerstruct.join("\n")
+  end
+
+  def dump_literal_array_typemap(qname, typedef)
     var = {}
     var[:class] = create_class_name(qname, @modulepath)
     schema_ns = qname.namespace
@@ -131,6 +138,18 @@ private
       # named complextype
       var[:schema_type] = qname
     end
+    parentmodule = var[:class]
+    parsed_element = parse_elements(typedef.elements, qname.namespace,
+      parentmodule, nil)
+    if parsed_element.empty?
+      parsed_element = [create_soapenc_array_element_definition(typedef)]
+    end
+    var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
+    assign_const(schema_ns, 'Ns')
+    dump_entry(@varname, var)
+  end
+
+  def create_soapenc_array_element_definition(typedef)
     child_type = typedef.child_type
     child_element = typedef.find_aryelement
     if child_type == XSD::AnyTypeName
@@ -157,11 +176,7 @@ private
     else
       child_element_name = DEFAULT_ITEM_NAME
     end
-    parsed_element = []
-    parsed_element << [child_element_name.name, child_element_name, type, occurrence]
-    var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
-    assign_const(schema_ns, 'Ns')
-    dump_entry(@varname, var)
+    [child_element_name.name, child_element_name, type, occurrence]
   end
 end
 
