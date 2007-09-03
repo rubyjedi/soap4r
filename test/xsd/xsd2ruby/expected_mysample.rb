@@ -1,6 +1,6 @@
 require 'xsd/qname'
 
-module XSD::XSD2Ruby
+module XSD; module XSD2Ruby
 
 
 # {urn:mysample}question
@@ -62,4 +62,4 @@ class SectionElement
 end
 
 
-end
+end; end

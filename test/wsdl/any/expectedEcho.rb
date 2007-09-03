@@ -1,6 +1,6 @@
 require 'xsd/qname'
 
-module WSDL::Any
+module WSDL; module Any
 
 
 # {urn:example.com:echo-type}foo.bar
@@ -54,4 +54,4 @@ class SetOutputAndCompleteRequest
 end
 
 
-end
+end; end

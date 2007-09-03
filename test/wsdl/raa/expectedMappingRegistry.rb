@@ -6,11 +6,12 @@ module WSDL; module RAA
 module RAAMappingRegistry
   EncodedRegistry = ::SOAP::Mapping::EncodedRegistry.new
   LiteralRegistry = ::SOAP::Mapping::LiteralRegistry.new
+  NsC_002 = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"
+  NsXMLSchema = "http://www.w3.org/2001/XMLSchema"
 
   EncodedRegistry.register(
     :class => WSDL::RAA::Category,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "Category",
+    :schema_type => XSD::QName.new(NsC_002, "Category"),
     :schema_element => [
       ["major", ["SOAP::SOAPString", XSD::QName.new(nil, "major")]],
       ["minor", ["SOAP::SOAPString", XSD::QName.new(nil, "minor")]]
@@ -19,8 +20,7 @@ module RAAMappingRegistry
 
   EncodedRegistry.register(
     :class => WSDL::RAA::Product,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "Product",
+    :schema_type => XSD::QName.new(NsC_002, "Product"),
     :schema_element => [
       ["id", ["SOAP::SOAPInt", XSD::QName.new(nil, "id")]],
       ["name", ["SOAP::SOAPString", XSD::QName.new(nil, "name")]],
@@ -36,8 +36,7 @@ module RAAMappingRegistry
 
   EncodedRegistry.register(
     :class => WSDL::RAA::Owner,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "Owner",
+    :schema_type => XSD::QName.new(NsC_002, "Owner"),
     :schema_element => [
       ["id", ["SOAP::SOAPInt", XSD::QName.new(nil, "id")]],
       ["email", ["SOAP::SOAPAnyURI", XSD::QName.new(nil, "email")]],
@@ -47,8 +46,7 @@ module RAAMappingRegistry
 
   EncodedRegistry.register(
     :class => WSDL::RAA::Info,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "Info",
+    :schema_type => XSD::QName.new(NsC_002, "Info"),
     :schema_element => [
       ["category", ["WSDL::RAA::Category", XSD::QName.new(nil, "category")]],
       ["product", ["WSDL::RAA::Product", XSD::QName.new(nil, "product")]],
@@ -62,20 +60,19 @@ module RAAMappingRegistry
     WSDL::RAA::InfoArray,
     ::SOAP::SOAPArray,
     ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
-    { :type => XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info") }
+    { :type => XSD::QName.new(NsC_002, "Info") }
   )
 
   EncodedRegistry.set(
     WSDL::RAA::StringArray,
     ::SOAP::SOAPArray,
     ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
-    { :type => XSD::QName.new("http://www.w3.org/2001/XMLSchema", "string") }
+    { :type => XSD::QName.new(NsXMLSchema, "string") }
   )
 
   LiteralRegistry.register(
     :class => WSDL::RAA::Category,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "Category",
+    :schema_type => XSD::QName.new(NsC_002, "Category"),
     :schema_qualified => false,
     :schema_element => [
       ["major", ["SOAP::SOAPString", XSD::QName.new(nil, "major")]],
@@ -85,8 +82,7 @@ module RAAMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::RAA::Product,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "Product",
+    :schema_type => XSD::QName.new(NsC_002, "Product"),
     :schema_qualified => false,
     :schema_element => [
       ["id", ["SOAP::SOAPInt", XSD::QName.new(nil, "id")]],
@@ -103,8 +99,7 @@ module RAAMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::RAA::Owner,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "Owner",
+    :schema_type => XSD::QName.new(NsC_002, "Owner"),
     :schema_qualified => false,
     :schema_element => [
       ["id", ["SOAP::SOAPInt", XSD::QName.new(nil, "id")]],
@@ -115,8 +110,7 @@ module RAAMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::RAA::Info,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "Info",
+    :schema_type => XSD::QName.new(NsC_002, "Info"),
     :schema_qualified => false,
     :schema_element => [
       ["category", ["WSDL::RAA::Category", XSD::QName.new(nil, "category")]],
@@ -129,8 +123,7 @@ module RAAMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::RAA::InfoArray,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "InfoArray",
+    :schema_type => XSD::QName.new(NsC_002, "InfoArray"),
     :schema_element => [
       ["item", ["WSDL::RAA::Info", XSD::QName.new(nil, "item")], [0, nil]]
     ]
@@ -138,8 +131,7 @@ module RAAMappingRegistry
 
   LiteralRegistry.register(
     :class => WSDL::RAA::StringArray,
-    :schema_ns => "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/",
-    :schema_type => "StringArray",
+    :schema_type => XSD::QName.new(NsC_002, "StringArray"),
     :schema_element => [
       ["item", ["String", XSD::QName.new(nil, "item")], [0, nil]]
     ]

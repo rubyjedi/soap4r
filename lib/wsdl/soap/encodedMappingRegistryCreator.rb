@@ -65,17 +65,19 @@ private
     when :TYPE_STRUCT, :TYPE_EMPTY
       dump_struct_typemap(qname, typedef)
     when :TYPE_ARRAY
-      dump_array_typemap(qname, typedef)
+      dump_encoded_array_typemap(qname, typedef)
     when :TYPE_SIMPLE
       dump_simple_typemap(qname, typedef)
     when :TYPE_MAP
+      # mapped as a general Hash
       nil
     else
-      raise NotImplementedError.new("must not reach here: #{typedef.compoundtype}")
+      raise RuntimeError.new(
+        "unknown kind of complexContent: #{typedef.compoundtype}")
     end
   end
 
-  def dump_array_typemap(qname, typedef)
+  def dump_encoded_array_typemap(qname, typedef)
     arytype = typedef.find_arytype || XSD::AnyTypeName
     type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
     assign_const(type.namespace, 'Ns')

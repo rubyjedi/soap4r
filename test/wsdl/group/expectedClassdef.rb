@@ -1,6 +1,6 @@
 require 'xsd/qname'
 
-module WSDL::Group
+module WSDL; module Group
 
 
 # {urn:grouptype}groupele_type
@@ -55,4 +55,4 @@ class Groupele_type
 end
 
 
-end
+end; end
