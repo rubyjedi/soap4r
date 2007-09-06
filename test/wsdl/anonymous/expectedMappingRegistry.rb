@@ -86,24 +86,6 @@ module LpMappingRegistry
       ["timezone", "SOAP::SOAPString", [0, 1]]
     ]
   )
-
-  LiteralRegistry.register(
-    :class => WSDL::Anonymous::LoginResponse,
-    :schema_name => XSD::QName.new(NsLp, "loginResponse"),
-    :schema_qualified => true,
-    :schema_element => [
-      ["loginResult", ["WSDL::Anonymous::LoginResponse::LoginResult", XSD::QName.new(nil, "loginResult")]]
-    ]
-  )
-
-  LiteralRegistry.register(
-    :class => WSDL::Anonymous::LoginResponse::LoginResult,
-    :schema_name => XSD::QName.new(nil, "loginResult"),
-    :schema_qualified => true,
-    :schema_element => [
-      ["sessionID", "SOAP::SOAPString"]
-    ]
-  )
 end
 
 end; end

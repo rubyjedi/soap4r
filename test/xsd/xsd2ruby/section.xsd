@@ -11,6 +11,14 @@
     </xsd:sequence>
   </xsd:complexType>
 
+  <xsd:element name="section">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="different" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
   <xsd:complexType name="section">
     <xsd:sequence>
       <xsd:element name="sectionID" type="xsd:int" />
