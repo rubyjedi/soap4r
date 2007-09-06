@@ -20,8 +20,9 @@ class ClassDefCreator
   include ClassDefCreatorSupport
   include XSD::CodeGen
 
-  def initialize(definitions, modulepath = nil)
+  def initialize(definitions, name_creator, modulepath = nil)
     @definitions = definitions
+    @name_creator = name_creator
     @modulepath = modulepath
     @elements = definitions.collect_elements
     @elements.uniq!

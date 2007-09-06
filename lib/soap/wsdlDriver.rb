@@ -15,6 +15,7 @@ require 'soap/mapping/wsdlliteralregistry'
 require 'soap/rpc/driver'
 require 'wsdl/soap/methodDefCreator'
 require 'wsdl/soap/classDefCreatorSupport'
+require 'wsdl/soap/classNameCreator'
 
 
 module SOAP
@@ -29,7 +30,9 @@ class WSDLDriverFactory
 
   def initialize(wsdl)
     @wsdl = import(wsdl)
-    @methoddefcreator = WSDL::SOAP::MethodDefCreator.new(@wsdl, nil, {})
+    name_creator = WSDL::SOAP::ClassNameCreator.new
+    @methoddefcreator =
+      WSDL::SOAP::MethodDefCreator.new(@wsdl, name_creator, nil, {})
   end
   
   def inspect

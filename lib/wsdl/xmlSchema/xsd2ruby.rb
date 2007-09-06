@@ -11,6 +11,7 @@ require 'wsdl/xmlSchema/importer'
 require 'wsdl/soap/classDefCreator'
 require 'wsdl/soap/classDefCreatorSupport'
 require 'wsdl/soap/literalMappingRegistryCreator'
+require 'wsdl/soap/classNameCreator'
 require 'logger'
 
 
@@ -44,6 +45,7 @@ private
     @basedir = nil
     @xsd = nil
     @name = nil
+    @name_creator = WSDL::SOAP::ClassNameCreator.new
   end
 
   def create_file
@@ -58,7 +60,7 @@ private
     @classdef_filename = @name + '.rb'
     check_file(@classdef_filename) or return
     write_file(@classdef_filename) do |f|
-      f << WSDL::SOAP::ClassDefCreator.new(@xsd, @modulepath).dump
+      f << WSDL::SOAP::ClassDefCreator.new(@xsd, @name_creator, @modulepath).dump
     end
   end
 
@@ -82,9 +84,8 @@ private
 
   def dump_mapping_registry
     defined_const = {}
-    creator = WSDL::SOAP::LiteralMappingRegistryCreator.new(@xsd, @modulepath, defined_const)
-    module_name = XSD::CodeGen::GenSupport.safeconstname(
-      @name + 'MappingRegistry')
+    creator = WSDL::SOAP::LiteralMappingRegistryCreator.new(@xsd, @name_creator, @modulepath, defined_const)
+    module_name = XSD::CodeGen::GenSupport.safeconstname(@name + 'MappingRegistry')
     if @modulepath
       module_name = [@modulepath, module_name].join('::')
     end

@@ -16,21 +16,12 @@ module WSDL
 module SOAP
 
 
-# requires @defined_const, @simpletypes, and @modulepath
+# requires @defined_const, @simpletypes, @name_creator, and @modulepath
 module ClassDefCreatorSupport
   include XSD::CodeGen::GenSupport
 
   def create_class_name(qname, modulepath = nil)
-    if klass = basetype_mapped_class(qname)
-      ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass).name
-    else
-      name = safeconstname(qname.name)
-      if modulepath
-        [modulepath, name].join('::')
-      else
-        name
-      end
-    end
+    @name_creator.create_name(qname, modulepath)
   end
 
   def basetype_mapped_class(name)
