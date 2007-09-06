@@ -89,6 +89,7 @@ private
 
   def dump_element
     @elements.collect { |ele|
+      next if @complextypes[ele.name]
       qualified = (ele.elementform == 'qualified')
       if ele.local_complextype
         dump_complextypedef(ele.name, ele.local_complextype, qualified)
@@ -97,6 +98,7 @@ private
       elsif ele.empty?
         dump_simpleclassdef(ele.name, nil)
       else
+        # ignores type only element
         nil
       end
     }.compact.join("\n")

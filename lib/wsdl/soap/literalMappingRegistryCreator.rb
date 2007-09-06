@@ -62,6 +62,7 @@ private
 
   def dump_element
     @elements.collect { |ele|
+      next if @complextypes[ele.name]
       qualified = (ele.elementform == 'qualified')
       if ele.local_complextype
         dump_complextypedef(ele.name, ele.local_complextype, nil, qualified)
