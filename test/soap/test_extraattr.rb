@@ -36,7 +36,7 @@ class TestExtrAttr < Test::Unit::TestCase
     body.add("test", bi)
     env = SOAP::SOAPEnvelope.new(header, body)
     env.extraattr["Id"] = "extraattr"
-    g = SOAP::SOAPGenerator.new()
+    g = SOAP::Generator.new()
     xml = g.generate(env)
     assert_equal(HEADER_XML, xml)
     #

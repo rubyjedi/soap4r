@@ -140,15 +140,119 @@ class TestChoice < Test::Unit::TestCase
     assert_nil(ret.terminalID.imei)
   end
 
-  def test_naive_complex
+  def test_wsdl_with_map_complex
+    wsdl = File.join(DIR, 'choice.wsdl')
+    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = STDOUT if $DEBUG
+    do_test_with_map_complex(@client)
+  end
+
+  def test_wsdl_with_stub_complex
+    wsdl = File.join(DIR, 'choice.wsdl')
+    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = STDOUT if $DEBUG
+    @client.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
+    do_test_with_stub_complex(@client)
+  end
+
+  def test_naive_with_map_complex
+    @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
+    @client.add_document_method('echo_complex', 'urn:choice:echo_complex',
+      XSD::QName.new('urn:choice', 'echoele_complex'),
+      XSD::QName.new('urn:choice', 'echo_complex_response'))
+    @client.wiredump_dev = STDOUT if $DEBUG
+    do_test_with_map_complex(@client)
+  end
+
+  def test_naive_with_stub_complex
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
     @client.add_document_method('echo_complex', 'urn:choice:echo_complex',
       XSD::QName.new('urn:choice', 'echoele_complex'),
       XSD::QName.new('urn:choice', 'echo_complex_response'))
     @client.wiredump_dev = STDOUT if $DEBUG
     @client.literal_mapping_registry = ChoiceMappingRegistry::LiteralRegistry
+    do_test_with_stub_complex(@client)
+  end
+
+  def do_test_with_map_complex(client)
+    req = {
+      :data => {
+        :A => "A",
+        :B1 => "B1",
+        :C1 => "C1",
+        :C2 => "C2"
+      }
+    }
+    ret = client.echo_complex(req)
+    assert_equal("A", ret.data["A"])
+    assert_equal("B1", ret.data["B1"])
+    assert_equal(nil, ret.data["B2a"])
+    assert_equal(nil, ret.data["B2b"])
+    assert_equal(nil, ret.data["B3a"])
+    assert_equal(nil, ret.data["B3b"])
+    assert_equal("C1", ret.data["C1"])
+    assert_equal("C2", ret.data["C2"])
     #
-    ret = @client.echo_complex(Echoele_complex.new(Andor.new("A", "B1", nil, nil, nil, nil, "C1", "C2")))
+    req = {
+      :data => {
+        :A => "A",
+        :B2a => "B2a",
+        :B2b => "B2b",
+        :C1 => "C1",
+        :C2 => "C2"
+      }
+    }
+    ret = client.echo_complex(req)
+    assert_equal("A", ret.data["A"])
+    assert_equal(nil, ret.data["B1"])
+    assert_equal("B2a", ret.data["B2a"])
+    assert_equal("B2b", ret.data["B2b"])
+    assert_equal(nil, ret.data["B3a"])
+    assert_equal(nil, ret.data["B3b"])
+    assert_equal("C1", ret.data["C1"])
+    assert_equal("C2", ret.data["C2"])
+    #
+    req = {
+      :data => {
+        :A => "A",
+        :B3a => "B3a",
+        :C1 => "C1",
+        :C2 => "C2"
+      }
+    }
+    ret = client.echo_complex(req)
+    assert_equal("A", ret.data["A"])
+    assert_equal(nil, ret.data["B1"])
+    assert_equal(nil, ret.data["B2a"])
+    assert_equal(nil, ret.data["B2b"])
+    assert_equal("B3a", ret.data["B3a"])
+    assert_equal(nil, ret.data["B3b"])
+    assert_equal("C1", ret.data["C1"])
+    assert_equal("C2", ret.data["C2"])
+    #
+    req = {
+      :data => {
+        :A => "A",
+        :B3b => "B3b",
+        :C1 => "C1",
+        :C2 => "C2"
+      }
+    }
+    ret = client.echo_complex(req)
+    assert_equal("A", ret.data["A"])
+    assert_equal(nil, ret.data["B1"])
+    assert_equal(nil, ret.data["B2a"])
+    assert_equal(nil, ret.data["B2b"])
+    assert_equal(nil, ret.data["B3a"])
+    assert_equal("B3b", ret.data["B3b"])
+    assert_equal("C1", ret.data["C1"])
+    assert_equal("C2", ret.data["C2"])
+  end
+
+  def do_test_with_stub_complex(client)
+    ret = client.echo_complex(Echoele_complex.new(Andor.new("A", "B1", nil, nil, nil, nil, "C1", "C2")))
     assert_equal("A", ret.data.a)
     assert_equal("B1", ret.data.b1)
     assert_equal(nil, ret.data.b2a)
@@ -158,7 +262,7 @@ class TestChoice < Test::Unit::TestCase
     assert_equal("C1", ret.data.c1)
     assert_equal("C2", ret.data.c2)
     #
-    ret = @client.echo_complex(Echoele_complex.new(Andor.new("A", nil, "B2a", "B2b", nil, nil, "C1", "C2")))
+    ret = client.echo_complex(Echoele_complex.new(Andor.new("A", nil, "B2a", "B2b", nil, nil, "C1", "C2")))
     assert_equal("A", ret.data.a)
     assert_equal(nil, ret.data.b1)
     assert_equal("B2a", ret.data.b2a)
@@ -168,7 +272,7 @@ class TestChoice < Test::Unit::TestCase
     assert_equal("C1", ret.data.c1)
     assert_equal("C2", ret.data.c2)
     #
-    ret = @client.echo_complex(Echoele_complex.new(Andor.new("A", nil, nil, nil, "B3a", nil, "C1", "C2")))
+    ret = client.echo_complex(Echoele_complex.new(Andor.new("A", nil, nil, nil, "B3a", nil, "C1", "C2")))
     assert_equal("A", ret.data.a)
     assert_equal(nil, ret.data.b1)
     assert_equal(nil, ret.data.b2a)
@@ -178,7 +282,7 @@ class TestChoice < Test::Unit::TestCase
     assert_equal("C1", ret.data.c1)
     assert_equal("C2", ret.data.c2)
     #
-    ret = @client.echo_complex(Echoele_complex.new(Andor.new("A", nil, nil, nil, nil, "B3b", "C1", "C2")))
+    ret = client.echo_complex(Echoele_complex.new(Andor.new("A", nil, nil, nil, nil, "B3b", "C1", "C2")))
     assert_equal("A", ret.data.a)
     assert_equal(nil, ret.data.b1)
     assert_equal(nil, ret.data.b2a)

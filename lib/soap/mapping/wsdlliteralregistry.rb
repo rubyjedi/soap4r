@@ -129,58 +129,52 @@ private
 
   def complexobj2soap(obj, type)
     ele = SOAPElement.new(type.name)
-    if type.choice?
-      complexobj2choicesoap(obj, ele, type)
-    else
-      complexobj2sequencesoap(obj, ele, type)
-    end
+    complexobj2sequencesoap(obj, ele, type, type.choice?, type.choice?)
+    ele
   end
 
-  def complexobj2sequencesoap(obj, ele, type)
+  def complexobj2sequencesoap(obj, soap, type, nillable, is_choice)
+    added = false
     type.elements.each do |child_ele|
       case child_ele
       when WSDL::XMLSchema::Any
         any = Mapping.get_attributes_for_any(obj)
         SOAPElement.from_objs(any).each do |child|
-          ele.add(child)
+          soap.add(child)
         end
+        ele_added = true
       when WSDL::XMLSchema::Element
-        complexobj2soapchildren(obj, ele, child_ele)
+        ele_added = complexobj2soapchildren(obj, soap, child_ele, nillable)
       when WSDL::XMLSchema::Sequence
-        complexobj2sequencesoap(obj, child_ele, type)
+        ele_added = complexobj2sequencesoap(obj, soap, child_ele, nillable, false)
       when WSDL::XMLSchema::Choice
-        complexobj2choicesoap(obj, child_ele, type)
+        ele_added = complexobj2sequencesoap(obj, soap, child_ele, true, true)
       else
         raise MappingError.new("unknown type: #{child_ele}")
       end
+      added = true if ele_added
+      break if is_choice and ele_added
     end
-    ele
+    added
   end
 
-  def complexobj2choicesoap(obj, ele, type)
-    type.elements.each do |child_ele|
-      break if complexobj2soapchildren(obj, ele, child_ele, true)
-    end
-    ele
-  end
-
-  def complexobj2soapchildren(obj, ele, child_ele, allow_nil_value = false)
+  def complexobj2soapchildren(obj, soap, child_ele, nillable = false)
     if child_ele.map_as_array?
-      complexobj2soapchildren_array(obj, ele, child_ele, allow_nil_value)
+      complexobj2soapchildren_array(obj, soap, child_ele, nillable)
     else
-      complexobj2soapchildren_single(obj, ele, child_ele, allow_nil_value)
+      complexobj2soapchildren_single(obj, soap, child_ele, nillable)
     end
   end
 
-  def complexobj2soapchildren_array(obj, ele, child_ele, allow_nil_value)
+  def complexobj2soapchildren_array(obj, soap, child_ele, nillable)
     child = Mapping.get_attribute(obj, child_ele.name.name)
     if child.nil? and obj.is_a?(::Array)
       child = obj
     end
     if child.nil?
-      return false if allow_nil_value
+      return false if nillable
       if child_soap = nil2soap(child_ele)
-        ele.add(child_soap)
+        soap.add(child_soap)
         return true
       else
         return false
@@ -191,32 +185,32 @@ private
     end
     child.each do |item|
       if item.is_a?(SOAPElement)
-        ele.add(item)
+        soap.add(item)
       else
         child_soap = obj2elesoap(item, child_ele)
-        ele.add(child_soap)
+        soap.add(child_soap)
       end
     end
     true
   end
 
-  def complexobj2soapchildren_single(obj, ele, child_ele, allow_nil_value)
+  def complexobj2soapchildren_single(obj, soap, child_ele, nillable)
     child = Mapping.get_attribute(obj, child_ele.name.name)
     case child
     when NilClass
-      return false if allow_nil_value
+      return false if nillable
       if child_soap = nil2soap(child_ele)
-        ele.add(child_soap)
+        soap.add(child_soap)
         true
       else
         false
       end
     when SOAPElement
-      ele.add(child)
+      soap.add(child)
       true
     else
       child_soap = obj2elesoap(child, child_ele)
-      ele.add(child_soap)
+      soap.add(child_soap)
       true
     end
   end
