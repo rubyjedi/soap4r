@@ -19,8 +19,9 @@ class ClientSkeltonCreator
 
   attr_reader :definitions
 
-  def initialize(definitions, modulepath = nil)
+  def initialize(definitions, name_creator, modulepath = nil)
     @definitions = definitions
+    @name_creator = name_creator
     @modulepath = modulepath
   end
 

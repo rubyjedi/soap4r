@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'wsdl/parser'
 require 'wsdl/soap/classDefCreator'
+require 'wsdl/soap/classNameCreator'
 
 
 module WSDL
@@ -13,7 +14,8 @@ class TestMultipleFault < Test::Unit::TestCase
 
   def test_multiplefault
     @wsdl = WSDL::Parser.new.parse(File.open(@@filename) { |f| f.read })
-    classdefstr = WSDL::SOAP::ClassDefCreator.new(@wsdl).dump
+    name_creator = WSDL::SOAP::ClassNameCreator.new
+    classdefstr = WSDL::SOAP::ClassDefCreator.new(@wsdl, name_creator).dump
     yield_eval_binding(classdefstr) do |b|
       assert_equal(
 	WSDL::TestMultipleFault::AuthenticationError,

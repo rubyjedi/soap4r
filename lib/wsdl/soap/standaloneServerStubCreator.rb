@@ -21,8 +21,9 @@ class StandaloneServerStubCreator
 
   attr_reader :definitions
 
-  def initialize(definitions, modulepath = nil)
+  def initialize(definitions, name_creator, modulepath = nil)
     @definitions = definitions
+    @name_creator = name_creator
     @modulepath = modulepath
   end
 
@@ -49,7 +50,7 @@ private
   def dump_porttype(porttype)
     class_name = create_class_name(porttype.name, @modulepath)
     defined_const = {}
-    result = MethodDefCreator.new(@definitions, @modulepath, defined_const).dump(porttype.name)
+    result = MethodDefCreator.new(@definitions, @name_creator, @modulepath, defined_const).dump(porttype.name)
     methoddef = result[:methoddef]
 
     wsdl_name = @definitions.name ? @definitions.name.name : 'default'

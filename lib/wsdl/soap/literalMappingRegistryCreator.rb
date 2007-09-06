@@ -17,8 +17,9 @@ module SOAP
 class LiteralMappingRegistryCreator
   include MappingRegistryCreatorSupport
 
-  def initialize(definitions, modulepath, defined_const)
+  def initialize(definitions, name_creator, modulepath, defined_const)
     @definitions = definitions
+    @name_creator = name_creator
     @modulepath = modulepath
     @elements = definitions.collect_elements
     @elements.uniq!

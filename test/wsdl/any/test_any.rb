@@ -135,12 +135,6 @@ class TestAny < Test::Unit::TestCase
     compare("expectedMappingRegistry.rb", "echoMappingRegistry.rb")
     compare("expectedDriver.rb", "echoDriver.rb")
     compare("expectedService.rb", "echo_service.rb")
-
-    File.unlink(pathname("echo_service.rb"))
-    File.unlink(pathname("echo.rb"))
-    File.unlink(pathname("echo_serviceClient.rb"))
-    File.unlink(pathname("echoDriver.rb"))
-    File.unlink(pathname("echoServant.rb"))
   end
 
   def compare(expected, actual)

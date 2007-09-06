@@ -19,8 +19,9 @@ class EncodedMappingRegistryCreator
 
   attr_reader :definitions
 
-  def initialize(definitions, modulepath, defined_const)
+  def initialize(definitions, name_creator, modulepath, defined_const)
     @definitions = definitions
+    @name_creator = name_creator
     @modulepath = modulepath
     @simpletypes = definitions.collect_simpletypes
     @simpletypes.uniq!

@@ -23,8 +23,9 @@ class DriverCreator
   attr_reader :definitions
   attr_accessor :drivername_postfix
 
-  def initialize(definitions, modulepath = nil)
+  def initialize(definitions, name_creator, modulepath = nil)
     @definitions = definitions
+    @name_creator = name_creator
     @modulepath = modulepath
     @drivername_postfix = ''
   end
@@ -57,10 +58,11 @@ class DriverCreator
 private
 
   def dump_porttype(porttype)
-    qname = XSD::QName.new(nil, porttype.name + @drivername_postfix)
+    drivername = porttype.name + @drivername_postfix
+    qname = XSD::QName.new(porttype.namespace, drivername)
     class_name = create_class_name(qname)
     defined_const = {}
-    result = MethodDefCreator.new(@definitions, @modulepath, defined_const).dump(porttype)
+    result = MethodDefCreator.new(@definitions, @name_creator, @modulepath, defined_const).dump(porttype)
     methoddef = result[:methoddef]
     binding = @definitions.bindings.find { |item| item.type == porttype }
     if binding.nil? or binding.soapbinding.nil?

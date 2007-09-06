@@ -22,15 +22,16 @@ class MappingRegistryCreator
 
   attr_reader :definitions
 
-  def initialize(definitions, modulepath = nil)
+  def initialize(definitions, name_creator, modulepath = nil)
     @definitions = definitions
+    @name_creator = name_creator
     @modulepath = modulepath
   end
 
   def dump
     defined_const = {}
-    encoded_creator = EncodedMappingRegistryCreator.new(@definitions, @modulepath, defined_const)
-    literal_creator = LiteralMappingRegistryCreator.new(@definitions, @modulepath, defined_const)
+    encoded_creator = EncodedMappingRegistryCreator.new(@definitions, @name_creator, @modulepath, defined_const)
+    literal_creator = LiteralMappingRegistryCreator.new(@definitions, @name_creator, @modulepath, defined_const)
     wsdl_name = @definitions.name ? @definitions.name.name : 'default'
     module_name = safeconstname(wsdl_name + 'MappingRegistry')
     if @modulepath
