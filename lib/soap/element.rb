@@ -77,8 +77,8 @@ public
   end
 
   def encode(generator, ns, attrs = {})
-    SOAPGenerator.assign_ns(attrs, ns, EnvelopeNamespace)
-    SOAPGenerator.assign_ns(attrs, ns, EncodingNamespace)
+    Generator.assign_ns(attrs, ns, EnvelopeNamespace)
+    Generator.assign_ns(attrs, ns, EncodingNamespace)
     attrs[ns.name(AttrEncodingStyleName)] = EncodingNamespace
     name = ns.name(@elename)
     generator.encode_tag(name, attrs)
@@ -255,7 +255,7 @@ class SOAPEnvelope < XSD::NSDBase
   end
 
   def encode(generator, ns, attrs = {})
-    SOAPGenerator.assign_ns(attrs, ns, elename.namespace)
+    Generator.assign_ns(attrs, ns, elename.namespace)
     name = ns.name(@elename)
     generator.encode_tag(name, attrs)
     yield(@header) if @header and @header.encode?

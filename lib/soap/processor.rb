@@ -50,7 +50,7 @@ module Processor
   private
 
     def create_generator(opt)
-      SOAPGenerator.new(opt)
+      Generator.new(opt)
     end
 
     def create_parser(opt)

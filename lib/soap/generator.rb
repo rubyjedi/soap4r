@@ -19,7 +19,7 @@ module SOAP
 ###
 ## CAUTION: MT-unsafe
 #
-class SOAPGenerator
+class Generator
   include SOAP
   include XSD::CodeGen::GenSupport
 
@@ -62,7 +62,7 @@ public
     ns = SOAP::NS.new
     if @default_ns
       @default_ns.each_ns do |default_ns, default_tag|
-        SOAPGenerator.assign_ns(obj.extraattr, ns, default_ns, default_tag)
+        Generator.assign_ns(obj.extraattr, ns, default_ns, default_tag)
       end
     end
     if @default_ns_tag
@@ -142,9 +142,9 @@ public
     else
       if obj.is_a?(SOAPEnvelope)
         # xsi:nil="true" can appear even if dumping without explicit type.
-        SOAPGenerator.assign_ns(attrs, ns, XSD::InstanceNamespace)
+        Generator.assign_ns(attrs, ns, XSD::InstanceNamespace)
         if @generate_explicit_type
-          SOAPGenerator.assign_ns(attrs, ns, XSD::Namespace)
+          Generator.assign_ns(attrs, ns, XSD::Namespace)
         end
       end
       obj.encode(self, ns, attrs) do |child|
@@ -160,9 +160,9 @@ public
       data.elename.name
     else
       if @elementformdefault
-        SOAPGenerator.assign_ns(attrs, ns, data.elename.namespace, '')
+        Generator.assign_ns(attrs, ns, data.elename.namespace, '')
       else
-        SOAPGenerator.assign_ns(attrs, ns, data.elename.namespace)
+        Generator.assign_ns(attrs, ns, data.elename.namespace)
       end
       ns.name(data.elename)
     end
@@ -278,6 +278,8 @@ private
     end
   end
 end
+
+SOAPGenerator = Generator       # for backward compatibility
 
 
 end

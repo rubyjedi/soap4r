@@ -268,7 +268,7 @@ private
 
     if !parent || parent.encodingstyle != EncodingNamespace
       if @generate_explicit_type
-        SOAPGenerator.assign_ns(attrs, ns, EnvelopeNamespace)
+        Generator.assign_ns(attrs, ns, EnvelopeNamespace)
         attrs[ns.name(AttrEncodingStyleName)] = EncodingNamespace
       end
       data.encodingstyle = EncodingNamespace
@@ -278,13 +278,13 @@ private
       attrs[ns.name(XSD::AttrNilName)] = XSD::NilValue
     elsif @generate_explicit_type
       if data.type.namespace
-        SOAPGenerator.assign_ns(attrs, ns, data.type.namespace)
+        Generator.assign_ns(attrs, ns, data.type.namespace)
       end
       if data.is_a?(SOAPArray)
 	if data.arytype.namespace
-          SOAPGenerator.assign_ns(attrs, ns, data.arytype.namespace)
+          Generator.assign_ns(attrs, ns, data.arytype.namespace)
    	end
-	SOAPGenerator.assign_ns(attrs, ns, EncodingNamespace)
+	Generator.assign_ns(attrs, ns, EncodingNamespace)
 	attrs[ns.name(AttrArrayTypeName)] = ns.name(create_arytype(ns, data))
 	if data.type.name
 	  attrs[ns.name(XSD::AttrTypeName)] = ns.name(data.type)

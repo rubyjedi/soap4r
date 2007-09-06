@@ -51,7 +51,7 @@ module Mapping
         soap.elename =
           XSD::QName.new(nil, SOAP::Mapping.name2elename(obj.class.to_s))
       end
-      generator = SOAP::SOAPGenerator.new(opt)
+      generator = SOAP::Generator.new(opt)
       generator.generate(soap, io)
     end
 
