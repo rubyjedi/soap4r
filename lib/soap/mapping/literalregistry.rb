@@ -246,7 +246,7 @@ private
   def elesoap2stubobj(node, obj_class, definition)
     obj = nil
     if obj_class < ::String
-      obj = node.text
+      obj = obj_class.new(node.text)
     else
       obj = Mapping.create_empty_object(obj_class)
       add_elesoap2stubobj(node, obj, definition)
