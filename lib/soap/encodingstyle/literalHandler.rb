@@ -72,11 +72,11 @@ class LiteralHandler < Handler
       # passes 2 times for simplifying namespace definition
       data.each do |key, value|
         if value.elename.namespace
-          SOAPGenerator.assign_ns(attrs, ns, value.elename.namespace)
+          Generator.assign_ns(attrs, ns, value.elename.namespace)
         end
       end
       if data.text and data.text.is_a?(XSD::QName)
-        SOAPGenerator.assign_ns(attrs, ns, data.text.namespace)
+        Generator.assign_ns(attrs, ns, data.text.namespace)
       end
       generator.encode_tag(name, attrs)
       if data.text

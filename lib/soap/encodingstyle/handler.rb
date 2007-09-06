@@ -96,7 +96,7 @@ class Handler
 
   def encode_qname(attrs, ns, qname)
     unless qname.namespace.nil?
-      SOAPGenerator.assign_ns(attrs, ns, qname.namespace)
+      Generator.assign_ns(attrs, ns, qname.namespace)
       ns.name(qname)
     else
       qname.name
