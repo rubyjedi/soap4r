@@ -145,13 +145,7 @@ private
     end
     return ele if obj.nil?
     stubobj2soap_elements(obj, ele, definition.elements)
-    if definition.attributes
-      definition.attributes.each do |qname, param|
-        attrname = XSD::CodeGen::GenSupport.safemethodname(
-          'xmlattr_' + qname.name)
-        ele.extraattr[qname] = Mapping.get_attribute(obj, attrname)
-      end
-    end
+    add_definedattributes2soap(obj, ele, definition)
     ele
   end
 
