@@ -32,7 +32,7 @@ class ClassNameCreator
       while @classname.value?(name)
         name += '_'
       end
-      @classname[qname] = name
+      @classname[qname] = name.freeze
     end
     if modulepath
       [modulepath, name].join('::')

@@ -150,7 +150,7 @@ module MappingRegistryCreatorSupport
         varname = safevarname(name)
         if element.map_as_array?
           if type
-            type << '[]'
+            type += '[]'
           else
             type = '[]'
           end
