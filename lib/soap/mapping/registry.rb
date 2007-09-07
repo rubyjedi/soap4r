@@ -228,17 +228,32 @@ module RegistrySupport
   end
   
   def add_attributes2soap(obj, ele)
-    definition = Mapping.schema_definition_classdef(obj.class)
-    if definition && attributes = definition.attributes
-      attributes.each do |qname, param|
-        at = Mapping.get_attribute(obj, XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name))
-        ele.extraattr[qname] = at
-      end
+    if definition = Mapping.schema_definition_classdef(obj.class)
+      add_definedattributes2soap(obj, ele, definition)
     elsif obj.respond_to?(:__xmlattr)
       obj.__xmlattr.each do |key, value|
         ele.extraattr[key] = value
       end
     end
+  end
+
+  def add_definedattributes2soap(obj, ele, typedef)
+    if typedef.attributes
+      typedef.attributes.each do |qname, param|
+        ele.extraattr[qname] = get_xmlattr_value(obj, qname)
+      end
+    end
+  end
+
+  def get_xmlattr_value(obj, qname)
+    attrname = 'xmlattr_' + qname.name
+    value = Mapping.get_attribute(obj, attrname)
+    if value.nil?
+      attrname =
+        XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name)
+      value = Mapping.get_attribute(obj, attrname)
+    end
+    value
   end
 
   def base2soap(obj, type, qualified = nil)

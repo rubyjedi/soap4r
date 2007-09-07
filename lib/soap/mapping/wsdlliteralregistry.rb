@@ -104,12 +104,14 @@ private
     ele = nil
     if type.is_a?(::WSDL::XMLSchema::SimpleType)
       ele = simpleobj2soap(obj, type)
-    elsif type.simplecontent
-      ele = simpleobj2soap(obj, type.simplecontent)
-    else
-      ele = complexobj2soap(obj, type)
+    else # complexType
+      if type.simplecontent
+        ele = simpleobj2soap(obj, type.simplecontent)
+      else
+        ele = complexobj2soap(obj, type)
+      end
+      add_definedattributes2soap(obj, ele, type)
     end
-    add_attributes2soap(obj, ele)
     ele
   end
 
@@ -223,6 +225,14 @@ private
     else
       warn("nil not allowed: #{ele.name.name}")
       nil
+    end
+  end
+
+  def add_definedattributes2soap(obj, ele, typedef)
+    if typedef.attributes
+      typedef.attributes.each do |at|
+        ele.extraattr[at.name] = get_xmlattr_value(obj, at.name)
+      end
     end
   end
 end

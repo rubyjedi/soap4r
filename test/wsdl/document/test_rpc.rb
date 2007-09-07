@@ -146,6 +146,40 @@ class TestRPC < Test::Unit::TestCase
     assert_equal(5, ret.xmlattr_attr_int)
   end
 
+  def test_wsdl_with_map
+    wsdl = File.join(DIR, 'document.wsdl')
+    @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = STDOUT if $DEBUG
+
+    struct1 = {
+      :m_string => "mystring1",
+      :m_datetime => (now1 = Time.now),
+      :xmlattr_m_attr => "myattr1"
+    }
+    struct2 = {
+      "m_string" => "mystring2",
+      "m_datetime" => now2 = (Time.now),
+      "xmlattr_m_attr" => "myattr2"
+    }
+    echo = {
+      :struct1 => struct1,
+      "struct-2" => struct2,
+      :xmlattr_attr_string => 'attr_string',
+      "xmlattr_attr-int" => 5
+    }
+    ret = @client.echo(echo)
+    #
+    now1str = XSD::XSDDateTime.new(now1).to_s
+    now2str = XSD::XSDDateTime.new(now2).to_s
+    assert_equal("mystring2", ret.struct1.m_string)
+    assert_equal(now2str, ret.struct1.m_datetime)
+    assert_equal("mystring1", ret.struct_2.m_string)
+    assert_equal(now1str, ret.struct_2.m_datetime)
+    assert_equal("attr_string", ret.xmlattr_attr_string)
+    assert_equal("5", ret.xmlattr_attr_int)
+  end
+
   def date2time(date)
     if date.respond_to?(:to_time)
       date.to_time
