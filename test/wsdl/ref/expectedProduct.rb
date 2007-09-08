@@ -146,7 +146,7 @@ class ProductBag
   # inner class for member: Comment_1
   # {}Comment_1
   #   xmlattr_msgid - SOAP::SOAPString
-  class Comment_1
+  class Comment_1 < ::String
     AttrMsgid = XSD::QName.new(nil, "msgid")
 
     def __xmlattr
@@ -161,7 +161,8 @@ class ProductBag
       __xmlattr[AttrMsgid] = value
     end
 
-    def initialize
+    def initialize(*arg)
+      super
       @__xmlattr = {}
     end
   end

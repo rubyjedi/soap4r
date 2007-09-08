@@ -91,59 +91,67 @@ private
   def dump_element
     @elements.collect { |ele|
       next if @complextypes[ele.name]
-      qualified = (ele.elementform == 'qualified')
-      if ele.local_complextype
-        dump_complextypedef(ele.name, ele.local_complextype, qualified)
-      elsif ele.local_simpletype
-        dump_simpletypedef(ele.name, ele.local_simpletype, qualified)
-      elsif ele.empty?
-        dump_simpleclassdef(ele.name, nil)
-      else
-        # ignores type only element
-        nil
-      end
+      c = create_elementdef(ele)
+      c ? c.dump : nil
     }.compact.join("\n")
   end
 
   def dump_attribute
-    @attributes.collect { |attr|
-      if attr.local_simpletype
-        dump_simpletypedef(attr.name, attr.local_simpletype)
+    @attributes.collect { |attribute|
+      if attribute.local_simpletype
+        c = create_simpletypedef(attribute.name, attribute.local_simpletype)
       end
+      c ? c.dump : nil
     }.compact.join("\n")
   end
 
   def dump_simpletype
     @simpletypes.collect { |type|
-      dump_simpletypedef(type.name, type)
+      c = create_simpletypedef(type.name, type)
+      c ? c.dump : nil
     }.compact.join("\n")
   end
 
   def dump_complextype
     definitions = sort_dependency(@complextypes).collect { |type|
-      dump_complextypedef(type.name, type)
+      c = create_complextypedef(type.name, type)
+      c ? c.dump : nil
     }.compact.join("\n")
   end
 
   def dump_group
     definitions = @modelgroups.collect { |group|
-      # ???
+      # TODO: not dumped for now but may be useful in the future
     }.compact.join("\n")
   end
 
-  def dump_simpletypedef(qname, simpletype, qualified = false)
+  def create_elementdef(ele)
+    qualified = (ele.elementform == 'qualified')
+    if ele.local_complextype
+      create_complextypedef(ele.name, ele.local_complextype, qualified)
+    elsif ele.local_simpletype
+      create_simpletypedef(ele.name, ele.local_simpletype, qualified)
+    elsif ele.empty?
+      create_simpleclassdef(ele.name, nil)
+    else
+      # ignores type only element
+      nil
+    end
+  end
+
+  def create_simpletypedef(qname, simpletype, qualified = false)
     if simpletype.restriction
-      dump_simpletypedef_restriction(qname, simpletype, qualified)
+      create_simpletypedef_restriction(qname, simpletype, qualified)
     elsif simpletype.list
-      dump_simpletypedef_list(qname, simpletype, qualified)
+      create_simpletypedef_list(qname, simpletype, qualified)
     elsif simpletype.union
-      dump_simpletypedef_union(qname, simpletype, qualified)
+      create_simpletypedef_union(qname, simpletype, qualified)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
   end
 
-  def dump_simpletypedef_restriction(qname, typedef, qualified)
+  def create_simpletypedef_restriction(qname, typedef, qualified)
     restriction = typedef.restriction
     unless restriction.enumeration?
       # not supported.  minlength?
@@ -154,10 +162,10 @@ private
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     define_classenum_restriction(c, classname, restriction.enumeration)
-    c.dump
+    c
   end
 
-  def dump_simpletypedef_list(qname, typedef, qualified)
+  def create_simpletypedef_list(qname, typedef, qualified)
     list = typedef.list
     classname = create_class_name(qname)
     check_classname(classname)
@@ -175,10 +183,10 @@ private
     else
       raise RuntimeError.new("unknown kind of list: #{list}")
     end
-    c.dump
+    c
   end
 
-  def dump_simpletypedef_union(qname, typedef, qualified)
+  def create_simpletypedef_union(qname, typedef, qualified)
     union = typedef.union
     classname = create_class_name(qname)
     c = ClassDef.new(classname, '::String')
@@ -187,7 +195,7 @@ private
       # fixme
       c.comment << "\n any of #{union.member_types}"
     end
-    c.dump
+    c
   end
 
   def define_stringenum_restriction(c, enumeration)
@@ -214,7 +222,7 @@ private
     end
   end
 
-  def dump_simpleclassdef(qname, type_or_element)
+  def create_simpleclassdef(qname, type_or_element)
     classname = create_class_name(qname)
     check_classname(classname)
     c = ClassDef.new(classname, '::String')
@@ -227,17 +235,17 @@ private
     c.def_method('initialize', '*arg') do
       "super\n" + init_lines.join("\n")
     end
-    c.dump
+    c
   end
 
-  def dump_complextypedef(qname, type, qualified = false)
+  def create_complextypedef(qname, type, qualified = false)
     case type.compoundtype
     when :TYPE_STRUCT, :TYPE_EMPTY
-      dump_classdef(qname, type, qualified)
+      create_classdef(qname, type, qualified)
     when :TYPE_ARRAY
-      dump_arraydef(qname, type)
+      create_arraydef(qname, type)
     when :TYPE_SIMPLE
-      dump_simpleclassdef(qname, type)
+      create_simpleclassdef(qname, type)
     when :TYPE_MAP
       # mapped as a general Hash
       nil
@@ -245,10 +253,6 @@ private
       raise RuntimeError.new(
         "unknown kind of complexContent: #{type.compoundtype}")
     end
-  end
-
-  def dump_classdef(qname, typedef, qualified = false)
-    create_classdef(qname, typedef, qualified).dump
   end
 
   def create_classdef(qname, typedef, qualified = false)
@@ -300,7 +304,7 @@ private
         name = name_element(element).name
         typebase = @modulepath
         if element.anonymous_type?
-          inner = create_classdef(element.name, element.local_complextype)
+          inner = create_elementdef(element)
           unless as_array
             inner.comment = "inner class for member: #{name}\n" + inner.comment
           end
@@ -374,13 +378,13 @@ private
     end
   end
 
-  def dump_arraydef(qname, typedef)
+  def create_arraydef(qname, typedef)
     classname = create_class_name(qname)
     check_classname(classname)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
     parse_elements(c, typedef.elements, qname.namespace, classname, true)
-    c.dump
+    c
   end
 
   def sort_dependency(types)
