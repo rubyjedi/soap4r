@@ -57,17 +57,21 @@ class WSDLDriverFactory
   # Backward compatibility.
   alias createDriver create_driver
 
-  def dump_method_signatures
-    sig = nil
+  def dump_method_signatures(servicename = nil, portname = nil)
+    targetservice = XSD::QName.new(@wsdl.targetnamespace, servicename) if servicename
+    targetport = XSD::QName.new(@wsdl.targetnamespace, portname) if portname
+    sig = []
     element_definitions = @wsdl.collect_elements
     @wsdl.services.each do |service|
+      next if targetservice and service.name != targetservice
       service.ports.each do |port|
-        sig = port.porttype.operations.collect { |operation|
+        next if targetport and port.name != targetport
+        sig << port.porttype.operations.collect { |operation|
           dump_method_signature(operation, element_definitions).gsub(/^#/, ' ')
         }.join("\n")
       end
     end
-    sig
+    sig.join("\n")
   end
 
 private
