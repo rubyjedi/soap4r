@@ -126,23 +126,23 @@ class TestRPC < Test::Unit::TestCase
 
     struct1 = Echo_struct.new("mystring1", now1 = Time.now)
     struct1.xmlattr_m_attr = 'myattr1'
-    struct2 = Echo_struct.new("mystring2", now2 = Time.now)
+    struct2 = Echo_struct.new("mystr<>ing2", now2 = Time.now)
     struct2.xmlattr_m_attr = 'myattr2'
     echo = Echoele.new(struct1, struct2)
-    echo.xmlattr_attr_string = 'attr_string'
+    echo.xmlattr_attr_string = 'attr_str<>ing'
     echo.xmlattr_attr_int = 5
     ret = @client.echo(echo)
 
     # struct#m_datetime in a response is a DateTime even though
     # struct#m_datetime in a request is a Time.
     timeformat = "%Y-%m-%dT%H:%M:%S"
-    assert_equal("mystring2", ret.struct1.m_string)
+    assert_equal("mystr<>ing2", ret.struct1.m_string)
     assert_equal(now2.strftime(timeformat),
       date2time(ret.struct1.m_datetime).strftime(timeformat))
     assert_equal("mystring1", ret.struct_2.m_string)
     assert_equal(now1.strftime(timeformat),
       date2time(ret.struct_2.m_datetime).strftime(timeformat))
-    assert_equal("attr_string", ret.xmlattr_attr_string)
+    assert_equal("attr_str<>ing", ret.xmlattr_attr_string)
     assert_equal(5, ret.xmlattr_attr_int)
   end
 
@@ -158,25 +158,25 @@ class TestRPC < Test::Unit::TestCase
       :xmlattr_m_attr => "myattr1"
     }
     struct2 = {
-      "m_string" => "mystring2",
+      "m_string" => "mystr<>ing2",
       "m_datetime" => now2 = (Time.now),
       "xmlattr_m_attr" => "myattr2"
     }
     echo = {
       :struct1 => struct1,
       "struct-2" => struct2,
-      :xmlattr_attr_string => 'attr_string',
+      :xmlattr_attr_string => 'attr_str<>ing',
       "xmlattr_attr-int" => 5
     }
     ret = @client.echo(echo)
     #
     now1str = XSD::XSDDateTime.new(now1).to_s
     now2str = XSD::XSDDateTime.new(now2).to_s
-    assert_equal("mystring2", ret.struct1.m_string)
+    assert_equal("mystr<>ing2", ret.struct1.m_string)
     assert_equal(now2str, ret.struct1.m_datetime)
     assert_equal("mystring1", ret.struct_2.m_string)
     assert_equal(now1str, ret.struct_2.m_datetime)
-    assert_equal("attr_string", ret.xmlattr_attr_string)
+    assert_equal("attr_str<>ing", ret.xmlattr_attr_string)
     assert_equal("5", ret.xmlattr_attr_int)
   end
 
@@ -202,7 +202,7 @@ class TestRPC < Test::Unit::TestCase
     @client.wiredump_dev = STDOUT if $DEBUG
 
     echo = SOAPElement.new('foo')
-    echo.extraattr['attr_string'] = 'attr_string'
+    echo.extraattr['attr_string'] = 'attr_str<>ing'
     echo.extraattr['attr-int'] = 5
     echo.add(struct1 = SOAPElement.new('struct1'))
     struct1.add(SOAPElement.new('m_string', 'mystring1'))
@@ -220,7 +220,7 @@ class TestRPC < Test::Unit::TestCase
     assert_equal("mystring1", ret.struct_2.m_string)
     assert_equal('2005-03-17T19:47:31',
       ret.struct_2.m_datetime.strftime(timeformat))
-    assert_equal('attr_string', ret.xmlattr_attr_string)
+    assert_equal('attr_str<>ing', ret.xmlattr_attr_string)
     assert_equal(5, ret.xmlattr_attr_int)
 
     echo = {'struct1' => {'m_string' => 'mystring1', 'm_datetime' => '2005-03-17T19:47:31+01:00'}, 

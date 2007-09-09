@@ -183,7 +183,7 @@ public
     end
     ary = []
     attrs.each do |key, value|
-      ary << %Q[#{ key }="#{ value }"] unless value.nil?
+      ary << %Q[#{ key }="#{ get_encoded(value.to_s) }"]
     end
     case ary.size
     when 0
@@ -219,9 +219,13 @@ public
   }
   EncodeCharRegexp = Regexp.new("[#{EncodeMap.keys.join}]")
   def encode_string(str)
+    @buf << get_encoded(str)
+  end
+
+  def get_encoded(str)
     if @use_numeric_character_reference and !XSD::Charset.is_us_ascii(str)
       str.gsub!(EncodeCharRegexp) { |c| EncodeMap[c] }
-      @buf << str.unpack("U*").collect { |c|
+      str.unpack("U*").collect { |c|
         if c == 0x9 or c == 0xa or c == 0xd or (c >= 0x20 and c <= 0x7f)
           c.chr
         else
@@ -229,7 +233,7 @@ public
         end
       }.join
     else
-      @buf << str.gsub(EncodeCharRegexp) { |c| EncodeMap[c] }
+      str.gsub(EncodeCharRegexp) { |c| EncodeMap[c] }
     end
   end
 
