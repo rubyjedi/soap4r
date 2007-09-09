@@ -9,6 +9,7 @@
 require 'xsd/datatypes'
 require 'soap/soap'
 require 'xsd/codegen/gensupport'
+require 'soap/mapping/mapping'
 
 
 module SOAP
@@ -1074,7 +1075,7 @@ private
     "#{typename}[" << ',' * (rank - 1) << ']'
   end
 
-  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$')
+  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$', nil, 'NONE')
 
   def self.parse_type(string)
     TypeParseRegexp =~ string

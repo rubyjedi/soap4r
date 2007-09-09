@@ -53,6 +53,8 @@ public
   def generate(obj, io = nil)
     @buf = io || ''
     @indent = ''
+    @encode_char_regexp =
+      Regexp.new("[#{EncodeMap.keys.join}]", nil, XSD::Charset.encoding)
 
     prologue
     @handlers.each do |uri, handler|
@@ -217,14 +219,13 @@ public
     '\'' => '&apos;',
     "\r" => '&#xd;'
   }
-  EncodeCharRegexp = Regexp.new("[#{EncodeMap.keys.join}]")
   def encode_string(str)
     @buf << get_encoded(str)
   end
 
   def get_encoded(str)
     if @use_numeric_character_reference and !XSD::Charset.is_us_ascii(str)
-      str.gsub!(EncodeCharRegexp) { |c| EncodeMap[c] }
+      str.gsub!(@encode_char_regexp) { |c| EncodeMap[c] }
       str.unpack("U*").collect { |c|
         if c == 0x9 or c == 0xa or c == 0xd or (c >= 0x20 and c <= 0x7f)
           c.chr
@@ -233,7 +234,7 @@ public
         end
       }.join
     else
-      str.gsub(EncodeCharRegexp) { |c| EncodeMap[c] }
+      str.gsub(@encode_char_regexp) { |c| EncodeMap[c] }
     end
   end
 
@@ -266,10 +267,13 @@ private
 
   def find_handler(encodingstyle)
     unless @handlers.key?(encodingstyle)
-      handler = SOAP::EncodingStyle::Handler.handler(encodingstyle).new(@charset)
-      handler.generate_explicit_type = @generate_explicit_type
-      handler.encode_prologue
-      @handlers[encodingstyle] = handler
+      factory = SOAP::EncodingStyle::Handler.handler(encodingstyle)
+      if factory
+        handler = factory.new(@charset)
+        handler.generate_explicit_type = @generate_explicit_type
+        handler.encode_prologue
+        @handlers[encodingstyle] = handler
+      end
     end
     @handlers[encodingstyle]
   end
