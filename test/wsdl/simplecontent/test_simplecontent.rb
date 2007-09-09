@@ -81,9 +81,9 @@ class TestSimpleContent < Test::Unit::TestCase
 
     list = PhoneList.new
     list.xmlattr_default = "default"
-    phone1 = PhoneNumber.new("12345")
+    phone1 = PhoneNumber.new("12<>345")
     phone1.xmlattr_type = PhoneNumberType::Fax
-    phone2 = PhoneNumber.new("23456")
+    phone2 = PhoneNumber.new("234<>56")
     phone2.xmlattr_type = PhoneNumberType::Home
     list.phone << phone1 << phone2
     address = Address.new(list, "addr")
@@ -91,9 +91,9 @@ class TestSimpleContent < Test::Unit::TestCase
 
     assert_equal(address.blah, ret.blah)
     assert_equal(2, ret.list.phone.size)
-    assert_equal("12345", ret.list.phone[0])
+    assert_equal("12<>345", ret.list.phone[0])
     assert_equal(PhoneNumberType::Fax, ret.list.phone[0].xmlattr_type)
-    assert_equal("23456", ret.list.phone[1])
+    assert_equal("234<>56", ret.list.phone[1])
     assert_equal(PhoneNumberType::Home, ret.list.phone[1].xmlattr_type)
   end
 end

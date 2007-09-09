@@ -85,7 +85,7 @@ class LiteralHandler < Handler
         else
           text = data.text
         end
-        generator.encode_rawstring(text)
+        generator.encode_string(text)
       end
       data.each do |key, value|
         generator.encode_child(ns, value, data)
