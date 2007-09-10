@@ -134,7 +134,7 @@ end
 # {urn:ref}Product-Bag
 #   bag - WSDL::Ref::Product
 #   rating - SOAP::SOAPString
-#   comment_1 - ProductBag::Comment_1
+#   comment_1 - WSDL::Ref::ProductBag::Comment_1
 #   comment_2 - WSDL::Ref::Comment
 #   m___point - WSDL::Ref::C__point
 #   xmlattr_version - SOAP::SOAPString

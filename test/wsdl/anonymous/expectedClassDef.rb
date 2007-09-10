@@ -21,7 +21,7 @@ class ExtraInfo < ::Array
 end
 
 # {urn:lp}loginResponse
-#   loginResult - LoginResponse::LoginResult
+#   loginResult - WSDL::Anonymous::LoginResponse::LoginResult
 class LoginResponse
 
   # inner class for member: loginResult
@@ -43,7 +43,7 @@ class LoginResponse
 end
 
 # {urn:lp}login
-#   loginRequest - Login::LoginRequest
+#   loginRequest - WSDL::Anonymous::Login::LoginRequest
 class Login
 
   # inner class for member: loginRequest

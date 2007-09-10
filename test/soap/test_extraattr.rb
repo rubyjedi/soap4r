@@ -17,7 +17,7 @@ class TestExtrAttr < Test::Unit::TestCase
           env:mustUnderstand="0"
           Id="extraattr"></n1:headeritem>
   </env:Header>
-  <env:Body Id="extraattr">
+  <env:Body Id="extraattr&lt;&gt;">
     <n2:test xmlns:n2="my:foo"
         Id="extraattr"></n2:test>
   </env:Body>
@@ -30,7 +30,7 @@ class TestExtrAttr < Test::Unit::TestCase
     hi.extraattr["Id"] = "extraattr"
     header.add("test", hi)
     body = SOAP::SOAPBody.new()
-    body.extraattr["Id"] = "extraattr"
+    body.extraattr["Id"] = "extraattr<>"
     bi = SOAP::SOAPElement.new(XSD::QName.new("my:foo", "bodyitem"))
     bi.extraattr["Id"] = "extraattr"
     body.add("test", bi)
@@ -46,7 +46,7 @@ class TestExtrAttr < Test::Unit::TestCase
     body = env.body
     assert_equal("extraattr", env.extraattr["Id"])
     assert_equal("extraattr", header.extraattr["Id"])
-    assert_equal("extraattr", body.extraattr["Id"])
+    assert_equal("extraattr<>", body.extraattr["Id"])
     assert_equal("extraattr", header["headeritem"].element.extraattr[XSD::QName.new(nil, "Id")])
   end
 end
