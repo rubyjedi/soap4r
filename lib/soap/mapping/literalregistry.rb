@@ -319,7 +319,7 @@ private
       define_xmlattr(obj)
       attributes.each do |qname, class_name|
         attr = node.extraattr[qname]
-        next if attr.nil? or attr.empty?
+        next if attr.nil?
         child = attr
         if class_name
           klass = Mapping.class_from_name(class_name)

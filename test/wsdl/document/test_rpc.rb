@@ -123,7 +123,36 @@ class TestRPC < Test::Unit::TestCase
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
     @client.literal_mapping_registry = EchoMappingRegistry::LiteralRegistry
+    do_test_with_stub(@client)
+  end
 
+  def test_driver_stub
+    @client = ::WSDL::Document::Docrpc_porttype.new
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = STDOUT if $DEBUG
+    do_test_with_stub(@client)
+  end
+
+  def test_nil_attribute
+    @client = ::WSDL::Document::Docrpc_porttype.new
+    @client.endpoint_url = "http://localhost:#{Port}/"
+    @client.wiredump_dev = STDOUT if $DEBUG
+    struct1 = Echo_struct.new("mystring1", now1 = Time.now)
+    struct1.xmlattr_m_attr = nil
+    struct2 = Echo_struct.new("mystr<>ing2", now2 = Time.now)
+    struct2.xmlattr_m_attr = ''
+    echo = Echoele.new(struct1, struct2)
+    echo.xmlattr_attr_string = ''
+    echo.xmlattr_attr_int = nil
+    ret = @client.echo(echo)
+    # struct1 and struct2 are swapped
+    assert_equal('', ret.struct1.xmlattr_m_attr)
+    assert_equal(nil, ret.struct_2.xmlattr_m_attr)
+    assert_equal('', ret.xmlattr_attr_string)
+    assert_equal(nil, ret.xmlattr_attr_int)
+  end
+
+  def do_test_with_stub(client)
     struct1 = Echo_struct.new("mystring1", now1 = Time.now)
     struct1.xmlattr_m_attr = 'myattr1'
     struct2 = Echo_struct.new("mystr<>ing2", now2 = Time.now)
@@ -131,7 +160,7 @@ class TestRPC < Test::Unit::TestCase
     echo = Echoele.new(struct1, struct2)
     echo.xmlattr_attr_string = 'attr_str<>ing'
     echo.xmlattr_attr_int = 5
-    ret = @client.echo(echo)
+    ret = client.echo(echo)
 
     # struct#m_datetime in a response is a DateTime even though
     # struct#m_datetime in a request is a Time.

@@ -24,7 +24,7 @@ end
 
 # {urn:example.com:echo-type}setOutputAndCompleteRequest
 #   taskId - SOAP::SOAPString
-#   data - SetOutputAndCompleteRequest::C_Data
+#   data - WSDL::Any::SetOutputAndCompleteRequest::C_Data
 #   participantToken - SOAP::SOAPString
 class SetOutputAndCompleteRequest
 

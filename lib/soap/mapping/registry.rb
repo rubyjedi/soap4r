@@ -240,7 +240,8 @@ module RegistrySupport
   def add_definedattributes2soap(obj, ele, typedef)
     if typedef.attributes
       typedef.attributes.each do |qname, param|
-        ele.extraattr[qname] = get_xmlattr_value(obj, qname)
+        value = get_xmlattr_value(obj, qname)
+        ele.extraattr[qname] = value unless value.nil?
       end
     end
   end
