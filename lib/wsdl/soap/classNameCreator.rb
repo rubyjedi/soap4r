@@ -21,7 +21,23 @@ class ClassNameCreator
     @classname = {}
   end
 
-  def create_name(qname, modulepath = nil)
+  def assign_name(qname, modulepath = nil)
+    unless @classname[qname]
+      if klass = ::SOAP::TypeMap[qname]
+        name = ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass).name
+      else
+        name = safeconstname(qname.name)
+        if modulepath
+          name = [modulepath, name].join('::')
+        end
+        while @classname.value?(name)
+          name += '_'
+        end
+      end
+      @classname[qname] = name.freeze
+    end
+    return @classname[qname]
+=begin
     if klass = ::SOAP::TypeMap[qname]
       return ::SOAP::Mapping::DefaultRegistry.find_mapped_obj_class(klass).name
     end
@@ -39,6 +55,7 @@ class ClassNameCreator
     else
       name
     end
+=end
   end
 end
 

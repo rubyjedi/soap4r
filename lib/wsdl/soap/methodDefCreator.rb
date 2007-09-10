@@ -98,7 +98,7 @@ private
     binding.fault.each do |fault|
       op_fault = {}
       soapfault = fault.soapfault
-      faultclass = create_class_name(fault.name, @modulepath)
+      faultclass = mapped_class_name(fault.name, @modulepath)
       op_fault[:ns] = fault.name.namespace
       op_fault[:name] = fault.name.name
       op_fault[:namespace] = soapfault.namespace
@@ -162,7 +162,7 @@ __EOD__
     elsif definedtype = @complextypes[part.type]
       case definedtype.compoundtype
       when :TYPE_STRUCT, :TYPE_EMPTY, :TYPE_ARRAY, :TYPE_SIMPLE
-        type = create_class_name(part.type, @modulepath)
+        type = mapped_class_name(part.type, @modulepath)
 	[type, part.type.namespace, part.type.name]
       when :TYPE_MAP
 	[Hash.name, part.type.namespace, part.type.name]

@@ -51,7 +51,7 @@ class ClientSkeltonCreator
 private
 
   def dump_porttype(porttype)
-    drv_name = create_class_name(porttype.name)
+    drv_name = mapped_class_basename(porttype.name, @modulepath)
 
     result = ""
     result << <<__EOD__

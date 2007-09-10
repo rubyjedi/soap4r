@@ -84,7 +84,7 @@ private
     assign_const(type.namespace, 'Ns')
     return <<__EOD__
 #{@varname}.set(
-  #{create_class_name(qname, @modulepath)},
+  #{mapped_class_name(qname, @modulepath)},
   ::SOAP::SOAPArray,
   ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
   { :type => #{dqname(type)} }

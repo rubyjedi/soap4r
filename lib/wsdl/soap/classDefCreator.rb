@@ -43,7 +43,7 @@ class ClassDefCreator
 
   def dump(type = nil)
     result = "require 'xsd/qname'\n"
-    # cannot use create_class_name with @modulepath because of multiple classes
+    # cannot use @modulepath because of multiple classes
     if @modulepath
       result << "\n"
       result << modulepath_split(@modulepath).collect { |ele| "module #{ele}" }.join("; ")
@@ -157,7 +157,7 @@ private
       # not supported.  minlength?
       return nil
     end
-    classname = create_class_name(qname)
+    classname = mapped_class_basename(qname, @modulepath)
     check_classname(classname)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
@@ -167,7 +167,7 @@ private
 
   def create_simpletypedef_list(qname, typedef, qualified)
     list = typedef.list
-    classname = create_class_name(qname)
+    classname = mapped_class_basename(qname, @modulepath)
     check_classname(classname)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
@@ -179,7 +179,7 @@ private
       define_stringenum_restriction(c, simpletype.restriction.enumeration)
       c.comment << "\n  contains list of #{classname}::*"
     elsif list.itemtype
-      c.comment << "\n  contains list of #{create_class_name(list.itemtype)}::*"
+      c.comment << "\n  contains list of #{mapped_class_basename(list.itemtype, @modulepath)}::*"
     else
       raise RuntimeError.new("unknown kind of list: #{list}")
     end
@@ -188,7 +188,7 @@ private
 
   def create_simpletypedef_union(qname, typedef, qualified)
     union = typedef.union
-    classname = create_class_name(qname)
+    classname = mapped_class_basename(qname, @modulepath)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     if union.member_types
@@ -223,7 +223,7 @@ private
   end
 
   def create_simpleclassdef(qname, type_or_element)
-    classname = create_class_name(qname)
+    classname = mapped_class_basename(qname, @modulepath)
     check_classname(classname)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
@@ -256,12 +256,12 @@ private
   end
 
   def create_classdef(qname, typedef, qualified = false)
-    classname = create_class_name(qname)
+    classname = mapped_class_basename(qname, @modulepath)
     check_classname(classname)
     baseclassname = nil
     if typedef.complexcontent
       if base = typedef.complexcontent.base
-        baseclassname = create_class_name(base)
+        baseclassname = mapped_class_basename(base, @modulepath)
       end
     end
     if @faulttypes and @faulttypes.index(qname)
@@ -271,8 +271,9 @@ private
     end
     c.comment = "#{qname}"
     c.comment << "\nabstract" if typedef.abstract
+    parentmodule = mapped_class_name(qname, @modulepath)
     init_lines, init_params =
-      parse_elements(c, typedef.elements, qname.namespace, classname)
+      parse_elements(c, typedef.elements, qname.namespace, parentmodule)
     unless typedef.attributes.empty?
       define_attribute(c, typedef.attributes)
       init_lines << "@__xmlattr = {}"
@@ -304,7 +305,13 @@ private
         name = name_element(element).name
         typebase = @modulepath
         if element.anonymous_type?
-          inner = create_elementdef(element)
+          begin
+            # swap @modulepath: TODO be smarter
+            @modulepath = parentmodule
+            inner = create_elementdef(element)
+          ensure
+            @modulepath = typebase
+          end
           unless as_array
             inner.comment = "inner class for member: #{name}\n" + inner.comment
           end
@@ -379,11 +386,12 @@ private
   end
 
   def create_arraydef(qname, typedef)
-    classname = create_class_name(qname)
+    classname = mapped_class_basename(qname, @modulepath)
     check_classname(classname)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
-    parse_elements(c, typedef.elements, qname.namespace, classname, true)
+    parentmodule = mapped_class_name(qname, @modulepath)
+    parse_elements(c, typedef.elements, qname.namespace, parentmodule, true)
     c
   end
 

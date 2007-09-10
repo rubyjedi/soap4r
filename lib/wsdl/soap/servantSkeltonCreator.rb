@@ -53,7 +53,7 @@ class ServantSkeltonCreator
 private
 
   def dump_porttype(name)
-    class_name = create_class_name(name)
+    class_name = mapped_class_basename(name, @modulepath)
     c = XSD::CodeGen::ClassDef.new(class_name)
     element_definitions = @definitions.collect_elements
     operations = @definitions.porttype(name).operations
