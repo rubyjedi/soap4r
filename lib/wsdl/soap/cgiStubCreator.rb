@@ -47,7 +47,7 @@ class CGIStubCreator
 private
 
   def dump_porttype(porttype)
-    class_name = create_class_name(porttype.name, @modulepath)
+    class_name = mapped_class_name(porttype.name, @modulepath)
     defined_const = {}
     result = MethodDefCreator.new(@definitions, @name_creator, @modulepath, defined_const).dump(porttype.name)
     methoddef = result[:methoddef]

@@ -20,8 +20,13 @@ module SOAP
 module ClassDefCreatorSupport
   include XSD::CodeGen::GenSupport
 
-  def create_class_name(qname, modulepath = nil)
-    @name_creator.create_name(qname, modulepath)
+  def mapped_class_name(qname, modulepath)
+    @name_creator.assign_name(qname, modulepath)
+  end
+
+  def mapped_class_basename(qname, modulepath)
+    name = @name_creator.assign_name(qname, modulepath)
+    name.sub(/\A.*:/, '')
   end
 
   def basetype_mapped_class(name)
@@ -101,19 +106,19 @@ __EOD__
       nil
     elsif simpletype = @simpletypes[element.type]
       if simpletype.restriction and simpletype.restriction.enumeration?
-        create_class_name(element.type, modulepath)
+        mapped_class_name(element.type, modulepath)
       else
         nil
       end
     elsif klass = element_basetype(element)
       klass.name
     elsif element.type
-      create_class_name(element.type, modulepath)
+      mapped_class_name(element.type, modulepath)
     elsif element.ref
-      create_class_name(element.ref, modulepath)
+      mapped_class_name(element.ref, modulepath)
     elsif element.anonymous_type?
       # inner class
-      create_class_name(element.name, modulepath)
+      mapped_class_name(element.name, modulepath)
     else
       nil
     end

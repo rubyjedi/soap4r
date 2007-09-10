@@ -27,7 +27,7 @@ module MappingRegistryCreatorSupport
 
   def dump_complex_typemap(qname, typedef, parentmodule, as_element = nil, qualified = nil)
     var = {}
-    var[:class] = create_class_name(qname, parentmodule)
+    var[:class] = mapped_class_name(qname, parentmodule)
     if as_element
       var[:schema_name] = as_element
       chema_ns = as_element.namespace
@@ -44,8 +44,8 @@ module MappingRegistryCreatorSupport
       var[:schema_qualified] = qualified.to_s
     end
     parentmodule = var[:class]
-    parsed_element = parse_elements(typedef.elements, qname.namespace,
-      parentmodule, qualified)
+    parsed_element =
+      parse_elements(typedef.elements, qname.namespace, parentmodule, qualified)
     if typedef.choice?
       parsed_element.unshift(:choice)
     end
@@ -59,7 +59,7 @@ module MappingRegistryCreatorSupport
 
   def dump_simple_typemap(qname, typedef, as_element = nil, qualified = nil)
     var = {}
-    var[:class] = create_class_name(qname, @modulepath)
+    var[:class] = mapped_class_name(qname, @modulepath)
     if as_element
       var[:schema_name] = as_element
       schema_ns = as_element.namespace
@@ -268,7 +268,7 @@ module MappingRegistryCreatorSupport
       return nil
     end
     var = {}
-    var[:class] = create_class_name(qname, @modulepath)
+    var[:class] = mapped_class_name(qname, @modulepath)
     if as_element
       var[:schema_name] = as_element
       schema_ns = as_element.namespace

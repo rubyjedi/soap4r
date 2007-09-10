@@ -131,7 +131,7 @@ private
 
   def dump_literal_array_typemap(qname, typedef)
     var = {}
-    var[:class] = create_class_name(qname, @modulepath)
+    var[:class] = mapped_class_name(qname, @modulepath)
     schema_ns = qname.namespace
     if typedef.name.nil?
       # local complextype of a element
@@ -140,9 +140,8 @@ private
       # named complextype
       var[:schema_type] = qname
     end
-    parentmodule = var[:class]
-    parsed_element = parse_elements(typedef.elements, qname.namespace,
-      parentmodule, nil)
+    parsed_element =
+      parse_elements(typedef.elements, qname.namespace, var[:class], nil)
     if parsed_element.empty?
       parsed_element = [create_soapenc_array_element_definition(typedef)]
     end
@@ -161,10 +160,10 @@ private
         type = klass.name
       else
         typename = child_element.type || child_element.name
-        type = create_class_name(typename, @modulepath)
+        type = mapped_class_name(typename, @modulepath)
       end
     elsif child_type
-      type = create_class_name(child_type, @modulepath)
+      type = mapped_class_name(child_type, @modulepath)
     else
       type = nil
     end
