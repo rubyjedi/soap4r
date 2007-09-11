@@ -28,6 +28,13 @@ class TestArray < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echo2'),
         XSD::QName.new(Namespace, 'echo2Response')
       )
+      add_document_method(
+        self,
+        Namespace + 'echo3',
+        'echo3',
+        XSD::QName.new(Namespace, 'ArrayOfRecord'),
+        XSD::QName.new(Namespace, 'ArrayOfRecord')
+      )
       self.literal_mapping_registry = DoubleMappingRegistry::LiteralRegistry
     end
   
@@ -36,6 +43,10 @@ class TestArray < Test::Unit::TestCase
     end
   
     def echo2(arg)
+      arg
+    end
+
+    def echo3(arg)
       arg
     end
   end
@@ -140,6 +151,49 @@ class TestArray < Test::Unit::TestCase
     @client = ::WSDL::Document::PricerSoap.new("http://localhost:#{Port}/")
     @client.wiredump_dev = STDOUT if $DEBUG
     assert_equal(nil, @client.echo(Echo.new).ary)
+  end
+
+  def test_attribute_array
+    @client = ::WSDL::Document::PricerSoap.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDOUT if $DEBUG
+    #
+    r1 = ReportRecord.new
+    r1.xmlattr_a = "r1_xmlattr_a"
+    r1.xmlattr_b = "r1_xmlattr_b"
+    r1.xmlattr_c = "r1_xmlattr_c"
+    r2 = ReportRecord.new
+    r2.xmlattr_a = "r2_xmlattr_a"
+    r2.xmlattr_b = "r2_xmlattr_b"
+    r2.xmlattr_c = "r2_xmlattr_c"
+    arg = ArrayOfRecord[r1, r2]
+    ret = @client.echo3(arg)
+    assert_equal(arg.class , ret.class)
+    assert_equal(arg.size , ret.size)
+    assert_equal(2, ret.size)
+    assert_equal(arg[0].class, ret[0].class)
+    assert_equal(arg[0].xmlattr_a, ret[0].xmlattr_a)
+    assert_equal(arg[0].xmlattr_b, ret[0].xmlattr_b)
+    assert_equal(arg[0].xmlattr_c, ret[0].xmlattr_c)
+    assert_equal(arg[1].class, ret[1].class)
+    assert_equal(arg[1].xmlattr_a, ret[1].xmlattr_a)
+    assert_equal(arg[1].xmlattr_b, ret[1].xmlattr_b)
+    assert_equal(arg[1].xmlattr_c, ret[1].xmlattr_c)
+    #
+    arg = ArrayOfRecord[r1]
+    ret = @client.echo3(arg)
+    assert_equal(arg.class , ret.class)
+    assert_equal(arg.size , ret.size)
+    assert_equal(1, ret.size)
+    assert_equal(arg[0].class, ret[0].class)
+    assert_equal(arg[0].xmlattr_a, ret[0].xmlattr_a)
+    assert_equal(arg[0].xmlattr_b, ret[0].xmlattr_b)
+    assert_equal(arg[0].xmlattr_c, ret[0].xmlattr_c)
+    #
+    arg = ArrayOfRecord[]
+    ret = @client.echo3(arg)
+    assert_equal(arg.class , ret.class)
+    assert_equal(arg.size , ret.size)
+    assert_equal(0, ret.size)
   end
 end
 
