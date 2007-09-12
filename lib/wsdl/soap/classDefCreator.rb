@@ -91,7 +91,7 @@ private
   def dump_element
     @elements.collect { |ele|
       next if @complextypes[ele.name]
-      c = create_elementdef(ele)
+      c = create_elementdef(@modulepath, ele)
       c ? c.dump : nil
     }.compact.join("\n")
   end
@@ -99,7 +99,7 @@ private
   def dump_attribute
     @attributes.collect { |attribute|
       if attribute.local_simpletype
-        c = create_simpletypedef(attribute.name, attribute.local_simpletype)
+        c = create_simpletypedef(@modulepath, attribute.name, attribute.local_simpletype)
       end
       c ? c.dump : nil
     }.compact.join("\n")
@@ -107,14 +107,14 @@ private
 
   def dump_simpletype
     @simpletypes.collect { |type|
-      c = create_simpletypedef(type.name, type)
+      c = create_simpletypedef(@modulepath, type.name, type)
       c ? c.dump : nil
     }.compact.join("\n")
   end
 
   def dump_complextype
     definitions = sort_dependency(@complextypes).collect { |type|
-      c = create_complextypedef(type.name, type)
+      c = create_complextypedef(@modulepath, type.name, type)
       c ? c.dump : nil
     }.compact.join("\n")
   end
@@ -125,48 +125,48 @@ private
     }.compact.join("\n")
   end
 
-  def create_elementdef(ele)
+  def create_elementdef(mpath, ele)
     qualified = (ele.elementform == 'qualified')
     if ele.local_complextype
-      create_complextypedef(ele.name, ele.local_complextype, qualified)
+      create_complextypedef(mpath, ele.name, ele.local_complextype, qualified)
     elsif ele.local_simpletype
-      create_simpletypedef(ele.name, ele.local_simpletype, qualified)
+      create_simpletypedef(mpath, ele.name, ele.local_simpletype, qualified)
     elsif ele.empty?
-      create_simpleclassdef(ele.name, nil)
+      create_simpleclassdef(mpath, ele.name, nil)
     else
       # ignores type only element
       nil
     end
   end
 
-  def create_simpletypedef(qname, simpletype, qualified = false)
+  def create_simpletypedef(mpath, qname, simpletype, qualified = false)
     if simpletype.restriction
-      create_simpletypedef_restriction(qname, simpletype, qualified)
+      create_simpletypedef_restriction(mpath, qname, simpletype, qualified)
     elsif simpletype.list
-      create_simpletypedef_list(qname, simpletype, qualified)
+      create_simpletypedef_list(mpath, qname, simpletype, qualified)
     elsif simpletype.union
-      create_simpletypedef_union(qname, simpletype, qualified)
+      create_simpletypedef_union(mpath, qname, simpletype, qualified)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
   end
 
-  def create_simpletypedef_restriction(qname, typedef, qualified)
+  def create_simpletypedef_restriction(mpath, qname, typedef, qualified)
     restriction = typedef.restriction
     unless restriction.enumeration?
       # not supported.  minlength?
       return nil
     end
-    classname = mapped_class_basename(qname, @modulepath)
+    classname = mapped_class_basename(qname, mpath)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     define_classenum_restriction(c, classname, restriction.enumeration)
     c
   end
 
-  def create_simpletypedef_list(qname, typedef, qualified)
+  def create_simpletypedef_list(mpath, qname, typedef, qualified)
     list = typedef.list
-    classname = mapped_class_basename(qname, @modulepath)
+    classname = mapped_class_basename(qname, mpath)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
     if simpletype = list.local_simpletype
@@ -177,16 +177,16 @@ private
       define_stringenum_restriction(c, simpletype.restriction.enumeration)
       c.comment << "\n  contains list of #{classname}::*"
     elsif list.itemtype
-      c.comment << "\n  contains list of #{mapped_class_basename(list.itemtype, @modulepath)}::*"
+      c.comment << "\n  contains list of #{mapped_class_basename(list.itemtype, mpath)}::*"
     else
       raise RuntimeError.new("unknown kind of list: #{list}")
     end
     c
   end
 
-  def create_simpletypedef_union(qname, typedef, qualified)
+  def create_simpletypedef_union(mpath, qname, typedef, qualified)
     union = typedef.union
-    classname = mapped_class_basename(qname, @modulepath)
+    classname = mapped_class_basename(qname, mpath)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     if union.member_types
@@ -220,8 +220,8 @@ private
     end
   end
 
-  def create_simpleclassdef(qname, type_or_element)
-    classname = mapped_class_basename(qname, @modulepath)
+  def create_simpleclassdef(mpath, qname, type_or_element)
+    classname = mapped_class_basename(qname, mpath)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     init_lines = []
@@ -235,14 +235,14 @@ private
     c
   end
 
-  def create_complextypedef(qname, type, qualified = false)
+  def create_complextypedef(mpath, qname, type, qualified = false)
     case type.compoundtype
     when :TYPE_STRUCT, :TYPE_EMPTY
-      create_classdef(qname, type, qualified)
+      create_classdef(mpath, qname, type, qualified)
     when :TYPE_ARRAY
-      create_arraydef(qname, type)
+      create_arraydef(mpath, qname, type)
     when :TYPE_SIMPLE
-      create_simpleclassdef(qname, type)
+      create_simpleclassdef(mpath, qname, type)
     when :TYPE_MAP
       # mapped as a general Hash
       nil
@@ -252,12 +252,12 @@ private
     end
   end
 
-  def create_classdef(qname, typedef, qualified = false)
-    classname = mapped_class_basename(qname, @modulepath)
+  def create_classdef(mpath, qname, typedef, qualified = false)
+    classname = mapped_class_basename(qname, mpath)
     baseclassname = nil
     if typedef.complexcontent
       if base = typedef.complexcontent.base
-        baseclassname = mapped_class_basename(base, @modulepath)
+        baseclassname = mapped_class_basename(base, mpath)
       end
     end
     if @faulttypes and @faulttypes.index(qname)
@@ -267,7 +267,7 @@ private
     end
     c.comment = "#{qname}"
     c.comment << "\nabstract" if typedef.abstract
-    parentmodule = mapped_class_name(qname, @modulepath)
+    parentmodule = mapped_class_name(qname, mpath)
     init_lines, init_params =
       parse_elements(c, typedef.elements, qname.namespace, parentmodule)
     unless typedef.attributes.empty?
@@ -280,7 +280,7 @@ private
     c
   end
 
-  def parse_elements(c, elements, base_namespace, parentmodule, as_array = false)
+  def parse_elements(c, elements, base_namespace, mpath, as_array = false)
     init_lines = []
     init_params = []
     any = false
@@ -301,18 +301,12 @@ private
         name = name_element(element).name
         typebase = @modulepath
         if element.anonymous_type?
-          begin
-            # swap @modulepath: TODO be smarter
-            @modulepath = parentmodule
-            inner = create_elementdef(element)
-          ensure
-            @modulepath = typebase
-          end
+          inner = create_elementdef(mpath, element)
           unless as_array
             inner.comment = "inner class for member: #{name}\n" + inner.comment
           end
           c.innermodule << inner
-          typebase = parentmodule
+          typebase = mpath
         end
         unless as_array
           attrname = safemethodname(name)
@@ -324,16 +318,16 @@ private
           else
             init_params << "#{varname} = nil"
           end
-          c.comment << "\n  #{attrname} - #{create_type_name(element, typebase) || '(any)'}"
+          c.comment << "\n  #{attrname} - #{create_type_name(typebase, element) || '(any)'}"
         end
       when WSDL::XMLSchema::Sequence
         child_init_lines, child_init_params =
-          parse_elements(c, element.elements, base_namespace, parentmodule, as_array)
+          parse_elements(c, element.elements, base_namespace, mpath, as_array)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Choice
         child_init_lines, child_init_params =
-          parse_elements(c, element.elements, base_namespace, parentmodule, as_array)
+          parse_elements(c, element.elements, base_namespace, mpath, as_array)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Group
@@ -342,7 +336,7 @@ private
           next
         end
         child_init_lines, child_init_params =
-          parse_elements(c, element.content.elements, base_namespace, parentmodule, as_array)
+          parse_elements(c, element.content.elements, base_namespace, mpath, as_array)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       else
@@ -381,11 +375,11 @@ private
     end
   end
 
-  def create_arraydef(qname, typedef)
-    classname = mapped_class_basename(qname, @modulepath)
+  def create_arraydef(mpath, qname, typedef)
+    classname = mapped_class_basename(qname, mpath)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
-    parentmodule = mapped_class_name(qname, @modulepath)
+    parentmodule = mapped_class_name(qname, mpath)
     parse_elements(c, typedef.elements, qname.namespace, parentmodule, true)
     c
   end

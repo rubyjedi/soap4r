@@ -8,6 +8,40 @@
   xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:lp">
+      <element name="Pack">
+        <complexType>
+          <sequence>
+            <element name="Header">
+              <complexType>
+                <sequence>
+                  <element name="Header1" type="xsd:string"/>
+                </sequence>
+              </complexType>
+            </element>
+          </sequence>
+        </complexType>
+      </element>
+
+      <element name="Envelope">
+        <complexType>
+          <sequence>
+            <element name="Header">
+              <complexType>
+                <sequence>
+                  <element name="Header2" type="xsd:string"/>
+                </sequence>
+              </complexType>
+            </element>
+          </sequence>
+        </complexType>
+      </element>
+
+      <complexType name="Header">
+        <sequence>
+          <element name="Header3" type="xsd:string"/>
+        </sequence>
+      </complexType>
+
       <complexType name="ExtraInfo">
         <annotation>
           <documentation>Service specific information.</documentation>

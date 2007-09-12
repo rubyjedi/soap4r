@@ -9,6 +9,14 @@ module LpMappingRegistry
   NsLp = "urn:lp"
   NsXMLSchema = "http://www.w3.org/2001/XMLSchema"
 
+  EncodedRegistry.register(
+    :class => WSDL::Anonymous::Header,
+    :schema_type => XSD::QName.new(NsLp, "Header"),
+    :schema_element => [
+      ["header3", ["SOAP::SOAPString", XSD::QName.new(nil, "Header3")]]
+    ]
+  )
+
   EncodedRegistry.set(
     WSDL::Anonymous::ExtraInfo,
     ::SOAP::SOAPArray,
@@ -29,6 +37,15 @@ module LpMappingRegistry
     :schema_name => XSD::QName.new(nil, "loginResult"),
     :schema_element => [
       ["sessionID", "SOAP::SOAPString"]
+    ]
+  )
+
+  LiteralRegistry.register(
+    :class => WSDL::Anonymous::Header,
+    :schema_type => XSD::QName.new(NsLp, "Header"),
+    :schema_qualified => false,
+    :schema_element => [
+      ["header3", ["SOAP::SOAPString", XSD::QName.new(nil, "Header3")]]
     ]
   )
 
@@ -64,6 +81,42 @@ module LpMappingRegistry
     :schema_qualified => false,
     :schema_element => [
       ["sessionID", "SOAP::SOAPString"]
+    ]
+  )
+
+  LiteralRegistry.register(
+    :class => WSDL::Anonymous::Pack,
+    :schema_name => XSD::QName.new(NsLp, "Pack"),
+    :schema_qualified => true,
+    :schema_element => [
+      ["header", ["WSDL::Anonymous::Pack::Header", XSD::QName.new(nil, "Header")]]
+    ]
+  )
+
+  LiteralRegistry.register(
+    :class => WSDL::Anonymous::Pack::Header,
+    :schema_name => XSD::QName.new(nil, "Header"),
+    :schema_qualified => true,
+    :schema_element => [
+      ["header1", ["SOAP::SOAPString", XSD::QName.new(nil, "Header1")]]
+    ]
+  )
+
+  LiteralRegistry.register(
+    :class => WSDL::Anonymous::Envelope,
+    :schema_name => XSD::QName.new(NsLp, "Envelope"),
+    :schema_qualified => true,
+    :schema_element => [
+      ["header", ["WSDL::Anonymous::Envelope::Header", XSD::QName.new(nil, "Header")]]
+    ]
+  )
+
+  LiteralRegistry.register(
+    :class => WSDL::Anonymous::Envelope::Header,
+    :schema_name => XSD::QName.new(nil, "Header"),
+    :schema_qualified => true,
+    :schema_element => [
+      ["header2", ["SOAP::SOAPString", XSD::QName.new(nil, "Header2")]]
     ]
   )
 

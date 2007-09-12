@@ -13,21 +13,21 @@ module WSDL
 module SOAP
 
 
-# requires @defined_const = {}, @dump_struct_typemap_innerstruct
+# requires @defined_const = {}, @dump_struct_typemap_innerstruct, @modulepath
 module MappingRegistryCreatorSupport
   include ClassDefCreatorSupport
   include XSD::CodeGen
 
-  def dump_struct_typemap(qname, typedef, as_element = nil, qualified = nil)
+  def dump_struct_typemap(mpath, qname, typedef, as_element = nil, qualified = nil)
     @dump_struct_typemap_innerstruct = []
     @dump_struct_typemap_innerstruct.unshift(
-      dump_complex_typemap(qname, typedef, @modulepath, as_element, qualified))
+      dump_complex_typemap(mpath, qname, typedef, as_element, qualified))
     @dump_struct_typemap_innerstruct.join("\n")
   end
 
-  def dump_complex_typemap(qname, typedef, parentmodule, as_element = nil, qualified = nil)
+  def dump_complex_typemap(mpath, qname, typedef, as_element = nil, qualified = nil)
     var = {}
-    var[:class] = mapped_class_name(qname, parentmodule)
+    var[:class] = mapped_class_name(qname, mpath)
     if as_element
       var[:schema_name] = as_element
       chema_ns = as_element.namespace
@@ -57,9 +57,9 @@ module MappingRegistryCreatorSupport
     dump_entry(@varname, var)
   end
 
-  def dump_simple_typemap(qname, typedef, as_element = nil, qualified = nil)
+  def dump_simple_typemap(mpath, qname, typedef, as_element = nil, qualified = nil)
     var = {}
-    var[:class] = mapped_class_name(qname, @modulepath)
+    var[:class] = mapped_class_name(qname, mpath)
     if as_element
       var[:schema_name] = as_element
       schema_ns = as_element.namespace
@@ -122,7 +122,7 @@ module MappingRegistryCreatorSupport
     end
   end
 
-  def parse_elements(elements, base_namespace, parentmodule, qualified = false)
+  def parse_elements(elements, base_namespace, mpath, qualified = false)
     schema_element = []
     any = false
     elements.each do |element|
@@ -140,12 +140,11 @@ module MappingRegistryCreatorSupport
         next if element.ref == SchemaName
         typebase = @modulepath
         if element.anonymous_type?
-          @dump_struct_typemap_innerstruct <<
-            dump_complex_typemap(element.name, element.local_complextype,
-              parentmodule, nil, qualified)
-          typebase = parentmodule
+          @dump_struct_typemap_innerstruct << dump_complex_typemap(
+              mpath, element.name, element.local_complextype, nil, qualified)
+          typebase = mpath
         end
-        type = create_type_name(element, typebase)
+        type = create_type_name(typebase, element)
         name = name_element(element).name
         varname = safevarname(name)
         if element.map_as_array?
@@ -164,11 +163,11 @@ module MappingRegistryCreatorSupport
         schema_element << [varname, eleqname, type, occurrence]
       when WSDL::XMLSchema::Sequence
         child_schema_element =
-          parse_elements(element.elements, base_namespace, parentmodule, qualified)
+          parse_elements(element.elements, base_namespace, mpath, qualified)
         schema_element << child_schema_element
       when WSDL::XMLSchema::Choice
         child_schema_element =
-          parse_elements(element.elements, base_namespace, parentmodule, qualified)
+          parse_elements(element.elements, base_namespace, mpath, qualified)
         if !element.map_as_array?
           # choice + maxOccurs="unbounded" is treated just as 'all' now.
           child_schema_element.unshift(:choice)
@@ -180,7 +179,7 @@ module MappingRegistryCreatorSupport
           next
         end
         child_schema_element =
-          parse_elements(element.content.elements, base_namespace, parentmodule, qualified)
+          parse_elements(element.content.elements, base_namespace, mpath, qualified)
         schema_element.concat(child_schema_element)
       else
         raise RuntimeError.new("unknown type: #{element}")
@@ -249,26 +248,26 @@ module MappingRegistryCreatorSupport
     end
   end
 
-  def dump_simpletypedef(qname, simpletype, as_element = nil, qualified = false)
+  def dump_simpletypedef(mpath, qname, simpletype, as_element = nil, qualified = false)
     if simpletype.restriction
-      dump_simpletypedef_restriction(qname, simpletype, as_element, qualified)
+      dump_simpletypedef_restriction(mpath, qname, simpletype, as_element, qualified)
     elsif simpletype.list
-      dump_simpletypedef_list(qname, simpletype, as_element, qualified)
+      dump_simpletypedef_list(mpath, qname, simpletype, as_element, qualified)
     elsif simpletype.union
-      dump_simpletypedef_union(qname, simpletype, as_element, qualified)
+      dump_simpletypedef_union(mpath, qname, simpletype, as_element, qualified)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
   end
 
-  def dump_simpletypedef_restriction(qname, typedef, as_element, qualified)
+  def dump_simpletypedef_restriction(mpath, qname, typedef, as_element, qualified)
     restriction = typedef.restriction
     unless restriction.enumeration?
       # not supported.  minlength?
       return nil
     end
     var = {}
-    var[:class] = mapped_class_name(qname, @modulepath)
+    var[:class] = mapped_class_name(qname, mpath)
     if as_element
       var[:schema_name] = as_element
       schema_ns = as_element.namespace
@@ -283,11 +282,11 @@ module MappingRegistryCreatorSupport
     dump_entry(@varname, var)
   end
 
-  def dump_simpletypedef_list(qname, typedef, as_element, qualified)
+  def dump_simpletypedef_list(mpath, qname, typedef, as_element, qualified)
     nil
   end
 
-  def dump_simpletypedef_union(qname, typedef, as_element, qualified)
+  def dump_simpletypedef_union(mpath, qname, typedef, as_element, qualified)
     nil
   end
 end
