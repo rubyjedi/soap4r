@@ -58,6 +58,7 @@ class TestRPC < Test::Unit::TestCase
       e = Echoele.new
       e.struct1 = Echo_struct.new(nil, nil)
       e.struct_2 = Echo_struct.new(nil, nil)
+      e.long = nil
       e
     end
 
@@ -65,6 +66,7 @@ class TestRPC < Test::Unit::TestCase
       e = Echoele.new
       e.struct1 = Echo_struct.new("", nil)
       e.struct_2 = Echo_struct.new("", nil)
+      e.long = 0
       e
     end
   end
@@ -141,7 +143,7 @@ class TestRPC < Test::Unit::TestCase
     struct1.xmlattr_m_attr = nil
     struct2 = Echo_struct.new("mystr<>ing2", now2 = Time.now)
     struct2.xmlattr_m_attr = ''
-    echo = Echoele.new(struct1, struct2)
+    echo = Echoele.new(struct1, struct2, 105759347)
     echo.xmlattr_attr_string = ''
     echo.xmlattr_attr_int = nil
     ret = @client.echo(echo)
@@ -150,6 +152,7 @@ class TestRPC < Test::Unit::TestCase
     assert_equal(nil, ret.struct_2.xmlattr_m_attr)
     assert_equal('', ret.xmlattr_attr_string)
     assert_equal(nil, ret.xmlattr_attr_int)
+    assert_equal(105759347, ret.long)
   end
 
   def do_test_with_stub(client)
@@ -157,7 +160,7 @@ class TestRPC < Test::Unit::TestCase
     struct1.xmlattr_m_attr = 'myattr1'
     struct2 = Echo_struct.new("mystr<>ing2", now2 = Time.now)
     struct2.xmlattr_m_attr = 'myattr2'
-    echo = Echoele.new(struct1, struct2)
+    echo = Echoele.new(struct1, struct2, 105759347)
     echo.xmlattr_attr_string = 'attr_str<>ing'
     echo.xmlattr_attr_int = 5
     ret = client.echo(echo)
@@ -173,6 +176,7 @@ class TestRPC < Test::Unit::TestCase
       date2time(ret.struct_2.m_datetime).strftime(timeformat))
     assert_equal("attr_str<>ing", ret.xmlattr_attr_string)
     assert_equal(5, ret.xmlattr_attr_int)
+    assert_equal(105759347, ret.long)
   end
 
   def test_wsdl_with_map
@@ -329,6 +333,7 @@ __XML__
     ret = @client.return_nil
     assert_nil(ret.struct1.m_string)
     assert_nil(ret.struct_2.m_string)
+    assert_nil(ret.long)
   end
 
   def test_empty
@@ -342,6 +347,7 @@ __XML__
     ret = @client.return_empty
     assert_equal("", ret.struct1.m_string)
     assert_equal("", ret.struct_2.m_string)
+    assert_equal(0, ret.long)
   end
 end
 

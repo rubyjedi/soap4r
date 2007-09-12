@@ -21,6 +21,7 @@
           <xsd:sequence>
             <xsd:element minOccurs="0" maxOccurs="1" name="struct1" type="tns:echo_struct" />
             <xsd:element minOccurs="0" maxOccurs="1" name="struct-2" type="tns:echo_struct" />
+            <xsd:element minOccurs="0" maxOccurs="1" name="long" type="xsd:long" />
           </xsd:sequence>
           <xsd:attribute name="attr_string" type="xsd:string" />
           <xsd:attribute name="attr-int" type="xsd:int" />
@@ -31,6 +32,7 @@
           <xsd:sequence>
             <xsd:element minOccurs="0" maxOccurs="1" name="struct1" type="tns:echo_struct" />
             <xsd:element minOccurs="0" maxOccurs="1" name="struct-2" type="tns:echo_struct" />
+            <xsd:element minOccurs="0" maxOccurs="1" name="long" type="xsd:long" />
           </xsd:sequence>
           <xsd:attribute name="attr_string" type="xsd:string" />
           <xsd:attribute name="attr-int" type="xsd:int" />
