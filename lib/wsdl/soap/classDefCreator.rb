@@ -158,7 +158,6 @@ private
       return nil
     end
     classname = mapped_class_basename(qname, @modulepath)
-    check_classname(classname)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     define_classenum_restriction(c, classname, restriction.enumeration)
@@ -168,7 +167,6 @@ private
   def create_simpletypedef_list(qname, typedef, qualified)
     list = typedef.list
     classname = mapped_class_basename(qname, @modulepath)
-    check_classname(classname)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
     if simpletype = list.local_simpletype
@@ -224,7 +222,6 @@ private
 
   def create_simpleclassdef(qname, type_or_element)
     classname = mapped_class_basename(qname, @modulepath)
-    check_classname(classname)
     c = ClassDef.new(classname, '::String')
     c.comment = "#{qname}"
     init_lines = []
@@ -257,7 +254,6 @@ private
 
   def create_classdef(qname, typedef, qualified = false)
     classname = mapped_class_basename(qname, @modulepath)
-    check_classname(classname)
     baseclassname = nil
     if typedef.complexcontent
       if base = typedef.complexcontent.base
@@ -387,7 +383,6 @@ private
 
   def create_arraydef(qname, typedef)
     classname = mapped_class_basename(qname, @modulepath)
-    check_classname(classname)
     c = ClassDef.new(classname, '::Array')
     c.comment = "#{qname}"
     parentmodule = mapped_class_name(qname, @modulepath)

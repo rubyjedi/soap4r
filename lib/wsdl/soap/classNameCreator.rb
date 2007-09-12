@@ -33,6 +33,7 @@ class ClassNameCreator
         while @classname.value?(name)
           name += '_'
         end
+        check_classname(name)
       end
       @classname[qname] = name.freeze
     end
@@ -56,6 +57,12 @@ class ClassNameCreator
       name
     end
 =end
+  end
+
+  def check_classname(name)
+    if Object.constants.include?(name)
+      warn("created definition re-opens an existing toplevel class: #{name}.  consider to use --module_path option of wsdl2ruby.rb")
+    end
   end
 end
 
