@@ -57,7 +57,11 @@ public
 
   def assign(ns, tag = nil)
     if tag == ''
-      @default_namespace = ns
+      if ns.empty?
+        @default_namespace = nil
+      else
+        @default_namespace = ns
+      end
       tag
     else
       @assigner ||= Assigner.new(default_known_tag)
