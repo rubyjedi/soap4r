@@ -187,8 +187,10 @@ class EncodedRegistry
     [::String,       ::SOAP::SOAPGMonth,     BasetypeFactory],
     [::String,       ::SOAP::SOAPQName,      BasetypeFactory],
 
-    [::Hash,         ::SOAP::SOAPArray,      HashFactory],
-    [::Hash,         ::SOAP::SOAPStruct,     HashFactory],
+    [::Hash,         ::SOAP::SOAPArray,      HashFactory,
+      {:derived_class => true}],
+    [::Hash,         ::SOAP::SOAPStruct,     HashFactory,
+      {:derived_class => true}],
 
     [::Array,        ::SOAP::SOAPArray,      ArrayFactory,
       {:derived_class => true}],
