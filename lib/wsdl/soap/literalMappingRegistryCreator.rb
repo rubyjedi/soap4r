@@ -66,14 +66,14 @@ private
       next if @complextypes[ele.name]
       qualified = (ele.elementform == 'qualified')
       if ele.local_complextype
-        dump_complextypedef(ele.name, ele.local_complextype, nil, qualified)
+        dump_complextypedef(@modulepath, ele.name, ele.local_complextype, nil, qualified)
       elsif ele.local_simpletype
-        dump_simpletypedef(ele.name, ele.local_simpletype, nil, qualified)
+        dump_simpletypedef(@modulepath, ele.name, ele.local_simpletype, nil, qualified)
       elsif ele.type
         if typedef = @complextypes[ele.type]
-          dump_complextypedef(ele.type, typedef, ele.name, qualified)
+          dump_complextypedef(@modulepath, ele.type, typedef, ele.name, qualified)
         elsif typedef = @simpletypes[ele.type]
-          dump_simpletypedef(ele.type, typedef, ele.name, qualified)
+          dump_simpletypedef(@modulepath, ele.type, typedef, ele.name, qualified)
         else
           nil
         end
@@ -86,31 +86,31 @@ private
   def dump_attribute
     @attributes.collect { |attr|
       if attr.local_simpletype
-        dump_simpletypedef(attr.name, attr.local_simpletype)
+        dump_simpletypedef(@modulepath, attr.name, attr.local_simpletype)
       end
     }.compact.join("\n")
   end
 
   def dump_simpletype
     @simpletypes.collect { |type|
-      dump_simpletypedef(type.name, type)
+      dump_simpletypedef(@modulepath, type.name, type)
     }.compact.join("\n")
   end
 
   def dump_complextype
     @complextypes.collect { |type|
-      dump_complextypedef(type.name, type) unless type.abstract
+      dump_complextypedef(@modulepath, type.name, type) unless type.abstract
     }.compact.join("\n")
   end
 
-  def dump_complextypedef(qname, typedef, as_element = nil, qualified = false)
+  def dump_complextypedef(mpath, qname, typedef, as_element = nil, qualified = false)
     case typedef.compoundtype
     when :TYPE_STRUCT, :TYPE_EMPTY
-      dump_struct_typemap(qname, typedef, as_element, qualified)
+      dump_struct_typemap(mpath, qname, typedef, as_element, qualified)
     when :TYPE_ARRAY
-      dump_array_typemap(qname, typedef)
+      dump_array_typemap(mpath, qname, typedef)
     when :TYPE_SIMPLE
-      dump_simple_typemap(qname, typedef, as_element, qualified)
+      dump_simple_typemap(mpath, qname, typedef, as_element, qualified)
     when :TYPE_MAP
       # mapped as a general Hash
       nil
@@ -122,16 +122,16 @@ private
 
   DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
 
-  def dump_array_typemap(qname, typedef)
+  def dump_array_typemap(mpath, qname, typedef)
     @dump_struct_typemap_innerstruct = []
     @dump_struct_typemap_innerstruct.unshift(
-      dump_literal_array_typemap(qname, typedef))
+      dump_literal_array_typemap(mpath, qname, typedef))
     @dump_struct_typemap_innerstruct.join("\n")
   end
 
-  def dump_literal_array_typemap(qname, typedef)
+  def dump_literal_array_typemap(mpath, qname, typedef)
     var = {}
-    var[:class] = mapped_class_name(qname, @modulepath)
+    var[:class] = mapped_class_name(qname, mpath)
     schema_ns = qname.namespace
     if typedef.name.nil?
       # local complextype of a element
@@ -143,14 +143,14 @@ private
     parsed_element =
       parse_elements(typedef.elements, qname.namespace, var[:class], nil)
     if parsed_element.empty?
-      parsed_element = [create_soapenc_array_element_definition(typedef)]
+      parsed_element = [create_soapenc_array_element_definition(typedef, mpath)]
     end
     var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
     assign_const(schema_ns, 'Ns')
     dump_entry(@varname, var)
   end
 
-  def create_soapenc_array_element_definition(typedef)
+  def create_soapenc_array_element_definition(typedef, mpath)
     child_type = typedef.child_type
     child_element = typedef.find_aryelement
     if child_type == XSD::AnyTypeName
@@ -160,10 +160,10 @@ private
         type = klass.name
       else
         typename = child_element.type || child_element.name
-        type = mapped_class_name(typename, @modulepath)
+        type = mapped_class_name(typename, mpath)
       end
     elsif child_type
-      type = mapped_class_name(child_type, @modulepath)
+      type = mapped_class_name(child_type, mpath)
     else
       type = nil
     end

@@ -26,8 +26,8 @@ __XML__
   CUSTOM_NS_XML = <<__XML__.chomp
 <?xml version="1.0" encoding="utf-8" ?>
 <ENV:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:ENV="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:myns="my:foo"
+    xmlns:ENV="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ENV:Header>
       <myns:headeritem ENV:mustUnderstand="0">hi</myns:headeritem>
@@ -54,6 +54,7 @@ __XML__
     result = SOAP::Processor.marshal(env, opt)
     assert_equal(NORMAL_XML, result)
     # Envelope ns customize
+    env = SOAP::SOAPEnvelope.new(header, body)
     ns = XSD::NS.new
     ns.assign(SOAP::EnvelopeNamespace, 'ENV')
     ns.assign('my:foo', 'myns')

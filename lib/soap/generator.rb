@@ -54,7 +54,8 @@ public
     @buf = io || ''
     @indent = ''
     @encode_char_regexp =
-      Regexp.new("[#{EncodeMap.keys.join}]", nil, XSD::Charset.encoding)
+      ENCODE_CHAR_REGEXP[XSD::Charset.encoding] ||=
+        Regexp.new("[#{EncodeMap.keys.join}]", nil, XSD::Charset.encoding)
 
     prologue
     @handlers.each do |uri, handler|
@@ -132,7 +133,7 @@ public
   end
 
   def encode_element(ns, obj, parent)
-    attrs = obj.extraattr.dup
+    attrs = obj.extraattr
     if obj.is_a?(SOAPBody)
       @reftarget = obj
       obj.encode(self, ns, attrs) do |child|
@@ -211,6 +212,8 @@ public
     @buf << str
   end
 
+  ENCODE_CHAR_REGEXP = {}
+
   EncodeMap = {
     '&' => '&amp;',
     '<' => '&lt;',
@@ -219,6 +222,7 @@ public
     '\'' => '&apos;',
     "\r" => '&#xd;'
   }
+
   def encode_string(str)
     @buf << get_encoded(str)
   end

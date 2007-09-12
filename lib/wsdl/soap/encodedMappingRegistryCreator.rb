@@ -51,24 +51,24 @@ private
 
   def dump_complextype
     @complextypes.collect { |type|
-      dump_complextypedef(type.name, type) unless type.abstract
+      dump_complextypedef(@modulepath, type.name, type) unless type.abstract
     }.compact.join("\n")
   end
 
   def dump_simpletype
     @simpletypes.collect { |type|
-      dump_simpletypedef(type.name, type)
+      dump_simpletypedef(@modulepath, type.name, type)
     }.compact.join("\n")
   end
 
-  def dump_complextypedef(qname, typedef)
+  def dump_complextypedef(mpath, qname, typedef)
     case typedef.compoundtype
     when :TYPE_STRUCT, :TYPE_EMPTY
-      dump_struct_typemap(qname, typedef)
+      dump_struct_typemap(mpath, qname, typedef)
     when :TYPE_ARRAY
-      dump_encoded_array_typemap(qname, typedef)
+      dump_encoded_array_typemap(mpath, qname, typedef)
     when :TYPE_SIMPLE
-      dump_simple_typemap(qname, typedef)
+      dump_simple_typemap(mpath, qname, typedef)
     when :TYPE_MAP
       # mapped as a general Hash
       nil
@@ -78,13 +78,13 @@ private
     end
   end
 
-  def dump_encoded_array_typemap(qname, typedef)
+  def dump_encoded_array_typemap(mpath, qname, typedef)
     arytype = typedef.find_arytype || XSD::AnyTypeName
     type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
     assign_const(type.namespace, 'Ns')
     return <<__EOD__
 #{@varname}.set(
-  #{mapped_class_name(qname, @modulepath)},
+  #{mapped_class_name(qname, mpath)},
   ::SOAP::SOAPArray,
   ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
   { :type => #{dqname(type)} }

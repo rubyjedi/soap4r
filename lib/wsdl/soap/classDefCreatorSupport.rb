@@ -16,7 +16,7 @@ module WSDL
 module SOAP
 
 
-# requires @defined_const, @simpletypes, @name_creator, and @modulepath
+# requires @defined_const, @simpletypes, @name_creator
 module ClassDefCreatorSupport
   include XSD::CodeGen::GenSupport
 
@@ -100,7 +100,7 @@ __EOD__
     @defined_const[value] = tag
   end
 
-  def create_type_name(element, modulepath = @modulepath)
+  def create_type_name(modulepath, element)
     if element.type == XSD::AnyTypeName
       # nil means anyType.
       nil
