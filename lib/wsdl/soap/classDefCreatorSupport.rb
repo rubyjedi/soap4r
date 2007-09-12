@@ -25,8 +25,8 @@ module ClassDefCreatorSupport
   end
 
   def mapped_class_basename(qname, modulepath)
-    name = @name_creator.assign_name(qname, modulepath)
-    name.sub(/\A.*:/, '')
+    classname = @name_creator.assign_name(qname, modulepath)
+    classname.sub(/\A.*:/, '')
   end
 
   def basetype_mapped_class(name)
@@ -222,12 +222,6 @@ private
     return attribute.name if attribute.name 
     return attribute.ref if attribute.ref
     raise RuntimeError.new("cannot define name of #{attribute}")
-  end
-
-  def check_classname(classname)
-    if @modulepath.nil? and Object.constants.include?(classname)
-      warn("created definition re-opens an existing toplevel class: #{classname}")
-    end
   end
 end
 
