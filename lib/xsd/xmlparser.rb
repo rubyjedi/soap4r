@@ -28,12 +28,13 @@ module XMLParser
     end
     newattrs = {}
     attrs.each do |key, value|
-      if (NSParseRegexp =~ key)
+      if NSParseRegexp =~ key
         unless ns_updated
           ns = ns.clone_ns
           ns_updated = true
         end
-	# '' means 'default namespace'.
+	# tag == '' means 'default namespace'
+        # value == '' means 'no default namespace'
 	tag = $1 || ''
 	ns.assign(value, tag)
       else
