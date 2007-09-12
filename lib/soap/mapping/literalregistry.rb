@@ -289,7 +289,7 @@ private
       end
     end
     if obj.is_a?(::Array) and is_stubobj_elements_for_array(vars)
-      obj.replace(vars.values[0])
+      Array.instance_method(:replace).bind(obj).call(vars.values[0])
     else
       Mapping.set_attributes(obj, vars)
     end
