@@ -66,7 +66,7 @@ private
     when :TYPE_STRUCT, :TYPE_EMPTY
       dump_struct_typemap(mpath, qname, typedef)
     when :TYPE_ARRAY
-      dump_encoded_array_typemap(mpath, qname, typedef)
+      dump_array_typemap(mpath, qname, typedef)
     when :TYPE_SIMPLE
       dump_simple_typemap(mpath, qname, typedef)
     when :TYPE_MAP
@@ -76,20 +76,6 @@ private
       raise RuntimeError.new(
         "unknown kind of complexContent: #{typedef.compoundtype}")
     end
-  end
-
-  def dump_encoded_array_typemap(mpath, qname, typedef)
-    arytype = typedef.find_arytype || XSD::AnyTypeName
-    type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
-    assign_const(type.namespace, 'Ns')
-    return <<__EOD__
-#{@varname}.set(
-  #{mapped_class_name(qname, mpath)},
-  ::SOAP::SOAPArray,
-  ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
-  { :type => #{dqname(type)} }
-)
-__EOD__
   end
 end
 

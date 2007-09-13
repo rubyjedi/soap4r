@@ -13,16 +13,27 @@ module WSDL
 module SOAP
 
 
-# requires @defined_const = {}, @dump_struct_typemap_innerstruct, @modulepath
+# requires @defined_const = {}, @dump_with_inner, @modulepath
 module MappingRegistryCreatorSupport
   include ClassDefCreatorSupport
   include XSD::CodeGen
 
   def dump_struct_typemap(mpath, qname, typedef, as_element = nil, qualified = nil)
-    @dump_struct_typemap_innerstruct = []
-    @dump_struct_typemap_innerstruct.unshift(
-      dump_complex_typemap(mpath, qname, typedef, as_element, qualified))
-    @dump_struct_typemap_innerstruct.join("\n")
+    dump_with_inner {
+      dump_complex_typemap(mpath, qname, typedef, as_element, qualified)
+    }
+  end
+
+  def dump_array_typemap(mpath, qname, typedef)
+    dump_with_inner {
+      dump_literal_array_typemap(mpath, qname, typedef)
+    }
+  end
+
+  def dump_with_inner
+    @dump_with_inner = []
+    @dump_with_inner.unshift(yield)
+    @dump_with_inner.join("\n")
   end
 
   def dump_complex_typemap(mpath, qname, typedef, as_element = nil, qualified = nil)
@@ -140,8 +151,8 @@ module MappingRegistryCreatorSupport
         next if element.ref == SchemaName
         typebase = @modulepath
         if element.anonymous_type?
-          @dump_struct_typemap_innerstruct << dump_complex_typemap(
-              mpath, element.name, element.local_complextype, nil, qualified)
+          @dump_with_inner << dump_complex_typemap(mpath, element.name,
+            element.local_complextype, nil, qualified)
           typebase = mpath
         end
         type = create_type_name(typebase, element)
@@ -288,6 +299,59 @@ module MappingRegistryCreatorSupport
 
   def dump_simpletypedef_union(mpath, qname, typedef, as_element, qualified)
     nil
+  end
+
+  DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
+
+  def dump_literal_array_typemap(mpath, qname, typedef)
+    var = {}
+    var[:class] = mapped_class_name(qname, mpath)
+    schema_ns = qname.namespace
+    if typedef.name.nil?
+      # local complextype of a element
+      var[:schema_name] = qname
+    else
+      # named complextype
+      var[:schema_type] = qname
+    end
+    parsed_element =
+      parse_elements(typedef.elements, qname.namespace, var[:class], nil)
+    if parsed_element.empty?
+      parsed_element = [create_soapenc_array_element_definition(typedef, mpath)]
+    end
+    var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
+    assign_const(schema_ns, 'Ns')
+    dump_entry(@varname, var)
+  end
+
+  def create_soapenc_array_element_definition(typedef, mpath)
+    child_type = typedef.child_type
+    child_element = typedef.find_aryelement
+    if child_type == XSD::AnyTypeName
+      type = nil
+    elsif child_element
+      if klass = element_basetype(child_element)
+        type = klass.name
+      else
+        typename = child_element.type || child_element.name
+        type = mapped_class_name(typename, mpath)
+      end
+    elsif child_type
+      type = mapped_class_name(child_type, mpath)
+    else
+      type = nil
+    end
+    occurrence = [0, nil]
+    if child_element and child_element.name
+      if child_element.map_as_array?
+        type << '[]' if type
+        occurrence = [child_element.minoccurs, child_element.maxoccurs]
+      end
+      child_element_name = child_element.name
+    else
+      child_element_name = DEFAULT_ITEM_NAME
+    end
+    [child_element_name.name, child_element_name, type, occurrence]
   end
 end
 

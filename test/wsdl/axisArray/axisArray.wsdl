@@ -21,6 +21,12 @@
           <element maxOccurs="unbounded" minOccurs="0" name="Item" type="typens:Item"/>
         </sequence>
       </complexType>
+
+      <complexType name="MeetingInfo">
+        <sequence>
+          <element name="meetingId" type="xsd:long"/>
+        </sequence>
+      </complexType>
     </schema>
   </wsdl:types>
 
@@ -30,10 +36,20 @@
     <wsdl:part name="list" type="typens:ItemList"/>
   </wsdl:message>
 
+  <wsdl:message name="getMeetingInfoRequest"/>
+
+  <wsdl:message name="getMeetingInfoResponse">
+    <wsdl:part name="getMeetingInfoReturn" type="typens:MeetingInfo"/>
+  </wsdl:message>
+
   <wsdl:portType name="ItemListPortType">
     <wsdl:operation name="listItem">
       <wsdl:input message="tns:listItemRequest" name="listItemRequest"/>
       <wsdl:output message="tns:listItemResponse" name="listItemResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="getMeetingInfo">
+      <wsdl:input name="getMeetingInfoRequest" message="tns:getMeetingInfoRequest"/>
+      <wsdl:output name="getMeetingInfoResponse" message="tns:getMeetingInfoResponse"/>
     </wsdl:operation>
   </wsdl:portType>
 
@@ -42,12 +58,23 @@
     <wsdl:operation name="listItem">
       <soap:operation soapAction=""/>
       <wsdl:input name="listItemRequest">
-	<soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="urn:jp.gr.jin.rrr.example.itemList" use="encoded"/>
+        <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="urn:jp.gr.jin.rrr.example.itemList" use="encoded"/>
       </wsdl:input>
       <wsdl:output name="listItemResponse">
-	<soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-	    namespace="urn:jp.gr.jin.rrr.example.itemList" use="encoded"/>
+        <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="urn:jp.gr.jin.rrr.example.itemList" use="encoded"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMeetingInfo">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getMeetingInfoRequest">
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="urn:jp.gr.jin.rrr.example.itemList"/>
+      </wsdl:input>
+      <wsdl:output name="getMeetingInfoResponse">
+        <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+          namespace="urn:jp.gr.jin.rrr.example.itemList"/>
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>

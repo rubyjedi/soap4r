@@ -119,66 +119,6 @@ private
         "unknown kind of complexContent: #{typedef.compoundtype}")
     end
   end
-
-  DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
-
-  def dump_array_typemap(mpath, qname, typedef)
-    @dump_struct_typemap_innerstruct = []
-    @dump_struct_typemap_innerstruct.unshift(
-      dump_literal_array_typemap(mpath, qname, typedef))
-    @dump_struct_typemap_innerstruct.join("\n")
-  end
-
-  def dump_literal_array_typemap(mpath, qname, typedef)
-    var = {}
-    var[:class] = mapped_class_name(qname, mpath)
-    schema_ns = qname.namespace
-    if typedef.name.nil?
-      # local complextype of a element
-      var[:schema_name] = qname
-    else
-      # named complextype
-      var[:schema_type] = qname
-    end
-    parsed_element =
-      parse_elements(typedef.elements, qname.namespace, var[:class], nil)
-    if parsed_element.empty?
-      parsed_element = [create_soapenc_array_element_definition(typedef, mpath)]
-    end
-    var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
-    assign_const(schema_ns, 'Ns')
-    dump_entry(@varname, var)
-  end
-
-  def create_soapenc_array_element_definition(typedef, mpath)
-    child_type = typedef.child_type
-    child_element = typedef.find_aryelement
-    if child_type == XSD::AnyTypeName
-      type = nil
-    elsif child_element
-      if klass = element_basetype(child_element)
-        type = klass.name
-      else
-        typename = child_element.type || child_element.name
-        type = mapped_class_name(typename, mpath)
-      end
-    elsif child_type
-      type = mapped_class_name(child_type, mpath)
-    else
-      type = nil
-    end
-    occurrence = [0, nil]
-    if child_element and child_element.name
-      if child_element.map_as_array?
-        type << '[]' if type
-        occurrence = [child_element.minoccurs, child_element.maxoccurs]
-      end
-      child_element_name = child_element.name
-    else
-      child_element_name = DEFAULT_ITEM_NAME
-    end
-    [child_element_name.name, child_element_name, type, occurrence]
-  end
 end
 
 
