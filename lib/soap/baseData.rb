@@ -161,6 +161,14 @@ public
     end
   end
 
+  # for referenced base type such as a long value from Axis.
+  # base2obj requires a node to respond to :data
+  def data
+    if @obj.respond_to?(:data)
+      @obj.data
+    end
+  end
+
   def refidstr
     '#' + @refid
   end

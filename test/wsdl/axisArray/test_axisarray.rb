@@ -3,13 +3,17 @@ require 'soap/processor'
 require 'soap/mapping'
 require 'soap/rpc/element'
 require 'wsdl/importer'
-require 'itemList.rb'
+require 'wsdl/soap/wsdl2ruby'
+require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module WSDL
+module AxisArray
 
 
 class TestAxisArray < Test::Unit::TestCase
+  DIR = File.dirname(File.expand_path(__FILE__))
+
   def setup
     @xml =<<__EOX__
 <?xml version="1.0" encoding="UTF-8"?>
@@ -35,11 +39,35 @@ class TestAxisArray < Test::Unit::TestCase
   </soapenv:Body>
 </soapenv:Envelope>
 __EOX__
+    setup_classdef
+  end
+
+  def teardown
+    unless $DEBUG
+      File.unlink(pathname('itemList.rb'))
+      File.unlink(pathname('itemListMappingRegistry.rb'))
+      File.unlink(pathname('itemListDriver.rb'))
+    end
+  end
+
+  def setup_classdef
+    gen = WSDL::SOAP::WSDL2Ruby.new
+    gen.location = pathname("axisArray.wsdl")
+    gen.basedir = DIR
+    gen.logger.level = Logger::FATAL
+    gen.opt['classdef'] = nil
+    gen.opt['mapping_registry'] = nil
+    gen.opt['module_path'] = self.class.to_s.sub(/::[^:]+$/, '')
+    gen.opt['driver'] = nil
+    gen.opt['force'] = true
+    gen.run
+    TestUtil.require(DIR, 'itemListDriver.rb', 'itemList.rb', 'itemListMappingRegistry.rb')
   end
 
   def test_by_stub
-    header, body = ::SOAP::Processor.unmarshal(@xml)
-    ary = ::SOAP::Mapping.soap2obj(body.response)
+    driver = ItemListPortType.new
+    driver.test_loopback_response << @xml
+    ary = driver.listItem
     assert_equal(3, ary.size)
     assert_equal("name1", ary[0].name)
     assert_equal("name2", ary[1].name)
@@ -63,7 +91,34 @@ __EOX__
     assert_equal("name2", ary[1].name)
     assert_equal("name3", ary[2].name)
   end
+
+XML_LONG = <<__XML__
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soapenv:Body>
+    <ns1:getMeetingInfoResponse soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns1="urn:jp.gr.jin.rrr.example.itemList">
+      <getMeetingInfoReturn href="#id0"/>
+    </ns1:getMeetingInfoResponse>
+    <multiRef id="id0" soapenc:root="0" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xsi:type="ns2:MeetingInfo" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns2="urn:long">
+      <meetingId href="#id11"/>
+    </multiRef>
+    <multiRef id="id11" soapenc:root="0" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xsi:type="xsd:long" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">105759347</multiRef>
+  </soapenv:Body>
+</soapenv:Envelope>
+__XML__
+
+  def test_multiref_long
+    driver = ItemListPortType.new
+    driver.test_loopback_response << XML_LONG
+    ret = driver.getMeetingInfo
+    assert_equal(105759347, ret.meetingId)
+  end
+
+  def pathname(filename)
+    File.join(DIR, filename)
+  end
 end
 
 
+end
 end

@@ -165,7 +165,6 @@ class TestRPC < Test::Unit::TestCase
 
   def test_basetype_stub
     @client = Prefix::Echo_port_type.new("http://localhost:#{Port}/")
-    @client.mapping_registry = Prefix::EchoMappingRegistry::EncodedRegistry
     @client.wiredump_dev = STDERR if $DEBUG
 
     ret = @client.echo_basetype(Time.now, 12345)

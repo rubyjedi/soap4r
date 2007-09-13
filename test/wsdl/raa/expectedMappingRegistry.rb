@@ -7,7 +7,6 @@ module RAAMappingRegistry
   EncodedRegistry = ::SOAP::Mapping::EncodedRegistry.new
   LiteralRegistry = ::SOAP::Mapping::LiteralRegistry.new
   NsC_002 = "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/"
-  NsXMLSchema = "http://www.w3.org/2001/XMLSchema"
 
   EncodedRegistry.register(
     :class => WSDL::RAA::Category,
@@ -56,18 +55,20 @@ module RAAMappingRegistry
     ]
   )
 
-  EncodedRegistry.set(
-    WSDL::RAA::InfoArray,
-    ::SOAP::SOAPArray,
-    ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
-    { :type => XSD::QName.new(NsC_002, "Info") }
+  EncodedRegistry.register(
+    :class => WSDL::RAA::InfoArray,
+    :schema_type => XSD::QName.new(NsC_002, "InfoArray"),
+    :schema_element => [
+      ["item", ["WSDL::RAA::Info", XSD::QName.new(nil, "item")], [0, nil]]
+    ]
   )
 
-  EncodedRegistry.set(
-    WSDL::RAA::StringArray,
-    ::SOAP::SOAPArray,
-    ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
-    { :type => XSD::QName.new(NsXMLSchema, "string") }
+  EncodedRegistry.register(
+    :class => WSDL::RAA::StringArray,
+    :schema_type => XSD::QName.new(NsC_002, "StringArray"),
+    :schema_element => [
+      ["item", ["String", XSD::QName.new(nil, "item")], [0, nil]]
+    ]
   )
 
   LiteralRegistry.register(
