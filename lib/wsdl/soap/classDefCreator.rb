@@ -238,7 +238,7 @@ private
   def create_complextypedef(mpath, qname, type, qualified = false)
     case type.compoundtype
     when :TYPE_STRUCT, :TYPE_EMPTY
-      create_classdef(mpath, qname, type, qualified)
+      create_structdef(mpath, qname, type, qualified)
     when :TYPE_ARRAY
       create_arraydef(mpath, qname, type)
     when :TYPE_SIMPLE
@@ -252,12 +252,17 @@ private
     end
   end
 
-  def create_classdef(mpath, qname, typedef, qualified = false)
+  def create_structdef(mpath, qname, typedef, qualified = false)
     classname = mapped_class_basename(qname, mpath)
     baseclassname = nil
     if typedef.complexcontent
       if base = typedef.complexcontent.base
-        baseclassname = mapped_class_basename(base, mpath)
+        # :TYPE_ARRAY must not be derived (#424)
+        basedef = @complextypes[base]
+        if basedef and basedef.compoundtype != :TYPE_ARRAY
+          # baseclass should be a toplevel complexType
+          baseclassname = mapped_class_basename(base, @modulepath)
+        end
       end
     end
     if @faulttypes and @faulttypes.index(qname)

@@ -18,7 +18,10 @@ class ClientAuthHeaderHandler < SOAP::Header::SimpleHandler
     if @sessionid
       { "sessionid" => @sessionid }
     else
-      { "userid" => @userid, "passwd" => @passwd }
+      #{ "userid" => @userid, "passwd" => @passwd }
+      passwd = SOAP::SOAPElement.new("Password", @passwd)
+      passwd.extraattr["Type"] = "type"
+      { "userid" => @userid, "Passwd" => passwd }
     end
   end
 
