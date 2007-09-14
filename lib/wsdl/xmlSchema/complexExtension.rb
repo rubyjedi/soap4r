@@ -63,7 +63,7 @@ class ComplexExtension < Info
   def check_type
     if @base == ::SOAP::ValueArrayName
       :TYPE_ARRAY
-    elsif content
+    elsif content or !@attributes.empty?
       :TYPE_STRUCT
     else
       basetype.check_type
