@@ -48,10 +48,12 @@ class TestEmpty < Test::Unit::TestCase
   end
 
   def teardown
-    @server.shutdown
-    @t.kill
-    @t.join
-    @client.reset_stream
+    @server.shutdown if @server
+    if @t
+      @t.kill
+      @t.join
+    end
+    @client.reset_stream if @client
   end
 
   EMPTY_XML = %q[<?xml version="1.0" encoding="utf-8" ?>

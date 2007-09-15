@@ -25,9 +25,9 @@ class TestStreamHandler < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_client
+    teardown_client if @client
     teardown_proxyserver if @proxyserver
-    teardown_server
+    teardown_server if @server
   end
 
   def setup_server

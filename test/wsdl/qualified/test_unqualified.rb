@@ -39,7 +39,7 @@ class TestUnqualified < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     unless $DEBUG
       File.unlink(pathname('lp.rb'))
       File.unlink(pathname('lpMappingRegistry.rb'))

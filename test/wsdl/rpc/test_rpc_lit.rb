@@ -104,7 +104,7 @@ class TestRPCLIT < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     unless $DEBUG
       File.unlink(pathname('RPC-Literal-TestDefinitions.rb'))
       File.unlink(pathname('RPC-Literal-TestDefinitionsMappingRegistry.rb'))

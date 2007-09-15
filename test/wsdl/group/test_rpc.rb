@@ -47,7 +47,7 @@ class TestGroup < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     File.unlink(pathname('echo.rb')) unless $DEBUG
     File.unlink(pathname('echoMappingRegistry.rb')) unless $DEBUG
     File.unlink(pathname('echoDriver.rb')) unless $DEBUG

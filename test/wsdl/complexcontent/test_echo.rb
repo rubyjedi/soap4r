@@ -38,7 +38,7 @@ class TestEcho < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     unless $DEBUG
       File.unlink(pathname('complexContent.rb'))
       File.unlink(pathname('complexContentMappingRegistry.rb'))

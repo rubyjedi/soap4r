@@ -84,9 +84,9 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
   end
 
   def teardown
-    @supportclient.delete_sessiondb
-    teardown_server
-    teardown_client
+    @supportclient.delete_sessiondb if @supportclient
+    teardown_server if @server
+    teardown_client if @client
   end
 
   def teardown_server

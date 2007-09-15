@@ -36,7 +36,7 @@ class TestSimpleContent < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     unless $DEBUG
       File.unlink(pathname('simpleContent.rb'))
       File.unlink(pathname('simpleContentMappingRegistry.rb'))
