@@ -25,9 +25,9 @@ class TestBasic < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_client
+    teardown_client if @server
     teardown_proxyserver if @proxyserver
-    teardown_server
+    teardown_server if @client
   end
 
   def setup_server

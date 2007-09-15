@@ -55,7 +55,7 @@ class TestOverload < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     File.unlink(pathname('default.rb')) unless $DEBUG
     @client.reset_stream if @client
   end

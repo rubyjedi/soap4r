@@ -45,8 +45,8 @@ class TestCookie < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_client
-    teardown_server
+    teardown_client if @client
+    teardown_server if @server
   end
 
   def setup_server

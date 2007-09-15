@@ -38,7 +38,7 @@ class TestNumber < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     File.unlink(pathname('foo.rb'))
     @client.reset_stream if @client
   end

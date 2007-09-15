@@ -31,7 +31,7 @@ class TestSOAPENC < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     unless $DEBUG
       File.unlink(pathname('echo.rb'))
     end

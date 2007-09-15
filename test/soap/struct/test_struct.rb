@@ -46,8 +46,8 @@ class TestStruct < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
-    teardown_client
+    teardown_server if @server
+    teardown_client if @client
   end
 
   def teardown_server

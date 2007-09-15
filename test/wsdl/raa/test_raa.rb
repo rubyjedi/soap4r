@@ -53,8 +53,8 @@ class TestRAA < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
-    teardown_client
+    teardown_server if @server
+    teardown_client if @client
     unless $DEBUG
       File.unlink(pathname('RAA.rb'))
       File.unlink(pathname('RAAMappingRegistry.rb'))

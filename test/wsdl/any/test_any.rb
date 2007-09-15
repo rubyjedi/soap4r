@@ -73,7 +73,7 @@ class TestAny < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     unless $DEBUG
       File.unlink(pathname('echo.rb')) if File.exist?(pathname('echo.rb'))
       File.unlink(pathname('echoMappingRegistry.rb')) if File.exist?(pathname('echoMappingRegistry.rb'))

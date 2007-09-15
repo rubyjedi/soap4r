@@ -29,10 +29,12 @@ class TestCalc2 < Test::Unit::TestCase
   end
 
   def teardown
-    @server.shutdown
-    @t.kill
-    @t.join
-    @var.reset_stream
+    @server.shutdown if @server
+    if @t
+      @t.kill
+      @t.join
+    end
+    @var.reset_stream if @var
   end
 
   def test_calc2

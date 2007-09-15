@@ -25,10 +25,12 @@ class TestCalc < Test::Unit::TestCase
   end
 
   def teardown
-    @server.shutdown
-    @t.kill
-    @t.join
-    @calc.reset_stream
+    @server.shutdown if @server
+    if @t
+      @t.kill
+      @t.join
+    end
+    @calc.reset_stream if @calc
   end
 
   def test_calc

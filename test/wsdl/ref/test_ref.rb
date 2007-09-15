@@ -63,7 +63,7 @@ class TestRef < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     unless $DEBUG
       File.unlink(pathname('product.rb'))
       File.unlink(pathname('productMappingRegistry.rb'))

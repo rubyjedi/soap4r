@@ -33,10 +33,12 @@ class TestNil < Test::Unit::TestCase
   end
 
   def teardown
-    @server.shutdown
-    @t.kill
-    @t.join
-    @client.reset_stream
+    @server.shutdown if @server
+    if @t
+      @t.kill
+      @t.join
+    end
+    @client.reset_stream if @client
   end
 
   require 'rexml/document'

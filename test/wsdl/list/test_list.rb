@@ -39,7 +39,7 @@ class TestList < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server
+    teardown_server if @server
     File.unlink(pathname('list.rb')) unless $DEBUG
     File.unlink(pathname('listMappingRegistry.rb')) unless $DEBUG
     File.unlink(pathname('listDriver.rb')) unless $DEBUG
