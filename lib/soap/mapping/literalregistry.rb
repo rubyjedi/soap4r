@@ -353,17 +353,19 @@ private
   def define_xmlattr_accessor(obj, qname)
     # untaint depends GenSupport.safemethodname
     name = XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name).untaint
-    # untaint depends QName#dump
-    qnamedump = qname.dump.untaint
-    obj.instance_eval <<-EOS
-      def #{name}
-        @__xmlattr[#{qnamedump}]
-      end
+    unless obj.respond_to?(name)
+      # untaint depends QName#dump
+      qnamedump = qname.dump.untaint
+      obj.instance_eval <<-EOS
+        def #{name}
+          @__xmlattr[#{qnamedump}]
+        end
 
-      def #{name}=(value)
-        @__xmlattr[#{qnamedump}] = value
-      end
-    EOS
+        def #{name}=(value)
+          @__xmlattr[#{qnamedump}] = value
+        end
+      EOS
+    end
   end
 
   # Mapping.define_attr_accessor calls define_method with proc and it exhausts
