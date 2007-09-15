@@ -31,6 +31,17 @@ module EchoMappingRegistry
   )
 
   LiteralRegistry.register(
+    :class => WSDL::Any::FooBar,
+    :schema_name => XSD::QName.new(NsEchoType, "foo.bar"),
+    :schema_qualified => true,
+    :schema_element => [
+      ["before", ["SOAP::SOAPString", XSD::QName.new(nil, "before")]],
+      ["any", [nil, XSD::QName.new(NsXMLSchema, "anyType")]],
+      ["after", ["SOAP::SOAPString", XSD::QName.new(nil, "after")]]
+    ]
+  )
+
+  LiteralRegistry.register(
     :class => WSDL::Any::SetOutputAndCompleteRequest,
     :schema_name => XSD::QName.new(NsEchoType, "setOutputAndCompleteRequest"),
     :schema_qualified => true,
