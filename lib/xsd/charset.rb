@@ -77,6 +77,8 @@ public
     'X_UNKNOWN' => nil,
   }
 
+  CharsetStrCache = {}
+
 
   ###
   ## handlers
@@ -119,9 +121,9 @@ public
 
   def Charset.charset_str(label)
     if CharsetMap.respond_to?(:key)
-      CharsetMap.key(label.downcase) || 'X_UNKNOWN'
+      CharsetStrCache[label] ||= CharsetMap.key(label.downcase) || 'X_UNKNOWN'
     else
-      CharsetMap.index(label.downcase) || 'X_UNKNOWN'
+      CharsetStrCache[label] ||= CharsetMap.index(label.downcase) || 'X_UNKNOWN'
     end
   end
 

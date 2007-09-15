@@ -766,6 +766,7 @@ class SOAPElement
   #   if else:
   #     value is added as an XML element with the key name.
   def self.from_obj(obj, namespace = nil)
+    return obj if obj.is_a?(SOAPElement)
     o = SOAPElement.new(nil)
     case obj
     when nil
