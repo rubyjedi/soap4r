@@ -33,7 +33,7 @@ class MappingHandler < SOAP::Header::Handler
 
   def on_outbound
     obj = on_mapping_outbound
-    SOAP::Mapping.obj2soap(obj, @registry, @elename)
+    obj ? SOAP::Mapping.obj2soap(obj, @registry, @elename) : nil
   end
 
   def on_inbound(header, mustunderstand)
