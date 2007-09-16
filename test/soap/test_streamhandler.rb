@@ -15,7 +15,7 @@ class TestStreamHandler < Test::Unit::TestCase
 
   def setup
     @logger = Logger.new(STDERR)
-    @logger.level = Logger::Severity::ERROR
+    @logger.level = Logger::Severity::FATAL
     @url = "http://localhost:#{Port}/"
     @proxyurl = "http://localhost:#{ProxyPort}/"
     @server = @proxyserver = @client = nil
@@ -45,6 +45,7 @@ class TestStreamHandler < Test::Unit::TestCase
     htpasswd = File.join(File.dirname(__FILE__), 'htpasswd')
     htpasswd_userdb = WEBrick::HTTPAuth::Htpasswd.new(htpasswd)
     @basic_auth = WEBrick::HTTPAuth::BasicAuth.new(
+      :Logger => @logger,
       :Realm => 'auth',
       :UserDB => htpasswd_userdb
     )

@@ -12,6 +12,7 @@
   <types>
     <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
 	targetNamespace="urn:jp.gr.jin.rrr.example.datatypes">
+      <xsd:element name="AuthenticationError" type="tns:AuthenticationError" />
       <xsd:complexType name="AuthenticationError">
 	<all>
 	  <element name="message" type="xsd:string" />
@@ -30,18 +31,18 @@
   <message name="inputmsg"/>
   <message name="outputmsg"/>
   <message name="faultmsg1" >
-    <part name="exception" type="typens:AuthenticationError" />
+    <part name="exception" element="typens:AuthenticationError" />
   </message>
   <message name="faultmsg2" >
-    <part name="exception" type="typens:AuthorizationError" />
+    <part name="exception" element="typens:AuthorizationError" />
   </message>
 
   <portType name="MultipleFaultPortType">
     <operation name="myoperation">
       <input message="tns:inputmsg"/>
       <output message="tns:outputmsg"/>
-      <fault message="tns:faultmsg1"/>
-      <fault message="tns:faultmsg2"/>
+      <fault name="faultmsg1" message="tns:faultmsg1"/>
+      <fault name="faultmsg2" message="tns:faultmsg2"/>
     </operation>
   </portType>
 
@@ -57,6 +58,12 @@
         <soap:body use="encoded" namespace="urn:jp.gr.jin.rrr.example.ele"
    	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
       </output>
+      <fault name="faultmsg1">
+        <soap:fault name="faultmsg1" use="literal"/>
+      </fault>
+      <fault name="faultmsg2">
+        <soap:fault name="faultmsg2" use="literal"/>
+      </fault>
     </operation>
   </binding>
 
