@@ -15,7 +15,7 @@ class TestDigest < Test::Unit::TestCase
 
   def setup
     @logger = Logger.new(STDERR)
-    @logger.level = Logger::Severity::ERROR
+    @logger.level = Logger::Severity::FATAL
     @url = "http://localhost:#{Port}/"
     @proxyurl = "http://localhost:#{ProxyPort}/"
     @server = @proxyserver = @client = nil
@@ -41,6 +41,7 @@ class TestDigest < Test::Unit::TestCase
     htdigest = File.join(File.dirname(__FILE__), 'htdigest')
     htdigest_userdb = WEBrick::HTTPAuth::Htdigest.new(htdigest)
     @digest_auth = WEBrick::HTTPAuth::DigestAuth.new(
+      :Logger => @logger,
       :Algorithm => 'MD5',
       :Realm => 'auth',
       :UserDB => htdigest_userdb
