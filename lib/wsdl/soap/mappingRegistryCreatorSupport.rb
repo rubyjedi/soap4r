@@ -24,9 +24,15 @@ module MappingRegistryCreatorSupport
     }
   end
 
-  def dump_array_typemap(mpath, qname, typedef)
+  def dump_array_typemap(mpath, qname, typedef, opt = {})
     dump_with_inner {
-      dump_literal_array_typemap(mpath, qname, typedef)
+      if typedef.find_soapenc_arytype
+        if opt[:encoded]
+          dump_encoded_array_typemap(mpath, qname, typedef)
+        end
+      else
+        dump_literal_array_typemap(mpath, qname, typedef)
+      end
     }
   end
 
@@ -317,14 +323,28 @@ module MappingRegistryCreatorSupport
     parsed_element =
       parse_elements(typedef.elements, qname.namespace, var[:class], nil)
     if parsed_element.empty?
-      parsed_element = [create_soapenc_array_element_definition(typedef, mpath)]
+      parsed_element = [create_array_element_definition(typedef, mpath)]
     end
     var[:schema_element] = dump_schema_element_definition(parsed_element, 2)
     assign_const(schema_ns, 'Ns')
     dump_entry(@varname, var)
   end
 
-  def create_soapenc_array_element_definition(typedef, mpath)
+  def dump_encoded_array_typemap(mpath, qname, typedef)
+    arytype = typedef.find_arytype || XSD::AnyTypeName
+    type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
+    return <<__EOD__
+#{@varname}.set(
+  #{mapped_class_name(qname, mpath)},
+  ::SOAP::SOAPArray,
+  ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
+  { :type => #{dqname(type)} }
+)
+__EOD__
+  end
+
+  # used when "soapenc:arrayType" definition
+  def create_array_element_definition(typedef, mpath)
     child_type = typedef.child_type
     child_element = typedef.find_aryelement
     if child_type == XSD::AnyTypeName

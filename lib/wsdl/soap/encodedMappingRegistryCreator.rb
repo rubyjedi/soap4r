@@ -66,7 +66,7 @@ private
     when :TYPE_STRUCT, :TYPE_EMPTY
       dump_struct_typemap(mpath, qname, typedef)
     when :TYPE_ARRAY
-      dump_array_typemap(mpath, qname, typedef)
+      dump_array_typemap(mpath, qname, typedef, :encoded => true)
     when :TYPE_SIMPLE
       dump_simple_typemap(mpath, qname, typedef)
     when :TYPE_MAP

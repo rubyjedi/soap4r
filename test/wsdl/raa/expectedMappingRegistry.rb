@@ -55,20 +55,18 @@ module RAAMappingRegistry
     ]
   )
 
-  EncodedRegistry.register(
-    :class => WSDL::RAA::InfoArray,
-    :schema_type => XSD::QName.new(NsC_002, "InfoArray"),
-    :schema_element => [
-      ["item", ["WSDL::RAA::Info", XSD::QName.new(nil, "item")], [0, nil]]
-    ]
+  EncodedRegistry.set(
+    WSDL::RAA::InfoArray,
+    ::SOAP::SOAPArray,
+    ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
+    { :type => XSD::QName.new(NsC_002, "Info") }
   )
 
-  EncodedRegistry.register(
-    :class => WSDL::RAA::StringArray,
-    :schema_type => XSD::QName.new(NsC_002, "StringArray"),
-    :schema_element => [
-      ["item", ["String", XSD::QName.new(nil, "item")], [0, nil]]
-    ]
+  EncodedRegistry.set(
+    WSDL::RAA::StringArray,
+    ::SOAP::SOAPArray,
+    ::SOAP::Mapping::EncodedRegistry::TypedArrayFactory,
+    { :type => XSD::QName.new("http://www.w3.org/2001/XMLSchema", "string") }
   )
 
   LiteralRegistry.register(
@@ -122,21 +120,6 @@ module RAAMappingRegistry
     ]
   )
 
-  LiteralRegistry.register(
-    :class => WSDL::RAA::InfoArray,
-    :schema_type => XSD::QName.new(NsC_002, "InfoArray"),
-    :schema_element => [
-      ["item", ["WSDL::RAA::Info", XSD::QName.new(nil, "item")], [0, nil]]
-    ]
-  )
-
-  LiteralRegistry.register(
-    :class => WSDL::RAA::StringArray,
-    :schema_type => XSD::QName.new(NsC_002, "StringArray"),
-    :schema_element => [
-      ["item", ["String", XSD::QName.new(nil, "item")], [0, nil]]
-    ]
-  )
 end
 
 end; end
