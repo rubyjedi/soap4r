@@ -12,8 +12,7 @@ class TestCustomNs < Test::Unit::TestCase
     xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Header>
-      <n1:headeritem xmlns:n1="my:foo"
-          env:mustUnderstand="0">hi</n1:headeritem>
+      <n1:headeritem xmlns:n1="my:foo">hi</n1:headeritem>
   </env:Header>
   <env:Body>
     <n2:test xmlns:n2="my:foo"
@@ -30,7 +29,7 @@ __XML__
     xmlns:ENV="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ENV:Header>
-      <myns:headeritem ENV:mustUnderstand="0">hi</myns:headeritem>
+      <myns:headeritem>hi</myns:headeritem>
   </ENV:Header>
   <ENV:Body>
     <myns:test xmlns:bar="my:bar"

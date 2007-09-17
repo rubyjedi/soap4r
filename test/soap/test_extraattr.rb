@@ -14,7 +14,6 @@ class TestExtrAttr < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Header Id="extraattr">
       <n1:headeritem xmlns:n1="my:foo"
-          env:mustUnderstand="0"
           Id="extraattr"></n1:headeritem>
   </env:Header>
   <env:Body Id="extraattr&lt;&gt;">
