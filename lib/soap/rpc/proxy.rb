@@ -32,6 +32,7 @@ public
   attr_accessor :allow_unqualified_element
   attr_accessor :default_encodingstyle
   attr_accessor :generate_explicit_type
+  attr_accessor :use_default_namespace
   attr_accessor :return_response_as_xml
   attr_reader :headerhandler
   attr_reader :filterchain
@@ -55,6 +56,7 @@ public
     @allow_unqualified_element = true
     @default_encodingstyle = nil
     @generate_explicit_type = true
+    @use_default_namespace = false
     @return_response_as_xml = false
     @headerhandler = Header::HandlerSet.new
     @filterchain = Filter::FilterChain.new
@@ -129,6 +131,7 @@ public
       :envelopenamespace => @options["soap.envelope.requestnamespace"],
       :default_encodingstyle =>
         @default_encodingstyle || op_info.request_default_encodingstyle,
+      :use_default_namespace => @use_default_namespace,
       :elementformdefault => op_info.elementformdefault,
       :attributeformdefault => op_info.attributeformdefault
     )
@@ -136,6 +139,7 @@ public
       :envelopenamespace => @options["soap.envelope.responsenamespace"],
       :default_encodingstyle =>
         @default_encodingstyle || op_info.response_default_encodingstyle,
+      :use_default_namespace => @use_default_namespace,
       :elementformdefault => op_info.elementformdefault,
       :attributeformdefault => op_info.attributeformdefault
     )
