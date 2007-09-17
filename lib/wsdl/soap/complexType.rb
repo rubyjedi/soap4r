@@ -93,7 +93,7 @@ class ComplexType < Info
     ele.local_complextype
   end
 
-  def find_arytype
+  def find_soapenc_arytype
     unless compoundtype == :TYPE_ARRAY
       raise RuntimeError.new("Assert: not for array")
     end
@@ -105,6 +105,15 @@ class ComplexType < Info
           end
         end
       end
+    end
+  end
+
+  def find_arytype
+    unless compoundtype == :TYPE_ARRAY
+      raise RuntimeError.new("Assert: not for array")
+    end
+    if arytype = find_soapenc_arytype
+      return arytype
     end
     if map_as_array?
       return element_simpletype(elements[0])
