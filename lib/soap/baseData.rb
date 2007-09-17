@@ -28,6 +28,10 @@ public
     d.elename = elename
     d
   end
+
+  def to_data(str)
+    new(str).data
+  end
 end
 
 
@@ -543,7 +547,12 @@ public
   end
 
   def add(name, value)
-    add_member(name, value)
+    value = SOAPNil.new if value.nil?
+    @array.push(name)
+    value.elename = value.elename.dup_name(name)
+    @data.push(value)
+    value.parent = self if value.respond_to?(:parent=)
+    value
   end
 
   def [](idx)
@@ -622,17 +631,6 @@ public
     s.elename = elename
     s
   end
-
-private
-
-  def add_member(name, value = nil)
-    value = SOAPNil.new if value.nil?
-    @array.push(name)
-    value.elename = value.elename.dup_name(name)
-    @data.push(value)
-    value.parent = self if value.respond_to?(:parent=)
-    value
-  end
 end
 
 
@@ -675,7 +673,11 @@ class SOAPElement
 
   # Element interfaces.
   def add(value)
-    add_member(value.elename.name, value)
+    name = value.elename.name
+    @array.push(name)
+    @data.push(value)
+    value.parent = self if value.respond_to?(:parent=)
+    value
   end
 
   def [](idx)
@@ -821,15 +823,6 @@ class SOAPElement
     else
       XSD::QName.new(namespace, obj.to_s)
     end
-  end
-
-private
-
-  def add_member(name, value)
-    @array.push(name)
-    @data.push(value)
-    value.parent = self if value.respond_to?(:parent=)
-    value
   end
 end
 

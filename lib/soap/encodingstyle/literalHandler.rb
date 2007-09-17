@@ -51,8 +51,7 @@ class LiteralHandler < Handler
       generator.encode_rawstring(data.to_s)
     when XSD::XSDString
       generator.encode_tag(name, attrs)
-      str = data.to_s
-      str = XSD::Charset.encoding_to_xml(str, @charset) if @charset
+      str = decode_str(data.to_s)
       generator.encode_string(str)
     when XSD::XSDAnySimpleType
       generator.encode_tag(name, attrs)
@@ -111,17 +110,16 @@ class LiteralHandler < Handler
   #
   def decode_tag(ns, elename, attrs, parent)
     @textbuf.clear
-    extraattrs = decode_attrs(ns, attrs)
-    if extraattrs[XSD::AttrNilName] == 'true'
+    if attrs[XSD::AttrNilName] == 'true'
       o = SOAPNil.decode(elename)
     else
       o = SOAPElement.decode(elename)
     end
-    if definedtype = extraattrs[XSD::AttrTypeName]
+    if definedtype = attrs[XSD::AttrTypeName]
       o.type = ns.parse(definedtype)
     end
     o.parent = parent
-    o.extraattr.update(extraattrs)
+    o.extraattr.update(attrs)
     decode_parent(parent, o)
     o
   end
@@ -136,15 +134,6 @@ class LiteralHandler < Handler
   def decode_text(ns, text)
     # @textbuf is set at decode_tag_end.
     @textbuf << text
-  end
-
-  def decode_attrs(ns, attrs)
-    extraattr = {}
-    attrs.each do |key, value|
-      qname = ns.parse_local(key)
-      extraattr[qname] = value
-    end
-    extraattr
   end
 
   def decode_prologue
@@ -181,13 +170,17 @@ private
     case node
     when XSD::XSDString, SOAPElement
       if @charset
-	node.set(XSD::Charset.encoding_from_xml(textbufstr, @charset))
+	node.set(decode_str(textbufstr))
       else
 	node.set(textbufstr)
       end
     else
       # Nothing to do...
     end
+  end
+
+  def decode_str(str)
+    @charset ? XSD::Charset.encoding_from_xml(str, @charset) : str
   end
 end
 

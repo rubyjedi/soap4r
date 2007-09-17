@@ -112,7 +112,7 @@ public
     @lastnode
   end
 
-  def start_element(name, attrs)
+  def start_element(name, raw_attrs)
     lastframe = @parsestack.last
     ns = parent = parent_encodingstyle = nil
     if lastframe
@@ -125,8 +125,9 @@ public
       parent_encodingstyle = nil
     end
     # ns might be the same
-    ns, attrs = XSD::XMLParser.filter_ns(ns, attrs)
-    encodingstyle = find_encodingstyle(ns, attrs)
+    ns, raw_attrs = XSD::XMLParser.filter_ns(ns, raw_attrs)
+    attrs = decode_attrs(ns, raw_attrs)
+    encodingstyle = attrs[AttrEncodingStyleName]
     # Children's encodingstyle is derived from its parent.
     if encodingstyle.nil?
       if parent.node.is_a?(SOAPHeader)
@@ -149,13 +150,10 @@ public
   end
 
   def characters(text)
-    lastframe = @parsestack.last
-    if lastframe
+    # Ignore Text outside of SOAP Envelope.
+    if lastframe = @parsestack.last
       # Need not to be cloned because character does not have attr.
       decode_text(lastframe.ns, text, lastframe.handler)
-    else
-      # Ignore Text outside of SOAP Envelope.
-      p text if $DEBUG
     end
   end
 
@@ -171,15 +169,6 @@ public
 
 private
 
-  def find_encodingstyle(ns, attrs)
-    attrs.each do |key, value|
-      if (ns.compare(@envelopenamespace, AttrEncodingStyle, key))
-	return value
-      end
-    end
-    nil
-  end
-
   def decode_tag(ns, name, attrs, parent, handler)
     ele = ns.parse(name)
     # Envelope based parsing.
@@ -194,6 +183,15 @@ private
 
   def decode_tag_end(ns, node, handler)
     return handler.decode_tag_end(ns, node)
+  end
+
+  def decode_attrs(ns, attrs)
+    extraattr = {}
+    attrs.each do |key, value|
+      qname = ns.parse_local(key)
+      extraattr[qname] = value
+    end
+    extraattr
   end
 
   def decode_text(ns, text, handler)
