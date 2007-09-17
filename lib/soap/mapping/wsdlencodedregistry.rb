@@ -58,7 +58,7 @@ class WSDLEncodedRegistry < EncodedRegistry
     cause = nil
     begin
       unless obj_class
-        typestr = XSD::CodeGen::GenSupport.safeconstname(node.elename.name)
+        typestr = Mapping.safeconstname(node.elename.name)
         obj_class = Mapping.class_from_name(typestr)
       end
       return Mapping._soap2obj(node, Mapping::DefaultRegistry, obj_class)

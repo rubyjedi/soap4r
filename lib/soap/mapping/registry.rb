@@ -220,7 +220,7 @@ module RegistrySupport
 
   def find_schema_definition(name)
     return nil unless name
-    typestr = XSD::CodeGen::GenSupport.safeconstname(name)
+    typestr = Mapping.safeconstname(name)
     obj_class = Mapping.class_from_name(typestr)
     if obj_class
       schema_definition_from_class(obj_class)

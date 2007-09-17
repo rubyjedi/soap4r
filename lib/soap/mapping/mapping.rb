@@ -214,7 +214,7 @@ module Mapping
         end
       end
       if lenient
-        const_str = XSD::CodeGen::GenSupport.safeconstname(const_str)
+        const_str = Mapping.safeconstname(const_str)
         if const.const_defined?(const_str)
           const = const.const_get(const_str)
           next
@@ -319,7 +319,7 @@ module Mapping
         return obj.__send__(attr_name)
       end
       iv = obj.instance_variables
-      name = XSD::CodeGen::GenSupport.safevarname(attr_name)
+      name = Mapping.safevarname(attr_name)
       if iv.include?("@#{name}")
         return obj.instance_variable_get("@#{name}")
       elsif iv.include?("@#{attr_name}")
@@ -341,7 +341,7 @@ module Mapping
     else
       values.each do |attr_name, value|
         # untaint depends GenSupport.safevarname
-        name = XSD::CodeGen::GenSupport.safevarname(attr_name).untaint
+        name = Mapping.safevarname(attr_name).untaint
         setter = name + "="
         if obj.respond_to?(setter)
           obj.__send__(setter, value)
@@ -368,6 +368,16 @@ module Mapping
         end
       end
     end
+  end
+
+  def self.safeconstname(name)
+    Thread.current[:SOAPMapping][:SafeConstName][name] ||=
+      XSD::CodeGen::GenSupport.safeconstname(name)
+  end
+
+  def self.safevarname(name)
+    Thread.current[:SOAPMapping][:SafeVarName][name] ||=
+      XSD::CodeGen::GenSupport.safevarname(name)
   end
 
   def self.root_type_hint
@@ -551,6 +561,8 @@ module Mapping
         data[:NoReference] = opt[:no_reference]
         data[:RootTypeHint] = opt[:root_type_hint]
         data[:SchemaDefinition] = {}
+        data[:SafeVarName] = {}
+        data[:SafeConstName] = {}
         yield
       end
     end
