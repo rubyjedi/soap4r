@@ -282,7 +282,7 @@ module RegistrySupport
     if value.is_a?(klass)
       v
     else
-      klass.new(v).data
+      klass.to_data(v)
     end
   end
 

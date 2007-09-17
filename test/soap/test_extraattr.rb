@@ -44,9 +44,9 @@ class TestExtrAttr < Test::Unit::TestCase
     env = parser.parse(xml)
     header = env.header
     body = env.body
-    assert_equal("extraattr", env.extraattr["Id"])
-    assert_equal("extraattr", header.extraattr["Id"])
-    assert_equal("extraattr<>", body.extraattr["Id"])
+    assert_equal("extraattr", env.extraattr[XSD::QName.new(nil, "Id")])
+    assert_equal("extraattr", header.extraattr[XSD::QName.new(nil, "Id")])
+    assert_equal("extraattr<>", body.extraattr[XSD::QName.new(nil, "Id")])
     assert_equal("extraattr", header["headeritem"].element.extraattr[XSD::QName.new(nil, "Id")])
   end
 end

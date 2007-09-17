@@ -56,7 +56,7 @@ class SOAPBody < SOAPStruct
 
   def fault=(fault)
     @is_fault = true
-    add_member('fault', fault)
+    add('fault', fault)
   end
 end
 

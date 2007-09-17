@@ -39,6 +39,8 @@ AttrRoot = 'root'
 AttrArrayType = 'arrayType'
 AttrOffset = 'offset'
 AttrPosition = 'position'
+AttrHref = 'href'
+AttrId = 'id'
 ValueArray = 'Array'
 
 EleEnvelopeName = XSD::QName.new(EnvelopeNamespace, EleEnvelope).freeze
@@ -56,6 +58,8 @@ AttrRootName = XSD::QName.new(EncodingNamespace, AttrRoot).freeze
 AttrArrayTypeName = XSD::QName.new(EncodingNamespace, AttrArrayType).freeze
 AttrOffsetName = XSD::QName.new(EncodingNamespace, AttrOffset).freeze
 AttrPositionName = XSD::QName.new(EncodingNamespace, AttrPosition).freeze
+AttrHrefName = XSD::QName.new(nil, AttrHref).freeze
+AttrIdName = XSD::QName.new(nil, AttrId).freeze
 ValueArrayName = XSD::QName.new(EncodingNamespace, ValueArray).freeze
 
 Base64Literal = 'base64'

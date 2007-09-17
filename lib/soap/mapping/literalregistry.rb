@@ -206,7 +206,9 @@ private
         ele.add(obj2soap(value, key))
       end
     end
-    add_attributes2soap(obj, ele)
+    obj.__xmlattr.each do |key, value|
+      ele.extraattr[key] = value
+    end
     ele
   end
 
@@ -239,7 +241,9 @@ private
 
   def elesoap2stubobj(node, obj_class, definition)
     obj = nil
-    if obj_class < ::String
+    if obj_class == ::String
+      obj = node.text
+    elsif obj_class < ::String
       obj = obj_class.new(node.text)
     else
       obj = Mapping.create_empty_object(obj_class)
@@ -265,9 +269,7 @@ private
     if node.is_a?(::SOAP::SOAPBasetype)
       return node.data
     end
-    klass = ::SOAP::Mapping::Object
-    obj = klass.new
-    obj
+    ::SOAP::Mapping::Object.new
   end
 
   def add_elesoap2stubobj(node, obj, definition)
@@ -324,7 +326,7 @@ private
         if class_name
           klass = Mapping.class_from_name(class_name)
           if klass.include?(::SOAP::SOAPBasetype)
-            child = klass.new(attr).data
+            child = klass.to_data(attr)
           end
         end
         obj.__xmlattr[qname] = child
