@@ -169,7 +169,10 @@ public
     attrs.each do |key, value|
       @element.extraattr[key] = value
     end
-    @element.extraattr[AttrMustUnderstandName] = (@mustunderstand ? '1' : '0')
+    # to remove mustUnderstand attribute, set it to nil
+    unless @mustunderstand.nil?
+      @element.extraattr[AttrMustUnderstandName] = (@mustunderstand ? '1' : '0')
+    end
     if @encodingstyle
       @element.extraattr[AttrEncodingStyleName] = @encodingstyle
     end
@@ -207,9 +210,11 @@ class SOAPHeader < SOAPStruct
 
   def add(name, value)
     actor = value.extraattr[AttrActorName]
-    mu = (value.extraattr[AttrMustUnderstandName] == '1')
+    mu = value.extraattr[AttrMustUnderstandName]
     encstyle = value.extraattr[AttrEncodingStyleName]
-    item = SOAPHeaderItem.new(value, mu, encstyle, actor)
+    mu_value = mu.nil? ? nil : (mu == '1')
+    # to remove mustUnderstand attribute, set it to nil
+    item = SOAPHeaderItem.new(value, mu_value, encstyle, actor)
     super(name, item)
   end
 

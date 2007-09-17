@@ -15,7 +15,7 @@ module Header
 
 class Handler
   attr_reader :elename
-  attr_reader :mustunderstand
+  attr_accessor :mustunderstand
   attr_reader :encodingstyle
   attr_reader :target_actor
 
