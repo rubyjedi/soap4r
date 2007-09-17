@@ -354,7 +354,7 @@ private
   # much memory for each singleton Object.  just instance_eval instead of it.
   def define_xmlattr_accessor(obj, qname)
     # untaint depends GenSupport.safemethodname
-    name = XSD::CodeGen::GenSupport.safemethodname('xmlattr_' + qname.name).untaint
+    name = Mapping.safemethodname('xmlattr_' + qname.name).untaint
     unless obj.respond_to?(name)
       # untaint depends QName#dump
       qnamedump = qname.dump.untaint

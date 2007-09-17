@@ -375,6 +375,11 @@ module Mapping
       XSD::CodeGen::GenSupport.safeconstname(name)
   end
 
+  def self.safemethodname(name)
+    Thread.current[:SOAPMapping][:SafeMethodName][name] ||=
+      XSD::CodeGen::GenSupport.safemethodname(name)
+  end
+
   def self.safevarname(name)
     Thread.current[:SOAPMapping][:SafeVarName][name] ||=
       XSD::CodeGen::GenSupport.safevarname(name)
@@ -561,8 +566,9 @@ module Mapping
         data[:NoReference] = opt[:no_reference]
         data[:RootTypeHint] = opt[:root_type_hint]
         data[:SchemaDefinition] = {}
-        data[:SafeVarName] = {}
         data[:SafeConstName] = {}
+        data[:SafeMethodName] = {}
+        data[:SafeVarName] = {}
         yield
       end
     end
