@@ -60,6 +60,7 @@ class Driver
   __attr_proxy :allow_unqualified_element, true
   __attr_proxy :default_encodingstyle, true
   __attr_proxy :generate_explicit_type, true
+  __attr_proxy :use_default_namespace, true
   __attr_proxy :return_response_as_xml, true
   __attr_proxy :headerhandler
   __attr_proxy :filterchain

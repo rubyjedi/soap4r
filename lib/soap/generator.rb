@@ -31,6 +31,7 @@ public
   attr_accessor :default_encodingstyle
   attr_accessor :generate_explicit_type
   attr_accessor :use_numeric_character_reference
+  attr_accessor :use_default_namespace
 
   def initialize(opt = {})
     @reftarget = nil
@@ -39,9 +40,8 @@ public
     @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
     @generate_explicit_type =
       opt.key?(:generate_explicit_type) ? opt[:generate_explicit_type] : true
-    # elementformdefault is for default namespace usage controll
-    # TODO: should be renamed
-    @elementformdefault = opt[:elementformdefault]
+    # ':elementformdefault' is for backward compatibility
+    @use_default_namespace = opt[:use_default_namespace]
     @attributeformdefault = opt[:attributeformdefault]
     @use_numeric_character_reference = opt[:use_numeric_character_reference]
     @indentstr = opt[:no_indent] ? '' : '  '
@@ -162,7 +162,7 @@ public
     if element_local?(data)
       data.elename.name
     else
-      if @elementformdefault
+      if @use_default_namespace
         Generator.assign_ns(attrs, ns, data.elename.namespace, '')
       else
         Generator.assign_ns(attrs, ns, data.elename.namespace)
@@ -250,7 +250,8 @@ public
     if namespace.nil?
       raise FormatEncodeError.new("empty namespace")
     end
-    unless ns.assigned?(namespace)
+    override_default_ns = (tag == '' and namespace != ns.default_namespace)
+    if override_default_ns or !ns.assigned?(namespace)
       tag = ns.assign(namespace, tag)
       if tag == ''
         attr = 'xmlns'

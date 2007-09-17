@@ -68,10 +68,12 @@ class LiteralHandler < Handler
         generator.encode_child(ns, child, data)
       end
     when SOAPElement
-      # passes 2 times for simplifying namespace definition
-      data.each do |key, value|
-        if value.elename.namespace
-          Generator.assign_ns(attrs, ns, value.elename.namespace)
+      unless generator.use_default_namespace
+        # passes 2 times for simplifying namespace definition
+        data.each do |key, value|
+          if value.elename.namespace
+            Generator.assign_ns(attrs, ns, value.elename.namespace)
+          end
         end
       end
       if data.text and data.text.is_a?(XSD::QName)

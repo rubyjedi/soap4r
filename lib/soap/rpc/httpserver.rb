@@ -20,6 +20,44 @@ class HTTPServer < Logger::Application
   attr_reader :server
   attr_accessor :default_namespace
 
+  class << self
+    if RUBY_VERSION >= "1.7.0"
+      def __attr_proxy(symbol, assignable = false)
+        name = symbol.to_s
+        define_method(name) {
+          @router.__send__(name)
+        }
+        if assignable
+          aname = name + '='
+          define_method(aname) { |rhs|
+            @router.__send__(aname, rhs)
+          }
+        end
+      end
+    else
+      def __attr_proxy(symbol, assignable = false)
+        name = symbol.to_s
+        module_eval <<-EOS
+          def #{name}
+            @router.#{name}
+          end
+        EOS
+        if assignable
+          module_eval <<-EOS
+            def #{name}=(value)
+              @router.#{name} = value
+            end
+          EOS
+        end
+      end
+    end
+  end
+
+  __attr_proxy :mapping_registry, true
+  __attr_proxy :literal_mapping_registry, true
+  __attr_proxy :generate_explicit_type, true
+  __attr_proxy :use_default_namespace, true
+
   def initialize(config)
     actor = config[:SOAPHTTPServerApplicationName] || self.class.name
     super(actor)
@@ -58,30 +96,6 @@ class HTTPServer < Logger::Application
 
   def authenticator=(authenticator)
     @soaplet.authenticator = authenticator
-  end
-
-  def mapping_registry
-    @router.mapping_registry
-  end
-
-  def mapping_registry=(mapping_registry)
-    @router.mapping_registry = mapping_registry
-  end
-
-  def literal_mapping_registry
-    @router.literal_mapping_registry
-  end
-
-  def literal_mapping_registry=(literal_mapping_registry)
-    @router.literal_mapping_registry = literal_mapping_registry
-  end
-
-  def generate_explicit_type
-    @router.generate_explicit_type
-  end
-
-  def generate_explicit_type=(generate_explicit_type)
-    @router.generate_explicit_type = generate_explicit_type
   end
 
   # servant entry interface

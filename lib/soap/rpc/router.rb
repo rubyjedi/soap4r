@@ -30,6 +30,7 @@ class Router
   attr_accessor :mapping_registry
   attr_accessor :literal_mapping_registry
   attr_accessor :generate_explicit_type
+  attr_accessor :use_default_namespace
   attr_accessor :external_ces
   attr_reader :filterchain
 
@@ -39,6 +40,7 @@ class Router
     @headerhandler = Header::HandlerSet.new
     @literal_mapping_registry = ::SOAP::Mapping::LiteralRegistry.new
     @generate_explicit_type = true
+    @use_default_namespace = false
     @external_ces = nil
     @operation_by_soapaction = {}
     @operation_by_qname = {}
@@ -322,6 +324,7 @@ private
     opt[:external_content] = nil
     opt[:default_encodingstyle] = default_encodingstyle
     opt[:generate_explicit_type] = @generate_explicit_type
+    opt[:use_default_namespace] = @use_default_namespace
     @filterchain.reverse_each do |filter|
       env = filter.on_outbound(env, opt)
       break unless env
