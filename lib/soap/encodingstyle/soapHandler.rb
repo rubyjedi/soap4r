@@ -301,7 +301,7 @@ private
     data.extraattr.each do |key, value|
       keytag = key
       if key.is_a?(XSD::QName)
-        keytag = encode_qname(attrs, ns, key)
+        keytag = encode_attr_key(attrs, ns, key)
       end
       if value.is_a?(XSD::QName)
         value = encode_qname(attrs, ns, value)

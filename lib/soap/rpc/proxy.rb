@@ -131,17 +131,13 @@ public
       :envelopenamespace => @options["soap.envelope.requestnamespace"],
       :default_encodingstyle =>
         @default_encodingstyle || op_info.request_default_encodingstyle,
-      :use_default_namespace => @use_default_namespace,
-      :elementformdefault => op_info.elementformdefault,
-      :attributeformdefault => op_info.attributeformdefault
+      :use_default_namespace =>
+        op_info.use_default_namespace || @use_default_namespace
     )
     resopt = create_encoding_opt(
       :envelopenamespace => @options["soap.envelope.responsenamespace"],
       :default_encodingstyle =>
-        @default_encodingstyle || op_info.response_default_encodingstyle,
-      :use_default_namespace => @use_default_namespace,
-      :elementformdefault => op_info.elementformdefault,
-      :attributeformdefault => op_info.attributeformdefault
+        @default_encodingstyle || op_info.response_default_encodingstyle
     )
     env = route(req_header, req_body, reqopt, resopt)
     if op_info.response_use.nil?
@@ -354,8 +350,7 @@ private
     attr_reader :response_style
     attr_reader :request_use
     attr_reader :response_use
-    attr_reader :elementformdefault
-    attr_reader :attributeformdefault
+    attr_reader :use_default_namespace
 
     def initialize(soapaction, param_def, opt)
       @soapaction = soapaction
@@ -363,9 +358,11 @@ private
       @response_style = opt[:response_style]
       @request_use = opt[:request_use]
       @response_use = opt[:response_use]
-      # set nil(unqualified) by default
-      @elementformdefault = opt[:elementformdefault]
-      @attributeformdefault = opt[:attributeformdefault]
+      @use_default_namespace =
+        opt[:use_default_namespace] || opt[:elementformdefault]
+      if opt.key?(:elementformdefault)
+        warn("option :elementformdefault is deprecated.  use :use_default_namespace instead")
+      end
       check_style(@request_style)
       check_style(@response_style)
       check_use(@request_use)

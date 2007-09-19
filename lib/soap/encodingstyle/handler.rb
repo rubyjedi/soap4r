@@ -94,12 +94,23 @@ class Handler
   def decode_epilogue
   end
 
+  def encode_attr_key(attrs, ns, qname)
+    if qname.namespace.nil?
+      qname.name
+    else
+      unless ns.assigned_as_tagged?(qname.namespace)
+        Generator.assign_ns!(attrs, ns, qname.namespace)
+      end
+      ns.name_attr(qname)
+    end
+  end
+
   def encode_qname(attrs, ns, qname)
-    unless qname.namespace.nil?
+    if qname.namespace.nil?
+      qname.name
+    else
       Generator.assign_ns(attrs, ns, qname.namespace)
       ns.name(qname)
-    else
-      qname.name
     end
   end
 end

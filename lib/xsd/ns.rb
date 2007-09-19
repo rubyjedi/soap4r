@@ -24,7 +24,7 @@ class NS
     attr_reader :known_tag
 
     def initialize(known_tag)
-      @known_tag = known_tag
+      @known_tag = known_tag.dup
       @count = 0
     end
 
@@ -76,6 +76,10 @@ public
     @default_namespace == ns or @ns2tag.key?(ns)
   end
 
+  def assigned_as_tagged?(ns)
+    @ns2tag.key?(ns)
+  end
+
   def assigned_tag?(tag)
     @tag2ns.key?(tag)
   end
@@ -87,13 +91,22 @@ public
     cloned
   end
 
-  def name(name)
-    if (name.namespace == @default_namespace)
-      name.name
-    elsif tag = @ns2tag[name.namespace]
-      "#{tag}:#{name.name}"
+  def name(qname)
+    if qname.namespace == @default_namespace
+      qname.name
+    elsif tag = @ns2tag[qname.namespace]
+      "#{tag}:#{qname.name}"
     else
-      raise FormatError.new("namespace: #{name.namespace} not defined yet")
+      raise FormatError.new("namespace: #{qname.namespace} not defined yet")
+    end
+  end
+
+  # no default namespace
+  def name_attr(qname)
+    if tag = @ns2tag[qname.namespace]
+      "#{tag}:#{qname.name}"
+    else
+      raise FormatError.new("namespace: #{qname.namespace} not defined yet")
     end
   end
 

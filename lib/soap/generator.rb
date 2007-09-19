@@ -40,7 +40,6 @@ public
     @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
     @generate_explicit_type =
       opt.key?(:generate_explicit_type) ? opt[:generate_explicit_type] : true
-    # ':elementformdefault' is for backward compatibility
     @use_default_namespace = opt[:use_default_namespace]
     @attributeformdefault = opt[:attributeformdefault]
     @use_numeric_character_reference = opt[:use_numeric_character_reference]
@@ -53,9 +52,7 @@ public
   def generate(obj, io = nil)
     @buf = io || ''
     @indent = ''
-    @encode_char_regexp =
-      ENCODE_CHAR_REGEXP[XSD::Charset.encoding] ||=
-        Regexp.new("[#{EncodeMap.keys.join}]", nil, XSD::Charset.encoding)
+    @encode_char_regexp = get_encode_char_regexp()
 
     prologue
     @handlers.each do |uri, handler|
@@ -212,6 +209,42 @@ public
     @buf << str
   end
 
+  def encode_string(str)
+    @buf << get_encoded(str)
+  end
+
+  def element_local?(element)
+    element.elename.namespace.nil?
+  end
+
+  def self.assign_ns(attrs, ns, namespace, tag = nil)
+    if namespace.nil?
+      raise FormatEncodeError.new("empty namespace")
+    end
+    override_default_ns = (tag == '' and namespace != ns.default_namespace)
+    if override_default_ns or !ns.assigned?(namespace)
+      assign_ns!(attrs, ns, namespace, tag)
+    end
+  end
+
+  def self.assign_ns!(attrs, ns, namespace, tag = nil)
+    tag = ns.assign(namespace, tag)
+    if tag == ''
+      attr = 'xmlns'
+    else
+      attr = "xmlns:#{tag}"
+    end
+    attrs[attr] = namespace
+  end
+
+private
+
+  def prologue
+  end
+
+  def epilogue
+  end
+
   ENCODE_CHAR_REGEXP = {}
 
   EncodeMap = {
@@ -222,10 +255,6 @@ public
     '\'' => '&apos;',
     "\r" => '&#xd;'
   }
-
-  def encode_string(str)
-    @buf << get_encoded(str)
-  end
 
   def get_encoded(str)
     if @use_numeric_character_reference and !XSD::Charset.is_us_ascii(str)
@@ -242,32 +271,9 @@ public
     end
   end
 
-  def element_local?(element)
-    element.elename.namespace.nil?
-  end
-
-  def self.assign_ns(attrs, ns, namespace, tag = nil)
-    if namespace.nil?
-      raise FormatEncodeError.new("empty namespace")
-    end
-    override_default_ns = (tag == '' and namespace != ns.default_namespace)
-    if override_default_ns or !ns.assigned?(namespace)
-      tag = ns.assign(namespace, tag)
-      if tag == ''
-        attr = 'xmlns'
-      else
-        attr = "xmlns:#{tag}"
-      end
-      attrs[attr] = namespace
-    end
-  end
-
-private
-
-  def prologue
-  end
-
-  def epilogue
+  def get_encode_char_regexp
+    ENCODE_CHAR_REGEXP[XSD::Charset.encoding] ||=
+      Regexp.new("[#{EncodeMap.keys.join}]", nil, XSD::Charset.encoding)
   end
 
   def find_handler(encodingstyle)
