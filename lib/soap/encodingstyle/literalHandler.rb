@@ -31,10 +31,9 @@ class LiteralHandler < Handler
     name = generator.encode_name(ns, data, attrs)
     data.extraattr.each do |key, value|
       next if !@generate_explicit_type and key == XSD::AttrTypeName
-      # ToDo: check generator.attributeformdefault here
       keytag = key
       if key.is_a?(XSD::QName)
-        keytag = encode_qname(attrs, ns, key)
+        keytag = encode_attr_key(attrs, ns, key)
       end
       if value.is_a?(XSD::QName)
         value = encode_qname(attrs, ns, value)

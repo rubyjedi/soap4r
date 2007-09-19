@@ -127,9 +127,7 @@ private
         :request_style => op_bind.soapoperation_style,
         :response_style => op_bind.soapoperation_style,
         :request_use => op_bind.soapbody_use_input,
-        :response_use => op_bind.soapbody_use_output,
-        :elementformdefault => false,
-        :attributeformdefault => false
+        :response_use => op_bind.soapbody_use_output
       }
       if op_bind.soapoperation_style == :rpc
         drv.add_rpc_operation(op_name, soapaction, name, param_def, opt)
