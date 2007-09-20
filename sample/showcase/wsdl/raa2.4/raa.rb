@@ -1,62 +1,21 @@
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
+require 'xsd/qname'
+
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}Gem
+#   id - SOAP::SOAPInt
+#   category - Category
+#   owner - Owner
+#   project - Project
+#   updated - SOAP::SOAPDateTime
+#   created - SOAP::SOAPDateTime
 class Gem
-  @@schema_type = "Gem"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+  attr_accessor :id
+  attr_accessor :category
+  attr_accessor :owner
+  attr_accessor :project
+  attr_accessor :updated
+  attr_accessor :created
 
-  def id
-    @id
-  end
-
-  def id=(value)
-    @id = value
-  end
-
-  def category
-    @category
-  end
-
-  def category=(value)
-    @category = value
-  end
-
-  def owner
-    @owner
-  end
-
-  def owner=(value)
-    @owner = value
-  end
-
-  def project
-    @project
-  end
-
-  def project=(value)
-    @project = value
-  end
-
-  def updated
-    @updated
-  end
-
-  def updated=(value)
-    @updated = value
-  end
-
-  def created
-    @created
-  end
-
-  def created=(value)
-    @created = value
-  end
-
-  def initialize(id = nil,
-      category = nil,
-      owner = nil,
-      project = nil,
-      updated = nil,
-      created = nil)
+  def initialize(id = nil, category = nil, owner = nil, project = nil, updated = nil, created = nil)
     @id = id
     @category = category
     @owner = owner
@@ -66,176 +25,63 @@ class Gem
   end
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}Category
+#   major - SOAP::SOAPString
+#   minor - SOAP::SOAPString
 class Category
-  @@schema_type = "Category"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+  attr_accessor :major
+  attr_accessor :minor
 
-  def major
-    @major
-  end
-
-  def major=(value)
-    @major = value
-  end
-
-  def minor
-    @minor
-  end
-
-  def minor=(value)
-    @minor = value
-  end
-
-  def initialize(major = nil,
-      minor = nil)
+  def initialize(major = nil, minor = nil)
     @major = major
     @minor = minor
   end
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}Owner
+#   id - SOAP::SOAPInt
+#   email - SOAP::SOAPAnyURI
+#   name - SOAP::SOAPString
 class Owner
-  @@schema_type = "Owner"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+  attr_accessor :id
+  attr_accessor :email
+  attr_accessor :name
 
-  def id
-    @id
-  end
-
-  def id=(value)
-    @id = value
-  end
-
-  def email
-    @email
-  end
-
-  def email=(value)
-    @email = value
-  end
-
-  def name
-    @name
-  end
-
-  def name=(value)
-    @name = value
-  end
-
-  def initialize(id = nil,
-      email = nil,
-      name = nil)
+  def initialize(id = nil, email = nil, name = nil)
     @id = id
     @email = email
     @name = name
   end
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}Project
+#   name - SOAP::SOAPString
+#   short_description - SOAP::SOAPString
+#   version - SOAP::SOAPString
+#   status - SOAP::SOAPString
+#   url - SOAP::SOAPAnyURI
+#   download - SOAP::SOAPAnyURI
+#   license - SOAP::SOAPString
+#   description - SOAP::SOAPString
+#   description_style - SOAP::SOAPString
+#   updated - SOAP::SOAPDateTime
+#   history - ProjectArray
+#   dependency - ProjectDependencyArray
 class Project
-  @@schema_type = "Project"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+  attr_accessor :name
+  attr_accessor :short_description
+  attr_accessor :version
+  attr_accessor :status
+  attr_accessor :url
+  attr_accessor :download
+  attr_accessor :license
+  attr_accessor :description
+  attr_accessor :description_style
+  attr_accessor :updated
+  attr_accessor :history
+  attr_accessor :dependency
 
-  def name
-    @name
-  end
-
-  def name=(value)
-    @name = value
-  end
-
-  def short_description
-    @short_description
-  end
-
-  def short_description=(value)
-    @short_description = value
-  end
-
-  def version
-    @version
-  end
-
-  def version=(value)
-    @version = value
-  end
-
-  def status
-    @status
-  end
-
-  def status=(value)
-    @status = value
-  end
-
-  def url
-    @url
-  end
-
-  def url=(value)
-    @url = value
-  end
-
-  def download
-    @download
-  end
-
-  def download=(value)
-    @download = value
-  end
-
-  def license
-    @license
-  end
-
-  def license=(value)
-    @license = value
-  end
-
-  def description
-    @description
-  end
-
-  def description=(value)
-    @description = value
-  end
-
-  def updated
-    @updated
-  end
-
-  def updated=(value)
-    @updated = value
-  end
-
-  def history
-    @history
-  end
-
-  def history=(value)
-    @history = value
-  end
-
-  def dependency
-    @dependency
-  end
-
-  def dependency=(value)
-    @dependency = value
-  end
-
-  def initialize(name = nil,
-      short_description = nil,
-      version = nil,
-      status = nil,
-      url = nil,
-      download = nil,
-      license = nil,
-      description = nil,
-      updated = nil,
-      history = nil,
-      dependency = nil)
+  def initialize(name = nil, short_description = nil, version = nil, status = nil, url = nil, download = nil, license = nil, description = nil, description_style = nil, updated = nil, history = nil, dependency = nil)
     @name = name
     @short_description = short_description
     @version = version
@@ -244,89 +90,45 @@ class Project
     @download = download
     @license = license
     @description = description
+    @description_style = description_style
     @updated = updated
     @history = history
     @dependency = dependency
   end
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependency
+#   project - SOAP::SOAPString
+#   version - SOAP::SOAPString
+#   description - SOAP::SOAPString
 class ProjectDependency
-  @@schema_type = "ProjectDependency"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+  attr_accessor :project
+  attr_accessor :version
+  attr_accessor :description
 
-  def project
-    @project
-  end
-
-  def project=(value)
-    @project = value
-  end
-
-  def version
-    @version
-  end
-
-  def version=(value)
-    @version = value
-  end
-
-  def description
-    @description
-  end
-
-  def description=(value)
-    @description = value
-  end
-
-  def initialize(project = nil,
-      version = nil,
-      description = nil)
+  def initialize(project = nil, version = nil, description = nil)
     @project = project
     @version = version
     @description = description
   end
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
-class GemArray < Array
-  # Contents type should be dumped here...
-  @@schema_type = "GemArray"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}GemArray
+class GemArray < ::Array
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
-class OwnerArray < Array
-  # Contents type should be dumped here...
-  @@schema_type = "OwnerArray"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}OwnerArray
+class OwnerArray < ::Array
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
-class ProjectArray < Array
-  # Contents type should be dumped here...
-  @@schema_type = "ProjectArray"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectArray
+class ProjectArray < ::Array
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
-class ProjectDependencyArray < Array
-  # Contents type should be dumped here...
-  @@schema_type = "ProjectDependencyArray"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}ProjectDependencyArray
+class ProjectDependencyArray < ::Array
 end
 
-# http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/
-class StringArray < Array
-  # Contents type should be dumped here...
-  @@schema_type = "StringArray"
-  @@schema_ns = "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/"
+# {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}StringArray
+class StringArray < ::Array
 end
-
-# http://xml.apache.org/xml-soap
-class Map < Array
-  # Contents type should be dumped here...
-  @@schema_type = "Map"
-  @@schema_ns = "http://xml.apache.org/xml-soap"
-end
-
