@@ -437,6 +437,7 @@ module Mapping
     definition = create_schema_definition(klass,
       :schema_name => schema_name,
       :schema_type => schema_type,
+      :is_anonymous => false,
       :schema_qualified => qualified,
       :schema_element => elements,
       :schema_attribute => attributes
@@ -449,6 +450,7 @@ module Mapping
     schema_ns = definition[:schema_ns]
     schema_name = definition[:schema_name]
     schema_type = definition[:schema_type]
+    is_anonymous = definition[:is_anonymous]
     schema_basetype = definition[:schema_basetype]
     # wrap if needed for backward compatibility
     if schema_ns
@@ -459,7 +461,7 @@ module Mapping
     schema_qualified = definition[:schema_qualified]
     schema_element = definition[:schema_element]
     schema_attributes = definition[:schema_attribute]
-    definition = SchemaDefinition.new(klass, schema_name, schema_type, schema_qualified)
+    definition = SchemaDefinition.new(klass, schema_name, schema_type, is_anonymous, schema_qualified)
     definition.basetype = schema_basetype
     definition.attributes = schema_attributes
     if schema_element

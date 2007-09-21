@@ -186,7 +186,7 @@ module RegistrySupport
     if !@class_schema_definition[obj_class] or definition.type
       @class_schema_definition[obj_class] = definition
     end
-    if definition.elename
+    if definition.elename and !definition.is_anonymous?
       @class_elename_schema_definition[obj_class] = definition
       @elename_schema_definition[definition.elename] = definition
     end

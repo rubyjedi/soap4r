@@ -145,14 +145,19 @@ class SchemaDefinition
   attr_accessor :attributes
   attr_accessor :elements
 
-  def initialize(class_for, elename, type, qualified)
+  def initialize(class_for, elename, type, anonymous, qualified)
     @class_for = class_for
     @elename = elename
     @type = type
+    @anonymous = anonymous
     @qualified = qualified
     @basetype = nil
     @elements = EMPTY
     @attributes = nil
+  end
+
+  def is_anonymous?
+    @anonymous
   end
 
   def choice?

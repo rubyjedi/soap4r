@@ -22,6 +22,14 @@ class TestAnonymous < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'login'),
         XSD::QName.new(Namespace, 'loginResponse')
       )
+      add_document_method(
+        self,
+        Namespace + ':echo',
+        'echo',
+        XSD::QName.new(Namespace, 'Pack'),
+        XSD::QName.new(Namespace, 'Envelope')
+      )
+      self.literal_mapping_registry = LpMappingRegistry::LiteralRegistry
     end
   
     def login(arg)
@@ -29,14 +37,20 @@ class TestAnonymous < Test::Unit::TestCase
       sess = [req.username, req.password, req.timezone].join
       LoginResponse.new(LoginResponse::LoginResult.new(sess))
     end
+
+    def echo(pack)
+      raise unless pack.class == Pack
+      raise unless pack.header.class == Pack::Header
+      Envelope.new(Envelope::Header.new(pack.header.header1))
+    end
   end
 
   DIR = File.dirname(File.expand_path(__FILE__))
   Port = 17171
 
   def setup
-    setup_server
     setup_clientdef
+    setup_server
     @client = nil
   end
 
@@ -97,6 +111,16 @@ class TestAnonymous < Test::Unit::TestCase
     response = @client.login(request)
     assert_equal(LoginResponse::LoginResult, response.loginResult.class)
     assert_equal("usernamepasswordtz", response.loginResult.sessionID)
+  end
+
+  def test_anonymous_mapping
+    @client = Lp_porttype.new("http://localhost:#{Port}/")
+    @client.wiredump_dev = STDERR if $DEBUG
+    request = Pack.new(Pack::Header.new("pack_header"))
+    response = @client.echo(request)
+    assert_equal(Envelope, response.class)
+    assert_equal(Envelope::Header, response.header.class)
+    assert_equal("pack_header", response.header.header2)
   end
 end
 

@@ -23,7 +23,6 @@ module Echo_versionMappingRegistry
   LiteralRegistry.register(
     :class => Version_struct,
     :schema_type => XSD::QName.new(NsSimpletypeRpcType, "version_struct"),
-    :schema_qualified => false,
     :schema_element => [
       ["version", ["Version", XSD::QName.new(nil, "version")]],
       ["msg", ["SOAP::SOAPString", XSD::QName.new(nil, "msg")]]
