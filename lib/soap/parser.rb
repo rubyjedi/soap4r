@@ -208,15 +208,11 @@ private
 	end
       end
     elsif ele.name == EleHeader
-      unless parent.node.is_a?(SOAPEnvelope)
-	raise FormatDecodeError.new("Header should be a child of Envelope.")
-      end
+      return nil unless parent.node.is_a?(SOAPEnvelope)
       o = SOAPHeader.new
       parent.node.header = o
     elsif ele.name == EleBody
-      unless parent.node.is_a?(SOAPEnvelope)
-	raise FormatDecodeError.new("Body should be a child of Envelope.")
-      end
+      return nil unless parent.node.is_a?(SOAPEnvelope)
       o = SOAPBody.new
       parent.node.body = o
     elsif ele.name == EleFault
@@ -232,7 +228,7 @@ private
         o = SOAPFault.new
         body.fault = o
       else
-        raise FormatDecodeError.new("Fault should be a child of Body.")
+        return nil
       end
     end
     o.extraattr.update(attrs) if o
