@@ -53,6 +53,7 @@ public
     @operation_by_qname = {}
     @operation_by_soapaction = {}
     @mandatorycharset = nil
+    # TODO: set to false by default or drop thie option in 1.6.0
     @allow_unqualified_element = true
     @default_encodingstyle = nil
     @generate_explicit_type = true
