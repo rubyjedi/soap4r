@@ -29,7 +29,7 @@ module MappingRegistryCreatorSupport
     when :TYPE_STRUCT, :TYPE_EMPTY
       dump_complex_typemap(mpath, qname, typedef, as_element, opt)
     when :TYPE_ARRAY
-      dump_array_typemap(mpath, qname, typedef, opt)
+      dump_array_typemap(mpath, qname, typedef, as_element, opt)
     when :TYPE_SIMPLE
       dump_simple_typemap(mpath, qname, typedef, as_element, opt)
     when :TYPE_MAP
@@ -41,34 +41,22 @@ module MappingRegistryCreatorSupport
     end
   end
 
-  def dump_array_typemap(mpath, qname, typedef, opt)
+  def dump_array_typemap(mpath, qname, typedef, as_element, opt)
     if typedef.find_soapenc_arytype
       if opt[:encoded]
-        dump_encoded_array_typemap(mpath, qname, typedef, opt)
+        dump_encoded_array_typemap(mpath, qname, typedef, as_element, opt)
       end
     else
-      dump_literal_array_typemap(mpath, qname, typedef, opt)
+      dump_literal_array_typemap(mpath, qname, typedef, as_element, opt)
     end
   end
 
   def dump_complex_typemap(mpath, qname, typedef, as_element, opt)
     var = {}
-    var[:class] = mapped_class_name(qname, mpath)
-    if as_element
-      var[:schema_name] = as_element
-      chema_ns = as_element.namespace
-    elsif typedef.name.nil?
-      var[:schema_name] = qname
-      schema_ns = qname.namespace
-    else
-      var[:schema_type] = qname
-      var[:schema_basetype] = typedef.base if typedef.base
-      schema_ns = qname.namespace
-    end
-    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
-    # true, false, or nil
-    if opt.key?(:qualified)
-      var[:schema_qualified] = opt[:qualified].to_s
+    define_dump_class(var, mpath, qname, typedef, as_element, opt)
+    schema_ns = (var[:schema_name] || var[:schema_type]).namespace
+    if var[:schema_type] and typedef.base
+      var[:schema_basetype] = typedef.base
     end
     parentmodule = var[:class]
     parsed_element =
@@ -86,18 +74,8 @@ module MappingRegistryCreatorSupport
 
   def dump_simple_typemap(mpath, qname, typedef, as_element, opt)
     var = {}
-    var[:class] = mapped_class_name(qname, mpath)
-    if as_element
-      var[:schema_name] = as_element
-      schema_ns = as_element.namespace
-    elsif typedef.name.nil?
-      var[:schema_name] = qname
-      schema_ns = qname.namespace
-    else
-      var[:schema_type] = qname
-      schema_ns = qname.namespace
-    end
-    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
+    define_dump_class(var, mpath, qname, typedef, as_element, opt)
+    schema_ns = (var[:schema_name] || var[:schema_type]).namespace
     unless typedef.attributes.empty?
       var[:schema_attribute] = define_attribute(typedef.attributes)
     end
@@ -299,18 +277,8 @@ module MappingRegistryCreatorSupport
       return nil
     end
     var = {}
-    var[:class] = mapped_class_name(qname, mpath)
-    if as_element
-      var[:schema_name] = as_element
-      schema_ns = as_element.namespace
-    elsif typedef.name.nil?
-      var[:schema_name] = qname
-      schema_ns = qname.namespace
-    else
-      var[:schema_type] = qname
-      schema_ns = qname.namespace
-    end
-    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
+    define_dump_class(var, mpath, qname, typedef, as_element, opt)
+    schema_ns = (var[:schema_name] || var[:schema_type]).namespace
     assign_const(schema_ns, 'Ns')
     dump_entry(@varname, var)
   end
@@ -325,18 +293,10 @@ module MappingRegistryCreatorSupport
 
   DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
 
-  def dump_literal_array_typemap(mpath, qname, typedef, opt)
+  def dump_literal_array_typemap(mpath, qname, typedef, as_element, opt)
     var = {}
-    var[:class] = mapped_class_name(qname, mpath)
-    schema_ns = qname.namespace
-    if typedef.name.nil?
-      # local complextype of a element
-      var[:schema_name] = qname
-    else
-      # named complextype
-      var[:schema_type] = qname
-    end
-    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
+    define_dump_class(var, mpath, qname, typedef, as_element, opt)
+    schema_ns = (var[:schema_name] || var[:schema_type]).namespace
     parsed_element =
       parse_elements(typedef.elements, qname.namespace, var[:class], opt)
     if parsed_element.empty?
@@ -347,7 +307,7 @@ module MappingRegistryCreatorSupport
     dump_entry(@varname, var)
   end
 
-  def dump_encoded_array_typemap(mpath, qname, typedef, opt)
+  def dump_encoded_array_typemap(mpath, qname, typedef, as_element, opt)
     arytype = typedef.find_arytype || XSD::AnyTypeName
     type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
     return <<__EOD__
@@ -389,6 +349,25 @@ __EOD__
       child_element_name = DEFAULT_ITEM_NAME
     end
     [child_element_name.name, child_element_name, type, occurrence]
+  end
+
+  def define_dump_class(var, mpath, qname, typedef, as_element, opt)
+    var[:class] = mapped_class_name(qname, mpath)
+    if as_element
+      var[:schema_name] = as_element
+      schema_ns = as_element.namespace
+    elsif typedef.name.nil?
+      var[:schema_name] = qname
+      schema_ns = qname.namespace
+    else
+      var[:schema_type] = qname
+      schema_ns = qname.namespace
+    end
+    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
+    # true, false, or nil
+    if opt.key?(:qualified)
+      var[:schema_qualified] = opt[:qualified].to_s
+    end
   end
 end
 
