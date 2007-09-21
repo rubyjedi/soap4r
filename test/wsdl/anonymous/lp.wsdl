@@ -97,10 +97,22 @@
     <part name="parameters" element="tns:loginResponse" />
   </message>
 
+  <message name="echo_in">
+    <part name="parameters" element="tns:Pack" />
+  </message>
+  <message name="echo_out">
+    <part name="parameters" element="tns:Envelope" />
+  </message>
+
   <portType name="lp_porttype">
     <operation name="login">
       <input message="tns:login_in" />
       <output message="tns:login_out" />
+    </operation>
+
+    <operation name="echo">
+      <input message="tns:echo_in" />
+      <output message="tns:echo_out" />
     </operation>
   </portType>
 
@@ -108,6 +120,16 @@
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
     <operation name="login">
       <soap:operation soapAction="urn:lp:login" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+
+    <operation name="echo">
+      <soap:operation soapAction="urn:lp:echo" style="document" />
       <input>
         <soap:body use="literal" />
       </input>

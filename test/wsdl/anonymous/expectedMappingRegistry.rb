@@ -27,6 +27,8 @@ module LpMappingRegistry
   EncodedRegistry.register(
     :class => WSDL::Anonymous::ExtraInfo::Entry,
     :schema_name => XSD::QName.new(nil, "Entry"),
+    :is_anonymous => true,
+    :schema_qualified => false,
     :schema_element => [
       ["key", ["SOAP::SOAPString", XSD::QName.new(nil, "Key")]],
       ["value", ["SOAP::SOAPString", XSD::QName.new(nil, "Value")]]
@@ -44,6 +46,8 @@ module LpMappingRegistry
   EncodedRegistry.register(
     :class => WSDL::Anonymous::LoginResponse::LoginResult,
     :schema_name => XSD::QName.new(nil, "loginResult"),
+    :is_anonymous => true,
+    :schema_qualified => false,
     :schema_element => [
       ["sessionID", "SOAP::SOAPString"]
     ]
@@ -52,7 +56,6 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::Header,
     :schema_type => XSD::QName.new(NsLp, "Header"),
-    :schema_qualified => false,
     :schema_element => [
       ["header3", ["SOAP::SOAPString", XSD::QName.new(nil, "Header3")]]
     ]
@@ -69,6 +72,8 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::ExtraInfo::Entry,
     :schema_name => XSD::QName.new(nil, "Entry"),
+    :is_anonymous => true,
+    :schema_qualified => false,
     :schema_element => [
       ["key", ["SOAP::SOAPString", XSD::QName.new(nil, "Key")]],
       ["value", ["SOAP::SOAPString", XSD::QName.new(nil, "Value")]]
@@ -78,7 +83,6 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::LoginResponse,
     :schema_type => XSD::QName.new(NsLp, "loginResponse"),
-    :schema_qualified => false,
     :schema_element => [
       ["loginResult", ["WSDL::Anonymous::LoginResponse::LoginResult", XSD::QName.new(nil, "loginResult")]]
     ]
@@ -87,6 +91,7 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::LoginResponse::LoginResult,
     :schema_name => XSD::QName.new(nil, "loginResult"),
+    :is_anonymous => true,
     :schema_qualified => false,
     :schema_element => [
       ["sessionID", "SOAP::SOAPString"]
@@ -96,7 +101,6 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::Pack,
     :schema_name => XSD::QName.new(NsLp, "Pack"),
-    :schema_qualified => true,
     :schema_element => [
       ["header", ["WSDL::Anonymous::Pack::Header", XSD::QName.new(nil, "Header")]]
     ]
@@ -105,7 +109,8 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::Pack::Header,
     :schema_name => XSD::QName.new(nil, "Header"),
-    :schema_qualified => true,
+    :is_anonymous => true,
+    :schema_qualified => false,
     :schema_element => [
       ["header1", ["SOAP::SOAPString", XSD::QName.new(nil, "Header1")]]
     ]
@@ -114,7 +119,6 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::Envelope,
     :schema_name => XSD::QName.new(NsLp, "Envelope"),
-    :schema_qualified => true,
     :schema_element => [
       ["header", ["WSDL::Anonymous::Envelope::Header", XSD::QName.new(nil, "Header")]]
     ]
@@ -123,7 +127,8 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::Envelope::Header,
     :schema_name => XSD::QName.new(nil, "Header"),
-    :schema_qualified => true,
+    :is_anonymous => true,
+    :schema_qualified => false,
     :schema_element => [
       ["header2", ["SOAP::SOAPString", XSD::QName.new(nil, "Header2")]]
     ]
@@ -132,7 +137,6 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::Login,
     :schema_name => XSD::QName.new(NsLp, "login"),
-    :schema_qualified => true,
     :schema_element => [
       ["loginRequest", ["WSDL::Anonymous::Login::LoginRequest", XSD::QName.new(nil, "loginRequest")]]
     ]
@@ -141,7 +145,8 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::Login::LoginRequest,
     :schema_name => XSD::QName.new(nil, "loginRequest"),
-    :schema_qualified => true,
+    :is_anonymous => true,
+    :schema_qualified => false,
     :schema_element => [
       ["username", "SOAP::SOAPString"],
       ["password", "SOAP::SOAPString"],
@@ -152,7 +157,6 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::LoginResponse,
     :schema_name => XSD::QName.new(NsLp, "loginResponse"),
-    :schema_qualified => true,
     :schema_element => [
       ["loginResult", ["WSDL::Anonymous::LoginResponse::LoginResult", XSD::QName.new(nil, "loginResult")]]
     ]
@@ -161,7 +165,8 @@ module LpMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::Anonymous::LoginResponse::LoginResult,
     :schema_name => XSD::QName.new(nil, "loginResult"),
-    :schema_qualified => true,
+    :is_anonymous => true,
+    :schema_qualified => false,
     :schema_element => [
       ["sessionID", "SOAP::SOAPString"]
     ]

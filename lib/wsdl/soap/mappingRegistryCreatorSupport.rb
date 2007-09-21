@@ -18,31 +18,40 @@ module MappingRegistryCreatorSupport
   include ClassDefCreatorSupport
   include XSD::CodeGen
 
-  def dump_struct_typemap(mpath, qname, typedef, as_element = nil, qualified = nil)
-    dump_with_inner {
-      dump_complex_typemap(mpath, qname, typedef, as_element, qualified)
-    }
-  end
-
-  def dump_array_typemap(mpath, qname, typedef, opt = {})
-    dump_with_inner {
-      if typedef.find_soapenc_arytype
-        if opt[:encoded]
-          dump_encoded_array_typemap(mpath, qname, typedef)
-        end
-      else
-        dump_literal_array_typemap(mpath, qname, typedef)
-      end
-    }
-  end
-
   def dump_with_inner
     @dump_with_inner = []
     @dump_with_inner.unshift(yield)
     @dump_with_inner.join("\n")
   end
 
-  def dump_complex_typemap(mpath, qname, typedef, as_element = nil, qualified = nil)
+  def dump_complextypedef(mpath, qname, typedef, as_element = nil, opt = {})
+    case typedef.compoundtype
+    when :TYPE_STRUCT, :TYPE_EMPTY
+      dump_complex_typemap(mpath, qname, typedef, as_element, opt)
+    when :TYPE_ARRAY
+      dump_array_typemap(mpath, qname, typedef, opt)
+    when :TYPE_SIMPLE
+      dump_simple_typemap(mpath, qname, typedef, as_element, opt)
+    when :TYPE_MAP
+      # mapped as a general Hash
+      nil
+    else
+      raise RuntimeError.new(
+        "unknown kind of complexContent: #{typedef.compoundtype}")
+    end
+  end
+
+  def dump_array_typemap(mpath, qname, typedef, opt)
+    if typedef.find_soapenc_arytype
+      if opt[:encoded]
+        dump_encoded_array_typemap(mpath, qname, typedef, opt)
+      end
+    else
+      dump_literal_array_typemap(mpath, qname, typedef, opt)
+    end
+  end
+
+  def dump_complex_typemap(mpath, qname, typedef, as_element, opt)
     var = {}
     var[:class] = mapped_class_name(qname, mpath)
     if as_element
@@ -56,13 +65,14 @@ module MappingRegistryCreatorSupport
       var[:schema_basetype] = typedef.base if typedef.base
       schema_ns = qname.namespace
     end
+    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
     # true, false, or nil
-    unless qualified.nil?
-      var[:schema_qualified] = qualified.to_s
+    if opt.key?(:qualified)
+      var[:schema_qualified] = opt[:qualified].to_s
     end
     parentmodule = var[:class]
     parsed_element =
-      parse_elements(typedef.elements, qname.namespace, parentmodule, qualified)
+      parse_elements(typedef.elements, qname.namespace, parentmodule, opt)
     if typedef.choice?
       parsed_element.unshift(:choice)
     end
@@ -74,7 +84,7 @@ module MappingRegistryCreatorSupport
     dump_entry(@varname, var)
   end
 
-  def dump_simple_typemap(mpath, qname, typedef, as_element = nil, qualified = nil)
+  def dump_simple_typemap(mpath, qname, typedef, as_element, opt)
     var = {}
     var[:class] = mapped_class_name(qname, mpath)
     if as_element
@@ -87,6 +97,7 @@ module MappingRegistryCreatorSupport
       var[:schema_type] = qname
       schema_ns = qname.namespace
     end
+    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
     unless typedef.attributes.empty?
       var[:schema_attribute] = define_attribute(typedef.attributes)
     end
@@ -139,7 +150,7 @@ module MappingRegistryCreatorSupport
     end
   end
 
-  def parse_elements(elements, base_namespace, mpath, qualified = false)
+  def parse_elements(elements, base_namespace, mpath, opt)
     schema_element = []
     any = false
     elements.each do |element|
@@ -157,8 +168,11 @@ module MappingRegistryCreatorSupport
         next if element.ref == SchemaName
         typebase = @modulepath
         if element.anonymous_type?
-          @dump_with_inner << dump_complex_typemap(mpath, element.name,
-            element.local_complextype, nil, qualified)
+          child_opt = {
+            :qualified => (element.elementform == 'qualified'),
+            :is_anonymous => true
+          }
+          @dump_with_inner << dump_complextypedef(mpath, element.name, element.local_complextype, nil, child_opt)
           typebase = mpath
         end
         type = create_type_name(typebase, element)
@@ -180,11 +194,11 @@ module MappingRegistryCreatorSupport
         schema_element << [varname, eleqname, type, occurrence]
       when WSDL::XMLSchema::Sequence
         child_schema_element =
-          parse_elements(element.elements, base_namespace, mpath, qualified)
+          parse_elements(element.elements, base_namespace, mpath, opt)
         schema_element << child_schema_element
       when WSDL::XMLSchema::Choice
         child_schema_element =
-          parse_elements(element.elements, base_namespace, mpath, qualified)
+          parse_elements(element.elements, base_namespace, mpath, opt)
         if !element.map_as_array?
           # choice + maxOccurs="unbounded" is treated just as 'all' now.
           child_schema_element.unshift(:choice)
@@ -196,7 +210,7 @@ module MappingRegistryCreatorSupport
           next
         end
         child_schema_element =
-          parse_elements(element.content.elements, base_namespace, mpath, qualified)
+          parse_elements(element.content.elements, base_namespace, mpath, opt)
         schema_element.concat(child_schema_element)
       else
         raise RuntimeError.new("unknown type: #{element}")
@@ -232,6 +246,7 @@ module MappingRegistryCreatorSupport
         dump_entry_item(var, :soap_class),
         dump_entry_item(var, :schema_name, :qname),
         dump_entry_item(var, :schema_type, :qname),
+        dump_entry_item(var, :is_anonymous),
         dump_entry_item(var, :schema_basetype, :qname),
         dump_entry_item(var, :schema_qualified),
         dump_entry_item(var, :schema_element),
@@ -265,19 +280,19 @@ module MappingRegistryCreatorSupport
     end
   end
 
-  def dump_simpletypedef(mpath, qname, simpletype, as_element = nil, qualified = false)
+  def dump_simpletypedef(mpath, qname, simpletype, as_element = nil, opt = {})
     if simpletype.restriction
-      dump_simpletypedef_restriction(mpath, qname, simpletype, as_element, qualified)
+      dump_simpletypedef_restriction(mpath, qname, simpletype, as_element, opt)
     elsif simpletype.list
-      dump_simpletypedef_list(mpath, qname, simpletype, as_element, qualified)
+      dump_simpletypedef_list(mpath, qname, simpletype, as_element, opt)
     elsif simpletype.union
-      dump_simpletypedef_union(mpath, qname, simpletype, as_element, qualified)
+      dump_simpletypedef_union(mpath, qname, simpletype, as_element, opt)
     else
       raise RuntimeError.new("unknown kind of simpletype: #{simpletype}")
     end
   end
 
-  def dump_simpletypedef_restriction(mpath, qname, typedef, as_element, qualified)
+  def dump_simpletypedef_restriction(mpath, qname, typedef, as_element, opt)
     restriction = typedef.restriction
     unless restriction.enumeration?
       # not supported.  minlength?
@@ -295,21 +310,22 @@ module MappingRegistryCreatorSupport
       var[:schema_type] = qname
       schema_ns = qname.namespace
     end
+    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
     assign_const(schema_ns, 'Ns')
     dump_entry(@varname, var)
   end
 
-  def dump_simpletypedef_list(mpath, qname, typedef, as_element, qualified)
+  def dump_simpletypedef_list(mpath, qname, typedef, as_element, opt)
     nil
   end
 
-  def dump_simpletypedef_union(mpath, qname, typedef, as_element, qualified)
+  def dump_simpletypedef_union(mpath, qname, typedef, as_element, opt)
     nil
   end
 
   DEFAULT_ITEM_NAME = XSD::QName.new(nil, 'item')
 
-  def dump_literal_array_typemap(mpath, qname, typedef)
+  def dump_literal_array_typemap(mpath, qname, typedef, opt)
     var = {}
     var[:class] = mapped_class_name(qname, mpath)
     schema_ns = qname.namespace
@@ -320,8 +336,9 @@ module MappingRegistryCreatorSupport
       # named complextype
       var[:schema_type] = qname
     end
+    var[:is_anonymous] = opt[:is_anonymous] if opt.key?(:is_anonymous)
     parsed_element =
-      parse_elements(typedef.elements, qname.namespace, var[:class], nil)
+      parse_elements(typedef.elements, qname.namespace, var[:class], opt)
     if parsed_element.empty?
       parsed_element = [create_array_element_definition(typedef, mpath)]
     end
@@ -330,7 +347,7 @@ module MappingRegistryCreatorSupport
     dump_entry(@varname, var)
   end
 
-  def dump_encoded_array_typemap(mpath, qname, typedef)
+  def dump_encoded_array_typemap(mpath, qname, typedef, opt)
     arytype = typedef.find_arytype || XSD::AnyTypeName
     type = XSD::QName.new(arytype.namespace, arytype.name.sub(/\[(?:,)*\]$/, ''))
     return <<__EOD__

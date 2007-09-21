@@ -72,7 +72,6 @@ module RAAMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::RAA::Category,
     :schema_type => XSD::QName.new(NsC_002, "Category"),
-    :schema_qualified => false,
     :schema_element => [
       ["major", ["SOAP::SOAPString", XSD::QName.new(nil, "major")]],
       ["minor", ["SOAP::SOAPString", XSD::QName.new(nil, "minor")]]
@@ -82,7 +81,6 @@ module RAAMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::RAA::Product,
     :schema_type => XSD::QName.new(NsC_002, "Product"),
-    :schema_qualified => false,
     :schema_element => [
       ["id", ["SOAP::SOAPInt", XSD::QName.new(nil, "id")]],
       ["name", ["SOAP::SOAPString", XSD::QName.new(nil, "name")]],
@@ -99,7 +97,6 @@ module RAAMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::RAA::Owner,
     :schema_type => XSD::QName.new(NsC_002, "Owner"),
-    :schema_qualified => false,
     :schema_element => [
       ["id", ["SOAP::SOAPInt", XSD::QName.new(nil, "id")]],
       ["email", ["SOAP::SOAPAnyURI", XSD::QName.new(nil, "email")]],
@@ -110,7 +107,6 @@ module RAAMappingRegistry
   LiteralRegistry.register(
     :class => WSDL::RAA::Info,
     :schema_type => XSD::QName.new(NsC_002, "Info"),
-    :schema_qualified => false,
     :schema_element => [
       ["category", ["WSDL::RAA::Category", XSD::QName.new(nil, "category")]],
       ["product", ["WSDL::RAA::Product", XSD::QName.new(nil, "product")]],

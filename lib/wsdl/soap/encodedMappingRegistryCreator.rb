@@ -51,31 +51,20 @@ private
 
   def dump_complextype
     @complextypes.collect { |type|
-      dump_complextypedef(@modulepath, type.name, type) unless type.abstract
+      unless type.abstract
+        dump_with_inner {
+          dump_complextypedef(@modulepath, type.name, type, nil, :encoded => true)
+        }
+      end
     }.compact.join("\n")
   end
 
   def dump_simpletype
     @simpletypes.collect { |type|
-      dump_simpletypedef(@modulepath, type.name, type)
+      dump_with_inner {
+        dump_simpletypedef(@modulepath, type.name, type, nil, :encoded => true)
+      }
     }.compact.join("\n")
-  end
-
-  def dump_complextypedef(mpath, qname, typedef)
-    case typedef.compoundtype
-    when :TYPE_STRUCT, :TYPE_EMPTY
-      dump_struct_typemap(mpath, qname, typedef)
-    when :TYPE_ARRAY
-      dump_array_typemap(mpath, qname, typedef, :encoded => true)
-    when :TYPE_SIMPLE
-      dump_simple_typemap(mpath, qname, typedef)
-    when :TYPE_MAP
-      # mapped as a general Hash
-      nil
-    else
-      raise RuntimeError.new(
-        "unknown kind of complexContent: #{typedef.compoundtype}")
-    end
   end
 end
 

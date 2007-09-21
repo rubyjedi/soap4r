@@ -65,60 +65,48 @@ private
     @elements.collect { |ele|
       # has the definition different from the complexType of the same name
       next if ele.type.nil? and @complextypes[ele.name]
-      qualified = (ele.elementform == 'qualified')
-      if ele.local_complextype
-        dump_complextypedef(@modulepath, ele.name, ele.local_complextype, nil, qualified)
-      elsif ele.local_simpletype
-        dump_simpletypedef(@modulepath, ele.name, ele.local_simpletype, nil, qualified)
-      elsif ele.type
-        if typedef = @complextypes[ele.type]
-          dump_complextypedef(@modulepath, ele.type, typedef, ele.name, qualified)
-        elsif typedef = @simpletypes[ele.type]
-          dump_simpletypedef(@modulepath, ele.type, typedef, ele.name, qualified)
-        else
-          nil
+      dump_with_inner {
+        if typedef = ele.local_complextype
+          dump_complextypedef(@modulepath, ele.name, typedef)
+        elsif typedef = ele.local_simpletype
+          dump_simpletypedef(@modulepath, ele.name, typedef)
+        elsif ele.type
+          if typedef = @complextypes[ele.type]
+            dump_complextypedef(@modulepath, ele.type, typedef, ele.name)
+          elsif typedef = @simpletypes[ele.type]
+            dump_simpletypedef(@modulepath, ele.type, typedef, ele.name)
+          end
         end
-      else
-        nil
-      end
+      }
     }.compact.join("\n")
   end
 
   def dump_attribute
     @attributes.collect { |attr|
       if attr.local_simpletype
-        dump_simpletypedef(@modulepath, attr.name, attr.local_simpletype)
+        dump_with_inner {
+          dump_simpletypedef(@modulepath, attr.name, attr.local_simpletype)
+        }
       end
     }.compact.join("\n")
   end
 
   def dump_simpletype
     @simpletypes.collect { |type|
-      dump_simpletypedef(@modulepath, type.name, type)
+      dump_with_inner {
+        dump_simpletypedef(@modulepath, type.name, type)
+      }
     }.compact.join("\n")
   end
 
   def dump_complextype
     @complextypes.collect { |type|
-      dump_complextypedef(@modulepath, type.name, type) unless type.abstract
+      unless type.abstract
+        dump_with_inner {
+          dump_complextypedef(@modulepath, type.name, type)
+        }
+      end
     }.compact.join("\n")
-  end
-
-  def dump_complextypedef(mpath, qname, typedef, as_element = nil, qualified = false)
-    case typedef.compoundtype
-    when :TYPE_STRUCT, :TYPE_EMPTY
-      dump_struct_typemap(mpath, qname, typedef, as_element, qualified)
-    when :TYPE_ARRAY
-      dump_array_typemap(mpath, qname, typedef)
-    when :TYPE_SIMPLE
-      dump_simple_typemap(mpath, qname, typedef, as_element, qualified)
-    when :TYPE_MAP
-      # mapped as a general Hash
-      nil
-    else
-      raise RuntimeError.new(
-        "unknown kind of complexContent: #{typedef.compoundtype}")
-    end
   end
 end
 
