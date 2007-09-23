@@ -320,13 +320,12 @@ private
     if attributes = definition.attributes
       define_xmlattr(obj)
       attributes.each do |qname, class_name|
-        attr = node.extraattr[qname]
-        next if attr.nil?
-        child = attr
+        child = node.extraattr[qname]
+        next if child.nil?
         if class_name
           klass = Mapping.class_from_name(class_name)
           if klass.include?(::SOAP::SOAPBasetype)
-            child = klass.to_data(attr)
+            child = klass.to_data(child)
           end
         end
         obj.__xmlattr[qname] = child
