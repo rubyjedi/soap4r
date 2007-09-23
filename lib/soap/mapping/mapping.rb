@@ -226,7 +226,11 @@ module Mapping
   end
 
   def self.class_from_name(name, lenient = false)
-    const = const_from_name(name, lenient)
+    unless lenient
+      const = const_from_name_nonlenient(name)
+    else
+      const = const_from_name(name, true)
+    end
     if const.is_a?(::Class)
       const
     else
@@ -235,11 +239,24 @@ module Mapping
   end
 
   def self.module_from_name(name, lenient = false)
-    const = const_from_name(name, lenient)
+    unless lenient
+      const = const_from_name_nonlenient(name)
+    else
+      const = const_from_name(name, true)
+    end
     if const.is_a?(::Module)
       const
     else
       nil
+    end
+  end
+
+  def self.const_from_name_nonlenient(name)
+    if Thread.current[:SOAPMapping]
+      Thread.current[:SOAPMapping][:ConstFromName][name] ||=
+        const_from_name(name)
+    else
+      const_from_name(name)
     end
   end
 
@@ -571,6 +588,7 @@ module Mapping
         data[:SafeConstName] = {}
         data[:SafeMethodName] = {}
         data[:SafeVarName] = {}
+        data[:ConstFromName] = {}
         yield
       end
     end
