@@ -18,7 +18,7 @@ Release Notes - SOAP4R
 </h1>
 
 <p class="status">
-Last modified: Jul 16, 2007<br />
+Last modified: Sep 24, 2007<br />
 Created: July 17, 2000
 </p>
 </div>
@@ -33,7 +33,7 @@ This is Release Notes of SOAP4R.
 </p>
 
 <p>
-Target SOAP4R version: SOAP4R/1.5.7
+Target SOAP4R version: SOAP4R/1.5.8
 </p>
 
 <ol>
@@ -52,34 +52,71 @@ Target SOAP4R version: SOAP4R/1.5.7
 <h2 id="changes" name="changes"><span class="content">1. Changes</span></h2>
 
 <p>
-Version 1.5.7 mainly intends to fix regression problems introduced in 1.5.6.
-Here are changes in 1.5.7 from 1.5.6.
+Version 1.5.8 has improved its XML Schema support, such as
+class generation of XML Schema anonymous complexType,
+full built-in datatypes support of XML Schema Datatypes, and more.
+Here are changes in 1.5.8 from 1.5.7.
 </p>
-<ul><li>Environment
-<ul><li>soap4r gem depends on httpclient &gt;= 2.1.0. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/379" title="let soap4r gem depends on httpclient &gt;= 2.1.0 (closed)">#379</a>)
-</li><li>let soap4r http clients (SOAP::RPC::Driver and WSDL/XSD importers) do not check soap_use_proxy environment variable and use only http_proxy/HTTP_PROXY and no_proxy/NO_PROXY envvars for proxy configuration.  no need to set 'soap_use_proxy=on' envvar anymore.  But to avoid proxy injection problem, when a library is used on CGI environment (with checking REQUEST_METHOD envvar existence), soap4r http clients use cgi_http_proxy/CGI_HTTP_PROXY envvar instead of http_proxy/HTTP_PROXY. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/378" title="change HTTP_PROXY/NO_PROXY envvar behavior to follow httpclient (closed)">#378</a>)
-</li></ul></li></ul><ul><li>SOAP/Ruby mapping
-<ul><li>try to call klass.soap_marshallable before mapping an XML element to the klass while unmarshalling. to avoid auto-mapping from element name, define klass.soap_marshallable method let it return false. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/223" title="avoid the AutoMapping (closed)">#223</a>)
-</li><li>let xsd2ruby.rb generate a mapping registry and a mapper from XML Schema definition. the mapper has obj2xml and xml2obj which uses the generated mapping registry. you can use this instead of XSD::Mapping.obj2xml and XSD::Mapping.xml2obj which does not know anything about mapping. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/362" title="classname parameter for bin/xsd2ruby.rb (closed)">#362</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/363" title="mapping xml&lt;-&gt;obj based on XML Schema (closed)">#363</a>)
 
-</li><li>[BUG] Array or Struct was not properly marshalled when literal service + generated stub combination. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/360" title="Array or Struct is not properly marshalled through stub definition for  ... (closed)">#360</a>)
-</li><li>[BUG] derived class was marshalled without xsi:type for literal service. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/361" title="derived class  is marshalled without xsi:type for literal service (closed)">#361</a>)
-</li><li>[BUG] passing nil as a basetype through generated mapping registry was broken in 1.5.6. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/369" title="nil passed as attribute to axis service gets sent as an empty string  ... (closed)">#369</a>)
-</li><li>[BUG] an rpc/encoded parameter could be wrongly typed when the parameter is typed as a derived type from a base type of XML Schema datatypes. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/371" title="an rpc/encoded parameter wrongly typed (closed)">#371</a>)
-</li><li>[BUG] under the earlier versions, we could use [] instead of CountryTargets[]. from 1.5.6-GA it doesn't work. let LiteralRegistry decide how the class should be mapped to according to the defined class in the parent complexType. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/373" title="generic Array cannot be used instead of a custom array (closed)">#373</a>)
+<ul><li>XML Schema
+<ul><li>added classes for the last of built-in datatypes of XML Schema Datatypes (NMTOKEN, NMTOKENS, Name, NCName, ID, IDREF, IDREFS, ENTITY, and ENTITIES). lexical scope is not checked for these datatypes yet. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/340" title="Complete implementation of data types (xsd, soap) (closed)">#340</a>)
+</li><li>added anonymous type support. wsdl2ruby.rb/xsd2ruby.rb maps anonymous type to inner class. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/355" title="let wsdl2ruby.rb support stub class generation of XML anonymous type (closed)">#355</a>)
+</li><li>added support of all XML Schema facets for restriction. No validation implemented yet.  do you want to validate XML messages by soap4r? (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/364" title="minInclusive/maxInclusive of simpleRestriction (closed)">#364</a>)
+</li><li>added &lt;xsd:attributeGroup&gt; support. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/389" title="attributeGroup support (closed)">#389</a>)
 
+</li><li>added &lt;xsd:anyAttribute&gt; support. just ignore anyAttribute because wsdll2ruby.rb now generates xmlattr method. use it for adding any attribute. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/390" title="anyAttribute support (closed)">#390</a>)
+</li><li>added &lt;xsd:group&gt; support. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/391" title="group support (closed)">#391</a>)
+</li><li>[BUG] XSD::XSDDuration should allow durations lower than a day. Thanks to an anonymous user for taking the time to file the ticket. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/401" title="XSDDuration doesn't support durations lower than a day (closed)">#401</a>)
+</li><li>[BUG] choice handling bug fixed according to a patch from KR, Vesa Varimo. If there was choice element in complex type, soap4r didn't process all elements if the first element was an empty array. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/382" title="Choice definition in XSD (closed)">#382</a>)
+
+</li><li>[BUG] some WSDL caused cyclic schema inclusion. &lt;xsd:import&gt; supported cyclic include but &lt;xsd:include&gt; did not. extract common implementation as importHandler.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/385" title="cyclic schema include (closed)">#385</a>)
+</li><li>[BUG] added supports of &lt;xsd:complexType&gt; definition inheritance. earlier soap4r supported only element definition inheritance. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/394" title="Abstract classes not being included in output - wsdsl2ruby, netsuite wsdl (closed)">#394</a>)
+</li><li>[BUG] support &lt;xsd:choice maxOccurs="unbounded"/&gt;: treat it &lt;xsd:all/&gt; for now. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/400" title="choice + maxOccurs=&#34;unbounded&#34; (closed)">#400</a>)
+
+</li><li>[BUG] allow &lt;xsd:any&gt; appear twice or more. with the current implementation, soap4r ignores &lt;xsd:any&gt; element definition such as namespace and processContent. just allow any element appear. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/402" title="&lt;any&gt; can appear twice (closed)">#402</a>)
+</li><li>[BUG] Type simpleType and simpleContent was unmarshalled as a String, not as an instance of the subclass which is generated by wsdl2ruby.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/412" title="Type simpleType and simpleContent is unmarshalled as a String, not as an  ... (closed)">#412</a>)
+</li><li>[BUG] ignore xsd:element definition when the same qname is also defined as a xsd:complexType.  it's a workaround for this version. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/413" title="what if the same name would be used in one XML namespace for an element  ... (closed)">#413</a>)
+</li><li>[BUG] wsdl2ruby.rb generated inconsistent class definition when the base class was :TYPE_ARRAY and the derived class was a :TYPE_STRUCT. let the derived class be a standalone (not a derived) class. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/424" title="wsdl2ruby.rb generates inconsistent class definition which derives an  ... (closed)">#424</a>)
+
+</li><li>[BUG] wsdl2ruby.rb generates incomplete encoded Array mapping registry for base64Binary[]. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/428" title="wsdl2rb produces incomplete mapping (closed)">#428</a>)
+</li><li>[BUG] LiteralMappingRegistryCreator did not generate an entry for the element which type is mapped to an Array. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/432" title="LiteralMappingRegistryCreator does not generate an entry for the element  ... (closed)">#432</a>) 
 </li></ul></li></ul><ul><li>SOAP
-<ul><li>allow xsi:nil="true" element as an RPC request though I don't think it's SOAP spec compliant. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/374" title="SOAP::Lite incompatibility (closed)">#374</a>)
-</li><li>allow to customize default ns definition of SOAP Envelope. SOAPGenerator.new gets option hash as 'opt' and treats opt[:default_ns] as a XSD::NS which stores default ns definition of SOAP Envelope. See how it works in test/soap/test_custom_ns.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/380" title="default XSD::NS for SOAPGenerator (closed)">#380</a>)
+<ul><li>add :default_ns_tag option to configure a pre-defined Namespace tag. :default_ns is for configuring namespace definitions at SOAPEnvelope. :default_ns_tag is for configuring pre-defined namespace tag. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/383" title="let SOAP message use pre-defined namespace tag (closed)">#383</a>)
+</li><li>login.live.com returns SOAPFault as a direct child of SOAPEnvelope. support it even though it's not spec compliant. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/384" title="login.live.com returns SOAPFault as a direct child of SOAPEnvelope (closed)">#384</a>)
+</li><li>allow to remove mustUnderstand attribute from a SOAP Header. I heard that there's an implementation which cannot handle mustUnderstand existence. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/429" title="Removing env:mustUnderstand from header? (closed)">#429</a>)
 
-</li></ul></li></ul><ul><li>Payload
-<ul><li>added an API for filtering streamhandler to capture/generate HTTP header. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/276" title="streamHandler filter to capture/create HTTP header (closed)">#276</a>)
-</li><li>added 'protocol.http.auth' option to set authentication information for both BasicAuth and DigestAuth. with the latest httpclient (formerly known as http-access2), now soap4r client can connect to DigestAuth server. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/345" title="Client Digest Authentication Implemented (closed)">#345</a>)
+</li><li>add the Generator option for using default namespace in SOAP message. it's for interoperability with non XML Namespace comformant implementation. false by default (same behavior as before.) you can turn it on with Driver#use_default_namespace = true or Server#use_default_namespace = true. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/430" title="add an option for forcing Generator use default namespace (closed)">#430</a>)
+</li><li>[BUG] send xsi:nil=true element when literal + maxOccurs != 0 + nillable="true", not empty element. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/395" title="literal + nil + maxOccurs != 0 + nillable=&#34;true&#34; (closed)">#395</a>)
+</li><li>[BUG] do not crash when parsing an incomplete multi-dimensional array. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/397" title="`traverse_data': undefined method `[]' for nil:NilClass (NoMethodError) (closed)">#397</a>)
+</li><li>[BUG] do not dump xsi:type for non-polymorphic type of literal service. there's an implementation which only allows xsd:type for polymorphic type hint. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/405" title="should send xsd:type for document/literal service only if needed (closed)">#405</a>)
+</li><li>[BUG] a content of the stub class which is generated as a subclass of String by wsdl2ruby.rb was not properly encoded. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/415" title="A content of the stub class which is generated as a subclass of String by  ... (closed)">#415</a>)
+</li><li>[BUG] a value of XML attribute was not properly encoded. users who did XML-encode a value in SOAPElement#extraattr should care about this change (not needed from now.) (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/416" title="a value of XML attribute is not properly encoded (closed)">#416</a>)
 
-</li></ul></li></ul><ul><li>WSDL
-<ul><li>importer should not import <a class="ext-link" href="http://schemas.xmlsoap.org/soap/encoding/"><span class="icon">http://schemas.xmlsoap.org/soap/encoding/</span></a>. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/366" title="importer should not import http://schemas.xmlsoap.org/soap/encoding/ (closed)">#366</a>)
-</li><li>[BUG] error when simpleType element usage as "part" definition directly. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/367" title="error when simpleType element usage as &#34;part&#34; definition directly (closed)">#367</a>)
-</li><li>[BUG] wsdl2ruby.rb did not generate a classdef entry for empty element definition such as &lt;element name="foo"/&gt;. let wsdl2ruby.rb generate 'class Foo &lt; String'. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/370" title="empty element definition causes 'cannot find mapped class' warning (closed)">#370</a>)
+</li><li>[BUG] XML encoding does not work properly depending on CES. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/417" title="XML encoding does not work properly depending on KCODE (closed)">#417</a>)
+</li><li>[BUG] soap4r's XML namespace handler did not handle xmlns="" correctly. it means 'no default namespace'. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/421" title="xmlns=&#34;&#34; means 'no default namespace' (closed)">#421</a>)
+</li><li>[BUG] multi-refed basetype value was not be able to decode with generated EncodedRegistry. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/423" title="cannot decode multi-refed basetype value with generated MappingRegistry (closed)">#423</a>)
+</li><li>[BUG] unqualified element 'Envelope', 'Header', 'Body' and 'Fault' caused an error while parsing. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/431" title="unqualified element 'Envelope', 'Header', 'Body' and 'Fault' causes an  ... (closed)">#431</a>)
+</li><li>[BUG] illegal marshaling a request for rpc/literal + parameter is a built-in basetype of XML Schema + message is defined as "type" (not "element"). fixed. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/434" title="illegal marshaling a request for rpc/literal + parameter is a built-in  ... (closed)">#434</a>)
+</li></ul></li></ul><ul><li>SOAP/Ruby mapping
+<ul><li>let MappingError be a NestedException and show original cause of MappingError. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/404" title="nested SOAP::Mapping::MappingError does not reported correctly (closed)">#404</a>)
+
+</li><li>check illegal constant name before const_defined? call to avoid warnings. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/386" title="too many warnings about 'wrong constant name' from mapping.rb (closed)">#386</a>)
+</li><li>added a header handler which utilize a mapping registry. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/425" title="HeaderHandler which utilize a mapping registry (closed)">#425</a>)
+</li><li>[BUG] avoid NoMethodError when passing SOAPArray to LiteralRegistry. It's caused when a servant raised an exception in literal service. Thanks to Emil for contributing test case for it. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/393" title="NoMethodError when parsing the soap fault with the stack trace on the  ... (closed)">#393</a>)
+</li><li>[BUG] allow the Fixnum which have an instance variable to be marshalled.  For Fixnum, ivars are not marshalled but allowed to be marshalled in Ruby's marshal. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/406" title="Fixnum + instance variable causes MappingError (closed)">#406</a>)
+
+</li><li>[BUG] a Driver generated by a WSDLDriverFactory did not handle nested sequence/choice correctly. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/409" title="WSDLDriverFactory does not handle nested sequence/choice correctly (closed)">#409</a>)
+</li><li>[BUG] a Driver generated by a WSDLDriverFactory ignored 'xmlattr_*' value in a Hash parameter. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/414" title="a Driver generated by WSDLDriverFactory does not accept XML attributes in  ... (closed)">#414</a>)
+</li><li>[BUG] let it be distinguishable &lt;ele attr=""&gt; from &lt;ele&gt; (no attribute in the element). now the former returns "" and the latter returns nil. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/418" title="cannot distinguish '' and nil as a value of XML attribute (closed)">#418</a>)
+</li></ul></li></ul><ul><li>misc
+<ul><li>added SOAP::WSDLDriverFactory#dump_method_signatures. it returns a formatted text which describes method signatures. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/141" title="SOAP::RPC::Driver#defined_webservice?   ... (closed)">#141</a>)
+
+</li><li>added servletStubCreator. wsdl2ruby.rb with --servlet_stub creates servlet stub for WEBrick. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/290" title="wsdl2ruby.rb to auto-generate code for use with Webrick (closed)">#290</a>)
+</li><li>wsdl2ruby.rb generated too much 'XSD::QName.new(...)' parts. let wsdl2ruby.rb/xsd2ruby.rb extract common namespace definitions as constants. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/381" title="wsdl2ruby.rb generates too much 'XSD::QName.new(...)'s in a file (closed)">#381</a>)
+</li><li>let wsdl2ruby.rb/xsd2ruby.rb generate member types as a comment for each class in classdef file. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/384" title="login.live.com returns SOAPFault as a direct child of SOAPEnvelope (closed)">#384</a>)
+</li><li>do not raise warning when there's a simpleType definition which have non-enumeration restriction. Generated mapping registry wrongly contained references to undefined classes. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/399" title="many warnings: cannot find mapped class (closed)">#399</a>)
+</li><li>[BUG] as a workaround of class name crash problem between generated class and generated driver, add --drivername_postfix option to wsdl2ruby.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/372" title="name crashes between types(classdef names) and services(driver names) in  ... (closed)">#372</a>)
+</li><li>[BUG] soap4r without httpclient caused NameError. forgot to add required dependency in the previous release. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/403" title="wsdl2ruby without httpclient causes NameError  ... (closed)">#403</a>)
 </li></ul></li></ul>
 
 <p>
@@ -196,7 +233,7 @@ You also have to install these modules to use SOAP4R.
 </p>
 
 <dl>
-<dt class="path"><a href="http://raa.ruby-lang.org/project/httpclient/">[RAA:httpclient]</a> (2.1.0 or later)</dt>
+<dt class="path"><a href="http://raa.ruby-lang.org/project/httpclient/">[RAA:httpclient]</a> (2.1.0 or later) (required)</dt>
 <dd>Yet another HTTP client implementation by NaHi.
 httpclient is formerly known as http-access2.</dd>
 
@@ -590,6 +627,36 @@ svn checkout http://dev.ctor.org/svn/soap4r/trunk soap4r
 <h2 id="history" name="history"><span class="content">8. History</span></h2>
 
 <dl>
+<dt>1.5.7 - Jul 16, 2007</dt>
+<dd>Version 1.5.7 mainly intends to fix regression problems introduced in 1.5.6.
+Here are changes in 1.5.7 from 1.5.6.
+<ul><li>Environment
+<ul><li>soap4r gem depends on httpclient &gt;= 2.1.0. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/379" title="let soap4r gem depends on httpclient &gt;= 2.1.0 (closed)">#379</a>)
+</li><li>let soap4r http clients (SOAP::RPC::Driver and WSDL/XSD importers) do not check soap_use_proxy environment variable and use only http_proxy/HTTP_PROXY and no_proxy/NO_PROXY envvars for proxy configuration.  no need to set 'soap_use_proxy=on' envvar anymore.  But to avoid proxy injection problem, when a library is used on CGI environment (with checking REQUEST_METHOD envvar existence), soap4r http clients use cgi_http_proxy/CGI_HTTP_PROXY envvar instead of http_proxy/HTTP_PROXY. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/378" title="change HTTP_PROXY/NO_PROXY envvar behavior to follow httpclient (closed)">#378</a>)
+</li></ul></li></ul><ul><li>SOAP/Ruby mapping
+<ul><li>try to call klass.soap_marshallable before mapping an XML element to the klass while unmarshalling. to avoid auto-mapping from element name, define klass.soap_marshallable method let it return false. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/223" title="avoid the AutoMapping (closed)">#223</a>)
+</li><li>let xsd2ruby.rb generate a mapping registry and a mapper from XML Schema definition. the mapper has obj2xml and xml2obj which uses the generated mapping registry. you can use this instead of XSD::Mapping.obj2xml and XSD::Mapping.xml2obj which does not know anything about mapping. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/362" title="classname parameter for bin/xsd2ruby.rb (closed)">#362</a>, <a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/363" title="mapping xml&lt;-&gt;obj based on XML Schema (closed)">#363</a>)
+
+</li><li>[BUG] Array or Struct was not properly marshalled when literal service + generated stub combination. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/360" title="Array or Struct is not properly marshalled through stub definition for  ... (closed)">#360</a>)
+</li><li>[BUG] derived class was marshalled without xsi:type for literal service. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/361" title="derived class  is marshalled without xsi:type for literal service (closed)">#361</a>)
+</li><li>[BUG] passing nil as a basetype through generated mapping registry was broken in 1.5.6. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/369" title="nil passed as attribute to axis service gets sent as an empty string  ... (closed)">#369</a>)
+</li><li>[BUG] an rpc/encoded parameter could be wrongly typed when the parameter is typed as a derived type from a base type of XML Schema datatypes. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/371" title="an rpc/encoded parameter wrongly typed (closed)">#371</a>)
+</li><li>[BUG] under the earlier versions, we could use [] instead of CountryTargets[]. from 1.5.6-GA it doesn't work. let LiteralRegistry decide how the class should be mapped to according to the defined class in the parent complexType. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/373" title="generic Array cannot be used instead of a custom array (closed)">#373</a>)
+
+</li></ul></li></ul><ul><li>SOAP
+<ul><li>allow xsi:nil="true" element as an RPC request though I don't think it's SOAP spec compliant. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/374" title="SOAP::Lite incompatibility (closed)">#374</a>)
+</li><li>allow to customize default ns definition of SOAP Envelope. SOAPGenerator.new gets option hash as 'opt' and treats opt[:default_ns] as a XSD::NS which stores default ns definition of SOAP Envelope. See how it works in test/soap/test_custom_ns.rb. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/380" title="default XSD::NS for SOAPGenerator (closed)">#380</a>)
+
+</li></ul></li></ul><ul><li>Payload
+<ul><li>added an API for filtering streamhandler to capture/generate HTTP header. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/276" title="streamHandler filter to capture/create HTTP header (closed)">#276</a>)
+</li><li>added 'protocol.http.auth' option to set authentication information for both BasicAuth and DigestAuth. with the latest httpclient (formerly known as http-access2), now soap4r client can connect to DigestAuth server. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/345" title="Client Digest Authentication Implemented (closed)">#345</a>)
+
+</li></ul></li></ul><ul><li>WSDL
+<ul><li>importer should not import <a class="ext-link" href="http://schemas.xmlsoap.org/soap/encoding/"><span class="icon">http://schemas.xmlsoap.org/soap/encoding/</span></a>. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/366" title="importer should not import http://schemas.xmlsoap.org/soap/encoding/ (closed)">#366</a>)
+</li><li>[BUG] error when simpleType element usage as "part" definition directly. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/367" title="error when simpleType element usage as &#34;part&#34; definition directly (closed)">#367</a>)
+</li><li>[BUG] wsdl2ruby.rb did not generate a classdef entry for empty element definition such as &lt;element name="foo"/&gt;. let wsdl2ruby.rb generate 'class Foo &lt; String'. (<a class="closed ticket" href="http://dev.ctor.org/soap4r/ticket/370" title="empty element definition causes 'cannot find mapped class' warning (closed)">#370</a>)
+</li></ul></li></ul></dd>
+
 <dt>1.5.6 - Jun 14, 2007</dt>
 <dd>Here are changes in 1.5.6 from 1.5.5.
 <ul><li>SOAP/Ruby mapping
