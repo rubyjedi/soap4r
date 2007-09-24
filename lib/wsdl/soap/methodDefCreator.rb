@@ -98,6 +98,7 @@ private
     binding.fault.each do |fault|
       op_fault = {}
       soapfault = fault.soapfault
+      next if soapfault.nil?
       faultclass = mapped_class_name(fault.name, @modulepath)
       op_fault[:ns] = fault.name.namespace
       op_fault[:name] = fault.name.name

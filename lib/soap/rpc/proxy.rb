@@ -491,7 +491,8 @@ private
       idx = 0
       names.each do |name|
         params[name] = Mapping.obj2soap(values[idx], mapping_registry, 
-          types[idx] || XSD::QName.new, opt)
+          types[idx], opt)
+        params[name].elename = XSD::QName.new(nil, name)
         idx += 1
       end
       method.set_param(params)

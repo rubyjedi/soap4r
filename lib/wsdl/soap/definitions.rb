@@ -133,6 +133,10 @@ private
             next
           end
           fault_binding = get_fault_binding(op_binding, fault.name)
+          if fault_binding.soapfault.nil?
+            warn("WARNING: no soap:fault found for wsdl:fault \"#{fault_binding.name}\" in operation \"#{operation.name}\" \n\n")
+            next
+          end
           if fault_binding.soapfault.name != fault_binding.name
             warn("WARNING: name of soap:fault \"#{fault_binding.soapfault.name}\" doesn't match the name of wsdl:fault \"#{fault_binding.name}\" in operation \"#{operation.name}\" \n\n")
             next

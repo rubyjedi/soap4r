@@ -159,11 +159,11 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStringArray xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <n2:inputStringArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <inputStringArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <n2:stringItem>a</n2:stringItem>
         <n2:stringItem>b</n2:stringItem>
         <n2:stringItem>c</n2:stringItem>
-      </n2:inputStringArray>
+      </inputStringArray>
     </n1:echoStringArray>
   </env:Body>
 </env:Envelope>]
@@ -202,11 +202,11 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStringArrayInline xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <n2:inputStringArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <inputStringArray>
         <stringItem>a</stringItem>
         <stringItem>b</stringItem>
         <stringItem>c</stringItem>
-      </n2:inputStringArray>
+      </inputStringArray>
     </n1:echoStringArrayInline>
   </env:Body>
 </env:Envelope>]
@@ -244,7 +244,7 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoNestedStruct xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <n2:inputStruct xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <inputStruct xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <varString>str</varString>
         <varInt>1</varInt>
         <varFloat>+1</varFloat>
@@ -253,7 +253,7 @@ class TestRPCLIT < Test::Unit::TestCase
           <varInt>1</varInt>
           <varFloat>+1</varFloat>
         </n2:structItem>
-      </n2:inputStruct>
+      </inputStruct>
     </n1:echoNestedStruct>
   </env:Body>
 </env:Envelope>]
@@ -303,7 +303,7 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoNestedStruct xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <n2:inputStruct xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <inputStruct xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <varString>str</varString>
         <varFloat>+1</varFloat>
         <n2:structItem>
@@ -311,7 +311,7 @@ class TestRPCLIT < Test::Unit::TestCase
           <varInt xsi:nil="true"></varInt>
           <varFloat>+1</varFloat>
         </n2:structItem>
-      </n2:inputStruct>
+      </inputStruct>
     </n1:echoNestedStruct>
   </env:Body>
 </env:Envelope>]
@@ -382,7 +382,7 @@ class TestRPCLIT < Test::Unit::TestCase
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <env:Body>
     <n1:echoStructArray xmlns:n1="http://soapbuilders.org/rpc-lit-test">
-      <n2:inputStructArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
+      <inputStructArray xmlns:n2="http://soapbuilders.org/rpc-lit-test/types">
         <n2:structItem>
           <varString>str</varString>
           <varInt>2</varInt>
@@ -393,7 +393,7 @@ class TestRPCLIT < Test::Unit::TestCase
           <varInt>2</varInt>
           <varFloat>+2.1</varFloat>
         </n2:structItem>
-      </n2:inputStructArray>
+      </inputStructArray>
     </n1:echoStructArray>
   </env:Body>
 </env:Envelope>]
