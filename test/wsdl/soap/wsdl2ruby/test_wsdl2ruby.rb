@@ -52,6 +52,37 @@ class TestWSDL2Ruby < Test::Unit::TestCase
     File.unlink(pathname("echo_version_serviceClient.rb"))
   end
 
+  EXPECTED_CLASSDEF = <<__RB__
+require 'xsd/qname'
+
+module TEST
+
+
+# {urn:example.com:simpletype-rpc-type}version_struct
+#   version - TEST::Version
+#   msg - SOAP::SOAPString
+class Version_struct
+  attr_accessor :version
+  attr_accessor :msg
+
+  def initialize(version = nil, msg = nil)
+    @version = version
+    @msg = msg
+  end
+end
+
+
+end
+__RB__
+
+  def test_classdefcreator
+    wsdl = WSDL::Importer.import(pathname("rpc.wsdl"))
+    name_creator = WSDL::SOAP::ClassNameCreator.new
+    creator = WSDL::SOAP::ClassDefCreator.new(wsdl, name_creator, 'TEST')
+    classdef = creator.dump(XSD::QName.new('urn:example.com:simpletype-rpc-type', 'version_struct'))
+    assert_equal(EXPECTED_CLASSDEF, classdef)
+  end
+
 private
 
   def pathname(filename)
