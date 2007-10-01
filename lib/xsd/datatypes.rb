@@ -816,7 +816,7 @@ class XSDGMonthDay < XSDAnySimpleType
 private
 
   def screen_data_str(t)
-    /^(\d\d)-(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
+    /^--(\d\d)-(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
     unless Regexp.last_match
       raise ValueSpaceError.new("#{ type }: cannot accept '#{ t }'.")
     end
@@ -827,7 +827,7 @@ private
   end
 
   def _to_s
-    s = format('%02d-%02d', @data.mon, @data.mday)
+    s = format('--%02d-%02d', @data.mon, @data.mday)
     add_tz(s)
   end
 end
@@ -843,7 +843,7 @@ class XSDGDay < XSDAnySimpleType
 private
 
   def screen_data_str(t)
-    /^(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
+    /^---(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
     unless Regexp.last_match
       raise ValueSpaceError.new("#{ type }: cannot accept '#{ t }'.")
     end
@@ -853,7 +853,7 @@ private
   end
 
   def _to_s
-    s = format('%02d', @data.mday)
+    s = format('---%02d', @data.mday)
     add_tz(s)
   end
 end
@@ -869,7 +869,7 @@ class XSDGMonth < XSDAnySimpleType
 private
 
   def screen_data_str(t)
-    /^(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
+    /^--(\d\d)(Z|(?:[+\-]\d\d:\d\d)?)?$/ =~ t.to_s.strip
     unless Regexp.last_match
       raise ValueSpaceError.new("#{ type }: cannot accept '#{ t }'.")
     end
@@ -879,7 +879,7 @@ private
   end
 
   def _to_s
-    s = format('%02d', @data.mon)
+    s = format('--%02d', @data.mon)
     add_tz(s)
   end
 end
