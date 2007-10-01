@@ -708,26 +708,26 @@ class TestSOAP < Test::Unit::TestCase
     assert_equal(true, o.is_nil)
 
     targets = [
-      "05-18Z",
-      "01-01Z",
-      "12-31Z",
-      "12-31+09:00",
-      "12-31+00:01",
-      "12-31-00:01",
-      "12-31-23:59",
-      "12-31+13:30",
+      "--05-18Z",
+      "--01-01Z",
+      "--12-31Z",
+      "--12-31+09:00",
+      "--12-31+00:01",
+      "--12-31-00:01",
+      "--12-31-23:59",
+      "--12-31+13:30",
     ]
     targets.each do |str|
       assert_parsed_result(SOAP::SOAPGMonthDay, str)
     end
 
     targets = [
-      ["12-31",
-	"12-31Z"],
-      ["12-31+00:00",
-	"12-31Z"],
-      ["12-31-00:00",
-	"12-31Z"],
+      ["--12-31",
+	"--12-31Z"],
+      ["--12-31+00:00",
+	"--12-31Z"],
+      ["--12-31-00:00",
+	"--12-31Z"],
     ]
     targets.each do |data, expected|
       assert_equal(expected, SOAP::SOAPGMonthDay.new(data).to_s)
@@ -742,26 +742,26 @@ class TestSOAP < Test::Unit::TestCase
     assert_equal(true, o.is_nil)
 
     targets = [
-      "18Z",
-      "01Z",
-      "31Z",
-      "31+09:00",
-      "31+00:01",
-      "31-00:01",
-      "31-23:59",
-      "31+13:30",
+      "---18Z",
+      "---01Z",
+      "---31Z",
+      "---31+09:00",
+      "---31+00:01",
+      "---31-00:01",
+      "---31-23:59",
+      "---31+13:30",
     ]
     targets.each do |str|
       assert_parsed_result(SOAP::SOAPGDay, str)
     end
 
     targets = [
-      ["31",
-	"31Z"],
-      ["31+00:00",
-	"31Z"],
-      ["31-00:00",
-	"31Z"],
+      ["---31",
+	"---31Z"],
+      ["---31+00:00",
+	"---31Z"],
+      ["---31-00:00",
+	"---31Z"],
     ]
     targets.each do |data, expected|
       assert_equal(expected, SOAP::SOAPGDay.new(data).to_s)
@@ -776,26 +776,26 @@ class TestSOAP < Test::Unit::TestCase
     assert_equal(true, o.is_nil)
 
     targets = [
-      "05Z",
-      "01Z",
-      "12Z",
-      "12+09:00",
-      "12+00:01",
-      "12-00:01",
-      "12-23:59",
-      "12+13:30",
+      "--05Z",
+      "--01Z",
+      "--12Z",
+      "--12+09:00",
+      "--12+00:01",
+      "--12-00:01",
+      "--12-23:59",
+      "--12+13:30",
     ]
     targets.each do |str|
       assert_parsed_result(SOAP::SOAPGMonth, str)
     end
 
     targets = [
-      ["12",
-	"12Z"],
-      ["12+00:00",
-	"12Z"],
-      ["12-00:00",
-	"12Z"],
+      ["--12",
+	"--12Z"],
+      ["--12+00:00",
+	"--12Z"],
+      ["--12-00:00",
+	"--12Z"],
     ]
     targets.each do |data, expected|
       assert_equal(expected, SOAP::SOAPGMonth.new(data).to_s)
