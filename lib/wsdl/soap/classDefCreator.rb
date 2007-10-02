@@ -216,7 +216,7 @@ private
       if (const[constname] += 1) > 1
         constname += "_#{const[constname]}"
       end
-      c.def_const(constname, "#{classname}.new(#{ndq(value)})")
+      c.def_const(constname, "new(#{ndq(value)})")
     end
   end
 

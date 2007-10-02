@@ -15,19 +15,19 @@ end
 
 # {urn:example.com:simpletype-rpc-type}version
 class Version < ::String
-  C_16 = Version.new("1.6")
-  C_18 = Version.new("1.8")
-  C_19 = Version.new("1.9")
+  C_16 = new("1.6")
+  C_18 = new("1.8")
+  C_19 = new("1.9")
 end
 
 # {urn:example.com:simpletype-rpc-type}stateType
 class StateType < ::String
-  StateType = StateType.new("stateType")
+  StateType = new("stateType")
 end
 
 # {urn:example.com:simpletype-rpc-type}zipIntType
 class ZipIntType < ::String
-  C_123 = ZipIntType.new("123")
+  C_123 = new("123")
 end
 
 # {urn:example.com:simpletype-rpc-type}zipUnion

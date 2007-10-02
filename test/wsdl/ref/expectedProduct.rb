@@ -126,9 +126,9 @@ end
 
 # {urn:ref}Rating
 class Rating < ::String
-  C_0 = Rating.new("0")
-  C_1 = Rating.new("+1")
-  C_1_2 = Rating.new("-1")
+  C_0 = new("0")
+  C_1 = new("+1")
+  C_1_2 = new("-1")
 end
 
 # {urn:ref}Product-Bag
@@ -235,8 +235,8 @@ end
 
 # {urn:ref}yesno
 class Yesno < ::String
-  N = Yesno.new("N")
-  Y = Yesno.new("Y")
+  N = new("N")
+  Y = new("Y")
 end
 
 
