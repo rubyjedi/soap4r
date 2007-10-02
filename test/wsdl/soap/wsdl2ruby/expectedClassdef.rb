@@ -15,7 +15,7 @@ end
 
 # {urn:example.com:simpletype-rpc-type}version
 class Version < ::String
-  C_16 = Version.new("1.6")
-  C_18 = Version.new("1.8")
-  C_19 = Version.new("1.9")
+  C_16 = new("1.6")
+  C_18 = new("1.8")
+  C_19 = new("1.9")
 end
