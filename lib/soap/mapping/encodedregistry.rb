@@ -390,7 +390,7 @@ private
         cause = $!
       end
     end
-    raise MappingError.new("Cannot map #{ node.type.name } to Ruby object.", cause)
+    raise MappingError.new("Cannot map #{ node.type } to Ruby object.", cause)
   end
 
   def addiv2obj(obj, attr)
