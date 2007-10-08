@@ -53,6 +53,7 @@ end
 # Try to load XML processor.
 loaded = false
 [
+  'xsd/xmlparser/libxmlparser',
   'xsd/xmlparser/xmlparser',
   'xsd/xmlparser/xmlscanner',
   'xsd/xmlparser/rexmlparser',
