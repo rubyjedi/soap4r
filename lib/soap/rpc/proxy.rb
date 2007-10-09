@@ -176,8 +176,8 @@ public
       conn_data.send_string = mime.content_str
       conn_data.send_contenttype = mime.headers['content-type'].str
     end
-    conn_data = @streamhandler.send(@endpoint_url, conn_data,
-      reqopt[:soapaction])
+    conn_data.soapaction = reqopt[:soapaction]
+    conn_data = @streamhandler.send(@endpoint_url, conn_data)
     if conn_data.receive_string.empty?
       return nil
     end
