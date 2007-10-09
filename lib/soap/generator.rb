@@ -298,7 +298,5 @@ private
   end
 end
 
-SOAPGenerator = Generator       # for backward compatibility
-
 
 end

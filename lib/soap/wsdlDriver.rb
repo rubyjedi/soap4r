@@ -10,6 +10,7 @@ require 'wsdl/parser'
 require 'wsdl/importer'
 require 'xsd/qname'
 require 'xsd/codegen/gensupport'
+require 'soap/attrproxy'
 require 'soap/mapping/wsdlencodedregistry'
 require 'soap/mapping/wsdlliteralregistry'
 require 'soap/rpc/driver'
@@ -54,9 +55,6 @@ class WSDLDriverFactory
     port = find_port(servicename, portname)
     WSDLDriver.new(@wsdl, port, nil)
   end
-
-  # Backward compatibility.
-  alias createDriver create_driver
 
   def dump_method_signatures(servicename = nil, portname = nil)
     targetservice = XSD::QName.new(@wsdl.targetnamespace, servicename) if servicename
@@ -180,49 +178,18 @@ end
 
 
 class WSDLDriver
-  class << self
-    if RUBY_VERSION >= "1.7.0"
-      def __attr_proxy(symbol, assignable = false)
-        name = symbol.to_s
-        define_method(name) {
-          @servant.__send__(name)
-        }
-        if assignable
-          aname = name + '='
-          define_method(aname) { |rhs|
-            @servant.__send__(aname, rhs)
-          }
-        end
-      end
-    else
-      def __attr_proxy(symbol, assignable = false)
-        name = symbol.to_s
-        module_eval <<-EOS
-          def #{name}
-            @servant.#{name}
-          end
-        EOS
-        if assignable
-          module_eval <<-EOS
-            def #{name}=(value)
-              @servant.#{name} = value
-            end
-          EOS
-        end
-      end
-    end
-  end
+  include AttrProxy
 
-  __attr_proxy :options
-  __attr_proxy :headerhandler
-  __attr_proxy :streamhandler
-  __attr_proxy :test_loopback_response
-  __attr_proxy :endpoint_url, true
-  __attr_proxy :mapping_registry, true		# for RPC unmarshal
-  __attr_proxy :wsdl_mapping_registry, true	# for RPC marshal
-  __attr_proxy :default_encodingstyle, true
-  __attr_proxy :generate_explicit_type, true
-  __attr_proxy :allow_unqualified_element, true
+  attr_proxy :options
+  attr_proxy :headerhandler
+  attr_proxy :streamhandler
+  attr_proxy :test_loopback_response
+  attr_proxy :endpoint_url, true
+  attr_proxy :mapping_registry, true		# for RPC unmarshal
+  attr_proxy :wsdl_mapping_registry, true	# for RPC marshal
+  attr_proxy :default_encodingstyle, true
+  attr_proxy :generate_explicit_type, true
+  attr_proxy :allow_unqualified_element, true
 
   def httpproxy
     @servant.options["protocol.http.proxy"]
@@ -268,8 +235,11 @@ class WSDLDriver
     @servant.reset_stream
   end
 
-  # Backward compatibility.
-  alias generateEncodeType= generate_explicit_type=
+private
+
+  def attrproxy
+    @servant
+  end
 
   class Servant__
     include SOAP
