@@ -19,6 +19,28 @@ class OperationBinding < Info
   attr_reader :fault
   attr_reader :soapoperation
 
+  class BoundId
+    attr_reader :name
+    attr_reader :soapaction
+
+    def initialize(name, soapaction)
+      @name = name
+      @soapaction = soapaction
+    end
+
+    def ==(rhs)
+      !rhs.nil? and @name == rhs.name and @soapaction == rhs.soapaction
+    end
+
+    def eql?(rhs)
+      (self == rhs)
+    end
+
+    def hash
+      @name.hash ^ @soapaction.hash
+    end
+  end
+
   def initialize
     super
     @name = nil
@@ -34,6 +56,10 @@ class OperationBinding < Info
 
   def porttype
     root.porttype(parent.type)
+  end
+
+  def boundid
+    BoundId.new(name, soapaction)
   end
 
   def find_operation
