@@ -65,15 +65,32 @@ class WSDLDriverFactory
       next if targetservice and service.name != targetservice
       service.ports.each do |port|
         next if targetport and port.name != targetport
-        sig << port.porttype.operations.collect { |operation|
-          dump_method_signature(operation, element_definitions).gsub(/^#/, ' ')
-        }.join("\n")
+        if porttype = port.porttype
+          assigned_method = collect_assigned_method(porttype.name)
+          if binding = port.porttype.find_binding
+            sig << binding.operations.collect { |op_bind|
+              operation = op_bind.find_operation
+              name = assigned_method[op_bind.boundid] || op_bind.name
+              str = "= #{safemethodname(name)}\n\n"
+              str << dump_method_signature(name, operation, element_definitions)
+              str.gsub(/^#/, " ")
+            }.join("\n")
+          end
+        end
       end
     end
     sig.join("\n")
   end
 
 private
+
+  def collect_assigned_method(porttypename)
+    name_creator = WSDL::SOAP::ClassNameCreator.new
+    methoddefcreator =
+      WSDL::SOAP::MethodDefCreator.new(@wsdl, name_creator, nil, {})
+    methoddefcreator.dump(porttypename)
+    methoddefcreator.assigned_method
+  end
 
   def find_port(servicename = nil, portname = nil)
     service = port = nil

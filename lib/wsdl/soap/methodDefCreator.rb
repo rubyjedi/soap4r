@@ -19,6 +19,9 @@ class MethodDefCreator
   include ClassDefCreatorSupport
 
   attr_reader :definitions
+  # TODO: should not export this kind of stateful information.
+  # will be rewwritten in 1.6.1
+  attr_reader :assigned_method
 
   def initialize(definitions, name_creator, modulepath, defined_const)
     @definitions = definitions
@@ -31,6 +34,7 @@ class MethodDefCreator
     @encoded = false
     @literal = false
     @defined_const = defined_const
+    @assigned_method = {}
   end
 
   def dump(name)
@@ -93,9 +97,9 @@ class MethodDefCreator
 
 private
 
-  def dump_method(operation, binding)
+  def dump_method(operation, op_bind)
     op_faults = {}
-    binding.fault.each do |fault|
+    op_bind.fault.each do |fault|
       op_fault = {}
       soapfault = fault.soapfault
       next if soapfault.nil?
@@ -108,14 +112,12 @@ private
       op_faults[faultclass] = op_fault
     end
     op_faults_str = op_faults.inspect
-
-    name = safemethodname(operation.name)
-    name_as = operation.name
-    style = binding.soapoperation_style
-    inputuse = binding.soapbody_use_input
-    outputuse = binding.soapbody_use_output
+    name = assign_method_name(op_bind)
+    style = op_bind.soapoperation_style
+    inputuse = op_bind.soapbody_use_input
+    outputuse = op_bind.soapbody_use_output
     if style == :rpc
-      qname = binding.soapoperation_name
+      qname = op_bind.soapoperation_name
       paramstr = param2str(collect_rpcparameter(operation))
     else
       qname = nil
@@ -127,7 +129,7 @@ private
       paramstr = "[ " << paramstr.split(/\r?\n/).join("\n    ") << " ]"
     end
     definitions = <<__EOD__
-#{ndq(binding.soapaction)},
+#{ndq(op_bind.soapaction)},
   #{dq(name)},
   #{paramstr},
   { :request_style =>  #{nsym(style)}, :request_use =>  #{nsym(inputuse)},
@@ -151,6 +153,17 @@ __EOD__
 [ #{definitions}]
 __EOD__
     end
+  end
+
+  def assign_method_name(op_bind)
+    method_name = safemethodname(op_bind.name)
+    i = 1 # starts from _2
+    while @assigned_method.value?(method_name)
+      i += 1
+      method_name = safemethodname("#{op_bind.name}_#{i}")
+    end
+    @assigned_method[op_bind.boundid] = method_name
+    method_name
   end
 
   def rpcdefinedtype(part)
