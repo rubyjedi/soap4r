@@ -48,9 +48,8 @@ class MethodDefCreator
       binding.operations.each do |op_bind|
         next unless op_bind # no binding is defined
         next unless op_bind.soapoperation # not a SOAP operation binding
-        op = op_bind.find_operation
         methoddef << ",\n" unless methoddef.empty?
-        methoddef << dump_method(op, op_bind).chomp
+        methoddef << dump_method(op_bind).chomp
       end
     end
     result = {
@@ -97,7 +96,8 @@ class MethodDefCreator
 
 private
 
-  def dump_method(operation, op_bind)
+  def dump_method(op_bind)
+    operation = op_bind.find_operation
     op_faults = {}
     op_bind.fault.each do |fault|
       op_fault = {}

@@ -13,17 +13,6 @@ module WSDL
 
 
 class Operation < Info
-  class NameInfo
-    attr_reader :op_name
-    attr_reader :optype_name
-    attr_reader :parts
-    def initialize(op_name, optype_name, parts)
-      @op_name = op_name
-      @optype_name = optype_name
-      @parts = parts
-    end
-  end
-
   attr_reader :name		# required
   attr_reader :parameter_order	# optional
   attr_reader :input
@@ -47,24 +36,6 @@ class Operation < Info
 
   def operationname
     as_operationname(@name)
-  end
-
-  def input_info
-    if message = input_message
-      typename = message.name
-    else
-      typename = nil
-    end
-    NameInfo.new(operationname, typename, inputparts)
-  end
-
-  def output_info
-    if message = output_message
-      typename = message.name
-    else
-      typename = nil
-    end
-    NameInfo.new(operationname, typename, outputparts)
   end
 
   EMPTY = [].freeze
