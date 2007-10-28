@@ -39,6 +39,7 @@ class Operation < Info
   end
 
   EMPTY = [].freeze
+  # TODO: remove once after OperationInfo created
   def inputparts
     if message = input_message
       sort_parts(message.parts)
@@ -55,6 +56,7 @@ class Operation < Info
     end
   end
 
+  # TODO: remove once after OperationInfo created
   def outputparts
     if message = output_message
       sort_parts(message.parts)
