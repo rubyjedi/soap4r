@@ -10,8 +10,8 @@ class Group_porttype < ::SOAP::RPC::Driver
   Methods = [
     [ "urn:group:echo",
       "echo",
-      [ ["in", "parameters", ["::SOAP::SOAPElement", "urn:grouptype", "groupele"]],
-        ["out", "parameters", ["::SOAP::SOAPElement", "urn:grouptype", "groupele"]] ],
+      [ [:in, "parameters", ["::SOAP::SOAPElement", "urn:grouptype", "groupele"]],
+        [:out, "parameters", ["::SOAP::SOAPElement", "urn:grouptype", "groupele"]] ],
       { :request_style =>  :document, :request_use =>  :literal,
         :response_style => :document, :response_use => :literal,
         :faults => {} }

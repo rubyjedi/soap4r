@@ -39,7 +39,7 @@ class TestAny < Test::Unit::TestCase
         XSD::QName.new("urn:example.com:echo", "echoAny"),
         "urn:example.com:echoAny",
         "echoAny",
-        [ ["retval", "echoany_return", [XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType")]] ],
+        [ [:retval, "echoany_return", [XSD::QName.new("http://www.w3.org/2001/XMLSchema", "anyType")]] ],
         { :request_style =>  :rpc, :request_use =>  :encoded,
           :response_style => :rpc, :response_use => :encoded,
           :faults => {} }

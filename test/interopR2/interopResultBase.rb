@@ -82,8 +82,8 @@ end
 
 
 Methods = [
-  [ 'addResults', ['in', 'interopResults' ]],
-  [ 'deleteResults', ['in', 'client'], ['in', 'server']],
+  [ 'addResults', [:in, 'interopResults' ]],
+  [ 'deleteResults', [:in, 'client'], [:in, 'server']],
 ]
 
 

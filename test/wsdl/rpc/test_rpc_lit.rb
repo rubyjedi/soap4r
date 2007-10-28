@@ -21,8 +21,8 @@ class TestRPCLIT < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echoStringArray'),
         nil,
         'echoStringArray', [
-          ['in', 'inputStringArray', nil],
-          ['retval', 'return', nil]
+          [:in, 'inputStringArray', nil],
+          [:retval, 'return', nil]
         ],
         {
           :request_style => :rpc,
@@ -35,8 +35,8 @@ class TestRPCLIT < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echoStringArrayInline'),
         nil,
         'echoStringArrayInline', [
-          ['in', 'inputStringArray', nil],
-          ['retval', 'return', nil]
+          [:in, 'inputStringArray', nil],
+          [:retval, 'return', nil]
         ],
         {
           :request_style => :rpc,
@@ -49,8 +49,8 @@ class TestRPCLIT < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echoNestedStruct'),
         nil,
         'echoNestedStruct', [
-          ['in', 'inputNestedStruct', nil],
-          ['retval', 'return', nil]
+          [:in, 'inputNestedStruct', nil],
+          [:retval, 'return', nil]
         ],
         {
           :request_style => :rpc,
@@ -63,8 +63,8 @@ class TestRPCLIT < Test::Unit::TestCase
         XSD::QName.new(Namespace, 'echoStructArray'),
         nil,
         'echoStructArray', [
-          ['in', 'inputStructArray', nil],
-          ['retval', 'return', nil]
+          [:in, 'inputStructArray', nil],
+          [:retval, 'return', nil]
         ],
         {
           :request_style => :rpc,

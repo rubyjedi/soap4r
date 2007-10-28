@@ -85,8 +85,8 @@ class TestMultiFault < Test::Unit::TestCase
     @client.add_document_operation(
       "Add",
       "add",
-      [ ["in", "request", ["::SOAP::SOAPElement", "http://fault.test/Faulttest", "Add"]],
-        ["out", "response", ["::SOAP::SOAPElement", "http://fault.test/Faulttest", "AddResponse"]] ],
+      [ [:in, "request", ["::SOAP::SOAPElement", "http://fault.test/Faulttest", "Add"]],
+        [:out, "response", ["::SOAP::SOAPElement", "http://fault.test/Faulttest", "AddResponse"]] ],
       { :request_style =>  :document, :request_use =>  :literal,
         :response_style => :document, :response_use => :literal,
         :faults => {"AddFault"=>{:namespace=>nil, :name=>"AddFault", :use=>"literal", :encodingstyle=>"document", :ns=>"http://fault.test/Faulttest"}} }

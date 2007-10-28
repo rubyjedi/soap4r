@@ -10,8 +10,8 @@ class DatetimePortType
   Methods = [
     ["now", "now",
       [
-        ["in", "now", [::SOAP::SOAPDateTime]],
-        ["retval", "now", [::SOAP::SOAPDateTime]]
+        [:in, "now", [::SOAP::SOAPDateTime]],
+        [:retval, "now", [::SOAP::SOAPDateTime]]
       ],
       "", "urn:jp.gr.jin.rrr.example.datetime", :rpc
     ]
