@@ -126,22 +126,22 @@ private
 
   def add_operation(drv, port)
     port.find_binding.operations.each do |op_bind|
-      op_name = op_bind.soapoperation_name
-      soapaction = op_bind.soapaction || ''
-      orgname = op_name.name
-      name = XSD::CodeGen::GenSupport.safemethodname(orgname)
-      param_def = create_param_def(op_bind)
+      mdef = @methoddefcreator.create_methoddef(op_bind)
       opt = {
-        :request_style => op_bind.soapoperation_style,
-        :response_style => op_bind.soapoperation_style,
-        :request_use => op_bind.soapbody_use_input,
-        :response_use => op_bind.soapbody_use_output
+        :request_style => mdef.style,
+        :response_style => mdef.style,
+        :request_use => mdef.inputuse,
+        :response_use => mdef.outputuse
       }
-      if op_bind.soapoperation_style == :rpc
-        drv.add_rpc_operation(op_name, soapaction, name, param_def, opt)
+      qname = mdef.qname
+      soapaction = mdef.soapaction
+      name = mdef.name
+      if mdef.style == :rpc
+        drv.add_rpc_operation(qname, soapaction, name, mdef.parameters, opt)
       else
-        drv.add_document_operation(soapaction, name, param_def, opt)
+        drv.add_document_operation(soapaction, name, mdef.parameters, opt)
       end
+      orgname = mdef.qname.name
       if orgname != name and orgname.capitalize == name.capitalize
         ::SOAP::Mapping.define_singleton_method(drv, orgname) do |*arg|
           __send__(name, *arg)
@@ -152,37 +152,6 @@ private
 
   def import(location)
     WSDL::Importer.import(location)
-  end
-
-  def create_param_def(op_bind)
-    op = op_bind.find_operation
-    if op_bind.soapoperation_style == :rpc
-      param_def = @methoddefcreator.collect_rpcparameter(op)
-    else
-      param_def = @methoddefcreator.collect_documentparameter(op)
-    end
-    # the first element of typedef in param_def is a String like
-    # "::SOAP::SOAPStruct".  turn this String to a class.
-    param_def.collect { |io_type, name, param_type|
-      [io_type, name, ::SOAP::RPC::SOAPMethod.parse_param_type(param_type)]
-    }
-  end
-
-  def partqname(part)
-    if part.type
-      part.type
-    else
-      part.element
-    end
-  end
-
-  def param_def(type, name, klass, partqname)
-    [type, name, [klass, partqname.namespace, partqname.name]]
-  end
-
-  def filter_parts(partsdef, partssource)
-    parts = partsdef.split(/\s+/)
-    partssource.find_all { |part| parts.include?(part.name) }
   end
 end
 

@@ -7,6 +7,7 @@
 
 
 require 'soap/baseData'
+require 'soap/rpc/methodDef'
 
 
 module SOAP
@@ -69,10 +70,10 @@ class MethodDefinitionError < RPCError; end
 class ParameterError < RPCError; end
 
 class SOAPMethod < SOAPStruct
-  RETVAL = 'retval'
-  IN = 'in'
-  OUT = 'out'
-  INOUT = 'inout'
+  RETVAL = :retval
+  IN = :in
+  OUT = :out
+  INOUT = :inout
 
   attr_reader :param_def
   attr_reader :inparam
@@ -97,7 +98,7 @@ class SOAPMethod < SOAPStruct
     @retval_name = nil
     @retval_class_name = nil
 
-    init_param(@param_def) if @param_def
+    init_params(@param_def) if @param_def
   end
 
   def have_member
@@ -151,8 +152,9 @@ class SOAPMethod < SOAPStruct
 
   def SOAPMethod.param_count(param_def, *type)
     count = 0
-    param_def.each do |io_type, name, param_type|
-      if type.include?(io_type)
+    param_def.each do |param|
+      param = MethodDef.to_param(param)
+      if type.include?(param.io_type.to_sym)
         count += 1
       end
     end
@@ -217,38 +219,41 @@ private
     names
   end
 
-  def init_param(param_def)
-    param_def.each do |io_type, name, param_type|
-      mapped_class, nsdef, namedef = SOAPMethod.parse_param_type(param_type)
-      if nsdef && namedef
-        type_qname = XSD::QName.new(nsdef, namedef)
-      elsif mapped_class
-        type_qname = TypeMap.index(mapped_class)
-      end
-      case io_type
-      when IN
-        @signature.push([IN, name, type_qname])
-        @inparam_names.push(name)
-      when OUT
-        @signature.push([OUT, name, type_qname])
-        @outparam_names.push(name)
-      when INOUT
-        @signature.push([INOUT, name, type_qname])
-        @inoutparam_names.push(name)
-      when RETVAL
-        if @retval_name
-          raise MethodDefinitionError.new('duplicated retval')
-        end
-        @retval_name = name
-        @retval_class_name = mapped_class
-      else
-        raise MethodDefinitionError.new("unknown type: #{io_type}")
-      end
+  def init_params(param_def)
+    param_def.each do |param|
+      param = MethodDef.to_param(param)
+      init_param(param)
     end
   end
 
-  def self.parse_param_type(param_type)
-    mapped_class, nsdef, namedef = param_type
+  def init_param(param)
+    mapped_class = SOAPMethod.parse_mapped_class(param.mapped_class)
+    qname = param.qname
+    if qname.nil? and mapped_class
+      qname = TypeMap.index(mapped_class)
+    end
+    case param.io_type
+    when IN
+      @signature.push([IN, param.name, qname])
+      @inparam_names.push(param.name)
+    when OUT
+      @signature.push([OUT, param.name, qname])
+      @outparam_names.push(param.name)
+    when INOUT
+      @signature.push([INOUT, param.name, qname])
+      @inoutparam_names.push(param.name)
+    when RETVAL
+      if @retval_name
+        raise MethodDefinitionError.new('duplicated retval')
+      end
+      @retval_name = param.name
+      @retval_class_name = mapped_class
+    else
+      raise MethodDefinitionError.new("unknown type: #{param.io_type}")
+    end
+  end
+
+  def self.parse_mapped_class(mapped_class)
     # the first element of typedef in param_def can be a String like
     # "::SOAP::SOAPStruct" or "CustomClass[]".  turn this String to a class if
     # we can.
@@ -260,7 +265,7 @@ private
         mapped_class = Mapping.class_from_name(mapped_class)
       end
     end
-    [mapped_class, nsdef, namedef]
+    mapped_class
   end
 end
 
