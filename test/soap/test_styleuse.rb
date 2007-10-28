@@ -102,9 +102,9 @@ class TestStyleUse < Test::Unit::TestCase
       XSD::QName.new(Namespace, 'rpc_enc_rpc_enc'),
       nil,
       'rpc_enc_rpc_enc', [
-        ['in', 'obj1', nil],
-        ['in', 'obj2', nil],
-        ['retval', 'return', nil]],
+        [:in, 'obj1', nil],
+        [:in, 'obj2', nil],
+        [:retval, 'return', nil]],
       opt(:rpc, :encoded, :rpc, :encoded)
     ]
 
@@ -112,9 +112,9 @@ class TestStyleUse < Test::Unit::TestCase
       XSD::QName.new(Namespace, 'rpc_lit_rpc_enc'),
       nil,
       'rpc_lit_rpc_enc', [
-        ['in', 'obj1', nil],
-        ['in', 'obj2', nil],
-        ['retval', 'return', nil]],
+        [:in, 'obj1', nil],
+        [:in, 'obj2', nil],
+        [:retval, 'return', nil]],
       opt(:rpc, :literal, :rpc, :encoded)
     ]
 
@@ -122,10 +122,10 @@ class TestStyleUse < Test::Unit::TestCase
       XSD::QName.new(Namespace, 'rpc_enc_rpc_lit'),
       nil,
       'rpc_enc_rpc_lit', [
-        ['in', 'obj1', nil],
-        ['in', 'obj2', nil],
-        ['retval', 'ret1', nil],
-        ['out', 'ret2', nil]],
+        [:in, 'obj1', nil],
+        [:in, 'obj2', nil],
+        [:retval, 'ret1', nil],
+        [:out, 'ret2', nil]],
       opt(:rpc, :encoded, :rpc, :literal)
     ]
 
@@ -133,50 +133,50 @@ class TestStyleUse < Test::Unit::TestCase
       XSD::QName.new(Namespace, 'rpc_lit_rpc_lit'),
       nil,
       'rpc_lit_rpc_lit', [
-        ['in', 'obj1', nil],
-        ['in', 'obj2', nil],
-        ['retval', 'ret1', nil],
-        ['out', 'ret2', nil]],
+        [:in, 'obj1', nil],
+        [:in, 'obj2', nil],
+        [:retval, 'ret1', nil],
+        [:out, 'ret2', nil]],
       opt(:rpc, :literal, :rpc, :literal)
     ]
 
     Op_doc_enc_doc_enc = [
       Namespace + 'doc_enc_doc_enc',
       'doc_enc_doc_enc', [
-        ['in', 'obj1', [nil, Namespace, 'obj1']],
-        ['in', 'obj2', [nil, Namespace, 'obj2']],
-        ['out', 'ret1', [nil, Namespace, 'ret1']],
-        ['out', 'ret2', [nil, Namespace, 'ret2']]],
+        [:in, 'obj1', [nil, Namespace, 'obj1']],
+        [:in, 'obj2', [nil, Namespace, 'obj2']],
+        [:out, 'ret1', [nil, Namespace, 'ret1']],
+        [:out, 'ret2', [nil, Namespace, 'ret2']]],
       opt(:document, :encoded, :document, :encoded)
     ]
 
     Op_doc_lit_doc_enc = [
       Namespace + 'doc_lit_doc_enc',
       'doc_lit_doc_enc', [
-        ['in', 'obj1', [nil, Namespace, 'obj1']],
-        ['in', 'obj2', [nil, Namespace, 'obj2']],
-        ['out', 'ret1', [nil, Namespace, 'ret1']],
-        ['out', 'ret2', [nil, Namespace, 'ret2']]],
+        [:in, 'obj1', [nil, Namespace, 'obj1']],
+        [:in, 'obj2', [nil, Namespace, 'obj2']],
+        [:out, 'ret1', [nil, Namespace, 'ret1']],
+        [:out, 'ret2', [nil, Namespace, 'ret2']]],
       opt(:document, :literal, :document, :encoded)
     ]
 
     Op_doc_enc_doc_lit = [
       Namespace + 'doc_enc_doc_lit',
       'doc_enc_doc_lit', [
-        ['in', 'obj1', [nil, Namespace, 'obj1']],
-        ['in', 'obj2', [nil, Namespace, 'obj2']],
-        ['out', 'ret1', [nil, Namespace, 'ret1']],
-        ['out', 'ret2', [nil, Namespace, 'ret2']]],
+        [:in, 'obj1', [nil, Namespace, 'obj1']],
+        [:in, 'obj2', [nil, Namespace, 'obj2']],
+        [:out, 'ret1', [nil, Namespace, 'ret1']],
+        [:out, 'ret2', [nil, Namespace, 'ret2']]],
       opt(:document, :encoded, :document, :literal)
     ]
 
     Op_doc_lit_doc_lit = [
       Namespace + 'doc_lit_doc_lit',
       'doc_lit_doc_lit', [
-        ['in', 'obj1', [nil, Namespace, 'obj1']],
-        ['in', 'obj2', [nil, Namespace, 'obj2']],
-        ['out', 'ret1', [nil, Namespace, 'ret1']],
-        ['out', 'ret2', [nil, Namespace, 'ret2']]],
+        [:in, 'obj1', [nil, Namespace, 'obj1']],
+        [:in, 'obj2', [nil, Namespace, 'obj2']],
+        [:out, 'ret1', [nil, Namespace, 'ret1']],
+        [:out, 'ret2', [nil, Namespace, 'ret2']]],
       opt(:document, :literal, :document, :literal)
     ]
   end

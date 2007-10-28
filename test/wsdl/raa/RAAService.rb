@@ -40,7 +40,7 @@ class RAABaseServicePortTypeServer
     [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getAllListings"),
       "",
       "getAllListings",
-      [ ["retval", "return", ["WSDL::RAA::C_String[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "StringArray"]] ],
+      [ [:retval, "return", ["WSDL::RAA::C_String[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "StringArray"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
@@ -48,7 +48,7 @@ class RAABaseServicePortTypeServer
     [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getProductTree"),
       "",
       "getProductTree",
-      [ ["retval", "return", ["Hash", "http://xml.apache.org/xml-soap", "Map"]] ],
+      [ [:retval, "return", ["Hash", "http://xml.apache.org/xml-soap", "Map"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
@@ -56,8 +56,8 @@ class RAABaseServicePortTypeServer
     [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromCategory"),
       "",
       "getInfoFromCategory",
-      [ ["in", "category", ["WSDL::RAA::Category", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Category"]],
-        ["retval", "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
+      [ [:in, "category", ["WSDL::RAA::Category", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Category"]],
+        [:retval, "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
@@ -65,8 +65,8 @@ class RAABaseServicePortTypeServer
     [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getModifiedInfoSince"),
       "",
       "getModifiedInfoSince",
-      [ ["in", "timeInstant", ["::SOAP::SOAPDateTime"]],
-        ["retval", "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
+      [ [:in, "timeInstant", ["::SOAP::SOAPDateTime"]],
+        [:retval, "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
@@ -74,8 +74,8 @@ class RAABaseServicePortTypeServer
     [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromName"),
       "",
       "getInfoFromName",
-      [ ["in", "productName", ["::SOAP::SOAPString"]],
-        ["retval", "return", ["WSDL::RAA::Info", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]] ],
+      [ [:in, "productName", ["::SOAP::SOAPString"]],
+        [:retval, "return", ["WSDL::RAA::Info", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "Info"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
@@ -83,8 +83,8 @@ class RAABaseServicePortTypeServer
     [ XSD::QName.new("http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "getInfoFromOwnerId"),
       "",
       "getInfoFromOwnerId",
-      [ ["in", "ownerId", ["::SOAP::SOAPInt"]],
-        ["retval", "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
+      [ [:in, "ownerId", ["::SOAP::SOAPInt"]],
+        [:retval, "return", ["WSDL::RAA::Info[]", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.2/", "InfoArray"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }

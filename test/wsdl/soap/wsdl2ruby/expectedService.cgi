@@ -10,8 +10,8 @@ class Echo_version_port_type
     [ XSD::QName.new(NsSimpletypeRpc, "echo_version"),
       "urn:example.com:simpletype-rpc",
       "echo_version",
-      [ ["in", "version", [nil, "urn:example.com:simpletype-rpc-type", "version"]],
-        ["retval", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]] ],
+      [ [:in, "version", [nil, "urn:example.com:simpletype-rpc-type", "version"]],
+        [:retval, "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }
@@ -19,8 +19,8 @@ class Echo_version_port_type
     [ XSD::QName.new(NsSimpletypeRpc, "echo_version_r"),
       "urn:example.com:simpletype-rpc",
       "echo_version_r",
-      [ ["in", "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
-        ["retval", "version", [nil, "urn:example.com:simpletype-rpc-type", "version"]] ],
+      [ [:in, "version_struct", ["Version_struct", "urn:example.com:simpletype-rpc-type", "version_struct"]],
+        [:retval, "version", [nil, "urn:example.com:simpletype-rpc-type", "version"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded,
         :faults => {} }

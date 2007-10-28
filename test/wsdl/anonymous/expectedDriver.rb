@@ -10,16 +10,16 @@ class Lp_porttype < ::SOAP::RPC::Driver
   Methods = [
     [ "urn:lp:login",
       "login",
-      [ ["in", "parameters", ["::SOAP::SOAPElement", "urn:lp", "login"]],
-        ["out", "parameters", ["::SOAP::SOAPElement", "urn:lp", "loginResponse"]] ],
+      [ [:in, "parameters", ["::SOAP::SOAPElement", "urn:lp", "login"]],
+        [:out, "parameters", ["::SOAP::SOAPElement", "urn:lp", "loginResponse"]] ],
       { :request_style =>  :document, :request_use =>  :literal,
         :response_style => :document, :response_use => :literal,
         :faults => {} }
     ],
     [ "urn:lp:echo",
       "echo",
-      [ ["in", "parameters", ["::SOAP::SOAPElement", "urn:lp", "Pack"]],
-        ["out", "parameters", ["::SOAP::SOAPElement", "urn:lp", "Envelope"]] ],
+      [ [:in, "parameters", ["::SOAP::SOAPElement", "urn:lp", "Pack"]],
+        [:out, "parameters", ["::SOAP::SOAPElement", "urn:lp", "Envelope"]] ],
       { :request_style =>  :document, :request_use =>  :literal,
         :response_style => :document, :response_use => :literal,
         :faults => {} }

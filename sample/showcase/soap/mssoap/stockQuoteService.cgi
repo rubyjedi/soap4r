@@ -10,8 +10,8 @@ class StockQuoteServicePortType
     [ XSD::QName.new("urn:xmltoday-delayed-quotes", "getQuote"),
       "",
       "getQuote",
-      [ ["in", "arg0", ["::SOAP::SOAPString"]],
-        ["retval", "getQuoteResult", ["::SOAP::SOAPFloat"]] ],
+      [ [:in, "arg0", ["::SOAP::SOAPString"]],
+        [:retval, "getQuoteResult", ["::SOAP::SOAPFloat"]] ],
       { :request_style =>  :rpc, :request_use =>  :encoded,
         :response_style => :rpc, :response_use => :encoded }
     ]

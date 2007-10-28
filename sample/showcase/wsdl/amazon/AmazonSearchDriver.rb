@@ -334,183 +334,183 @@ class AmazonSearchPort < ::SOAP::RPC::Driver
   Methods = [
     ["KeywordSearchRequest", "keywordSearchRequest",
       [
-        ["in", "KeywordSearchRequest", ["KeywordRequest", "http://soap.amazon.com", "KeywordRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "KeywordSearchRequest", ["KeywordRequest", "http://soap.amazon.com", "KeywordRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["TextStreamSearchRequest", "textStreamSearchRequest",
       [
-        ["in", "TextStreamSearchRequest", ["TextStreamRequest", "http://soap.amazon.com", "TextStreamRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "TextStreamSearchRequest", ["TextStreamRequest", "http://soap.amazon.com", "TextStreamRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["PowerSearchRequest", "powerSearchRequest",
       [
-        ["in", "PowerSearchRequest", ["PowerRequest", "http://soap.amazon.com", "PowerRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "PowerSearchRequest", ["PowerRequest", "http://soap.amazon.com", "PowerRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["BrowseNodeSearchRequest", "browseNodeSearchRequest",
       [
-        ["in", "BrowseNodeSearchRequest", ["BrowseNodeRequest", "http://soap.amazon.com", "BrowseNodeRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "BrowseNodeSearchRequest", ["BrowseNodeRequest", "http://soap.amazon.com", "BrowseNodeRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["AsinSearchRequest", "asinSearchRequest",
       [
-        ["in", "AsinSearchRequest", ["AsinRequest", "http://soap.amazon.com", "AsinRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "AsinSearchRequest", ["AsinRequest", "http://soap.amazon.com", "AsinRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["BlendedSearchRequest", "blendedSearchRequest",
       [
-        ["in", "BlendedSearchRequest", ["BlendedRequest", "http://soap.amazon.com", "BlendedRequest"]],
-        ["retval", "return", ["ProductLine[]", "http://soap.amazon.com", "ProductLine"]]
+        [:in, "BlendedSearchRequest", ["BlendedRequest", "http://soap.amazon.com", "BlendedRequest"]],
+        [:retval, "return", ["ProductLine[]", "http://soap.amazon.com", "ProductLine"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["UpcSearchRequest", "upcSearchRequest",
       [
-        ["in", "UpcSearchRequest", ["UpcRequest", "http://soap.amazon.com", "UpcRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "UpcSearchRequest", ["UpcRequest", "http://soap.amazon.com", "UpcRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["SkuSearchRequest", "skuSearchRequest",
       [
-        ["in", "SkuSearchRequest", ["SkuRequest", "http://soap.amazon.com", "SkuRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "SkuSearchRequest", ["SkuRequest", "http://soap.amazon.com", "SkuRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["AuthorSearchRequest", "authorSearchRequest",
       [
-        ["in", "AuthorSearchRequest", ["AuthorRequest", "http://soap.amazon.com", "AuthorRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "AuthorSearchRequest", ["AuthorRequest", "http://soap.amazon.com", "AuthorRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["ArtistSearchRequest", "artistSearchRequest",
       [
-        ["in", "ArtistSearchRequest", ["ArtistRequest", "http://soap.amazon.com", "ArtistRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "ArtistSearchRequest", ["ArtistRequest", "http://soap.amazon.com", "ArtistRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["ActorSearchRequest", "actorSearchRequest",
       [
-        ["in", "ActorSearchRequest", ["ActorRequest", "http://soap.amazon.com", "ActorRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "ActorSearchRequest", ["ActorRequest", "http://soap.amazon.com", "ActorRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["ManufacturerSearchRequest", "manufacturerSearchRequest",
       [
-        ["in", "ManufacturerSearchRequest", ["ManufacturerRequest", "http://soap.amazon.com", "ManufacturerRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "ManufacturerSearchRequest", ["ManufacturerRequest", "http://soap.amazon.com", "ManufacturerRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["DirectorSearchRequest", "directorSearchRequest",
       [
-        ["in", "DirectorSearchRequest", ["DirectorRequest", "http://soap.amazon.com", "DirectorRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "DirectorSearchRequest", ["DirectorRequest", "http://soap.amazon.com", "DirectorRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["ListManiaSearchRequest", "listManiaSearchRequest",
       [
-        ["in", "ListManiaSearchRequest", ["ListManiaRequest", "http://soap.amazon.com", "ListManiaRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "ListManiaSearchRequest", ["ListManiaRequest", "http://soap.amazon.com", "ListManiaRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["WishlistSearchRequest", "wishlistSearchRequest",
       [
-        ["in", "WishlistSearchRequest", ["WishlistRequest", "http://soap.amazon.com", "WishlistRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "WishlistSearchRequest", ["WishlistRequest", "http://soap.amazon.com", "WishlistRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["ExchangeSearchRequest", "exchangeSearchRequest",
       [
-        ["in", "ExchangeSearchRequest", ["ExchangeRequest", "http://soap.amazon.com", "ExchangeRequest"]],
-        ["retval", "return", ["ListingProductDetails", "http://soap.amazon.com", "ListingProductDetails"]]
+        [:in, "ExchangeSearchRequest", ["ExchangeRequest", "http://soap.amazon.com", "ExchangeRequest"]],
+        [:retval, "return", ["ListingProductDetails", "http://soap.amazon.com", "ListingProductDetails"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["MarketplaceSearchRequest", "marketplaceSearchRequest",
       [
-        ["in", "MarketplaceSearchRequest", ["MarketplaceRequest", "http://soap.amazon.com", "MarketplaceRequest"]],
-        ["retval", "return", ["MarketplaceSearch", "http://soap.amazon.com", "MarketplaceSearch"]]
+        [:in, "MarketplaceSearchRequest", ["MarketplaceRequest", "http://soap.amazon.com", "MarketplaceRequest"]],
+        [:retval, "return", ["MarketplaceSearch", "http://soap.amazon.com", "MarketplaceSearch"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["SellerProfileSearchRequest", "sellerProfileSearchRequest",
       [
-        ["in", "SellerProfileSearchRequest", ["SellerProfileRequest", "http://soap.amazon.com", "SellerProfileRequest"]],
-        ["retval", "return", ["SellerProfile", "http://soap.amazon.com", "SellerProfile"]]
+        [:in, "SellerProfileSearchRequest", ["SellerProfileRequest", "http://soap.amazon.com", "SellerProfileRequest"]],
+        [:retval, "return", ["SellerProfile", "http://soap.amazon.com", "SellerProfile"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["SellerSearchRequest", "sellerSearchRequest",
       [
-        ["in", "SellerSearchRequest", ["SellerRequest", "http://soap.amazon.com", "SellerRequest"]],
-        ["retval", "return", ["SellerSearch", "http://soap.amazon.com", "SellerSearch"]]
+        [:in, "SellerSearchRequest", ["SellerRequest", "http://soap.amazon.com", "SellerRequest"]],
+        [:retval, "return", ["SellerSearch", "http://soap.amazon.com", "SellerSearch"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["SimilaritySearchRequest", "similaritySearchRequest",
       [
-        ["in", "SimilaritySearchRequest", ["SimilarityRequest", "http://soap.amazon.com", "SimilarityRequest"]],
-        ["retval", "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
+        [:in, "SimilaritySearchRequest", ["SimilarityRequest", "http://soap.amazon.com", "SimilarityRequest"]],
+        [:retval, "return", ["ProductInfo", "http://soap.amazon.com", "ProductInfo"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["GetShoppingCartRequest", "getShoppingCartRequest",
       [
-        ["in", "GetShoppingCartRequest", ["GetShoppingCartRequest", "http://soap.amazon.com", "GetShoppingCartRequest"]],
-        ["retval", "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
+        [:in, "GetShoppingCartRequest", ["GetShoppingCartRequest", "http://soap.amazon.com", "GetShoppingCartRequest"]],
+        [:retval, "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["ClearShoppingCartRequest", "clearShoppingCartRequest",
       [
-        ["in", "ClearShoppingCartRequest", ["ClearShoppingCartRequest", "http://soap.amazon.com", "ClearShoppingCartRequest"]],
-        ["retval", "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
+        [:in, "ClearShoppingCartRequest", ["ClearShoppingCartRequest", "http://soap.amazon.com", "ClearShoppingCartRequest"]],
+        [:retval, "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["AddShoppingCartItemsRequest", "addShoppingCartItemsRequest",
       [
-        ["in", "AddShoppingCartItemsRequest", ["AddShoppingCartItemsRequest", "http://soap.amazon.com", "AddShoppingCartItemsRequest"]],
-        ["retval", "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
+        [:in, "AddShoppingCartItemsRequest", ["AddShoppingCartItemsRequest", "http://soap.amazon.com", "AddShoppingCartItemsRequest"]],
+        [:retval, "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["RemoveShoppingCartItemsRequest", "removeShoppingCartItemsRequest",
       [
-        ["in", "RemoveShoppingCartItemsRequest", ["RemoveShoppingCartItemsRequest", "http://soap.amazon.com", "RemoveShoppingCartItemsRequest"]],
-        ["retval", "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
+        [:in, "RemoveShoppingCartItemsRequest", ["RemoveShoppingCartItemsRequest", "http://soap.amazon.com", "RemoveShoppingCartItemsRequest"]],
+        [:retval, "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["ModifyShoppingCartItemsRequest", "modifyShoppingCartItemsRequest",
       [
-        ["in", "ModifyShoppingCartItemsRequest", ["ModifyShoppingCartItemsRequest", "http://soap.amazon.com", "ModifyShoppingCartItemsRequest"]],
-        ["retval", "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
+        [:in, "ModifyShoppingCartItemsRequest", ["ModifyShoppingCartItemsRequest", "http://soap.amazon.com", "ModifyShoppingCartItemsRequest"]],
+        [:retval, "ShoppingCart", ["ShoppingCart", "http://soap.amazon.com", "ShoppingCart"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ],
     ["GetTransactionDetailsRequest", "getTransactionDetailsRequest",
       [
-        ["in", "GetTransactionDetailsRequest", ["GetTransactionDetailsRequest", "http://soap.amazon.com", "GetTransactionDetailsRequest"]],
-        ["retval", "GetTransactionDetailsResponse", ["GetTransactionDetailsResponse", "http://soap.amazon.com", "GetTransactionDetailsResponse"]]
+        [:in, "GetTransactionDetailsRequest", ["GetTransactionDetailsRequest", "http://soap.amazon.com", "GetTransactionDetailsRequest"]],
+        [:retval, "GetTransactionDetailsResponse", ["GetTransactionDetailsResponse", "http://soap.amazon.com", "GetTransactionDetailsResponse"]]
       ],
       "http://soap.amazon.com", "http://soap.amazon.com", :rpc
     ]

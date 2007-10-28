@@ -69,165 +69,165 @@ class RaaServicePortType < SOAP::RPC::Driver
   Methods = [
     ["gem", "gem",
       [
-        ["in", "name", [SOAP::SOAPString]],
-        ["retval", "return", [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Gem"]]
+        [:in, "name", [SOAP::SOAPString]],
+        [:retval, "return", [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Gem"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["dependents", "dependents",
       [
-        ["in", "name", [SOAP::SOAPString]],
-        ["in", "version", [SOAP::SOAPString]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
+        [:in, "name", [SOAP::SOAPString]],
+        [:in, "version", [SOAP::SOAPString]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "ProjectDependency"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["names", "names",
       [
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["size", "size",
       [
-        ["retval", "return", [SOAP::SOAPInt]]
+        [:retval, "return", [SOAP::SOAPInt]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_by_category", "list_by_category",
       [
-        ["in", "major", [SOAP::SOAPString]],
-        ["in", "minor", [SOAP::SOAPString]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "major", [SOAP::SOAPString]],
+        [:in, "minor", [SOAP::SOAPString]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["tree_by_category", "tree_by_category",
       [
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "anyType"]]
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "anyType"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_recent_updated", "list_recent_updated",
       [
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_recent_created", "list_recent_created",
       [
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_updated_since", "list_updated_since",
       [
-        ["in", "date", [SOAP::SOAPDateTime]],
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "date", [SOAP::SOAPDateTime]],
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_created_since", "list_created_since",
       [
-        ["in", "date", [SOAP::SOAPDateTime]],
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "date", [SOAP::SOAPDateTime]],
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_by_owner", "list_by_owner",
       [
-        ["in", "owner_id", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "owner_id", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["search_name", "search_name",
       [
-        ["in", "substring", [SOAP::SOAPString]],
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "substring", [SOAP::SOAPString]],
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["search_short_description", "search_short_description",
       [
-        ["in", "substring", [SOAP::SOAPString]],
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "substring", [SOAP::SOAPString]],
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["search_owner", "search_owner",
       [
-        ["in", "substring", [SOAP::SOAPString]],
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "substring", [SOAP::SOAPString]],
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["search_version", "search_version",
       [
-        ["in", "substring", [SOAP::SOAPString]],
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "substring", [SOAP::SOAPString]],
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["search_status", "search_status",
       [
-        ["in", "substring", [SOAP::SOAPString]],
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "substring", [SOAP::SOAPString]],
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["search_description", "search_description",
       [
-        ["in", "substring", [SOAP::SOAPString]],
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
+        [:in, "substring", [SOAP::SOAPString]],
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "string"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["search", "search",
       [
-        ["in", "substring", [SOAP::SOAPString]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "anyType"]]
+        [:in, "substring", [SOAP::SOAPString]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.w3.org/2001/XMLSchema", "anyType"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["owner", "owner",
       [
-        ["in", "owner_id", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Owner"]]
+        [:in, "owner_id", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Owner"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["list_owner", "list_owner",
       [
-        ["in", "idx", [SOAP::SOAPInt]],
-        ["retval", "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Owner"]]
+        [:in, "idx", [SOAP::SOAPInt]],
+        [:retval, "return", [::SOAP::SOAPArray, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Owner"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["update", "update",
       [
-        ["in", "name", [SOAP::SOAPString]],
-        ["in", "pass", [SOAP::SOAPString]],
-        ["in", "gem", [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Gem"]],
-        ["retval", "return", [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Gem"]]
+        [:in, "name", [SOAP::SOAPString]],
+        [:in, "pass", [SOAP::SOAPString]],
+        [:in, "gem", [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Gem"]],
+        [:retval, "return", [::SOAP::SOAPStruct, "http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/", "Gem"]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ],
     ["update_pass", "update_pass",
       [
-        ["in", "name", [SOAP::SOAPString]],
-        ["in", "oldpass", [SOAP::SOAPString]],
-        ["in", "newpass", [SOAP::SOAPString]]
+        [:in, "name", [SOAP::SOAPString]],
+        [:in, "oldpass", [SOAP::SOAPString]],
+        [:in, "newpass", [SOAP::SOAPString]]
       ],
       "", "http://www.ruby-lang.org/xmlns/soap/interface/RAA/0.0.4/"
     ]

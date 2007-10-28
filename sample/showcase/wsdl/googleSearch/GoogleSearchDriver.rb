@@ -40,33 +40,33 @@ class GoogleSearchPort < ::SOAP::RPC::Driver
   Methods = [
     ["doGetCachedPage", "doGetCachedPage",
       [
-        ["in", "key", ["::SOAP::SOAPString"]],
-        ["in", "url", ["::SOAP::SOAPString"]],
-        ["retval", "return", ["::SOAP::SOAPBase64"]]
+        [:in, "key", ["::SOAP::SOAPString"]],
+        [:in, "url", ["::SOAP::SOAPString"]],
+        [:retval, "return", ["::SOAP::SOAPBase64"]]
       ],
       "urn:GoogleSearchAction", "urn:GoogleSearch", :rpc
     ],
     ["doSpellingSuggestion", "doSpellingSuggestion",
       [
-        ["in", "key", ["::SOAP::SOAPString"]],
-        ["in", "phrase", ["::SOAP::SOAPString"]],
-        ["retval", "return", ["::SOAP::SOAPString"]]
+        [:in, "key", ["::SOAP::SOAPString"]],
+        [:in, "phrase", ["::SOAP::SOAPString"]],
+        [:retval, "return", ["::SOAP::SOAPString"]]
       ],
       "urn:GoogleSearchAction", "urn:GoogleSearch", :rpc
     ],
     ["doGoogleSearch", "doGoogleSearch",
       [
-        ["in", "key", ["::SOAP::SOAPString"]],
-        ["in", "q", ["::SOAP::SOAPString"]],
-        ["in", "start", ["::SOAP::SOAPInt"]],
-        ["in", "maxResults", ["::SOAP::SOAPInt"]],
-        ["in", "filter", ["::SOAP::SOAPBoolean"]],
-        ["in", "restrict", ["::SOAP::SOAPString"]],
-        ["in", "safeSearch", ["::SOAP::SOAPBoolean"]],
-        ["in", "lr", ["::SOAP::SOAPString"]],
-        ["in", "ie", ["::SOAP::SOAPString"]],
-        ["in", "oe", ["::SOAP::SOAPString"]],
-        ["retval", "return", ["GoogleSearchResult", "urn:GoogleSearch", "GoogleSearchResult"]]
+        [:in, "key", ["::SOAP::SOAPString"]],
+        [:in, "q", ["::SOAP::SOAPString"]],
+        [:in, "start", ["::SOAP::SOAPInt"]],
+        [:in, "maxResults", ["::SOAP::SOAPInt"]],
+        [:in, "filter", ["::SOAP::SOAPBoolean"]],
+        [:in, "restrict", ["::SOAP::SOAPString"]],
+        [:in, "safeSearch", ["::SOAP::SOAPBoolean"]],
+        [:in, "lr", ["::SOAP::SOAPString"]],
+        [:in, "ie", ["::SOAP::SOAPString"]],
+        [:in, "oe", ["::SOAP::SOAPString"]],
+        [:retval, "return", ["GoogleSearchResult", "urn:GoogleSearch", "GoogleSearchResult"]]
       ],
       "urn:GoogleSearchAction", "urn:GoogleSearch", :rpc
     ]

@@ -9,8 +9,8 @@ class HwsPort < ::SOAP::RPC::Driver
   Methods = [
     ["hello_world", "hello_world",
       [
-        ["in", "from", [::SOAP::SOAPString]],
-        ["retval", "from", [::SOAP::SOAPString]]
+        [:in, "from", [::SOAP::SOAPString]],
+        [:retval, "from", [::SOAP::SOAPString]]
       ],
       "http://localhost:2000/wsdl/hws.wsdl#hello_world", "http://localhost:2000/wsdl/hws.wsdl", :rpc
     ]

@@ -18,8 +18,8 @@ class TestAbstract < Test::Unit::TestCase
         self,
         "",
         "echoLiteral",
-        [ ["in", "author", ["::SOAP::SOAPElement", "urn:www.example.org:abstract", "Author"]],
-          ["out", "return", ["::SOAP::SOAPElement", "urn:www.example.org:abstract", "Book"]] ],
+        [ [:in, "author", ["::SOAP::SOAPElement", "urn:www.example.org:abstract", "Author"]],
+          [:out, "return", ["::SOAP::SOAPElement", "urn:www.example.org:abstract", "Book"]] ],
         { :request_style =>  :document, :request_use =>  :literal,
           :response_style => :document, :response_use => :literal,
           :faults => {} }

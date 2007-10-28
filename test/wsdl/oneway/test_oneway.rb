@@ -15,7 +15,7 @@ class TestOneway < Test::Unit::TestCase
     Methods = [
       [ "initiate",
         "initiate",
-        [ ["in", "payload", ["::SOAP::SOAPElement", "http://www.example.com/oneway", "onewayProcessRequest"]] ],
+        [ [:in, "payload", ["::SOAP::SOAPElement", "http://www.example.com/oneway", "onewayProcessRequest"]] ],
         { :request_style =>  :document, :request_use =>  :literal,
           :response_style => :document, :response_use => nil,
           :faults => {} }

@@ -10,8 +10,8 @@ class Ref_porttype < ::SOAP::RPC::Driver
   Methods = [
     [ "urn:ref:echo",
       "echo",
-      [ ["in", "parameters", ["::SOAP::SOAPElement", "urn:ref", "Product-Bag"]],
-        ["out", "parameters", ["::SOAP::SOAPElement", "urn:ref", "Creator"]] ],
+      [ [:in, "parameters", ["::SOAP::SOAPElement", "urn:ref", "Product-Bag"]],
+        [:out, "parameters", ["::SOAP::SOAPElement", "urn:ref", "Creator"]] ],
       { :request_style =>  :document, :request_use =>  :literal,
         :response_style => :document, :response_use => :literal,
         :faults => {} }

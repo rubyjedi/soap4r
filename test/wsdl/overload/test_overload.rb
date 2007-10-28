@@ -15,16 +15,16 @@ class TestOverload < Test::Unit::TestCase
   Methods = [
     [
       XSD::QName.new(TNS, 'methodAlpha'), "methodAlpha1", "method_alpha_1",
-      [ ["in", "in0", ["::SOAP::SOAPString"]],
-        ["in", "in1", ["::SOAP::SOAPString"]],
-        ["in", "in2", ["::SOAP::SOAPString"]],
-        ["retval", "methodAlphaReturn", ["::SOAP::SOAPLong"]] ]
+      [ [:in, "in0", ["::SOAP::SOAPString"]],
+        [:in, "in1", ["::SOAP::SOAPString"]],
+        [:in, "in2", ["::SOAP::SOAPString"]],
+        [:retval, "methodAlphaReturn", ["::SOAP::SOAPLong"]] ]
     ], 
     [
       XSD::QName.new(TNS, 'methodAlpha'), "methodAlpha2", "method_alpha_2",
-      [ ["in", "in0", ["::SOAP::SOAPString"]],
-        ["in", "in1", ["::SOAP::SOAPString"]],
-        ["retval", "methodAlphaReturn", ["::SOAP::SOAPLong"]] ]
+      [ [:in, "in0", ["::SOAP::SOAPString"]],
+        [:in, "in1", ["::SOAP::SOAPString"]],
+        [:retval, "methodAlphaReturn", ["::SOAP::SOAPLong"]] ]
     ]
   ]
 

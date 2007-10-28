@@ -3,16 +3,16 @@ module INetDicV06
 
   Methods = [
     ['GetDicList',
-      ['out', 'DicInfoList'], ['out', 'ErrorMessage'],
-      ['retval', 'GetDicListResult']],
+      [:out, 'DicInfoList'], [:out, 'ErrorMessage'],
+      [:retval, 'GetDicListResult']],
     ['SearchDicItem',
-      ['in', 'DicID'], ['in', 'QueryString'], ['in', 'ScopeOption'],
-      ['in', 'MatchOption'], ['in', 'FormatOption'], ['in', 'ResourceOption'],
-      ['in', 'CharsetOption'], ['in', 'ReqItemIndex'],
-      ['in', 'ReqItemTitleCount'], ['in', 'ReqItemContentCount']],
+      [:in, 'DicID'], [:in, 'QueryString'], [:in, 'ScopeOption'],
+      [:in, 'MatchOption'], [:in, 'FormatOption'], [:in, 'ResourceOption'],
+      [:in, 'CharsetOption'], [:in, 'ReqItemIndex'],
+      [:in, 'ReqItemTitleCount'], [:in, 'ReqItemContentCount']],
     ['GetDicItem',
-      ['in', 'DicID'], ['in', 'ItemID'], ['in', 'FormatOption'],
-      ['in', 'ResourceOption'], ['in', 'CharsetOption']],
+      [:in, 'DicID'], [:in, 'ItemID'], [:in, 'FormatOption'],
+      [:in, 'ResourceOption'], [:in, 'CharsetOption']],
   ]
 
   def INetDicV06.add_method( drv )

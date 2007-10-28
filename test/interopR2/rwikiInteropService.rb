@@ -8,8 +8,8 @@ class RWikiInteropService
     @rwiki = DRbObject.new(nil, @rwiki_uri)
   end
 
-  #  [ 'addResults', ['in', 'interopResults' ]]
-  #  [ 'deleteResults', ['in', 'client'], ['in', 'server']]
+  #  [ 'addResults', [:in, 'interopResults' ]]
+  #  [ 'deleteResults', [:in, 'client'], [:in, 'server']]
 
   def addResults(interopResults)
     pageName = pageName(interopResults.client, interopResults.server)
