@@ -63,8 +63,7 @@ private
     class_name = mapped_class_basename(qname, @modulepath)
     defined_const = {}
     mdcreator = MethodDefCreator.new(@definitions, @name_creator, @modulepath, defined_const)
-    result = mdcreator.dump(porttype)
-    methoddef = result[:methoddef]
+    methoddef = mdcreator.dump(porttype)
     binding = @definitions.bindings.find { |item| item.type == porttype }
     if binding.nil? or binding.soapbinding.nil?
       # not bound or not a SOAP binding

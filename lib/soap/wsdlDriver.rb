@@ -31,10 +31,6 @@ class WSDLDriverFactory
 
   def initialize(wsdl)
     @wsdl = import(wsdl)
-    name_creator = WSDL::SOAP::ClassNameCreator.new
-    @modulepath = 'WSDLDriverFactory'
-    @methoddefcreator =
-      WSDL::SOAP::MethodDefCreator.new(@wsdl, name_creator, @modulepath, {})
   end
   
   def inspect
@@ -44,8 +40,10 @@ class WSDLDriverFactory
   def create_rpc_driver(servicename = nil, portname = nil)
     port = find_port(servicename, portname)
     drv = SOAP::RPC::Driver.new(port.soap_address.location)
-    init_driver(drv, port)
-    add_operation(drv, port)
+    if binding = port.find_binding
+      init_driver(drv, binding)
+      add_operation(drv, binding)
+    end
     drv
   end
 
@@ -113,20 +111,27 @@ private
     port
   end
 
-  def init_driver(drv, port)
+  def init_driver(drv, binding)
     wsdl_elements = @wsdl.collect_elements
     wsdl_types = @wsdl.collect_complextypes + @wsdl.collect_simpletypes
     rpc_decode_typemap = wsdl_types +
-      @wsdl.soap_rpc_complextypes(port.find_binding)
+      @wsdl.soap_rpc_complextypes(binding)
     drv.proxy.mapping_registry =
       Mapping::WSDLEncodedRegistry.new(rpc_decode_typemap)
     drv.proxy.literal_mapping_registry =
       Mapping::WSDLLiteralRegistry.new(wsdl_types, wsdl_elements)
   end
 
-  def add_operation(drv, port)
-    port.find_binding.operations.each do |op_bind|
-      mdef = @methoddefcreator.create_methoddef(op_bind)
+  def add_operation(drv, binding)
+    name_creator = WSDL::SOAP::ClassNameCreator.new
+    modulepath = 'WSDLDriverFactory'
+    methoddefcreator =
+      WSDL::SOAP::MethodDefCreator.new(@wsdl, name_creator, modulepath, {})
+    mdefs = methoddefcreator.create(binding.name)
+    if mdefs.nil?
+      raise FactoryError.new("no method definition found in WSDL")
+    end
+    mdefs.each do |mdef|
       opt = {
         :request_style => mdef.style,
         :response_style => mdef.style,
