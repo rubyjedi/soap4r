@@ -31,49 +31,44 @@ class MethodDefCreator
     @simpletypes = @definitions.collect_simpletypes
     @complextypes = @definitions.collect_complextypes
     @elements = @definitions.collect_elements
-    @types = []
-    @encoded = false
-    @literal = false
     @defined_const = defined_const
     @assigned_method = {}
   end
 
   def dump(name)
-    @types.clear
-    @encoded = false
-    @literal = false
     methoddef = ""
     porttype = @definitions.porttype(name)
     binding = porttype.find_binding
     if binding
-      binding.operations.each do |op_bind|
-        next unless op_bind # no binding is defined
-        next unless op_bind.soapoperation # not a SOAP operation binding
+      create(binding.name).each do |mdef|
         methoddef << ",\n" unless methoddef.empty?
-        methoddef << dump_method(op_bind).chomp
+        methoddef << dump_method(mdef).chomp
       end
     end
-    result = {
-      :methoddef => methoddef,
-      :types => @types,
-      :encoded => @encoded,
-      :literal => @literal
-    }
-    result
+    methoddef
   end
+
+  def create(bindingname)
+    binding = @definitions.binding(bindingname)
+    if binding
+      return binding.operations.collect { |op_bind|
+        next unless op_bind.soapoperation # not a SOAP operation binding
+        create_methoddef(op_bind)
+      }
+    end
+    nil
+  end
+
+private
 
   def create_methoddef(op_bind)
     op_info = op_bind.operation_info
     name = assign_method_name(op_bind)
     soapaction = op_info.boundid.soapaction
     qname = op_bind.soapoperation_name
-    style = op_info.style
-    inputuse = op_info.inputuse
-    outputuse = op_info.outputuse
     mdef = ::SOAP::RPC::MethodDef.new(name, soapaction, qname)
     op_info.parts.each do |part|
-      if style == :rpc
-        collect_type(part.type)
+      if op_info.style == :rpc
         mapped_class, qname = rpcdefinedtype(part)
       else
         mapped_class, qname = documentdefinedtype(part)
@@ -90,10 +85,7 @@ class MethodDefCreator
     mdef
   end
 
-private
-
-  def dump_method(op_bind)
-    mdef = create_methoddef(op_bind)
+  def dump_method(mdef)
     style = mdef.style
     inputuse = mdef.inputuse
     outputuse = mdef.outputuse
@@ -111,12 +103,6 @@ private
     :response_style => #{nsym(style)}, :response_use => #{nsym(outputuse)},
     :faults => #{mdef.faults.inspect} }
 __EOD__
-    if inputuse == :encoded or outputuse == :encoded
-      @encoded = true
-    end
-    if inputuse == :literal or outputuse == :literal
-      @literal = true
-    end
     if style == :rpc
       assign_const(mdef.qname.namespace, 'Ns')
       return <<__EOD__
@@ -180,30 +166,6 @@ __EOD__
       return ['::SOAP::SOAPElement', part.type]
     else
       raise RuntimeError.new("part: #{part.name} cannot be resolved")
-    end
-  end
-
-  def collect_type(type)
-    # ignore inline type definition.
-    return if type.nil?
-    return if @types.include?(type)
-    @types << type
-    return unless @complextypes[type]
-    collect_elements_type(@complextypes[type].elements)
-  end
-
-  def collect_elements_type(elements)
-    elements.each do |element|
-      case element
-      when WSDL::XMLSchema::Any
-        # nothing to do
-      when WSDL::XMLSchema::Element
-        collect_type(element.type)
-      when WSDL::XMLSchema::Sequence, WSDL::XMLSchema::Choice
-        collect_elements_type(element.elements)
-      else
-        raise RuntimeError.new("unknown type: #{element}")
-      end
     end
   end
 
