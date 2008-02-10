@@ -141,11 +141,8 @@ public
       @reftarget = nil
     else
       if obj.is_a?(SOAPEnvelope)
-        # xsi:nil="true" can appear even if dumping without explicit type.
         Generator.assign_ns(attrs, ns, XSD::InstanceNamespace)
-        if @generate_explicit_type
-          Generator.assign_ns(attrs, ns, XSD::Namespace)
-        end
+        Generator.assign_ns(attrs, ns, XSD::Namespace)
       end
       obj.encode(self, ns, attrs) do |child|
 	indent_backup, @indent = @indent, @indent + @indentstr

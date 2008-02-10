@@ -136,9 +136,12 @@ private
       ele = SOAPElement.new(qname)
     end
     ele.qualified = definition.qualified
-    if definition.type and (definition.basetype or Mapping.root_type_hint)
-      Mapping.reset_root_type_hint
-      ele.extraattr[XSD::AttrTypeName] = definition.type
+    if definition.type
+      ele.type = definition.type
+      if definition.basetype or Mapping.root_type_hint
+        Mapping.reset_root_type_hint
+        ele.force_typed = true
+      end
     end
     if qname.nil? and definition.elename
       ele.elename = definition.elename
