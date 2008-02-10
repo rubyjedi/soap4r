@@ -56,7 +56,7 @@ public
     # TODO: set to false by default or drop thie option in 1.6.0
     @allow_unqualified_element = true
     @default_encodingstyle = nil
-    @generate_explicit_type = true
+    @generate_explicit_type = nil
     @use_default_namespace = false
     @return_response_as_xml = false
     @headerhandler = Header::HandlerSet.new
@@ -140,6 +140,12 @@ public
       :default_encodingstyle =>
         @default_encodingstyle || op_info.response_default_encodingstyle
     )
+    if reqopt[:generate_explicit_type].nil?
+      reqopt[:generate_explicit_type] = (op_info.request_use == :encoded)
+    end
+    if resopt[:generate_explicit_type].nil?
+      resopt[:generate_explicit_type] = (op_info.response_use == :encoded)
+    end
     env = route(req_header, req_body, reqopt, resopt)
     if op_info.response_use.nil?
       return nil
