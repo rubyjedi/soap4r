@@ -1,6 +1,7 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper.rb')
+require File.join(File.dirname(__FILE__), '../../testutil.rb')
 require 'soap/rpc/driver'
-require 'hw_s.rb'
+TestUtil.require(File.dirname(__FILE__), 'hw_s.rb')
 
 
 module SOAP

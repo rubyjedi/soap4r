@@ -1,7 +1,7 @@
+require File.join(File.dirname(__FILE__), '../../helper.rb')
 require 'soap/rpc/router'
 require 'soap/mapping/mapping'
 require 'soap/processor'
-require 'test/unit'
 
 
 module SOAP

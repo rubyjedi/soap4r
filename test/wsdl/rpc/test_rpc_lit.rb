@@ -1,8 +1,8 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper')
+require File.join(File.dirname(__FILE__), '../../testutil')
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 if defined?(HTTPClient) and defined?(OpenSSL)
@@ -191,9 +191,9 @@ class TestRPCLIT < Test::Unit::TestCase
     drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoStringArray(ArrayOfstring["a", "b", "c"])[0]
-    assert_equal(ECHO_STRING_ARRAY_REQUEST, parse_requestxml(str),
+    assert_xml_equal(ECHO_STRING_ARRAY_REQUEST, parse_requestxml(str),
       [ECHO_STRING_ARRAY_REQUEST, parse_requestxml(str)].join("\n\n"))
-    assert_equal(ECHO_STRING_ARRAY_RESPONSE, parse_responsexml(str),
+    assert_xml_equal(ECHO_STRING_ARRAY_RESPONSE, parse_responsexml(str),
       [ECHO_STRING_ARRAY_RESPONSE, parse_responsexml(str)].join("\n\n"))
     assert_equal(ArrayOfstring["a", "b", "c"], result)
   end
@@ -237,9 +237,9 @@ class TestRPCLIT < Test::Unit::TestCase
     # response contains only 1 part.
     result = drv.echoStringArrayInline(ArrayOfstringInline["a", "b", "c"])[0]
     assert_equal(ArrayOfstring["a", "b", "c"], result)
-    assert_equal(ECHO_STRING_ARRAY_INLINE_REQUEST, parse_requestxml(str),
+    assert_xml_equal(ECHO_STRING_ARRAY_INLINE_REQUEST, parse_requestxml(str),
       [ECHO_STRING_ARRAY_INLINE_REQUEST, parse_requestxml(str)].join("\n\n"))
-    assert_equal(ECHO_STRING_ARRAY_INLINE_RESPONSE, parse_responsexml(str))
+    assert_xml_equal(ECHO_STRING_ARRAY_INLINE_RESPONSE, parse_responsexml(str))
   end
 
   ECHO_NESTED_STRUCT_REQUEST =
@@ -298,9 +298,9 @@ class TestRPCLIT < Test::Unit::TestCase
     assert_equal('str', result.structItem.varString)
     assert_equal('1', result.structItem.varInt)
     assert_equal('+1', result.structItem.varFloat)
-    assert_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str),
+    assert_xml_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str),
       [ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str)].join("\n\n"))
-    assert_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
+    assert_xml_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
   end
 
   ECHO_NESTED_STRUCT_REQUEST_NIL =
@@ -350,9 +350,9 @@ class TestRPCLIT < Test::Unit::TestCase
     result = @client.echoNestedStruct(SOAPStructStruct.new("str", nil, 1.0, SOAPStruct.new("str", ::SOAP::SOAPNil.new, 1.0)))[0]
     assert(!result.respond_to?(:varInt))
     assert(result.respond_to?(:varString))
-    assert_equal(ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str),
+    assert_xml_equal(ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str),
       [ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str)].join("\n\n"))
-    assert_equal(ECHO_NESTED_STRUCT_RESPONSE_NIL, parse_responsexml(str))
+    assert_xml_equal(ECHO_NESTED_STRUCT_RESPONSE_NIL, parse_responsexml(str))
   end
 
   def test_stub_echoNestedStruct
@@ -367,8 +367,8 @@ class TestRPCLIT < Test::Unit::TestCase
     assert_equal('str', result.structItem.varString)
     assert_equal(1, result.structItem.varInt)
     assert_equal(1.0, result.structItem.varFloat)
-    assert_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str))
-    assert_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
+    assert_xml_equal(ECHO_NESTED_STRUCT_REQUEST, parse_requestxml(str))
+    assert_xml_equal(ECHO_NESTED_STRUCT_RESPONSE, parse_responsexml(str))
   end
 
   def test_stub_echoNestedStruct_nil
@@ -379,9 +379,9 @@ class TestRPCLIT < Test::Unit::TestCase
     result = drv.echoNestedStruct(SOAPStructStruct.new("str", nil, 1.0, SOAPStruct.new("str", ::SOAP::SOAPNil.new, 1.0)))[0]
     assert(result.respond_to?(:varInt))
     assert(result.respond_to?(:varString))
-    assert_equal(ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str),
+    assert_xml_equal(ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str),
       [ECHO_NESTED_STRUCT_REQUEST_NIL, parse_requestxml(str)].join("\n\n"))
-    assert_equal(ECHO_NESTED_STRUCT_RESPONSE_NIL, parse_responsexml(str))
+    assert_xml_equal(ECHO_NESTED_STRUCT_RESPONSE_NIL, parse_responsexml(str))
   end
 
   ECHO_STRUCT_ARRAY_REQUEST =
@@ -439,9 +439,9 @@ class TestRPCLIT < Test::Unit::TestCase
     # response contains only 1 part.
     e = SOAPStruct.new("str", 2, 2.1)
     result = @client.echoStructArray(ArrayOfSOAPStruct[e, e])
-    assert_equal(ECHO_STRUCT_ARRAY_REQUEST, parse_requestxml(str),
+    assert_xml_equal(ECHO_STRUCT_ARRAY_REQUEST, parse_requestxml(str),
       [ECHO_STRUCT_ARRAY_REQUEST, parse_requestxml(str)].join("\n\n"))
-    assert_equal(ECHO_STRUCT_ARRAY_RESPONSE, parse_responsexml(str))
+    assert_xml_equal(ECHO_STRUCT_ARRAY_RESPONSE, parse_responsexml(str))
   end
 
   def test_stub_echoStructArray
@@ -451,8 +451,8 @@ class TestRPCLIT < Test::Unit::TestCase
     # response contains only 1 part.
     e = SOAPStruct.new("str", 2, 2.1)
     result = drv.echoStructArray(ArrayOfSOAPStruct[e, e])
-    assert_equal(ECHO_STRUCT_ARRAY_REQUEST, parse_requestxml(str))
-    assert_equal(ECHO_STRUCT_ARRAY_RESPONSE, parse_responsexml(str))
+    assert_xml_equal(ECHO_STRUCT_ARRAY_REQUEST, parse_requestxml(str))
+    assert_xml_equal(ECHO_STRUCT_ARRAY_RESPONSE, parse_responsexml(str))
   end
 
   def parse_requestxml(str)

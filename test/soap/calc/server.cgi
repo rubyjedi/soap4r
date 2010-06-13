@@ -1,3 +1,4 @@
+$:.unshift File.join(File.dirname(__FILE__), '/../../../lib')
 require 'soap/rpc/cgistub'
 
 class CalcServer < SOAP::RPC::CGIStub

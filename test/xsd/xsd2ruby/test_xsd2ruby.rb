@@ -1,6 +1,6 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper')
+require File.join(File.dirname(__FILE__), '../../testutil')
 require 'wsdl/xmlSchema/xsd2ruby'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module XSD; module XSD2Ruby

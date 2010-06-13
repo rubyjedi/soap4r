@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../helper.rb')
 require 'soap/processor'
 
 
@@ -37,7 +37,7 @@ class TestExtrAttr < Test::Unit::TestCase
     env.extraattr["Id"] = "extraattr"
     g = SOAP::Generator.new()
     xml = g.generate(env)
-    assert_equal(HEADER_XML, xml)
+    assert_xml_equal(HEADER_XML, xml)
     #
     parser = SOAP::Parser.new
     env = parser.parse(xml)

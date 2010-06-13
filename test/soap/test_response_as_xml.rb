@@ -1,8 +1,8 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../helper')
+require File.join(File.dirname(__FILE__), '../testutil')
 require 'soap/rpc/httpserver'
 require 'soap/rpc/driver'
 require 'rexml/document'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', 'testutil.rb')
 
 
 module SOAP
@@ -75,10 +75,10 @@ class TestResponseAsXml < Test::Unit::TestCase
 __XML__
 
   def test_hello
-    assert_equal("hello world", @client.hello("world"))
+    assert_xml_equal("hello world", @client.hello("world"))
     @client.return_response_as_xml = true
     xml = @client.hello("world")
-    assert_equal(RESPONSE_AS_XML, xml, [RESPONSE_AS_XML, xml].join("\n\n"))
+    assert_xml_equal(RESPONSE_AS_XML, xml, [RESPONSE_AS_XML, xml].join("\n\n"))
     doc = REXML::Document.new(@client.hello("world"))
     assert_equal("hello world",
       REXML::XPath.match(doc, "//*[name()='return']")[0].text)

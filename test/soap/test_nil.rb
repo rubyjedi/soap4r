@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../helper.rb')
 require 'soap/rpc/standaloneServer'
 require 'soap/rpc/driver'
 require 'soap/header/handler'
@@ -43,14 +43,27 @@ class TestNil < Test::Unit::TestCase
 
   require 'rexml/document'
   # emulates SOAP::Lite's nil request
+
+#  def test_soaplite_nil
+#    body = SOAP::SOAPBody.new(REXML::Document.new(<<-__XML__))
+#      <nop xsi:nil="true"/>
+#    __XML__
+#    @client.wiredump_dev = STDOUT if $DEBUG
+#    header, body = @client.invoke(nil, body)
+#    assert_equal(1, body.root_node["return"].data)
+#  end
+
   def test_soaplite_nil
     body = SOAP::SOAPBody.new(REXML::Document.new(<<-__XML__))
-      <nop xsi:nil="true"/>
+      <nop/>
     __XML__
     @client.wiredump_dev = STDOUT if $DEBUG
     header, body = @client.invoke(nil, body)
     assert_equal(1, body.root_node["return"].data)
   end
+
+
+
 end
 
 

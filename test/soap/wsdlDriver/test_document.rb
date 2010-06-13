@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper.rb')
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
 require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')

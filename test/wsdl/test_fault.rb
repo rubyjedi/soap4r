@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../helper.rb')
 require 'soap/processor'
 require 'soap/mapping'
 require 'soap/rpc/element'

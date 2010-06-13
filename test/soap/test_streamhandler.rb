@@ -1,9 +1,9 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../helper')
+require File.join(File.dirname(__FILE__), '../testutil')
 require 'soap/rpc/driver'
 require 'webrick'
 require 'webrick/httpproxy'
 require 'logger'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', 'testutil.rb')
 
 
 module SOAP
