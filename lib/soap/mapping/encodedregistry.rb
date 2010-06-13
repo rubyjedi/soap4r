@@ -463,6 +463,7 @@ private
       else
         child = Mapping.get_attribute(obj, eledef.varname)
         if child.respond_to?(:each) and eledef.as_array?
+          child = child.lines if child.respond_to?(:lines) # RubyJedi: compatible with Ruby 1.8.6 and above
           child.each do |item|
             ele.add(name, typedobj2soap(item, eledef.mapped_class))
           end

@@ -53,18 +53,18 @@ end
 # Try to load XML processor.
 loaded = false
 [
-  'xsd/xmlparser/libxmlparser',
-  'xsd/xmlparser/xmlparser',
-  'xsd/xmlparser/xmlscanner',
-  'xsd/xmlparser/rexmlparser',
-].each do |lib|
+  'nokogiri',
+#  'libxmlparser',
+#  'xmlparser',
+#  'xmlscanner',
+  'rexmlparser',
+].each do |name|
   begin
-    require lib
+    require "xsd/xmlparser/#{name}"
     # XXX: for a workaround of rubygems' require inconsistency
     # XXX: MUST BE REMOVED IN THE FUTURE
-    name = lib.sub(/^.*\//, '')
     raise LoadError unless XSD::XMLParser.constants.find { |c|
-      c.downcase == name
+      c.to_s.downcase == name
     }
     loaded = true
     break

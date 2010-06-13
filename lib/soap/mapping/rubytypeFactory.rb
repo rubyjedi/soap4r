@@ -192,7 +192,7 @@ class RubytypeFactory < Factory
         param.add('member', ele_member)
         addiv2soapattr(param, obj, map)
       end
-    when ::IO, ::Binding, ::Continuation, ::Data, ::Dir, ::File::Stat,
+    when ::IO, ::Binding, ::Data, ::Dir, ::File::Stat,
         ::MatchData, Method, ::Proc, ::Process::Status, ::Thread,
         ::ThreadGroup, ::UnboundMethod
       return nil
