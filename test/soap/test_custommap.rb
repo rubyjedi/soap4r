@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../helper.rb')
 require 'soap/marshal'
 require 'soap/rpc/standaloneServer'
 require 'soap/rpc/driver'

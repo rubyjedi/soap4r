@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../helper.rb')
 require 'soap/processor'
 
 
@@ -69,7 +69,7 @@ __XML__
     # normal
     opt = {}
     result = SOAP::Processor.marshal(env, opt)
-    assert_equal(NORMAL_XML, result)
+    assert_xml_equal(NORMAL_XML, result)
     # Envelope ns customize
     env = SOAP::SOAPEnvelope.new(header, body)
     ns = XSD::NS.new
@@ -80,7 +80,7 @@ __XML__
     tag.assign('my:bar', 'bar')
     opt = { :default_ns => ns, :default_ns_tag => tag }
     result = SOAP::Processor.marshal(env, opt)
-    assert_equal(CUSTOM_NS_XML, result)
+    assert_xml_equal(CUSTOM_NS_XML, result)
   end
 
   def test_default_namespace
@@ -97,7 +97,7 @@ __XML__
     # normal
     opt = {:use_default_namespace => true}
     result = SOAP::Processor.marshal(env, opt)
-    assert_equal(XML_WITH_DEFAULT_NS, result)
+    assert_xml_equal(XML_WITH_DEFAULT_NS, result)
   end
 end
 

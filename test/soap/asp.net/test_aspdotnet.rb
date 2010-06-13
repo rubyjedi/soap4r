@@ -1,7 +1,7 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper')
+require File.join(File.dirname(__FILE__), '../../testutil')
 require 'soap/rpc/standaloneServer'
 require 'soap/rpc/driver'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module SOAP; module ASPDotNet
@@ -108,7 +108,7 @@ __XML__
       @client.add_method_with_soapaction('sayHello', Server::Namespace + 'SayHello', 'name')
       @client.default_encodingstyle = SOAP::EncodingStyle::ASPDotNetHandler::Namespace
       assert_equal("Hello Mike", @client.sayHello("Mike"))
-      assert_equal(REQUEST_ASPDOTNETHANDLER, parse_requestxml(str),
+      assert_xml_equal(REQUEST_ASPDOTNETHANDLER, parse_requestxml(str),
         [REQUEST_ASPDOTNETHANDLER, parse_requestxml(str)].join("\n\n"))
     end
 

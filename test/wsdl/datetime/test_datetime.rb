@@ -1,6 +1,7 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper.rb')
+require File.join(File.dirname(__FILE__), '../../testutil')
 require 'soap/wsdlDriver'
-require 'DatetimeService.rb'
+TestUtil.require(File.dirname(__FILE__), 'DatetimeService.rb')
 
 
 module WSDL

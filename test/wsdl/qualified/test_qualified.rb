@@ -1,8 +1,8 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper')
+require File.join(File.dirname(__FILE__), '../../testutil')
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 if defined?(HTTPClient)
@@ -111,7 +111,7 @@ class TestQualified < Test::Unit::TestCase
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = str = ''
     @client.GetPrimeNumbers(:Min => 2, :Max => 10)
-    assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
+    assert_xml_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
       [LOGIN_REQUEST_QUALIFIED, parse_requestxml(str)].join("\n\n"))
   end
 
@@ -122,7 +122,7 @@ class TestQualified < Test::Unit::TestCase
 
     @client.wiredump_dev = str = ''
     @client.getPrimeNumbers(GetPrimeNumbers.new(2, 10))
-    assert_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
+    assert_xml_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
       [LOGIN_REQUEST_QUALIFIED, parse_requestxml(str)].join("\n\n"))
   end
 

@@ -1,9 +1,9 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper')
+require File.join(File.dirname(__FILE__), '../../testutil')
 require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 module WSDL; module RPC
@@ -128,7 +128,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     assert_equal(456, res.long)
     assert_equal(789.0, res.double)
 
-    assert_equal(SOAPTYPE_WSDL_XML, parse_requestxml(str))
+    assert_xml_equal(SOAPTYPE_WSDL_XML, parse_requestxml(str))
   end
 
   def test_stub
@@ -145,7 +145,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     assert_equal(456, res.long)
     assert_equal(789.0, res.double)
 
-    assert_equal(SOAPTYPE_WSDL_XML, parse_requestxml(str))
+    assert_xml_equal(SOAPTYPE_WSDL_XML, parse_requestxml(str))
   end
 
   def test_native
@@ -166,7 +166,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     assert_equal(456, res.long)
     assert_equal(789.0, res.double)
 
-    assert_equal(SOAPTYPE_NATIVE_XML, parse_requestxml(str))
+    assert_xml_equal(SOAPTYPE_NATIVE_XML, parse_requestxml(str))
   end
 
   def parse_requestxml(str)

@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper.rb')
 require 'soap/marshal'
 
 
@@ -49,7 +49,7 @@ class TestMapping < Test::Unit::TestCase
 </env:Envelope>
 __XML__
     o = TTMHeader.new("dsn", "password", "schema", "username")
-    assert_equal(dump, SOAP::Marshal.dump(o))
+    assert_xml_equal(dump, SOAP::Marshal.dump(o))
   end
 end
 

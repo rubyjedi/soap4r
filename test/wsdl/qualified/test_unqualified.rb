@@ -1,8 +1,8 @@
-require 'test/unit'
+require File.join(File.dirname(__FILE__), '../../helper')
+require File.join(File.dirname(__FILE__), '../../testutil')
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
 
 
 if defined?(HTTPClient)
@@ -114,7 +114,7 @@ class TestUnqualified < Test::Unit::TestCase
     @client.login(:timezone => 'JST', :password => 'passwd',
       :username => 'NaHi')
     # untyped because of passing a Hash
-    assert_equal(LOGIN_REQUEST_QUALIFIED_UNTYPED, parse_requestxml(str))
+    assert_xml_equal(LOGIN_REQUEST_QUALIFIED_UNTYPED, parse_requestxml(str))
   end
 
   include ::SOAP
@@ -124,7 +124,7 @@ class TestUnqualified < Test::Unit::TestCase
 
     @client.wiredump_dev = str = ''
     @client.login(Login.new('NaHi', 'passwd', 'JST'))
-    assert_equal(LOGIN_REQUEST_QUALIFIED_UNTYPED, parse_requestxml(str))
+    assert_xml_equal(LOGIN_REQUEST_QUALIFIED_UNTYPED, parse_requestxml(str))
   end
 
   def parse_requestxml(str)
