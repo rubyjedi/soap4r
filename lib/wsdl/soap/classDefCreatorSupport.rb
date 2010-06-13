@@ -51,7 +51,7 @@ module ClassDefCreatorSupport
 #
 __EOD__
     unless fault.empty?
-      str <<<<__EOD__
+      str += <<__EOD__
 # RAISES
 #{dump_fault_type(fault, element_definitions)}
 #

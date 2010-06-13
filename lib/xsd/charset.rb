@@ -10,7 +10,7 @@ module XSD
 
 
 module Charset
-  @internal_encoding = (RUBY_VERSION.to_f >= 1.9) ? 'UTF-8' : $KCODE 
+  @internal_encoding = (RUBY_VERSION.to_f >= 1.9) ? 'UTF8' : $KCODE 
 
   class XSDError < StandardError; end
   class CharsetError < XSDError; end
