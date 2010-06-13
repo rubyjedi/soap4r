@@ -4,9 +4,16 @@ module TestUtil
     begin
       # avoid 'already initialized constant FizzBuzz' warning
       silent do
-        Dir.chdir(dir) do
+        if RUBY_VERSION.to_f >= 1.9
+          $:.unshift File.dirname(dir)
           features.each do |feature|
-            Kernel.require feature
+            require(feature)
+          end
+        else
+          Dir.chdir(dir) do
+            features.each do |feature|
+              Kernel.require feature
+            end
           end
         end
       end
