@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__),'../lib') if ENV['DEBUG_SOAP4R']
 
 require 'getoptlong'
 require 'logger'
 require 'wsdl/xmlSchema/xsd2ruby'
-
 
 class XSD2RubyApp < Logger::Application
 private
