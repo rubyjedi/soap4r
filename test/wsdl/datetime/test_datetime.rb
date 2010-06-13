@@ -1,5 +1,5 @@
-require File.join(File.dirname(__FILE__), '../../helper.rb')
-require File.join(File.dirname(__FILE__), '../../testutil')
+require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
+require File.expand_path(File.dirname(__FILE__) + '/../../testutil.rb')
 require 'soap/wsdlDriver'
 TestUtil.require(File.dirname(__FILE__), 'DatetimeService.rb')
 

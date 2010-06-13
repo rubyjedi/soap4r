@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '../helper.rb')
+require File.expand_path(File.dirname(__FILE__) + '/../helper.rb')
 require 'soap/processor'
 
 
@@ -13,12 +13,16 @@ class TestGenerator < Test::Unit::TestCase
     g.generate(SOAPElement.new('foo'))
     assert_equal("&lt;", g.encode_string(str)[-4, 4])
     #
-    begin
-      kc_backup = $KCODE.dup
-      $KCODE = 'EUC-JP'
+    if RUBY_VERSION.to_f >= 1.9
       assert_equal("&lt;", g.encode_string(str)[-4, 4])
-    ensure
-      $KCODE = kc_backup
+    else
+      begin
+        kc_backup = $KCODE.dup
+        $KCODE = 'EUC-JP'
+        assert_equal("&lt;", g.encode_string(str)[-4, 4])
+      ensure
+        $KCODE = kc_backup
+      end
     end
   end
 end

@@ -1,5 +1,6 @@
-require File.join(File.dirname(__FILE__), '../../helper')
-require File.join(File.dirname(__FILE__), '../../testutil')
+$:.unshift File.dirname(__FILE__)
+require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
+require File.expand_path(File.dirname(__FILE__) + '/../../testutil.rb')
 require 'wsdl/parser'
 require 'soap/mapping/wsdlencodedregistry'
 require 'soap/marshal'
@@ -30,8 +31,7 @@ class WSDLMarshaller
   end
 end
 
-
-require File.join(File.dirname(__FILE__), 'person_org')
+require 'person_org'
 
 class Person
   def ==(rhs)
