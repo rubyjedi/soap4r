@@ -539,7 +539,7 @@ module XSDDateTimeImpl
   end
 
   def to_date
-    Date.new0(@data.class.jd_to_ajd(@data.jd, 0, 0), 0, @data.start)
+    Date.new!(@data.class.send(:jd_to_ajd, @data.jd, 0, 0), 0, @data.start)
   end
 
   def to_datetime
@@ -588,7 +588,7 @@ module XSDDateTimeImpl
       fr = DateTime.time_to_day_fraction(t.hour, t.min, [t.sec, 59].min) +
         t.usec.to_r / DayInMicro
       of = t.utc_offset.to_r / DayInSec
-      DateTime.new0(DateTime.jd_to_ajd(jd, fr, of), of, DateTime::ITALY)
+      DateTime.new!(DateTime.jd_to_ajd(jd, fr, of), of, DateTime::ITALY)
     else
       screen_data_str(t)
     end
@@ -632,7 +632,7 @@ private
     if secfrac
       diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / DayInSec
       data += diffday
-      # FYI: new0 and jd_to_rjd are not necessary to use if you don't have
+      # FYI: new! and jd_to_rjd are not necessary to use if you don't have
       # exceptional reason.
     end
     [data, secfrac]

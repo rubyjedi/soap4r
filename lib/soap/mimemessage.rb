@@ -49,6 +49,7 @@ class MIMEMessage
 
     def parse(str)
       header_cache = nil
+      str = str.lines if str.respond_to?(:lines) # RubyJedi: compatible with Ruby 1.8.6 and above      
       str.each do |line|
 	case line
 	when /^\A[^\: \t]+:\s*.+$/
