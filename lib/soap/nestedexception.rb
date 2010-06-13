@@ -20,7 +20,7 @@ module NestedException
   end
 
   def set_backtrace(backtrace)
-    if @cause and @cause.respond_to?(:backtrace)
+    if defined?(@cause) and @cause.respond_to?(:backtrace)
       @original_backtrace = backtrace
 =begin
       # for agressive backtrace abstraction: 'here' only should not be good

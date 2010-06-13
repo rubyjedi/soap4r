@@ -11,7 +11,6 @@ require 'xsd/charset'
 require 'soap/nestedexception'
 require 'uri'
 
-
 ###
 ## XMLSchamaDatatypes general definitions.
 #

@@ -269,8 +269,7 @@ private
   end
 
   def get_encode_char_regexp
-    ENCODE_CHAR_REGEXP[XSD::Charset.encoding] ||=
-      Regexp.new("[#{EncodeMap.keys.join}]", nil, XSD::Charset.encoding)
+    ENCODE_CHAR_REGEXP[XSD::Charset.encoding] ||= Regexp.new("[#{EncodeMap.keys.join}]", nil, (RUBY_VERSION.to_f >= 1.9) ? 'NONE' : XSD::Charset.encoding) ## RubyJedi: HACK HACK HACK WIP
   end
 
   def find_handler(encodingstyle)

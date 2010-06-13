@@ -65,9 +65,14 @@ class Property
 
   KEY_REGSRC = '([^=:\\\\]*(?:\\\\.[^=:\\\\]*)*)'
   DEF_REGSRC = '\\s*' + KEY_REGSRC + '\\s*[=:]\\s*(.*)'
-  COMMENT_REGEXP = Regexp.new('^(?:#.*|)$', nil, 'u')
-  CATDEF_REGEXP = Regexp.new("^\\[\\s*#{KEY_REGSRC}\\s*\\]$", nil, 'u')
-  LINE_REGEXP = Regexp.new("^#{DEF_REGSRC}$", nil, 'u')
+  #COMMENT_REGEXP = Regexp.new('^(?:#.*|)$', nil, 'u')
+  #CATDEF_REGEXP = Regexp.new("^\\[\\s*#{KEY_REGSRC}\\s*\\]$", nil, 'u')
+  #LINE_REGEXP = Regexp.new("^#{DEF_REGSRC}$", nil, 'u')
+
+  COMMENT_REGEXP = Regexp.new('^(?:#.*|)$') # RubyJedi: Attempt at 1.9 Compatibility // , nil, 'u')
+  CATDEF_REGEXP = Regexp.new("^\\[\\s*#{KEY_REGSRC}\\s*\\]$") # RubyJedi: Attempt at 1.9 Compatibility // , nil, 'u')
+  LINE_REGEXP = Regexp.new("^#{DEF_REGSRC}$") # RubyJedi: Attempt at 1.9 Compatibility // , nil, 'u')
+  
   def load(stream)
     key_prefix = ""
     stream = stream.lines if stream.respond_to?(:lines) # RubyJedi: compatible with Ruby 1.8.6 and above
@@ -321,14 +326,14 @@ end
 
 
 # for ruby/1.6.
-unless Enumerable.instance_methods.include?('inject')
-  module Enumerable
-    def inject(init)
-      result = init
-      each do |item|
-	result = yield(result, item)
-      end
-      result
-    end
-  end
-end
+#unless Enumerable.instance_methods.include?(:inject)
+#  module Enumerable
+#    def inject(init)
+#      result = init
+#      each do |item|
+#	result = yield(result, item)
+#      end
+#      result
+#    end
+#  end
+#end
