@@ -1,4 +1,3 @@
-$:.unshift('.')
 require 'helper'
 require 'testutil'
 require 'soap/wsdlDriver'
