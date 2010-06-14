@@ -1,4 +1,3 @@
-# $:.unshift File.dirname(__FILE__) 
 require 'helper'
 require 'testutil'
 require 'wsdl/parser'
