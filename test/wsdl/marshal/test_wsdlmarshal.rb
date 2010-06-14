@@ -1,4 +1,3 @@
-$:.unshift File.dirname(__FILE__)
 require 'helper'
 require 'testutil'
 require 'wsdl/parser'
@@ -31,7 +30,7 @@ class WSDLMarshaller
   end
 end
 
-require 'person_org'
+TestUtil.require(File.dirname(__FILE__), 'person_org')
 
 class Person
   def ==(rhs)

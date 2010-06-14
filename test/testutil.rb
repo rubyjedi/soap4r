@@ -4,13 +4,21 @@ module TestUtil
     begin
       # avoid 'already initialized constant FizzBuzz' warning
       silent do
-        Dir.chdir(dir) do
-          $:.unshift('.') if RUBY_VERSION.to_f >= 1.9
-          features.each do |feature|
-            Kernel.require feature
-          end
+        $:.unshift(dir)
+        features.each do |feature|
+          Kernel.require feature
         end
+        $:.shift
       end
+
+#        Dir.chdir(dir) do
+#          # $:.unshift('.') if RUBY_VERSION.to_f >= 1.9
+#          features.each do |feature|
+#            Kernel.require feature
+#          end
+#        end
+#      end
+
     ensure
       features.each do |feature|
         $".delete(feature)

@@ -1,6 +1,7 @@
 require 'helper'
+require 'testutil'
 require 'soap/marshal'
-require File.join(File.dirname(File.expand_path(__FILE__)), 'marshaltestlib')
+TestUtil.require(File.dirname(__FILE__), 'marshaltestlib')
 
 
 if RUBY_VERSION > "1.7.0"
