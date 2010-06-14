@@ -1,4 +1,5 @@
 $:.unshift File.join(File.dirname(__FILE__), '/../../../lib')
+$:.unshift('.') if RUBY_VERSION.to_f >= 1.9
 require 'soap/rpc/cgistub'
 
 class CalcServer < SOAP::RPC::CGIStub

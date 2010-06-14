@@ -1,5 +1,6 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
-require File.expand_path(File.dirname(__FILE__) + '/../../testutil.rb')
+$:.unshift('.')
+require 'helper'
+require 'testutil'
 require 'soap/wsdlDriver'
 require 'soap/rpc/driver'
 TestUtil.require(File.dirname(__FILE__), 'server.rb')

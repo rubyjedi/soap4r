@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
+require 'helper'
 require 'soap/marshal'
 require File.join(File.dirname(File.expand_path(__FILE__)), 'marshaltestlib')
 

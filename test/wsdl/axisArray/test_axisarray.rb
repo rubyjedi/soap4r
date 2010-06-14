@@ -1,5 +1,5 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
-require File.expand_path(File.dirname(__FILE__) + '/../../testutil.rb')
+require 'helper'
+require 'testutil'
 require 'soap/processor'
 require 'soap/mapping'
 require 'soap/rpc/element'

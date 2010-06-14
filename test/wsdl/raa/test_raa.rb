@@ -1,5 +1,5 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
-require File.expand_path(File.dirname(__FILE__) + '/../../testutil.rb')
+require 'helper'
+require 'testutil'
 require 'soap/wsdlDriver'
 require 'wsdl/soap/wsdl2ruby'
 
@@ -53,8 +53,8 @@ class TestRAA < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server if @server
-    teardown_client if @client
+    teardown_server if defined?(@server)
+    teardown_client if defined?(@client)
     unless $DEBUG
       File.unlink(pathname('RAA.rb'))
       File.unlink(pathname('RAAMappingRegistry.rb'))

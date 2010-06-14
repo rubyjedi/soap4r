@@ -1,7 +1,8 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
+require 'helper'
+require 'testutil'
 require 'soap/rpc/httpserver'
 require 'soap/wsdlDriver'
-require File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'testutil.rb')
+
 
 
 module SOAP

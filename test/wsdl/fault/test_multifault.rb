@@ -1,5 +1,5 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
-require File.expand_path(File.dirname(__FILE__) + '/../../testutil.rb')
+require 'helper'
+require 'testutil'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/wsdlDriver'
 
@@ -18,7 +18,7 @@ class TestMultiFault < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_server if @server
+    teardown_server if defined?(@server)
     unless $DEBUG
       File.unlink(pathname('Add.rb'))
       File.unlink(pathname('AddMappingRegistry.rb'))
