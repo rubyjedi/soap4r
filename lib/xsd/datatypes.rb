@@ -647,14 +647,14 @@ private
 
   def _to_s
     year = (@data.year > 0) ? @data.year : @data.year - 1
-    s = format('%.4d-%02d-%02dT%02d:%02d:%02d',
-      year, @data.mon, @data.mday, @data.hour, @data.min, @data.sec)
+    s = format('%.4d-%02d-%02dT%02d:%02d:%02d', year, @data.mon, @data.mday, @data.hour, @data.min, @data.sec)
     if @data.sec_fraction.nonzero?
       if @secfrac
-  	s << ".#{ @secfrac }"
+        s << ".#{ @secfrac }"
+      elsif (RUBY_VERSION.to_f >= 1.9) # RubyJedi: Ruby 1.9's DateTime.sec_fraction() appears to be more 'sane' and doesn't need to be multiplied.
+        s << sprintf("%.16f", @data.sec_fraction.to_f).sub(/^0/, '').sub(/0*$/, '')
       else
-	s << sprintf("%.16f",
-          (@data.sec_fraction * DayInSec).to_f).sub(/^0/, '').sub(/0*$/, '')
+        s << sprintf("%.16f",(@data.sec_fraction * DayInSec).to_f).sub(/^0/, '').sub(/0*$/, '')
       end
     end
     add_tz(s)
