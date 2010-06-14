@@ -1,6 +1,6 @@
 # $:.unshift File.dirname(__FILE__) 
-require File.expand_path(File.dirname(__FILE__) + '/../../../../helper.rb')
-require File.expand_path(File.dirname(__FILE__) + '/../../../../testutil.rb')
+require 'helper'
+require 'testutil'
 require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'

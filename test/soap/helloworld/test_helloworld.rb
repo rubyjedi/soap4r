@@ -1,5 +1,5 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
-require File.expand_path(File.dirname(__FILE__) + '/../../testutil.rb')
+require 'helper'
+require 'testutil'
 require 'soap/rpc/driver'
 TestUtil.require(File.dirname(__FILE__), 'hw_s.rb')
 

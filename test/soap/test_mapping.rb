@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/../helper.rb')
+require 'helper'
 require 'soap/mapping'
 require 'soap/marshal'
 

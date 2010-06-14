@@ -1,5 +1,6 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../helper.rb')
-require File.expand_path(File.dirname(__FILE__) + '/../../testutil.rb')
+$:.unshift File.dirname(__FILE__)
+require 'helper'
+require 'testutil'
 require 'wsdl/xmlSchema/xsd2ruby'
 
 
@@ -21,8 +22,11 @@ class TestXSD2Ruby < Test::Unit::TestCase
       gen.opt['mapper'] = nil
       gen.opt['force'] = true
       gen.run
-      TestUtil.require(DIR, 'mysample.rb', 'mysample_mapping_registry.rb', 'mysample_mapper.rb')
     end
+    # TestUtil.require(DIR, 'mysample.rb', 'mysample_mapping_registry.rb', 'mysample_mapper.rb')
+    require 'mysample'
+    require 'mysample_mapping_registry.rb'
+    require 'mysample_mapper.rb'
   end
 
   def teardown

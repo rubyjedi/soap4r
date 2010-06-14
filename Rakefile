@@ -28,6 +28,7 @@ namespace :test do
   
     t.warning = !!ENV['WARNINGS']
     t.verbose = !!ENV['VERBOSE']
+    t.libs << 'test'
   end
   
   desc 'Run the minimum set of tests'
@@ -38,5 +39,6 @@ namespace :test do
   
     t.warning = !!ENV['WARNINGS']
     t.verbose = !!ENV['VERBOSE']
+    t.libs << 'test'
   end
 end
