@@ -26,12 +26,15 @@ module MarshalTestLib
     msg = msg ? msg + "(#{ caller[0] })" : caller[0]
     o2 = marshaltest(o1)
     assert_equal(o1.class, o2.class, msg)
-    iv1 = o1.instance_variables.sort  ## RubyJedi: Caution: Ruby 1.9 returns SYMBOLS in instance_variables
-    iv2 = o2.instance_variables.sort  ## RubyJedi: Caution: Ruby 1.9 returns SYMBOLS in instance_variables
+    
+    iv1 = o1.instance_variables.sort
+    iv2 = o2.instance_variables.sort
     assert_equal(iv1, iv2)
-    val1 = iv1.map {|var| o1.instance_eval {eval var.to_s}}
-    val2 = iv1.map {|var| o2.instance_eval {eval var.to_s}}
+    
+    val1 = iv1.map {|var| o1.instance_eval( "#{var}" )}
+    val2 = iv1.map {|var| o2.instance_eval( "#{var}" )}
     assert_equal(val1, val2, msg)
+    
     if block_given?
       assert_equal(yield(o1), yield(o2), msg)
     else
