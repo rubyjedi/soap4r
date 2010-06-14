@@ -1,6 +1,5 @@
 require 'helper'
 require 'testutil'
-require 'soap/wsdlDriver'
 require 'soap/rpc/driver'
 TestUtil.require(File.dirname(__FILE__), 'server.rb')
 
