@@ -20,10 +20,10 @@ class TestMultiFault < Test::Unit::TestCase
   def teardown
     teardown_server if defined?(@server)
     unless $DEBUG
-      File.unlink(pathname('Add.rb'))
-      File.unlink(pathname('AddMappingRegistry.rb'))
-      File.unlink(pathname('AddServant.rb'))
-      File.unlink(pathname('AddService.rb'))
+      File.unlink(pathname('AddMulti.rb'))
+      File.unlink(pathname('AddMultiMappingRegistry.rb'))
+      File.unlink(pathname('AddMultiServant.rb'))
+      File.unlink(pathname('AddMultiService.rb'))
     end
     @client.reset_stream if @client
   end
@@ -33,7 +33,7 @@ class TestMultiFault < Test::Unit::TestCase
       define_method(:add) do |request|
         @sum ||= 0
         if (request.value > 100)
-          fault = AddFault.new("Value #{request.value} is too large", "Critical")
+          fault = AddMultiFault.new("Value #{request.value} is too large", "Critical")
           raise fault
         end
 
@@ -65,7 +65,7 @@ class TestMultiFault < Test::Unit::TestCase
     TestUtil.silent do
       gen.run
     end
-    TestUtil.require(DIR, 'Add.rb', 'AddMappingRegistry.rb', 'AddServant.rb', 'AddService.rb')
+    TestUtil.require(DIR, 'AddMulti.rb', 'AddMultiMappingRegistry.rb', 'AddMultiServant.rb', 'AddMultiService.rb')
   end
 
   def teardown_server
@@ -89,7 +89,7 @@ class TestMultiFault < Test::Unit::TestCase
         [:out, "response", ["::SOAP::SOAPElement", "http://fault.test/Faulttest", "AddResponse"]] ],
       { :request_style =>  :document, :request_use =>  :literal,
         :response_style => :document, :response_use => :literal,
-        :faults => {"AddFault"=>{:namespace=>nil, :name=>"AddFault", :use=>"literal", :encodingstyle=>"document", :ns=>"http://fault.test/Faulttest"}} }
+        :faults => {"AddMultiFault"=>{:namespace=>nil, :name=>"AddMultiFault", :use=>"literal", :encodingstyle=>"document", :ns=>"http://fault.test/Faulttest"}} }
     )
     @client.wiredump_dev = STDOUT if $DEBUG
     do_test(@client)
@@ -114,9 +114,9 @@ class TestMultiFault < Test::Unit::TestCase
       assert(false)
     rescue Exception => e
       assert_equal(::SOAP::FaultError, e.class)
-      assert_equal("WSDL::Fault::AddFault", e.faultstring.data)
-      assert_equal("Value 101 is too large", e.detail.addFault.reason)
-      assert_equal("Critical", e.detail.addFault.severity)
+      assert_equal("WSDL::Fault::AddMultiFault", e.faultstring.data)
+      assert_equal("Value 101 is too large", e.detail.addMultiFault.reason)
+      assert_equal("Critical", e.detail.addMultiFault.severity)
     end
     begin
       client.add(Add.new(-50))

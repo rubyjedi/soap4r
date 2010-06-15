@@ -10,15 +10,6 @@ module TestUtil
         end
         $:.shift
       end
-
-#        Dir.chdir(dir) do
-#          # $:.unshift('.') if RUBY_VERSION.to_f >= 1.9
-#          features.each do |feature|
-#            Kernel.require feature
-#          end
-#        end
-#      end
-
     ensure
       features.each do |feature|
         $".delete(feature)
