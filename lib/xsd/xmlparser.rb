@@ -19,7 +19,7 @@ module XMLParser
   module_function :create_parser
 
   # $1 is necessary.
-  NSParseRegexp = Regexp.new('^xmlns:?(.*)$', nil, 'NONE')
+  NSParseRegexp = Regexp.new('^xmlns:?(.*)$', nil, 'n')
 
   def filter_ns(ns, attrs)
     ns_updated = false

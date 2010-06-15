@@ -1079,7 +1079,7 @@ private
     "#{typename}[" << ',' * (rank - 1) << ']'
   end
 
-  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$', nil, 'NONE')
+  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$', nil, 'n')
 
   def self.parse_type(string)
     TypeParseRegexp =~ string
