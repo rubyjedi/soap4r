@@ -9,12 +9,14 @@
 require 'xsd/qname'
 require 'xsd/charset'
 require 'soap/nestedexception'
+require 'soap/version'
 
 
 module SOAP
 
 
-VERSION = Version = '1.5.8-HEAD'
+# VERSION = Version = SOAP::VERSION::STRING # '1.5.8-HEAD'
+Version = SOAP::VERSION::STRING # '1.5.8-HEAD'
 PropertyName = 'soap/property'
 
 EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'
