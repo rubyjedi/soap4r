@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'soap/rpc/httpserver'
 class QueryServer < SOAP::RPC::HTTPServer
   def on_init

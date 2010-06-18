@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # WSDL4R - WSDL additional definitions for SOAP.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

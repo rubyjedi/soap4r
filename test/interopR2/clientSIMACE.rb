@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 
 $serverName = 'SIM'
 $serverBase = 'http://soapinterop.simdb.com/round2'

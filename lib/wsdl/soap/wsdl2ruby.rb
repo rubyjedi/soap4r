@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # WSDL4R - WSDL to ruby mapping library.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

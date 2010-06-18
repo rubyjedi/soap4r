@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 
 $serverName = 'SpheonJSOAP'
 $server = 'http://soap.fmui.de/RPC'

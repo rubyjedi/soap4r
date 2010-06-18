@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'default.rb'
 
 require 'soap/rpc/driver'

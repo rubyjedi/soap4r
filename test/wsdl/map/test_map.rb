@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'helper'
 require 'soap/rpc/httpserver'
 require 'soap/wsdlDriver'

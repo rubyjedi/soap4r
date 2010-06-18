@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'GoogleSearch.rb'
 
 require 'soap/rpc/driver'

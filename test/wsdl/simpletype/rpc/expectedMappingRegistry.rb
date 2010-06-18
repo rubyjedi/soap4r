@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'echo_version.rb'
 require 'soap/mapping'
 

@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 module INetDicV06
   InterfaceNS = 'http://btonic.est.co.jp/NetDic/NetDicV06'
 

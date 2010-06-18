@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 class Servant
   def self.create
     new

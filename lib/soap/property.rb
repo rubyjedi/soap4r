@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # soap/property.rb: SOAP4R - Property implementation.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'test/unit/testsuite'
 require 'test/unit/testcase'
 

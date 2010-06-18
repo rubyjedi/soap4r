@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 
 text = ARGV.shift || 'Hello world.'
 lang = ARGV.shift || 'en_fr'

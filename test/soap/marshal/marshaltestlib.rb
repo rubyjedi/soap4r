@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 module MarshalTestLib
   # include this module to a Test::Unit::TestCase and definde encode(o) and
   # decode(s) methods.  e.g.

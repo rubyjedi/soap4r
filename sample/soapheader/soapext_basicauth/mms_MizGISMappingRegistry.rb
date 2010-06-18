@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'mms_MizGIS.rb'
 require 'soap/mapping'
 

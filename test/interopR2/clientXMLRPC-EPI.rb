@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 
 $serverName = 'XMLRPC-EPI'
 $serverBase = 'http://xmlrpc-epi.sourceforge.net/xmlrpc_php/interop-server.php'

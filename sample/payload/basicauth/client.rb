@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'soap/rpc/driver'
 
 # SOAP client with BasicAuth requires httpclient.

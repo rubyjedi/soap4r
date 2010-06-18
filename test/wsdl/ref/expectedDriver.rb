@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'product.rb'
 require 'productMappingRegistry.rb'
 require 'soap/rpc/driver'

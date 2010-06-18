@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'amazonEc.rb'
 
 require 'soap/rpc/driver'

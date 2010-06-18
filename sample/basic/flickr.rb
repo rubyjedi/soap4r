@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'soap/rpc/driver'
 
 api_key = ARGV.shift or raise

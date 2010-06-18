@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'soap/marshal'
 
 class Node; include SOAP::Marshallable

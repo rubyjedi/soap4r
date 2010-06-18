@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'enumsample_mapper'
 
 mapper = EnumsampleMapper.new

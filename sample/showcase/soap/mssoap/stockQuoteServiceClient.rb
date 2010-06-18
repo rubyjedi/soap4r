@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 require 'stockQuoteServicePortTypeDriver.rb'
 require 'net/http'
 require 'uri'

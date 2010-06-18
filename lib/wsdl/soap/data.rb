@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # WSDL4R - WSDL SOAP binding data definitions.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

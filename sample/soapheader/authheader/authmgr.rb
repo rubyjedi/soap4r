@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 class Authmgr
   def initialize
     @users = {

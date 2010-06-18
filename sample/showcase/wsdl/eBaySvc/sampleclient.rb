@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 
 # This client sample is contributed by Garry Dolley at soap4r ML.
 # You need to generate default.rb and defaultDriver.rb by wsdl2ruby.rb tool.

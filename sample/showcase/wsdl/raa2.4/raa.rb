@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'xsd/qname'
 
 # {http://www.ruby-lang.org/xmlns/soap/type/RAA/0.0.3/}Gem

@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # XSD4R - Charset handling library.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

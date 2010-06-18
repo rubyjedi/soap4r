@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 require 'raaDriver.rb'
 
 endpoint_url = ARGV.shift

@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # WSDL4R - XSD importer library.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

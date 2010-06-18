@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # SOAP4R - SOAP stream filter base class.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

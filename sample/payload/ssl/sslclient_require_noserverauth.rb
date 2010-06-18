@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'httpclient'
 require 'soap/rpc/driver'
 

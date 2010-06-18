@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # SOAP4R - SOAP Simple header item handler
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

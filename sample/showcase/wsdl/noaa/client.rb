@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 ## preparing
 
 t = Time.now

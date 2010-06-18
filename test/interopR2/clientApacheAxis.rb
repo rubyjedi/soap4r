@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 
 $serverName = 'ApacheAxis'
 $server = 'http://nagoya.apache.org:5049/axis/services/echo'
