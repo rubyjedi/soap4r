@@ -41,29 +41,29 @@ class TestNestedException < Test::Unit::TestCase
 
   if (RUBY_VERSION.to_f >= 1.9)
     TOBE = [
-      ":15:in `rescue in foo'",
-      ":12:in `foo'",
-      ":33:in `test_nestedexception'",
-      ":23:in `rescue in bar': bar (SOAP::TestNestedException::MyError) [NESTED]",
-      ":20:in `bar'",
+      ":16:in `rescue in foo'",
       ":13:in `foo'",
-      ":33:in `test_nestedexception'",
-      ":28:in `baz': baz (SOAP::TestNestedException::MyError) [NESTED]",
+      ":34:in `test_nestedexception'",
+      ":24:in `rescue in bar': bar (SOAP::TestNestedException::MyError) [NESTED]",
       ":21:in `bar'",
-      ":13:in `foo'",
-      ":33:in `test_nestedexception'"
+      ":14:in `foo'",
+      ":34:in `test_nestedexception'",
+      ":29:in `baz': baz (SOAP::TestNestedException::MyError) [NESTED]",
+      ":22:in `bar'",
+      ":14:in `foo'",
+      ":34:in `test_nestedexception'"
     ]  
   else
     TOBE = [
-      ":15:in `foo'",
-      ":33:in `test_nestedexception'",
-      ":23:in `bar': bar (SOAP::TestNestedException::MyError) [NESTED]",
-      ":13:in `foo'",
-      ":33:in `test_nestedexception'",
-      ":28:in `baz': baz (SOAP::TestNestedException::MyError) [NESTED]",
-      ":21:in `bar'",
-      ":13:in `foo'",
-      ":33:in `test_nestedexception'",
+      ":16:in `foo'",
+      ":34:in `test_nestedexception'",
+      ":24:in `bar': bar (SOAP::TestNestedException::MyError) [NESTED]",
+      ":14:in `foo'",
+      ":34:in `test_nestedexception'",
+      ":29:in `baz': baz (SOAP::TestNestedException::MyError) [NESTED]",
+      ":22:in `bar'",
+      ":14:in `foo'",
+      ":34:in `test_nestedexception'",
     ]
   end
 end
