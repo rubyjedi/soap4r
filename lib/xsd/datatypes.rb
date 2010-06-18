@@ -507,8 +507,9 @@ require 'rational'
 require 'date'
 
 module XSDDateTimeImpl
-  DayInSec = 86400	# 24 * 60 * 60
-  DayInMicro = 86400_000_000
+  SecInMicro = 1000000 # 1 second = 1 million microseconds
+  DayInSec = 86400	   # 24 Hours/Day * 60 Minutes/Hour * 60 Seconds/Minute
+  DayInMicro = (DayInSec * SecInMicro)
 
   def to_obj(klass)
     if klass == Time
@@ -526,11 +527,11 @@ module XSDDateTimeImpl
     begin
       if @data.offset * DayInSec == Time.now.utc_offset
         d = @data
-	usec = (d.sec_fraction * DayInMicro).round
+        usec = (RUBY_VERSION.to_f >= 1.9) ? (d.sec_fraction * SecInMicro).to_i : (d.sec_fraction * DayInMicro).round
         Time.local(d.year, d.month, d.mday, d.hour, d.min, d.sec, usec)
       else
         d = @data.newof
-	usec = (d.sec_fraction * DayInMicro).round
+        usec = (RUBY_VERSION.to_f >= 1.9) ? (d.sec_fraction * SecInMicro).to_i : (d.sec_fraction * DayInMicro).round  
         Time.gm(d.year, d.month, d.mday, d.hour, d.min, d.sec, usec)
       end
     rescue ArgumentError
@@ -584,11 +585,10 @@ module XSDDateTimeImpl
       t <<= 12 if t.year < 0
       t
     elsif t.is_a?(Time)
-      jd = DateTime.civil_to_jd(t.year, t.mon, t.mday, DateTime::ITALY)
-      fr = DateTime.time_to_day_fraction(t.hour, t.min, [t.sec, 59].min) +
-        t.usec.to_r / DayInMicro
+      jd = DateTime.send(:civil_to_jd, t.year, t.mon, t.mday, DateTime::ITALY)
+      fr = DateTime.send(:time_to_day_fraction, t.hour, t.min, [t.sec, 59].min) + t.usec.to_r / DayInMicro
       of = t.utc_offset.to_r / DayInSec
-      DateTime.new!(DateTime.jd_to_ajd(jd, fr, of), of, DateTime::ITALY)
+      DateTime.new!(DateTime.send(:jd_to_ajd, jd, fr, of), of, DateTime::ITALY)
     else
       screen_data_str(t)
     end
@@ -652,8 +652,8 @@ private
     if @data.sec_fraction.nonzero?
       if @secfrac
         s << ".#{ @secfrac }"
-      elsif (RUBY_VERSION.to_f >= 1.9) # RubyJedi: Ruby 1.9's DateTime.sec_fraction() appears to be more 'sane' and doesn't need to be multiplied.
-        s << sprintf("%.16f", @data.sec_fraction.to_f).sub(/^0/, '').sub(/0*$/, '')
+      elsif (RUBY_VERSION.to_f >= 1.9)
+        s << sprintf("%.16f",@data.sec_fraction.to_f).sub(/^0/, '').sub(/0*$/, '')
       else
         s << sprintf("%.16f",(@data.sec_fraction * DayInSec).to_f).sub(/^0/, '').sub(/0*$/, '')
       end
