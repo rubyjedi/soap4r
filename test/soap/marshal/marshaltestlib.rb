@@ -373,12 +373,12 @@ module MarshalTestLib
     # once there was a bug caused by usec overflow.  try a little harder.
     10.times do
       t = Time.now
-      marshal_equal(t, t.usec.to_s)
+      marshal_equal(t,t.usec.to_s) {|t| t.tv_usec }
     end
   end
 
   def test_time_subclass
-    marshal_equal(MyTime.new(10))
+    marshal_equal(MyTime.new(10)) {|t| t.tv_usec }
   end
 
   def test_time_ivar
@@ -425,7 +425,7 @@ module MarshalTestLib
     end
     assert_raises(TypeError) { marshaltest(o) }
     assert_raises(TypeError) { marshaltest(c) }
-    assert_raises(TypeError) { marshaltest(ARGF) }
+    assert_raises(TypeError) { marshaltest(ARGF) } unless (RUBY_VERSION.to_f >= 1.9) # Rubyjedi: ARGF is no longer a singleton in Ruby 1.9 and above
     assert_raises(TypeError) { marshaltest(ENV) }
   end
 
