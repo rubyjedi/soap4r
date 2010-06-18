@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 class CalcService2
   def initialize(value = 0)
     @value = value

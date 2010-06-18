@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'AmazonSearch.rb'
 
 require 'soap/rpc/driver'

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 require 'echoServant.rb'
 require 'echoMappingRegistry.rb'
 require 'soap/rpc/standaloneServer'

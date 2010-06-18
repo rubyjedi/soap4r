@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'xsd/qname'
 
 module WSDL; module RAA

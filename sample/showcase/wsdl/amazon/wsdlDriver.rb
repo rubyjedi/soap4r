@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'soap/wsdlDriver'
 
 book = ARGV.shift || "Ruby"

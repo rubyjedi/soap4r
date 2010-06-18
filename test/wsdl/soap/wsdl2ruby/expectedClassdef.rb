@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'xsd/qname'
 
 # {urn:example.com:simpletype-rpc-type}version_struct

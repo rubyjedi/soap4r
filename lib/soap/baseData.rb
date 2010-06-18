@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # soap/baseData.rb: SOAP4R - Base type library
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

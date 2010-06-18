@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 require 'echo_versionDriver.rb'
 
 endpoint_url = ARGV.shift

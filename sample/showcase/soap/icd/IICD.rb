@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 module IICD
   # All methods in a single namespace?!
   InterfaceNS = 'http://www.iwebmethod.net'

@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'test/unit'
 require 'rubygems'
 require 'test/unit/xml' ## RubyJedi

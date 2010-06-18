@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'mms_MizGIS.rb'
 require 'mms_MizGISMappingRegistry.rb'
 require 'soap/rpc/driver'

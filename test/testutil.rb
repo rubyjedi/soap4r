@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 module TestUtil
   # MT-unsafe
   def self.require(dir, *features)

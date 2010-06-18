@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'xsd/qname'
 
 # {urn:mysample}question

@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'drb/drb'
 require 'rw-lib'
 require 'interopResultBase'

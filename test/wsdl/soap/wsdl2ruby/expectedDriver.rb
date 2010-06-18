@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'echo_version.rb'
 require 'echo_versionMappingRegistry.rb'
 require 'soap/rpc/driver'

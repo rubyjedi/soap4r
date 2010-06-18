@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'helper'
 require 'soap/mapping'
 require 'soap/marshal'

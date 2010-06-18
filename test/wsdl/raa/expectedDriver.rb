@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'RAA.rb'
 require 'RAAMappingRegistry.rb'
 require 'soap/rpc/driver'

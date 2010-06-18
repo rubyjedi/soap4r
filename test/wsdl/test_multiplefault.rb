@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'helper'
 require 'wsdl/parser'
 require 'wsdl/soap/classDefCreator'

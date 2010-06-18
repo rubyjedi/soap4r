@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # SOAP4R - XML Literal EncodingStyle handler library
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 

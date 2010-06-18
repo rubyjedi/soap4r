@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'soap/rpc/driver'
 
 server = ARGV.shift || 'http://localhost:7000/'

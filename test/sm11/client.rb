@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # Done
 #   /^void/  def/
 #   /^}/  end/

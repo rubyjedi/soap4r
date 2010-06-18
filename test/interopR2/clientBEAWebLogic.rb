@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 
 $serverName = 'BEAWebLogic8.1'
 $serverBase = 'http://webservice.bea.com:7001/base/SoapInteropBaseService'

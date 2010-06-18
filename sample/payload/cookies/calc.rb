@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 class CookieCalcService
   def initialize
     @client_id = 0

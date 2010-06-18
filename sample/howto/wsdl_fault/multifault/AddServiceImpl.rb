@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'AddMappingRegistry.rb'
 require 'AddServant.rb'
 

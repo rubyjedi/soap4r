@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'soap/rpc/httpserver'
 require 'webrick/https'
 require 'logger'

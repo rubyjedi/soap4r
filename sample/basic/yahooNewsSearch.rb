@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 query = ARGV.shift or raise ArgumentError
 
 require 'soap/marshal'

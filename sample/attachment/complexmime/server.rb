@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'soap/rpc/standaloneServer'
 require 'soap/attachment'
 

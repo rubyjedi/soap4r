@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 # To generate default.rb, do like this;
 # % wsdl2ruby.rb --wsdl "https://adwords.google.com/api/adwords/v2/CampaignService?WSDL" --classdef --force
 

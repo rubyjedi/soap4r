@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 require 'helper'
 require 'soap/rpc/driver'
 require 'soap/rpc/standaloneServer'
