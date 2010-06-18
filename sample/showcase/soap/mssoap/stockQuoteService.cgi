@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: ASCII-8BIT
 require 'soap/rpc/cgistub'
 require 'soap/mapping/registry'
 require 'stockQuoteService.rb'
