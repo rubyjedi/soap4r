@@ -138,7 +138,9 @@ private
       o.root = parent.root
       o.parent = parent if o.parent.nil?
     end
-    attrs.each do |key, value|
+    to_array_and_splice_name_to_first(attrs).each do |attr|
+      key = attr[:key]
+      value = attr[:value]
       attr_ele = ns.parse(key, true)
       value_ele = ns.parse(value, false)
       value_ele.source = value  # for recovery; value may not be a QName
@@ -158,6 +160,19 @@ private
 
   def decode_text(ns, text)
     @textbuf << text
+  end
+
+  def to_array_and_splice_name_to_first(attrs)
+    attrs_name = []
+    attrs_other = []
+    attrs.each do |key, value|
+      if key == "name"
+        attrs_name << { :key => key, :value => value }
+      elsif
+        attrs_other << { :key => key, :value => value }
+      end
+    end
+    attrs_name.concat(attrs_other)
   end
 end
 
