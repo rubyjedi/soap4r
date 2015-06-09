@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'echo_versionServant.rb'
 require 'echo_versionMappingRegistry.rb'
 require 'soap/rpc/cgistub'
