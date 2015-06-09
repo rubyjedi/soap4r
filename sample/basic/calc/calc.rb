@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 module CalcService
   def self.add(lhs, rhs)
     lhs + rhs

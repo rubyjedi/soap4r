@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 $:.unshift File.join(File.dirname(__FILE__),'../lib') if ENV['DEBUG_SOAP4R']
 
 require 'getoptlong'

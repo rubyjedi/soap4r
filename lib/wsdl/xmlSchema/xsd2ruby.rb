@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # XSD4R - XSD to ruby mapping library.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -122,7 +122,7 @@ private
       filename = File.join(basedir, filename)
     end
     File.open(filename, "w") do |f|
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       yield f
     end
   end

@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 
 $serverName = 'ApacheSOAP2.2'
 $serverBase = 'http://nagoya.apache.org:5049/soap/servlet/rpcrouter'
