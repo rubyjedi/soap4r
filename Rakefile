@@ -1,4 +1,3 @@
-require 'rake/gempackagetask'
 require 'rake/testtask'
 
 task :default => 'test:deep'
@@ -7,10 +6,6 @@ task :default => 'test:deep'
 ## Gem Packaging
 ## ---------------------------------------------------------------------------------------------------- ##
 load 'soap4r.gemspec'
-Rake::GemPackageTask.new(SPEC) do |pkg|
-  pkg.need_zip = true
-  pkg.need_tar = true
-end
 
 ## ---------------------------------------------------------------------------------------------------- ##
 ## Unit Testing
@@ -36,6 +31,17 @@ namespace :test do
     test_scope = ENV['SCOPE'] || '*'
     t.test_files = FileList[ test_scope.split(',').collect{|scope| "test/#{scope}/test_*.rb"} ]
   
+    t.warning = !!ENV['WARNINGS']
+    t.verbose = !!ENV['VERBOSE']
+    t.libs << 'test'
+  end
+
+  desc 'Run a single test by specifying its filename within "test/**/test_*.rb"'
+  Rake::TestTask.new(:single) do |t|
+    
+    test_file = ARGV[1]
+
+    t.test_files = FileList[ test_file ]
     t.warning = !!ENV['WARNINGS']
     t.verbose = !!ENV['VERBOSE']
     t.libs << 'test'
