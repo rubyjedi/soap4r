@@ -503,7 +503,6 @@ private
 end
 
 
-require 'rational'
 require 'date'
 
 module XSDDateTimeImpl
