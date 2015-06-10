@@ -8,6 +8,7 @@
 
 
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 require 'xsd/qname'
 require 'wsdl/importer'
 require 'wsdl/soap/classDefCreator'

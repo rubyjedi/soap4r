@@ -14,6 +14,7 @@ require 'wsdl/soap/classDefCreatorSupport'
 require 'wsdl/soap/literalMappingRegistryCreator'
 require 'wsdl/soap/classNameCreator'
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 
 
 module WSDL

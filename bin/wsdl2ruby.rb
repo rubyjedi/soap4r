@@ -4,6 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__),'../lib') if ENV['DEBUG_SOAP4R']
 
 require 'getoptlong'
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 require 'wsdl/soap/wsdl2ruby'
 
 

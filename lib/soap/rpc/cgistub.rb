@@ -11,6 +11,7 @@ require 'soap/streamHandler'
 require 'webrick/httpresponse'
 require 'webrick/httpstatus'
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 require 'soap/rpc/soaplet'
 
 

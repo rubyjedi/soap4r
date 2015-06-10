@@ -8,6 +8,7 @@
 
 
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 require 'soap/attrproxy'
 require 'soap/rpc/soaplet'
 require 'soap/streamHandler'
