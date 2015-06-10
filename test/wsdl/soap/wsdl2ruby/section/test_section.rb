@@ -10,7 +10,7 @@ module WSDL; module SOAP
 
 class TestSection < Test::Unit::TestCase
   DIR = File.dirname(File.expand_path(__FILE__))
-  RUBY = Config::CONFIG['RUBY_INSTALL_NAME']
+  RUBY = RbConfig::CONFIG['RUBY_INSTALL_NAME']
 
   def setup
     system("cd #{DIR} && #{RUBY} #{pathname("../../../../../bin/xsd2ruby.rb")} --xsd #{pathname("section.xsd")} --classdef --force --quiet")
