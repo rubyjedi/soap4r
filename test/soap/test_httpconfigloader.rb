@@ -32,7 +32,7 @@ class TestHTTPConfigLoader < Test::Unit::TestCase
   def test_property
     testpropertyname = File.join(DIR, 'soapclient.properties')
     File.open(testpropertyname, "w") do |f|
-      f <<<<__EOP__
+      f<<<<__EOP__
 protocol.http.proxy = http://myproxy:8080
 protocol.http.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_PEER
 # depth: 1 causes an error (intentional)
