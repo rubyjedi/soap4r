@@ -540,7 +540,7 @@ module XSDDateTimeImpl
   end
 
   def to_date
-    Date.new!(@data.class.send(:jd_to_ajd, @data.jd, 0, 0), 0, @data.start)
+    @data.respond_to?(:to_date) ? @data.to_date : Date.new!(@data.class.send(:jd_to_ajd, @data.jd, 0, 0), 0, @data.start)
   end
 
   def to_datetime
