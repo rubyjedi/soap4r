@@ -55,9 +55,9 @@ class TestAbstract < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('abstract.rb'))
-      File.unlink(pathname('abstractMappingRegistry.rb'))
-      File.unlink(pathname('abstractDriver.rb'))
+      File.unlink(pathname('abstract.rb'))  if File.file?(pathname('abstract.rb'))
+      File.unlink(pathname('abstractMappingRegistry.rb'))  if File.file?(pathname('abstractMappingRegistry.rb'))
+      File.unlink(pathname('abstractDriver.rb'))  if File.file?(pathname('abstractDriver.rb'))
     end
     @client.reset_stream if @client
   end

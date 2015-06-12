@@ -36,12 +36,12 @@ class TestRPC < Test::Unit::TestCase
     compare("expectedClient.rb", "echo_version_serviceClient.rb")
     compare("expectedServant.rb", "echo_versionServant.rb")
 
-    File.unlink(pathname("echo_version.rb"))
-    File.unlink(pathname("echo_versionMappingRegistry.rb"))
-    File.unlink(pathname("echo_versionDriver.rb"))
-    File.unlink(pathname("echo_version_service.rb"))
-    File.unlink(pathname("echo_version_serviceClient.rb"))
-    File.unlink(pathname("echo_versionServant.rb"))
+    File.unlink(pathname("echo_version.rb"))  if File.file?(pathname('echo_version.rb'))
+    File.unlink(pathname("echo_versionMappingRegistry.rb")) if File.file?(pathname('echo_versionMappingRegistry.rb'))
+    File.unlink(pathname("echo_versionDriver.rb")) if File.file?(pathname('echo_versionDriver.rb'))
+    File.unlink(pathname("echo_version_service.rb")) if File.file?(pathname('echo_version_service.rb'))
+    File.unlink(pathname("echo_version_serviceClient.rb")) if File.file?(pathname('echo_version_serviceClient.rb'))
+    File.unlink(pathname("echo_versionServant.rb")) if File.file?(pathname('echo_versionServant.rb'))
   end
 
   def compare(expected, actual)

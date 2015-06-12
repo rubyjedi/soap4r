@@ -45,9 +45,9 @@ __EOX__
 
   def teardown
     unless $DEBUG
-      File.unlink(pathname('itemList.rb'))
-      File.unlink(pathname('itemListMappingRegistry.rb'))
-      File.unlink(pathname('itemListDriver.rb'))
+      File.unlink(pathname('itemList.rb'))  if File.file?(pathname('itemList.rb'))
+      File.unlink(pathname('itemListMappingRegistry.rb')) if File.file?(pathname('itemListMappingRegistry.rb'))
+      File.unlink(pathname('itemListDriver.rb')) if File.file?(pathname('itemListDriver.rb'))
     end
   end
 

@@ -58,9 +58,9 @@ class TestAnonymous < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('lp.rb'))
-      File.unlink(pathname('lpMappingRegistry.rb'))
-      File.unlink(pathname('lpDriver.rb'))
+      File.unlink(pathname('lp.rb')) if File.file?(pathname('lp.rb'))
+      File.unlink(pathname('lpMappingRegistry.rb')) if File.file?(pathname('lpMappingRegistry.rb'))
+      File.unlink(pathname('lpDriver.rb')) if File.file?(pathname('lpDriver.rb')) 
     end
     @client.reset_stream if @client
   end

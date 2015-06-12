@@ -63,7 +63,9 @@ class TestWSDLMarshal < Test::Unit::TestCase
     gen.opt['force'] = true
     gen.run
     compare("person_org.rb", "Person.rb")
-    File.unlink(pathname('Person.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('Person.rb')) if File.file?(pathname('Person.rb'))
+    end
   end
 
   def compare(expected, actual)

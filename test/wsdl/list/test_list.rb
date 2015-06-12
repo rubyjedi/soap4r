@@ -41,9 +41,11 @@ class TestList < Test::Unit::TestCase
 
   def teardown
     teardown_server if @server
-    File.unlink(pathname('list.rb')) unless $DEBUG
-    File.unlink(pathname('listMappingRegistry.rb')) unless $DEBUG
-    File.unlink(pathname('listDriver.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('list.rb')) if File.file?(pathname('list.rb'))
+      File.unlink(pathname('listMappingRegistry.rb')) if File.file?(pathname('listMappingRegistry.rb'))
+      File.unlink(pathname('listDriver.rb')) if File.file?(pathname('listDriver.rb'))
+    end  
     @client.reset_stream if @client
   end
 

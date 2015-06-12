@@ -169,7 +169,7 @@ __EOP__
       assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
       assert(@verify_callback_called)
     ensure
-      File.unlink(testpropertyname)
+      File.unlink(testpropertyname) if File.file?(testpropertyname)
     end
   end
 

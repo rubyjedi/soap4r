@@ -47,7 +47,7 @@ class TestDigraph < Test::Unit::TestCase
 
   def teardown
     if File.exist?("digraph_marshalled_string.soap")
-      File.unlink("digraph_marshalled_string.soap")
+      File.unlink("digraph_marshalled_string.soap") if File.file?("digraph_marshalled_string.soap")
     end
   end
 end

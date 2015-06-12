@@ -17,7 +17,9 @@ class TestSection < Test::Unit::TestCase
   end
 
   def teardown
-    File.unlink(pathname("mysample.rb")) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname("mysample.rb")) if File.file?(pathname('mysample.rb'))
+    end
   end
 
   def test_classdef

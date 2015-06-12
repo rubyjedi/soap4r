@@ -42,9 +42,9 @@ class TestQualified < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('default.rb'))
-      File.unlink(pathname('defaultMappingRegistry.rb'))
-      File.unlink(pathname('defaultDriver.rb'))
+      File.unlink(pathname('default.rb')) if File.file?(pathname('default.rb'))
+      File.unlink(pathname('defaultMappingRegistry.rb')) if File.file?(pathname('defaultMappingRegistry.rb'))
+      File.unlink(pathname('defaultDriver.rb')) if File.file?(pathname('defaultDriver.rb'))
     end
     @client.reset_stream if @client
   end

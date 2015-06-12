@@ -66,9 +66,9 @@ class TestRef < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('product.rb'))
-      File.unlink(pathname('productMappingRegistry.rb'))
-      File.unlink(pathname('productDriver.rb'))
+      File.unlink(pathname('product.rb')) if File.file?(pathname('product.rb'))
+      File.unlink(pathname('productMappingRegistry.rb')) if File.file?(pathname('productMappingRegistry.rb'))
+      File.unlink(pathname('productDriver.rb')) if File.file?(pathname('productDriver.rb'))
     end
     @client.reset_stream if @client
   end

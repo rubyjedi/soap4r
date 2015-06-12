@@ -34,7 +34,7 @@ class TestSOAPENC < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('echo.rb'))
+      File.unlink(pathname('echo.rb'))  if File.file?(pathname('echo.rb'))
     end
     @client.reset_stream if @client
   end

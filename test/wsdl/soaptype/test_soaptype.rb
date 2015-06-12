@@ -43,9 +43,9 @@ class TestSOAPTYPE < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('echo.rb'))
-      File.unlink(pathname('echoMappingRegistry.rb'))
-      File.unlink(pathname('echoDriver.rb'))
+      File.unlink(pathname('echo.rb')) if File.file?(pathname('echo.rb'))
+      File.unlink(pathname('echoMappingRegistry.rb')) if File.file?(pathname('echoMappingRegistry.rb'))
+      File.unlink(pathname('echoDriver.rb')) if File.file?(pathname('echoDriver.rb'))
     end
     @client.reset_stream if @client
   end

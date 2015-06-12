@@ -21,10 +21,10 @@ class TestMultiFault < Test::Unit::TestCase
   def teardown
     teardown_server if defined?(@server)
     unless $DEBUG
-      File.unlink(pathname('AddMulti.rb'))
-      File.unlink(pathname('AddMultiMappingRegistry.rb'))
-      File.unlink(pathname('AddMultiServant.rb'))
-      File.unlink(pathname('AddMultiService.rb'))
+      File.unlink(pathname('AddMulti.rb')) if File.file?(pathname('AddMulti.rb'))
+      File.unlink(pathname('AddMultiMappingRegistry.rb')) if File.file?(pathname'AddMultiMappingRegistry.rb')
+      File.unlink(pathname('AddMultiServant.rb')) if File.file?(pathname('AddMultiServant.rb'))
+      File.unlink(pathname('AddMultiService.rb')) if File.file?(pathname('AddMultiService.rb'))
     end
     @client.reset_stream if @client
   end

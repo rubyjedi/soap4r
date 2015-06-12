@@ -28,9 +28,9 @@ class TestXSD2Ruby < Test::Unit::TestCase
 
   def teardown
     unless $DEBUG
-      File.unlink(pathname("mysample.rb"))
-      File.unlink(pathname("mysample_mapping_registry.rb"))
-      File.unlink(pathname("mysample_mapper.rb"))
+      File.unlink(pathname("mysample.rb")) if File.file?(pathname('mysample.rb'))
+      File.unlink(pathname("mysample_mapping_registry.rb")) if File.file?(pathname('mysample_mapping_registry.rb'))
+      File.unlink(pathname("mysample_mapper.rb")) if File.file?(pathname('mysample_mapper.rb'))
     end
     # leave generated file for debug.
   end

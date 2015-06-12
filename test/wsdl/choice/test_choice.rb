@@ -65,9 +65,9 @@ class TestChoice < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('choice.rb'))
-      File.unlink(pathname('choiceMappingRegistry.rb'))
-      File.unlink(pathname('choiceDriver.rb'))
+      File.unlink(pathname('choice.rb'))  if File.file?(pathname('choice.rb'))
+      File.unlink(pathname('choiceMappingRegistry.rb')) if File.file?(pathname('choiceMappingRegistry.rb'))
+      File.unlink(pathname('choiceDriver.rb')) if File.file?(pathname('choiceDriver.rb'))
     end
     @client.reset_stream if @client
   end

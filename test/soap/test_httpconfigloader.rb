@@ -61,7 +61,7 @@ __EOP__
       assert_equal(cred2, basic_auth.get(Request.new(URI.parse("http://www.example.com/foo2/"))))
       assert_equal(cred3, basic_auth.get(Request.new(URI.parse("http://www.example.com/foo3/baz/qux"))))
     ensure
-      File.unlink(testpropertyname)
+      File.unlink(testpropertyname)  if File.file?(testpropertyname)
     end
   end
 end
