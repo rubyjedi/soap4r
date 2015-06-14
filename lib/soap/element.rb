@@ -104,7 +104,7 @@ class SOAPBody < SOAPStruct
     if data
       if data.respond_to?(:to_xmlpart)
         data = SOAP::SOAPRawData.new(data)
-      elsif defined?(::REXML) and defined?(::REXML::Element) and data.is_a?(::REXML::Element)
+      elsif defined?(::REXML::Element) and data.is_a?(::REXML::Element)
         data = SOAP::SOAPRawData.new(SOAP::SOAPREXMLElementWrap.new(data))
       end
       if data.respond_to?(:elename)
