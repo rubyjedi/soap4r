@@ -7,7 +7,6 @@
 # either the dual license version in 2003, or any later version.
 
 
-require 'xsd/xmlparser'
 require 'rexml/streamlistener'
 require 'rexml/document'
 
