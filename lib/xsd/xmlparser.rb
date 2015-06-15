@@ -17,7 +17,7 @@ require 'xsd/xmlparser/parser'
     module_function :create_parser
 
     # $1 is necessary.
-    NSParseRegexp = Regexp.new('^xmlns:?(.*)$', nil, 'n')
+    NSParseRegexp = Regexp.new('^xmlns:?(.*)$', nil)
 
     def filter_ns(ns, attrs)
       ns_updated = false
