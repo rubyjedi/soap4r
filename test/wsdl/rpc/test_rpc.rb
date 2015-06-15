@@ -87,9 +87,8 @@ class TestRPC < Test::Unit::TestCase
   end
 
   def setup_classdef
-    if ::Object.constants.include?("Echo")
-      ::Object.instance_eval { remove_const("Echo") }
-    end
+    echo = ::Object.constants.detect { |c| c.to_s == "Echo" }
+      ::Object.instance_eval { remove_const(echo) } if echo
     gen = ::WSDL::SOAP::WSDL2Ruby.new
     gen.location = pathname("rpc.wsdl")
     gen.basedir = DIR

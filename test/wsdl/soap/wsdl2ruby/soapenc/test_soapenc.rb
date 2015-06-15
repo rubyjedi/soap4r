@@ -1,6 +1,8 @@
 # encoding: UTF-8
+
 require 'helper'
 require 'testutil'
+
 require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
@@ -46,9 +48,9 @@ class TestSOAPENC < Test::Unit::TestCase
   end
 
   def setup_classdef
-    if ::Object.constants.include?("Version_struct")
-      ::Object.instance_eval { remove_const("Version_struct") }
-    end
+    ver = ::Object.constants.detect { |c| c.to_s == "Version_struct" }
+      ::Object.instance_eval { remove_const(ver) } if ver
+
     gen = WSDL::SOAP::WSDL2Ruby.new
     gen.location = pathname("soapenc.wsdl")
     gen.basedir = DIR
