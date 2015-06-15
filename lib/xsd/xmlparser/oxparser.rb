@@ -29,7 +29,7 @@ class OxParser < XSD::XMLParser::Parser
     else
       # Use HTMLEntities Decoder.  Leave the special-character conversion alone and let HTMLEntities decode it for us.
       ::Ox.sax_parse(self, string, {})
-    end        
+    end
   end
 
 
@@ -58,6 +58,11 @@ class OxParser < XSD::XMLParser::Parser
   end
 
   def cdata(t)
+    ## CAUTION:  Ox Parser removes leading/trailing whitespace or blank lines. ##
+    ## This behavior is evident if you run the regression test:
+    ##
+    ##    SOAP4R_PARSERS=oxparser bundle exec rake test:single test/soap/test_response_as_xml.rb
+    ##
     @decoder.nil? ? characters(t) : characters(@decoder.decode(t))
   end
   
