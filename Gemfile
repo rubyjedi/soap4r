@@ -25,7 +25,11 @@ end
 ### XML Parsers that use a C-Library for speed
 
 gem 'ox'                            # oxparser       ; Uses its own custom C-library
-gem 'nokogiri', '~> 1.5.11'         # nokogiriparser ; Uses libxml2, libxslt, and zlib
+if RUBY_VERSION.to_f <= 1.8
+  gem 'nokogiri', '~> 1.5.11'       # nokogiriparser ; Uses libxml2, libxslt, and zlib
+else
+  gem 'nokogiri'                     # nokogiriparser ; Uses libxml2, libxslt, and zlib
+end
 gem 'libxml-ruby'                   # libxmlparser   ; Uses libxml2 
 
 ### XML Parsers that are Pure-Ruby
@@ -47,4 +51,5 @@ group :test do
   # gem 'pry' ## see also: pry-debugger for Ruby 1.9 and lower; and pry-byebug for 2.0 and higher (requires byebug gem also)
   # gem 'ruby-termios' # for unroller
   # gem 'unroller', :git=>'https://github.com/jayjlawrence/unroller.git', :branch=>'master'
+  gem 'awesome_print'
 end
