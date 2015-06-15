@@ -1,6 +1,10 @@
 # encoding: UTF-8
+$:.unshift File.expand_path( File.dirname(__FILE__) + '../../../../lib')
+$:.unshift '.' if RUBY_VERSION.to_f == 1.9
+
 require 'helper'
 require 'testutil'
+
 require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
@@ -86,7 +90,7 @@ class TestRPC < Test::Unit::TestCase
     if ::Object.constants.include?("Echo")
       ::Object.instance_eval { remove_const("Echo") }
     end
-    gen = WSDL::SOAP::WSDL2Ruby.new
+    gen = ::WSDL::SOAP::WSDL2Ruby.new
     gen.location = pathname("rpc.wsdl")
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL
