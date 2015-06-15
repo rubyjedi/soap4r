@@ -38,7 +38,7 @@ class Factory
   end
 
   def setiv2soap(node, obj, map)
-    if obj.class.class_variables.include?('@@schema_element')
+    if obj.class.class_variable_defined?('@@schema_element')
       setdefinediv2soap(node, obj, map)
     else
       # should we sort instance_variables? how?
