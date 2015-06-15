@@ -42,8 +42,18 @@ class TestSSL < Test::Unit::TestCase
     assert_equal(OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT, cfg.verify_mode)
     assert_nil(cfg.verify_callback)
     assert_nil(cfg.timeout)
-    assert_equal(OpenSSL::SSL::OP_ALL | OpenSSL::SSL::OP_NO_SSLv2, cfg.options)
-    assert_equal("ALL:!ADH:!LOW:!EXP:!MD5:+SSLv2:@STRENGTH", cfg.ciphers)
+
+    # RubyJedi:  Emulate what we expect httpclient's ssl_config initializer to be doing.
+    #   (Adapted from initialize() at https://github.com/nahi/httpclient/blob/master/lib/httpclient/ssl_config.rb )
+    ssl_options = OpenSSL::SSL::OP_ALL
+    ssl_options &= ~OpenSSL::SSL::OP_DONT_INSERT_EMPTY_FRAGMENTS if defined?(OpenSSL::SSL::OP_DONT_INSERT_EMPTY_FRAGMENTS)
+    ssl_options |= OpenSSL::SSL::OP_NO_COMPRESSION if defined?(OpenSSL::SSL::OP_NO_COMPRESSION)
+    ssl_options |= OpenSSL::SSL::OP_NO_SSLv2 if defined?(OpenSSL::SSL::OP_NO_SSLv2)
+    ssl_options |= OpenSSL::SSL::OP_NO_SSLv3 if defined?(OpenSSL::SSL::OP_NO_SSLv3)    
+
+    assert_equal(ssl_options, cfg.options)
+    assert_equal("ALL:!aNULL:!eNULL:!SSLv2", cfg.ciphers)
+
     assert_instance_of(OpenSSL::X509::Store, cfg.cert_store)
     # dummy call to ensure sslsvr initialization finished.
     assert_raise(OpenSSL::SSL::SSLError) do
