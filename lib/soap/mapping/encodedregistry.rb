@@ -411,15 +411,16 @@ private
   end
 
   def addextend2soap(node, obj)
-    return if obj.is_a?(Symbol) or obj.is_a?(Fixnum)
+    return if [Symbol, Fixnum, Bignum, Float].any?{ |c| obj.is_a?(c) }
     list = (class << obj; self; end).ancestors - obj.class.ancestors
+
     unless list.empty?
       node.extraattr[RubyExtendName] = list.collect { |c|
         name = c.name
-	if name.nil? or name.empty?
-  	  raise TypeError.new("singleton can't be dumped #{ obj }")
-   	end
-	name
+        if name.nil? or name.empty?
+          raise TypeError.new("singleton can't be dumped #{ obj }")
+        end
+        name
       }.join(" ")
     end
   end
