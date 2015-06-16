@@ -182,19 +182,25 @@ module MarshalTestLib
   end
 
   def test_fixnum_ivar
-    o1 = 1
-    o1.instance_eval { @iv = 2 }
-    marshal_equal(o1) {|o| o.instance_eval { @iv }}
-  ensure
-    1.instance_eval { remove_instance_variable("@iv") }
+    return if RUBY_VERSION.to_f > 1.9
+    begin
+      o1 = 1
+      o1.instance_eval { @iv = 2 }
+      marshal_equal(o1) {|o| o.instance_eval { @iv }}
+    ensure
+      1.instance_eval { remove_instance_variable("@iv") }
+    end
   end
 
   def test_fixnum_ivar_self
-    o1 = 1
-    o1.instance_eval { @iv = 1 }
-    marshal_equal(o1) {|o| o.instance_eval { @iv }}
-  ensure
-    1.instance_eval { remove_instance_variable("@iv") }
+    return if RUBY_VERSION.to_f > 1.9
+    begin    
+      o1 = 1
+      o1.instance_eval { @iv = 1 }
+      marshal_equal(o1) {|o| o.instance_eval { @iv }}
+    ensure
+      1.instance_eval { remove_instance_variable("@iv") }
+    end
   end
 
   def test_float
@@ -211,27 +217,36 @@ module MarshalTestLib
   end
 
   def test_float_ivar
-    o1 = 1.23
-    o1.instance_eval { @iv = 1 }
-    marshal_equal(o1) {|o| o.instance_eval { @iv }}
+    return if RUBY_VERSION.to_f > 1.9
+    begin
+      o1 = 1.23
+      o1.instance_eval { @iv = 1 }
+      marshal_equal(o1) {|o| o.instance_eval { @iv }}
+    end
   end
 
   def test_float_ivar_self
-    o1 = 5.5
-    o1.instance_eval { @iv = o1 }
-    marshal_equal(o1) {|o| o.instance_eval { @iv }}
+    return if RUBY_VERSION.to_f > 1.9
+    begin
+      o1 = 5.5
+      o1.instance_eval { @iv = o1 }
+      marshal_equal(o1) {|o| o.instance_eval { @iv }}
+    end
   end
 
   def test_float_extend
-    o1 = 0.0/0.0
-    o1.extend(Mod1)
-    marshal_equal(o1) { |o|
-      (class << self; self; end).ancestors
-    }
-    o1.extend(Mod2)
-    marshal_equal(o1) { |o|
-      (class << self; self; end).ancestors
-    }
+    return if RUBY_VERSION.to_f > 1.9
+    begin
+      o1 = 0.0/0.0
+      o1.extend(Mod1)
+      marshal_equal(o1) { |o|
+        (class << self; self; end).ancestors
+      }
+      o1.extend(Mod2)
+      marshal_equal(o1) { |o|
+        (class << self; self; end).ancestors
+      }
+    end
   end
 
   class MyRange < Range; def initialize(v, *args) super(*args); @v = v; end end
