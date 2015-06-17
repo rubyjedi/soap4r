@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'xsd/qname'
 
 # {http://www.jin.gr.jp/~nahi/xmlns/sample/Person}Person

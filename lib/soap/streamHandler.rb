@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # SOAP4R - Stream handler.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -56,7 +56,7 @@ class StreamHandler
     end
     charset = $1
     charset.gsub!(/"/, '') if charset
-    charset || 'us-ascii'
+    charset || 'utf-8'
   end
 
   def self.create_media_type(charset)

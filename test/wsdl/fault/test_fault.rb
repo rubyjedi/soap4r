@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'wsdl/soap/wsdl2ruby'
@@ -21,10 +21,10 @@ class TestFault < Test::Unit::TestCase
   def teardown
     teardown_server if defined?(@server)
     unless $DEBUG
-      File.unlink(pathname('Add.rb'))
-      File.unlink(pathname('AddMappingRegistry.rb'))
-      File.unlink(pathname('AddServant.rb'))
-      File.unlink(pathname('AddService.rb'))
+      File.unlink(pathname('Add.rb')) if File.file?(pathname('Add.rb'))
+      File.unlink(pathname('AddMappingRegistry.rb')) if File.file?(pathname('AddMappingRegistry.rb'))
+      File.unlink(pathname('AddServant.rb')) if File.file?(pathname('AddServant.rb'))
+      File.unlink(pathname('AddService.rb')) if File.file?(pathname('AddService.rb'))
     end
     @client.reset_stream if @client
   end

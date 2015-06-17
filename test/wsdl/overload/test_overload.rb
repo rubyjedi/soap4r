@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'wsdl/parser'
@@ -58,11 +58,11 @@ class TestOverload < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('default.rb'))
-      File.unlink(pathname('defaultMappingRegistry.rb'))
-      File.unlink(pathname('defaultDriver.rb'))
-      File.unlink(pathname('defaultServant.rb'))
-      File.unlink(pathname('OverloadServiceClient.rb'))
+      File.unlink(pathname('default.rb')) if File.file?(pathname('default.rb'))
+      File.unlink(pathname('defaultMappingRegistry.rb')) if File.file?(pathname('defaultMappingRegistry.rb'))
+      File.unlink(pathname('defaultDriver.rb')) if File.file?(pathname('defaultDriver.rb'))
+      File.unlink(pathname('defaultServant.rb')) if File.file?(pathname('defaultServant.rb'))
+      File.unlink(pathname('OverloadServiceClient.rb')) if File.file?(pathname('OverloadServiceClient.rb'))
     end
     @client.reset_stream if @client
   end

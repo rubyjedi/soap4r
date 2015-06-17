@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'wsdl/parser'
@@ -84,9 +84,11 @@ class TestRPC < Test::Unit::TestCase
 
   def teardown
     teardown_server if @server
-    File.unlink(pathname('echo.rb')) unless $DEBUG
-    File.unlink(pathname('echoMappingRegistry.rb')) unless $DEBUG
-    File.unlink(pathname('echoDriver.rb')) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname('echo.rb')) if File.file?(pathname('echo.rb'))
+      File.unlink(pathname('echoMappingRegistry.rb')) if File.file?(pathname('echoMappingRegistry.rb'))
+      File.unlink(pathname('echoDriver.rb')) if File.file?(pathname('echoDriver.rb'))
+    end
     @client.reset_stream if @client
   end
 

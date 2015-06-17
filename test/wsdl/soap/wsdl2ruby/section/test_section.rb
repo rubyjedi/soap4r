@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'soap/marshal'
@@ -10,14 +10,16 @@ module WSDL; module SOAP
 
 class TestSection < Test::Unit::TestCase
   DIR = File.dirname(File.expand_path(__FILE__))
-  RUBY = Config::CONFIG['RUBY_INSTALL_NAME']
+  RUBY = RbConfig::CONFIG['RUBY_INSTALL_NAME']
 
   def setup
     system("cd #{DIR} && #{RUBY} #{pathname("../../../../../bin/xsd2ruby.rb")} --xsd #{pathname("section.xsd")} --classdef --force --quiet")
   end
 
   def teardown
-    File.unlink(pathname("mysample.rb")) unless $DEBUG
+    unless $DEBUG
+      File.unlink(pathname("mysample.rb")) if File.file?(pathname('mysample.rb'))
+    end
   end
 
   def test_classdef
@@ -26,9 +28,9 @@ class TestSection < Test::Unit::TestCase
 
   def test_marshal
     # avoid name crash (<item> => an Item when a class Item is defined)
-    if ::Object.constants.include?("Item")
-      ::Object.instance_eval { remove_const("Item") }
-    end
+    item = ::Object.constants.detect { |c| c.to_s == "Item" }
+      ::Object.instance_eval { remove_const(item) } if item    
+
     TestUtil.require(DIR, 'mysample.rb')
     s1 = Section.new(1, "section1", "section 1", 1001, Question.new("q1"))
     s2 = Section.new(2, "section2", "section 2", 1002, Question.new("q2"))

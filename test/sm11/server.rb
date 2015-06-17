@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 
 $KCODE = "UTF8"      # Set $KCODE before loading 'soap/xmlparser'.
 

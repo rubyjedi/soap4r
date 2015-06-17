@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'echo_version.rb'
 
 class Echo_version_port_type

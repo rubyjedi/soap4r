@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # WSDL4R - WSDL to ruby mapping library.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -8,6 +8,7 @@
 
 
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 require 'xsd/qname'
 require 'wsdl/importer'
 require 'wsdl/soap/classDefCreator'
@@ -75,7 +76,7 @@ private
     @classdef_filename = @name + '.rb'
     check_file(@classdef_filename) or return
     write_file(@classdef_filename) do |f|
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       f << WSDL::SOAP::ClassDefCreator.new(@wsdl, @name_creator, @modulepath).dump
     end
   end
@@ -85,7 +86,7 @@ private
     @mr_filename = @name + 'MappingRegistry.rb'
     check_file(@mr_filename) or return
     write_file(@mr_filename) do |f|
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       f << "require '#{@classdef_filename}'\n" if @classdef_filename
       f << WSDL::SOAP::MappingRegistryCreator.new(@wsdl, @name_creator, @modulepath).dump
     end
@@ -99,7 +100,7 @@ private
     check_file(@client_skelton_filename) or return
     write_file(@client_skelton_filename) do |f|
       f << shbang << "\n"
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       f << "require '#{@driver_filename}'\n\n" if @driver_filename
       f << WSDL::SOAP::ClientSkeltonCreator.new(@wsdl, @name_creator, @modulepath).dump(create_name(servicename))
     end
@@ -110,7 +111,7 @@ private
     @servant_skelton_filename = (porttypename || @name + 'Servant') + '.rb'
     check_file(@servant_skelton_filename) or return
     write_file(@servant_skelton_filename) do |f|
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       f << "require '#{@classdef_filename}'\n\n" if @classdef_filename
       f << WSDL::SOAP::ServantSkeltonCreator.new(@wsdl, @name_creator, @modulepath).dump(create_name(porttypename))
     end
@@ -123,7 +124,7 @@ private
     check_file(@cgi_stubFilename) or return
     write_file(@cgi_stubFilename) do |f|
       f << shbang << "\n"
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       f << "require '#{@servant_skelton_filename}'\n" if @servant_skelton_filename
       f << "require '#{@mr_filename}'\n" if @mr_filename
       f << WSDL::SOAP::CGIStubCreator.new(@wsdl, @name_creator, @modulepath).dump(create_name(servicename))
@@ -137,7 +138,7 @@ private
     check_file(@standalone_server_stub_filename) or return
     write_file(@standalone_server_stub_filename) do |f|
       f << shbang << "\n"
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       f << "require '#{@servant_skelton_filename}'\n" if @servant_skelton_filename
       f << "require '#{@mr_filename}'\n" if @mr_filename
       f << WSDL::SOAP::StandaloneServerStubCreator.new(@wsdl, @name_creator, @modulepath).dump(create_name(servicename))
@@ -151,7 +152,7 @@ private
     check_file(@servlet_stub_filename) or return
     write_file(@servlet_stub_filename) do |f|
       f << shbang << "\n"
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       f << "require '#{@servant_skelton_filename}'\n" if @servant_skelton_filename
       f << "require '#{@mr_filename}'\n" if @mr_filename
       f << WSDL::SOAP::ServletStubCreator.new(@wsdl, @name_creator, @modulepath).dump(create_name(servicename))
@@ -165,7 +166,7 @@ private
     creator.drivername_postfix = drivername_postfix
     check_file(@driver_filename) or return
     write_file(@driver_filename) do |f|
-      f.puts "# encoding: ASCII-8BIT"
+      f.puts "# encoding: UTF-8"
       f << "require '#{@classdef_filename}'\n" if @classdef_filename
       f << "require '#{@mr_filename}'\n" if @mr_filename
       f << creator.dump(create_name(porttypename))

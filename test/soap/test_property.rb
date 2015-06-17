@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # coding: utf-8
 require 'helper'
 require 'soap/property'

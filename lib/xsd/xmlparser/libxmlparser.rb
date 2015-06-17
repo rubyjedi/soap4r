@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # XSD4R - XMLParser XML parser library.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -6,30 +6,32 @@
 # redistribute it and/or modify it under the same terms of Ruby's license;
 # either the dual license version in 2003, or any later version.
 
+### WIP, 2015-June-13:  
+###
+### LibXML drops namespaces on Elements *AND* Attributes, which makes it impossible
+### to correctly associate Namespaces on Namespace-Declared Element Attributes when
+### more than one namespace exists.
+###
+### This issue is evident when you run test/soap/test_cookie.rb
+###
 
-require 'xsd/xmlparser'
-require 'xml/libxml'
-
+require 'libxml'
 
 module XSD
 module XMLParser
 
 
 class LibXMLParser < XSD::XMLParser::Parser
-  include XML::SaxParser::Callbacks
+  include ::LibXML::XML::SaxParser::Callbacks
 
   def do_parse(string_or_readable)
-    if string_or_readable.respond_to?(:read)
-      string = string_or_readable.read
-    else
-      string = string_or_readable
-    end
-    # XMLParser passes a String in utf-8.
+    # string = string_or_readable.respond_to?(:read) ? string_or_readable.read : string_or_readable
+
     @charset = 'utf-8'
-    @parser = XML::SaxParser.new
-    @parser.callbacks = self
-    @parser.string = string
-    @parser.parse
+    string = StringIO.new(string_or_readable)
+    parser = LibXML::XML::SaxParser.io(string)
+    parser.callbacks = self
+    parser.parse
   end
 
   ENTITY_REF_MAP = {
@@ -64,12 +66,29 @@ class LibXMLParser < XSD::XMLParser::Parser
   #  nil
   #end
 
-  def on_start_element(name, attr_hash)
-    start_element(name, attr_hash)
+  def on_start_element_ns (name, attr_hash, prefix, uri, namespaces)
+    prefixed_ns = attr_hash.merge(Hash[namespaces.map{|k,v| ["xmlns:#{k}",v]}])
+    if prefix.nil?
+      start_element(name, prefixed_ns)
+    else
+      start_element("#{prefix}:#{name}", prefixed_ns)
+    end
+  end
+
+  def on_end_element_ns (name, prefix, uri)
+    if prefix.nil?
+      end_element(name)
+    else
+      end_element("#{prefix}:#{name}")
+    end
+  end
+
+  def on_start_element (name, attr_hash)
+    # start_element(name, attr_hash)
   end
 
   def on_end_element(name)
-    end_element(name)
+    # end_element(name)
   end
 
   def on_reference(name)

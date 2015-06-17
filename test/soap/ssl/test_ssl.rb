@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 begin
   require 'httpclient'
@@ -17,8 +17,8 @@ class TestSSL < Test::Unit::TestCase
   DIR = File.dirname(File.expand_path(__FILE__))
   require 'rbconfig'
   RUBY = File.join(
-    Config::CONFIG["bindir"],
-    Config::CONFIG["ruby_install_name"] + Config::CONFIG["EXEEXT"]
+    RbConfig::CONFIG["bindir"],
+    RbConfig::CONFIG["ruby_install_name"] + RbConfig::CONFIG["EXEEXT"]
   )
 
   def setup
@@ -42,8 +42,18 @@ class TestSSL < Test::Unit::TestCase
     assert_equal(OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT, cfg.verify_mode)
     assert_nil(cfg.verify_callback)
     assert_nil(cfg.timeout)
-    assert_equal(OpenSSL::SSL::OP_ALL | OpenSSL::SSL::OP_NO_SSLv2, cfg.options)
-    assert_equal("ALL:!ADH:!LOW:!EXP:!MD5:+SSLv2:@STRENGTH", cfg.ciphers)
+
+    # RubyJedi:  Emulate what we expect httpclient's ssl_config initializer to be doing.
+    #   (Adapted from initialize() at https://github.com/nahi/httpclient/blob/master/lib/httpclient/ssl_config.rb )
+    ssl_options = OpenSSL::SSL::OP_ALL
+    ssl_options &= ~OpenSSL::SSL::OP_DONT_INSERT_EMPTY_FRAGMENTS if defined?(OpenSSL::SSL::OP_DONT_INSERT_EMPTY_FRAGMENTS)
+    ssl_options |= OpenSSL::SSL::OP_NO_COMPRESSION if defined?(OpenSSL::SSL::OP_NO_COMPRESSION)
+    ssl_options |= OpenSSL::SSL::OP_NO_SSLv2 if defined?(OpenSSL::SSL::OP_NO_SSLv2)
+    ssl_options |= OpenSSL::SSL::OP_NO_SSLv3 if defined?(OpenSSL::SSL::OP_NO_SSLv3)    
+
+    assert_equal(ssl_options, cfg.options)
+    assert_equal("ALL:!aNULL:!eNULL:!SSLv2", cfg.ciphers)
+
     assert_instance_of(OpenSSL::X509::Store, cfg.cert_store)
     # dummy call to ensure sslsvr initialization finished.
     assert_raise(OpenSSL::SSL::SSLError) do
@@ -116,7 +126,7 @@ class TestSSL < Test::Unit::TestCase
   def test_property
     testpropertyname = File.join(DIR, 'soapclient.properties')
     File.open(testpropertyname, "w") do |f|
-      f <<<<__EOP__
+      f<<<<__EOP__
 protocol.http.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_PEER
 # depth: 1 causes an error (intentional)
 protocol.http.ssl_config.verify_depth = 1
@@ -169,7 +179,7 @@ __EOP__
       assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
       assert(@verify_callback_called)
     ensure
-      File.unlink(testpropertyname)
+      File.unlink(testpropertyname) if File.file?(testpropertyname)
     end
   end
 
@@ -187,7 +197,7 @@ __EOP__
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
       # depends on OpenSSL version. (?:0.9.8|0.9.7)
-      assert_match(/\A(?:SSL_CTX_set_cipher_list:: no cipher match|no ciphers available)\z/, ssle.message)
+      assert_match(/\A(?:SSL_CTX_set_cipher_list:+ no cipher match|no ciphers available)\z/, ssle.message)
     end
     #
     cfg["protocol.http.ssl_config.ciphers"] = "ALL"

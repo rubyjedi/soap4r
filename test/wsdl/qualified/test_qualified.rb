@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'wsdl/soap/wsdl2ruby'
@@ -42,9 +42,9 @@ class TestQualified < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('default.rb'))
-      File.unlink(pathname('defaultMappingRegistry.rb'))
-      File.unlink(pathname('defaultDriver.rb'))
+      File.unlink(pathname('default.rb')) if File.file?(pathname('default.rb'))
+      File.unlink(pathname('defaultMappingRegistry.rb')) if File.file?(pathname('defaultMappingRegistry.rb'))
+      File.unlink(pathname('defaultDriver.rb')) if File.file?(pathname('defaultDriver.rb'))
     end
     @client.reset_stream if @client
   end
@@ -69,7 +69,11 @@ class TestQualified < Test::Unit::TestCase
       gen.opt['driver'] = nil
       gen.opt['force'] = true
       gen.run
-      require 'default.rb'
+      begin
+        require_relative './default.rb'
+      rescue
+        require 'default.rb' # RubyJedi: This exists for the benefit of Ruby 1.8.7
+      end
     ensure
       $".delete('default.rb')
       Dir.chdir(backupdir)

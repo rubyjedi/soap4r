@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # SOAP4R - WEBrick HTTP Server
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -8,6 +8,7 @@
 
 
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 require 'soap/attrproxy'
 require 'soap/rpc/soaplet'
 require 'soap/streamHandler'

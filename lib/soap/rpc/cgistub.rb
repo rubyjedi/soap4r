@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # SOAP4R - CGI/mod_ruby stub library
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -11,6 +11,7 @@ require 'soap/streamHandler'
 require 'webrick/httpresponse'
 require 'webrick/httpstatus'
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 require 'soap/rpc/soaplet'
 
 

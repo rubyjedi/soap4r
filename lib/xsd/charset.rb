@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # XSD4R - Charset handling library.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -11,7 +11,7 @@ module XSD
 
 
 module Charset
-  @internal_encoding = (RUBY_VERSION.to_f >= 1.9) ? 'UTF8' : $KCODE 
+  @internal_encoding = (RUBY_VERSION.to_f <= 1.8) ? $KCODE : 'UTF8' 
 
   class XSDError < StandardError; end
   class CharsetError < XSDError; end

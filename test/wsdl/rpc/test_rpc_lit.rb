@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'wsdl/soap/wsdl2ruby'
@@ -107,9 +107,9 @@ class TestRPCLIT < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('RPC-Literal-TestDefinitions.rb'))
-      File.unlink(pathname('RPC-Literal-TestDefinitionsMappingRegistry.rb'))
-      File.unlink(pathname('RPC-Literal-TestDefinitionsDriver.rb'))
+      File.unlink(pathname('RPC-Literal-TestDefinitions.rb')) if File.file?(pathname('RPC-Literal-TestDefinitions.rb'))
+      File.unlink(pathname('RPC-Literal-TestDefinitionsMappingRegistry.rb')) if File.file?(pathname('RPC-Literal-TestDefinitionsMappingRegistry.rb'))
+      File.unlink(pathname('RPC-Literal-TestDefinitionsDriver.rb')) if File.file?(pathname('RPC-Literal-TestDefinitionsDriver.rb'))
     end
     @client.reset_stream if @client
   end

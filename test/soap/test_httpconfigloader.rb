@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'soap/httpconfigloader'
 require 'soap/rpc/driver'
@@ -32,7 +32,7 @@ class TestHTTPConfigLoader < Test::Unit::TestCase
   def test_property
     testpropertyname = File.join(DIR, 'soapclient.properties')
     File.open(testpropertyname, "w") do |f|
-      f <<<<__EOP__
+      f<<<<__EOP__
 protocol.http.proxy = http://myproxy:8080
 protocol.http.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_PEER
 # depth: 1 causes an error (intentional)
@@ -61,7 +61,7 @@ __EOP__
       assert_equal(cred2, basic_auth.get(Request.new(URI.parse("http://www.example.com/foo2/"))))
       assert_equal(cred3, basic_auth.get(Request.new(URI.parse("http://www.example.com/foo3/baz/qux"))))
     ensure
-      File.unlink(testpropertyname)
+      File.unlink(testpropertyname)  if File.file?(testpropertyname)
     end
   end
 end

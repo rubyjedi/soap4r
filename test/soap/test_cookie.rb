@@ -1,10 +1,9 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'soap/rpc/driver'
 require 'webrick'
 require 'logger'
-
 
 module SOAP
 
@@ -95,6 +94,7 @@ class TestCookie < Test::Unit::TestCase
   </env:Body>
 </env:Envelope>
 __EOX__
+
   end
 
   def test_normal

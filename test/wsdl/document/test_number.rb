@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'wsdl/parser'
@@ -40,7 +40,7 @@ class TestNumber < Test::Unit::TestCase
 
   def teardown
     teardown_server if @server
-    File.unlink(pathname('foo.rb'))
+    File.unlink(pathname('foo.rb')) if File.file?(pathname('foo.rb'))
     @client.reset_stream if @client
   end
 

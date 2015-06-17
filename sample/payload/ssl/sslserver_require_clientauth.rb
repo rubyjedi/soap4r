@@ -1,7 +1,8 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'soap/rpc/httpserver'
 require 'webrick/https'
 require 'logger'
+require 'logger-application' unless defined?(Logger::Application)
 
 class HelloWorldServer < SOAP::RPC::HTTPServer
 private

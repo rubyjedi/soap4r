@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # XSD4R - XML Schema Namespace library
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -124,7 +124,7 @@ public
   end
 
   # $1 and $2 are necessary.
-  ParseRegexp = Regexp.new('\A([^:]+)(?::(.+))?\z', nil, 'n')
+  ParseRegexp = Regexp.new('\A([^:]+)(?::(.+))?\z', nil)
 
   def parse(str, local = false)
     if ParseRegexp =~ str

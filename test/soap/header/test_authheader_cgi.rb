@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'soap/rpc/driver'
 require 'soap/rpc/standaloneServer'
@@ -15,8 +15,8 @@ module Header
 class TestAuthHeaderCGI < Test::Unit::TestCase
   # This test shuld be run after installing ruby.
   RUBYBIN = File.join(
-    Config::CONFIG["bindir"],
-    Config::CONFIG["ruby_install_name"] + Config::CONFIG["EXEEXT"]
+    RbConfig::CONFIG["bindir"],
+    RbConfig::CONFIG["ruby_install_name"] + RbConfig::CONFIG["EXEEXT"]
   )
   RUBYBIN << " -d" if $DEBUG
   

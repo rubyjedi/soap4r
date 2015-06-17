@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'wsdl/parser'
@@ -76,12 +76,12 @@ class TestAny < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('echo.rb')) if File.exist?(pathname('echo.rb'))
-      File.unlink(pathname('echoMappingRegistry.rb')) if File.exist?(pathname('echoMappingRegistry.rb'))
-      File.unlink(pathname('echoDriver.rb')) if File.exist?(pathname('echoDriver.rb'))
-      File.unlink(pathname('echoServant.rb')) if File.exist?(pathname('echoServant.rb'))
-      File.unlink(pathname('echo_service.rb')) if File.exist?(pathname('echo_service.rb'))
-      File.unlink(pathname('echo_serviceClient.rb')) if File.exist?(pathname('echo_serviceClient.rb'))
+      File.unlink(pathname('echo.rb')) if File.file?(pathname('echo.rb'))
+      File.unlink(pathname('echoMappingRegistry.rb')) if File.file?(pathname('echoMappingRegistry.rb'))
+      File.unlink(pathname('echoDriver.rb')) if File.file?(pathname('echoDriver.rb'))
+      File.unlink(pathname('echoServant.rb')) if File.file?(pathname('echoServant.rb'))
+      File.unlink(pathname('echo_service.rb')) if File.file?(pathname('echo_service.rb'))
+      File.unlink(pathname('echo_serviceClient.rb')) if File.file?(pathname('echo_serviceClient.rb'))
     end
     @client.reset_stream if @client
   end

@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # soap/property.rb: SOAP4R - Property implementation.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -76,7 +76,11 @@ class Property
   
   def load(stream)
     key_prefix = ""
-    stream = stream.lines if stream.respond_to?(:lines) # RubyJedi: compatible with Ruby 1.8.6 and above
+    if stream.respond_to?(:each_line) # Ruby 1.9 and beyond
+      stream = stream.each_line      
+    elsif stream.respond_to?(:lines) # RubyJedi: compatible with Ruby 1.8.6
+      stream = stream.lines
+    end
     stream.each_with_index do |line, lineno|
       line.sub!(/\r?\n\z/u, '')
       case line
@@ -324,17 +328,3 @@ end
 
 
 end
-
-
-# for ruby/1.6.
-#unless Enumerable.instance_methods.include?(:inject)
-#  module Enumerable
-#    def inject(init)
-#      result = init
-#      each do |item|
-#	result = yield(result, item)
-#      end
-#      result
-#    end
-#  end
-#end

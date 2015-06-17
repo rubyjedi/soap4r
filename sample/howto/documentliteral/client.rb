@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'defaultDriver.rb'
 
 endpoint_url = ARGV.shift

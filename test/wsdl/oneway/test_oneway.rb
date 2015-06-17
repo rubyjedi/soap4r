@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'soap/rpc/standaloneServer'
@@ -49,9 +49,9 @@ class TestOneway < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('oneway.rb'))
-      File.unlink(pathname('onewayMappingRegistry.rb'))
-      File.unlink(pathname('onewayDriver.rb'))
+      File.unlink(pathname('oneway.rb')) if File.file?(pathname('oneway.rb'))
+      File.unlink(pathname('onewayMappingRegistry.rb')) if File.file?(pathname('onewayMappingRegistry.rb'))
+      File.unlink(pathname('onewayDriver.rb')) if File.file?(pathname('onewayDriver.rb'))
     end
     @client.reset_stream if @client
   end

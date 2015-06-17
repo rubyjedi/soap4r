@@ -1,6 +1,9 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
+$:.unshift File.expand_path( File.dirname(__FILE__) + '../../../../lib')
+
 require 'helper'
 require 'testutil'
+
 require 'wsdl/parser'
 require 'wsdl/soap/wsdl2ruby'
 require 'soap/rpc/standaloneServer'
@@ -69,9 +72,9 @@ class TestRPC < Test::Unit::TestCase
   def teardown
     teardown_server if @server
     unless $DEBUG
-      File.unlink(pathname('echo.rb'))
-      File.unlink(pathname('echoMappingRegistry.rb'))
-      File.unlink(pathname('echoDriver.rb'))
+      File.unlink(pathname('echo.rb')) if File.file?(pathname('echo.rb'))
+      File.unlink(pathname('echoMappingRegistry.rb')) if File.file?(pathname('echoMappingRegistry.rb'))
+      File.unlink(pathname('echoDriver.rb')) if File.file?(pathname('echoDriver.rb'))
     end
     @client.reset_stream if @client
   end
@@ -83,10 +86,9 @@ class TestRPC < Test::Unit::TestCase
   end
 
   def setup_classdef
-    if ::Object.constants.include?("Echo")
-      ::Object.instance_eval { remove_const("Echo") }
-    end
-    gen = WSDL::SOAP::WSDL2Ruby.new
+    echo = ::Object.constants.detect { |c| c.to_s == "Echo" }
+      ::Object.instance_eval { remove_const(echo) } if echo
+    gen = ::WSDL::SOAP::WSDL2Ruby.new
     gen.location = pathname("rpc.wsdl")
     gen.basedir = DIR
     gen.logger.level = Logger::FATAL

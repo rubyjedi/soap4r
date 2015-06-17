@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # XSD4R - REXMLParser XML parser library.
 # Copyright (C) 2000-2007  NAKAMURA, Hiroshi <nahi@ruby-lang.org>.
 
@@ -7,7 +7,6 @@
 # either the dual license version in 2003, or any later version.
 
 
-require 'xsd/xmlparser'
 require 'rexml/streamlistener'
 require 'rexml/document'
 

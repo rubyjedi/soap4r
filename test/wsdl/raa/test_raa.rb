@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 require 'helper'
 require 'testutil'
 require 'soap/wsdlDriver'
@@ -57,9 +57,9 @@ class TestRAA < Test::Unit::TestCase
     teardown_server if defined?(@server)
     teardown_client if defined?(@client)
     unless $DEBUG
-      File.unlink(pathname('RAA.rb'))
-      File.unlink(pathname('RAAMappingRegistry.rb'))
-      File.unlink(pathname('RAADriver.rb'))
+      File.unlink(pathname('RAA.rb')) if File.file?(pathname('RAA.rb'))
+      File.unlink(pathname('RAAMappingRegistry.rb')) if File.file?(pathname('RAAMappingRegistry.rb'))
+      File.unlink(pathname('RAADriver.rb')) if File.file?(pathname('RAADriver.rb'))
     end
   end
 

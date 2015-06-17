@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 
 $serverName = 'Spray2001'
 $serverBase = 'http://www.dolphinharbor.org/services/interop2001'

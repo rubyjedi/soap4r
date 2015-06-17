@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # SOAP4R - MIME Message implementation.
 # Copyright (C) 2002  Jamie Herre.
 

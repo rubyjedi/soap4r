@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# encoding: UTF-8
 # SOAP4R - Ruby type mapping utility.
 # Copyright (C) 2000-2007  NAKAMURA Hiroshi <nahi@ruby-lang.org>.
 
@@ -127,7 +127,7 @@ module Mapping
   def self._obj2soap(obj, registry, type = nil)
     if obj.respond_to?(:to_xmlpart)
       SOAPRawData.new(obj)
-    elsif defined?(::REXML) and defined?(::REXML::Element) and obj.is_a?(::REXML::Element)
+    elsif defined?(::REXML::Element) and obj.is_a?(::REXML::Element)
       SOAPRawData.new(SOAPREXMLElementWrap.new(obj))
     elsif referent = Thread.current[:SOAPMapping][:MarshalKey][obj.__id__] and
         !Thread.current[:SOAPMapping][:NoReference]
@@ -251,11 +251,10 @@ module Mapping
 
   def self.obj2element(obj)
     name = namespace = nil
-    ivars = obj.instance_variables
-    if ivars.include?('@schema_type')
+    if obj.instance_variable_defined?('@schema_type')
       name = obj.instance_variable_get('@schema_type')
     end
-    if ivars.include?('@schema_ns')
+    if obj.instance_variable_defined?('@schema_ns')
       namespace = obj.instance_variable_get('@schema_ns')
     end
     if !name or !namespace
@@ -456,7 +455,8 @@ module Mapping
           schema_element.is_concrete_definition
         definition.elements = schema_element
       else
-        default_ns = schema_name.namespace if schema_name
+        default_ns = schema_ns
+        default_ns ||= schema_name.namespace if schema_name
         default_ns ||= schema_type.namespace if schema_type
         definition.elements = parse_schema_definition(schema_element, default_ns)
         if klass < ::Array
@@ -542,7 +542,7 @@ module Mapping
 
     def class_schema_variable(sym, klass)
       var = "@@#{sym}"
-      klass.class_variables.include?(var) ? klass.class_eval(var) : nil
+      klass.class_variable_defined?(var) ? klass.class_eval(var) : nil
     end
 
     def protect_mapping(opt)
