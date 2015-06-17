@@ -1,7 +1,5 @@
 # encoding: UTF-8
 $:.unshift File.expand_path( File.dirname(__FILE__) + '../../../../lib') 
-$:.unshift '.' if RUBY_VERSION.to_f == 1.9
-
 
 require 'webrick/https'
 require 'logger'

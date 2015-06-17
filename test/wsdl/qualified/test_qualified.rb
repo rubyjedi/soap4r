@@ -69,7 +69,11 @@ class TestQualified < Test::Unit::TestCase
       gen.opt['driver'] = nil
       gen.opt['force'] = true
       gen.run
-      require 'default.rb'
+      begin
+        require_relative './default.rb'
+      rescue
+        require 'default.rb' # RubyJedi: This exists for the benefit of Ruby 1.8.7
+      end
     ensure
       $".delete('default.rb')
       Dir.chdir(backupdir)

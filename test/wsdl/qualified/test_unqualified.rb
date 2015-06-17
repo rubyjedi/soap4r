@@ -69,7 +69,11 @@ class TestUnqualified < Test::Unit::TestCase
       gen.opt['driver'] = nil
       gen.opt['force'] = true
       gen.run
-      require 'lp.rb'
+      begin
+        require_relative './lp.rb'
+      rescue
+        require 'lp.rb' # RubyJedi: This exists for the benefit of Ruby 1.8.7
+      end
     ensure
       $".delete('lp.rb')
       Dir.chdir(backupdir)
