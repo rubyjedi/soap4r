@@ -406,7 +406,9 @@ private
   def addextend2obj(obj, attr)
     return unless attr
     attr.split(/ /).reverse_each do |mstr|
-      obj.extend(Mapping.module_from_name(mstr))
+      ext_module = Mapping.module_from_name(mstr)
+      return if ext_module.is_a?(Class) # RubyJedi:  Apparently needed for Ruby 2.1 and above?
+      obj.extend(ext_module)
     end
   end
 
@@ -418,7 +420,7 @@ private
       node.extraattr[RubyExtendName] = list.collect { |c|
         name = c.name
         if name.nil? or name.empty?
-          raise TypeError.new("singleton can't be dumped #{ obj }")
+          raise TypeError.new("singleton can't be dumped #{ obj }") if RUBY_VERSION.to_f < 2.1
         end
         name
       }.join(" ")
