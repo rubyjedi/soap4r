@@ -102,7 +102,7 @@ class TestArray < Test::Unit::TestCase
     File.join(DIR, filename)
   end
 
-  def test_stub
+  def test_complex_stub
     @client = PricerSoap.new
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.wiredump_dev = STDOUT if $DEBUG
