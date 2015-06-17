@@ -197,7 +197,7 @@ __EOP__
       assert(false)
     rescue OpenSSL::SSL::SSLError => ssle
       # depends on OpenSSL version. (?:0.9.8|0.9.7)
-      assert_match(/\A(?:SSL_CTX_set_cipher_list:: no cipher match|no ciphers available)\z/, ssle.message)
+      assert_match(/\A(?:SSL_CTX_set_cipher_list:+ no cipher match|no ciphers available)\z/, ssle.message)
     end
     #
     cfg["protocol.http.ssl_config.ciphers"] = "ALL"
