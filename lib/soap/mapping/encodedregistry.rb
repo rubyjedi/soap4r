@@ -12,8 +12,6 @@ require 'soap/mapping/mapping'
 require 'soap/mapping/typeMap'
 require 'soap/mapping/factory'
 require 'soap/mapping/rubytypeFactory'
-
-
 module SOAP
 module Mapping
 
@@ -415,16 +413,17 @@ private
   def addextend2soap(node, obj)
     return if [Symbol, Fixnum, Bignum, Float].any?{ |c| obj.is_a?(c) }
     list = (class << obj; self; end).ancestors - obj.class.ancestors
+    list = list.reject{|c| c.class == Class } ## As of Ruby 2.1 Singleton Classes are now included in the ancestry. Need to filter those out here.
 
-    unless list.empty?
-      node.extraattr[RubyExtendName] = list.collect { |c|
-        name = c.name
-        if name.nil? or name.empty?
-          raise TypeError.new("singleton can't be dumped #{ obj }") if RUBY_VERSION.to_f < 2.1
-        end
-        name
-      }.join(" ")
-    end
+    return if list.empty?
+    extra_attrs = list.collect { |c|
+      name = c.name
+      if name.nil? or name.empty?
+        raise TypeError.new("singleton can't be dumped #{ obj }")
+      end
+      name
+    }.join(" ")
+    node.extraattr[RubyExtendName] = extra_attrs
   end
 
   def stubobj2soap(obj, definition)
