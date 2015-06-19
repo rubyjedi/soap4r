@@ -53,7 +53,7 @@ if ENV.has_key?('SOAP4R_PARSERS')
 else
   parser_list = [
     'oxparser',     ## Uses its own C-Ruby Extension
-    'nokogiri',     ## Depends on LibXML2, LibXSLT, and ZLib
+    'nokogiriparser',     ## Depends on LibXML2, LibXSLT, and ZLib
     'libxmlparser', ## Depends on LibXML2 ; Thread-Safe ; Somewhat Broken re: Namespaces
     # ----- Pure-Ruby Parsers Below ---- #
     'ogaparser',    ## Pure-Ruby
