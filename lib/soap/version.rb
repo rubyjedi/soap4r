@@ -1,9 +1,9 @@
 # encoding: UTF-8
 module SOAP
   module VERSION #:nodoc:
-    MAJOR = 1
-    MINOR = 5
-    TINY  = 8
+    MAJOR = 2
+    MINOR = 0
+    TINY  = 1
     STRING = [MAJOR, MINOR, TINY].join('.')
   end
 end
