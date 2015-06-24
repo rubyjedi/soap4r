@@ -16,8 +16,7 @@ require 'soap/version'
 module SOAP
 
 
-# VERSION = Version = SOAP::VERSION::STRING # '1.5.8-HEAD'
-Version = SOAP::VERSION::STRING # '1.5.8-HEAD'
+Version = SOAP::VERSION::STRING # evaluates to 'SOAP4R-NG 2.0.2' or later
 PropertyName = 'soap/property'
 
 EnvelopeNamespace = 'http://schemas.xmlsoap.org/soap/envelope/'

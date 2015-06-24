@@ -143,7 +143,7 @@ public
 
   def initialize(options)
     super()
-    @client = Client.new(nil, "RUBYJEDI-SOAP4R/#{ Version }")
+    @client = Client.new(nil, SOAP::VERSION::FORK_STRING)
     if @client.respond_to?(:request_filter)
       @client.request_filter << HttpPostRequestFilter.new(@filterchain)
     end
