@@ -16,6 +16,7 @@ module XMLParser
 class OgaParser < XSD::XMLParser::Parser
 
   def do_parse(string_or_readable)
+    $stderr.puts "XSD::XMLParser::OgaParser.do_parse" if $DEBUG    
     # Oga::XML::SaxParser.new(self, string_or_readable)    
     Oga.sax_parse_xml(self, string_or_readable)
   end

@@ -14,6 +14,7 @@ module XMLParser
 
 class OxParser < XSD::XMLParser::Parser
   def do_parse(string_or_readable)
+    $stderr.puts "XSD::XMLParser::OxParser.do_parse" if $DEBUG
     @element_stack = []
     begin
       require 'htmlentities' # Used to unescape html-escaped chars, if available

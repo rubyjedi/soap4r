@@ -11,7 +11,6 @@ require 'xsd/qname'
 require 'xsd/ns'
 require 'xsd/charset'
 
-
 module XSD
 module XMLParser
 

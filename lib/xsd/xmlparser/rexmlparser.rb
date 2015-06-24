@@ -19,6 +19,7 @@ class REXMLParser < XSD::XMLParser::Parser
   include REXML::StreamListener
 
   def do_parse(string_or_readable)
+    $stderr.puts "XSD::XMLParser::REXMLParser.do_parse" if $DEBUG    
     source = nil
     source = REXML::SourceFactory.create_from(string_or_readable)
     source.encoding = charset if charset

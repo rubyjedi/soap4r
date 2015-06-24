@@ -25,6 +25,7 @@ class LibXMLParser < XSD::XMLParser::Parser
   include ::LibXML::XML::SaxParser::Callbacks
 
   def do_parse(string_or_readable)
+    $stderr.puts "XSD::XMLParser::LibXMLParser.do_parse" if $DEBUG    
     # string = string_or_readable.respond_to?(:read) ? string_or_readable.read : string_or_readable
 
     @charset = 'utf-8'

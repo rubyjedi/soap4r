@@ -13,6 +13,7 @@ module XMLParser
 
 class NokogiriParser < XSD::XMLParser::Parser
   def do_parse(string_or_readable)
+    $stderr.puts "XSD::XMLParser::NokogiriParser.do_parse" if $DEBUG    
     handler = NokoDocHandler.new(self)
     parser = Nokogiri::XML::SAX::Parser.new(handler)    
     parser.parse(string_or_readable)
