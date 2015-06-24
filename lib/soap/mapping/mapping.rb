@@ -127,7 +127,7 @@ module Mapping
   def self._obj2soap(obj, registry, type = nil)
     if obj.respond_to?(:to_xmlpart)
       SOAPRawData.new(obj)
-    elsif defined?(::REXML::Element) and obj.is_a?(::REXML::Element)
+    elsif defined?(::REXML) && defined?(::REXML::Element) && obj.is_a?(::REXML::Element)
       SOAPRawData.new(SOAPREXMLElementWrap.new(obj))
     elsif referent = Thread.current[:SOAPMapping][:MarshalKey][obj.__id__] and
         !Thread.current[:SOAPMapping][:NoReference]
