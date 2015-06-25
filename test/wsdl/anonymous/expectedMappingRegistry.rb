@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'lp.rb'
+require_relative 'lp.rb'
 require 'soap/mapping'
 
 module WSDL; module Anonymous

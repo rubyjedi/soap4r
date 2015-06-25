@@ -1,6 +1,6 @@
 # encoding: UTF-8
-require 'RAA.rb'
-require 'RAAMappingRegistry.rb'
+require_relative 'RAA.rb'
+require_relative 'RAAMappingRegistry.rb'
 require 'soap/rpc/driver'
 
 module WSDL::RAA

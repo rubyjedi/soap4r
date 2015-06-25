@@ -1,6 +1,6 @@
 # encoding: UTF-8
-require 'echo_version.rb'
-require 'echo_versionMappingRegistry.rb'
+require_relative 'echo_version.rb'
+require_relative 'echo_versionMappingRegistry.rb'
 require 'soap/rpc/driver'
 
 class Echo_version_port_type < ::SOAP::RPC::Driver

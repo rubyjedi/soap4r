@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-require 'echo_versionDriver.rb'
+require_relative 'echo_versionDriver.rb'
 
 endpoint_url = ARGV.shift
 obj = Echo_version_port_type.new(endpoint_url)

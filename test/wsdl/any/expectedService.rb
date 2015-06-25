@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-require 'echoServant.rb'
-require 'echoMappingRegistry.rb'
+require_relative 'echoServant.rb'
+require_relative 'echoMappingRegistry.rb'
 require 'soap/rpc/standaloneServer'
 
 module WSDL; module Any

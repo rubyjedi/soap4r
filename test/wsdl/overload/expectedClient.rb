@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-require 'defaultDriver.rb'
+require_relative 'defaultDriver.rb'
 
 endpoint_url = ARGV.shift
 obj = OverloadServicePortType.new(endpoint_url)

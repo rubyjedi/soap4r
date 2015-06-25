@@ -1,6 +1,6 @@
 # encoding: UTF-8
-require 'lp.rb'
-require 'lpMappingRegistry.rb'
+require_relative 'lp.rb'
+require_relative 'lpMappingRegistry.rb'
 require 'soap/rpc/driver'
 
 module WSDL::Anonymous

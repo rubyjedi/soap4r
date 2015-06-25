@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-require 'echo_versionServant.rb'
-require 'echo_versionMappingRegistry.rb'
+require_relative 'echo_versionServant.rb'
+require_relative 'echo_versionMappingRegistry.rb'
 require 'soap/rpc/cgistub'
 
 class Echo_version_port_type

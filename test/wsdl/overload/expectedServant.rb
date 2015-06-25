@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'default.rb'
+require_relative 'default.rb'
 
 class OverloadServicePortType
   # SYNOPSIS

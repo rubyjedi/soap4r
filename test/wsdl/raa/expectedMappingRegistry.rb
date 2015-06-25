@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'RAA.rb'
+require_relative 'RAA.rb'
 require 'soap/mapping'
 
 module WSDL; module RAA

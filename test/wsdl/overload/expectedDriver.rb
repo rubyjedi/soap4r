@@ -1,6 +1,6 @@
 # encoding: UTF-8
-require 'default.rb'
-require 'defaultMappingRegistry.rb'
+require_relative 'default.rb'
+require_relative 'defaultMappingRegistry.rb'
 require 'soap/rpc/driver'
 
 class OverloadServicePortType < ::SOAP::RPC::Driver

@@ -1,6 +1,6 @@
 # encoding: UTF-8
-require 'echo.rb'
-require 'echoMappingRegistry.rb'
+require_relative 'echo.rb'
+require_relative 'echoMappingRegistry.rb'
 require 'soap/rpc/driver'
 
 module WSDL::Group

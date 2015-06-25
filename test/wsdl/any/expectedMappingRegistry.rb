@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'echo.rb'
+require_relative 'echo.rb'
 require 'soap/mapping'
 
 module WSDL; module Any

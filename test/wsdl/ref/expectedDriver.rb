@@ -1,6 +1,6 @@
 # encoding: UTF-8
-require 'product.rb'
-require 'productMappingRegistry.rb'
+require_relative 'product.rb'
+require_relative 'productMappingRegistry.rb'
 require 'soap/rpc/driver'
 
 module WSDL::Ref
