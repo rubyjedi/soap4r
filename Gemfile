@@ -26,6 +26,7 @@ group :test do
   end
 
   gem 'rubyjedi-testunitxml', :git=>'https://github.com/rubyjedi/testunitxml.git', :branch=>'master'
+  gem "codeclimate-test-reporter", :require=>nil if RUBY_VERSION.to_f >= 1.9
   
   ### Misc Debugging Aids ###
   # gem 'awesome_print'
