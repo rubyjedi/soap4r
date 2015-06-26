@@ -225,7 +225,11 @@ private
   def teardown_server
     if @serverpid
       Process.kill('KILL', @serverpid)
-      Process.waitpid(@serverpid)
+      begin
+        Process.waitpid(@serverpid)
+      rescue
+        $stderr.puts "WARNING: Attempted to tear down server, but no Child Process found to wait on?"
+      end
     end
   end
 
