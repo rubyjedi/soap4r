@@ -1,0 +1,22 @@
+source 'http://rubygems.org'
+gem 'rake'
+
+gem 'httpclient'   # 2.1.5.2
+if RUBY_VERSION.to_f <= 1.8
+  gem 'htmlentities', '4.3.1'       # Require this if OxParser's built-in "Special Character" conversion isn't sufficient for your needs.
+else
+  gem 'htmlentities', '~> 4.3.3'    # Require this if OxParser's built-in "Special Character" conversion isn't sufficient for your needs.
+  gem 'logger-application', :require=>'logger-application'
+end
+
+
+## # Testing Support ###
+group :test do
+  if RUBY_VERSION.to_f <= 1.8
+    gem 'test-unit', '~> 1.2.3'
+  else
+    gem 'test-unit'
+  end
+
+  gem 'rubyjedi-testunitxml', :git=>'https://github.com/rubyjedi/testunitxml.git', :branch=>'master'
+end

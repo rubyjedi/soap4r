@@ -1,0 +1,20 @@
+source 'http://rubygems.org'
+gem 'rake'
+
+gem 'httpclient'
+if RUBY_VERSION.to_f <= 1.8
+  gem 'nokogiri', '~> 1.5.11'       # nokogiriparser ; Uses libxml2, libxslt, and zlib
+else
+  gem 'nokogiri',     '~> 1.6.6'    # nokogiriparser ; Uses libxml2, libxslt, and zlib
+  gem 'logger-application', :require=>'logger-application'
+end
+
+## # Testing Support ###
+group :test do
+  if RUBY_VERSION.to_f <= 1.8
+    gem 'test-unit', '~> 1.2.3'
+  else
+    gem 'test-unit'
+  end
+  gem 'rubyjedi-testunitxml', :git=>'https://github.com/rubyjedi/testunitxml.git', :branch=>'master'
+end

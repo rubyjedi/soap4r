@@ -1,4 +1,5 @@
 source 'http://rubygems.org'
+gem 'rake'
 
 gem 'httpclient'   # 2.1.5.2
 gem 'ox'                            # oxparser       ; Uses its own custom C-library
@@ -16,23 +17,23 @@ else
 end
 
 
-
 ## # Testing Support ###
 group :test do
   if RUBY_VERSION.to_f <= 1.8
     gem 'test-unit', '~> 1.2.3'
   else
-    gem 'test-unit', '~> 1.2.3'      # Could be nice to bump up test-unit version, but test-unit 3.x.x prevents testunitxml from loading.
+    gem 'test-unit'
   end
 
   gem 'rubyjedi-testunitxml', :git=>'https://github.com/rubyjedi/testunitxml.git', :branch=>'master'
   
   ### Misc Debugging Aids ###
-  gem 'awesome_print'
-
+  # gem 'awesome_print'
   # gem 'rcov'                       # Coverage Test scoring, for more confidence. Do a 'rake rcov:rcov' to yield coverage results.
-
   # gem 'pry'                        ## see also: pry-debugger for Ruby 1.9 and lower; and pry-byebug for 2.0 and higher (requires byebug gem also)
   # gem 'ruby-termios'               # Unroller requires this . . .
   # gem 'unroller', :git=>'https://github.com/jayjlawrence/unroller.git', :branch=>'master'
+
+  gem 'byebug' if RUBY_VERSION.to_f >= 2.0
+  gem 'soap4r-ng', :path=>'.'  # Make our development copy (this directory) available as a Gem via Bundler. Useful for running tests.
 end

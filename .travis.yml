@@ -1,0 +1,20 @@
+language: ruby
+rvm:
+  - 1.8.7
+  - 1.9.3
+  - 2.0.0
+  - 2.1.5
+  - jruby
+gemfile:
+  - gemfiles/httpclient_nokogiriparser.gemfile
+  - gemfiles/httpclient_rexmlparser.gemfile
+
+matrix:
+  allow_failures:
+    - rvm: 2.0.0
+    - rvm: 2.1.5
+    - rvm: jruby
+
+notifications:
+  recipients:
+    - coder.notify@not404.com

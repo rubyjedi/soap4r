@@ -1,8 +1,9 @@
 # soap4r-ng
+[![Gem Version](https://badge.fury.io/rb/soap4r-ng.svg)](http://badge.fury.io/rb/soap4r-ng)
 #### Soap4R (as maintained by RubyJedi)
 * Unit Tested to work under MRI Ruby **1.8.7** thru **2.1.5**
 * ***NEW CODE!  Added Support for newer, faster XML Parsers***
-    * **[Ox](https://github.com/ohler55/ox)** (Fully Functional), 
+    * **[Ox](https://github.com/ohler55/ox)** (Fully Functional),
     * **[Nokogiri](https://github.com/sparklemotion/nokogiri)** (Fully Functional)
     * **[Oga](https://github.com/YorickPeterse/oga)** (currently broken, but is a work in progress)
 * ***Fully Operational Unit Test Suite***. NaHi's Unit Tests are astonishingly thorough, and have been instrumental in discovering issues that each new Ruby version brings up. Thanks to those Unit Tests, I'm **very** confident in the code quality of this fork.
