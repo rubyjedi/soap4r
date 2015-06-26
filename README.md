@@ -1,6 +1,7 @@
 # soap4r-ng
 [![Gem Version](https://badge.fury.io/rb/soap4r-ng.svg)](http://badge.fury.io/rb/soap4r-ng)
 [![GitHub version](https://badge.fury.io/gh/rubyjedi%2Fsoap4r.svg)](http://badge.fury.io/gh/rubyjedi%2Fsoap4r)
+[![Code Climate](https://codeclimate.com/github/rubyjedi/soap4r/badges/gpa.svg)](https://codeclimate.com/github/rubyjedi/soap4r)
 [![Build Status](https://travis-ci.org/rubyjedi/soap4r.svg?branch=master)](https://travis-ci.org/rubyjedi/soap4r)
 
 #### Soap4R (as maintained by RubyJedi)
