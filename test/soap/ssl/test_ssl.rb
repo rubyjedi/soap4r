@@ -229,6 +229,7 @@ private
         Process.waitpid(@serverpid)
       rescue
         $stderr.puts "WARNING: Attempted to tear down server, but no Child Process found to wait on?"
+        sleep 5 # Hopefully give enough time for the system to release the Socket that the quickly-killed child process had
       end
     end
   end

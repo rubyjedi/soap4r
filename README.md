@@ -1,5 +1,7 @@
 # soap4r-ng
 [![Gem Version](https://badge.fury.io/rb/soap4r-ng.svg)](http://badge.fury.io/rb/soap4r-ng)
+[![Build Status](https://travis-ci.org/rubyjedi/soap4r.svg?branch=master)](https://travis-ci.org/rubyjedi/soap4r)
+
 #### Soap4R (as maintained by RubyJedi)
 * Unit Tested to work under MRI Ruby **1.8.7** thru **2.1.5**
 * ***NEW CODE!  Added Support for newer, faster XML Parsers***
