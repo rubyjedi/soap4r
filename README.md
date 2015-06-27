@@ -43,7 +43,7 @@ IMHO, NaHi did a freaking brilliant job with **Soap4R**. The code is tight, the 
 In fact, I'd much prefer spending time forward-porting **Soap4R** to keep this known-good foundation library going, versus taking on the risky task of migrating already-written applications to a completely new SOAP implementation. Along the way in this journey, I'm adding support for newer XML Parsers like **[Ox](https://github.com/ohler55/ox)** (which is screaming fast, btw!) and **[Nokogiri](https://github.com/sparklemotion/nokogiri)**. I also have future plans to add support for newer HTTP Clients such as **[Curb](https://github.com/taf2/curb)**.
 
 ### Why Name This "Soap4R-ng" ?
-As felipec/soap4r (now soap2r) has pointed out upon renaming Soap2R, there is a LOT of competition to uniquely name the a "successor" to the original Soap4R. Soap2R came into being because "Soap5R" had already been claimed. :-)
+As felipec/soap4r (now soap2r) has pointed out upon renaming Soap2R, there is a LOT of competition to uniquely name a "successor" to the original Soap4R. Soap2R came into being because "Soap5R" had already been claimed. :-)
 
 ### Speed Boost : Use Ox or Nokogiri, not REXML
 Be sure to have Ox or Nokogiri available. Soap4R-ng will find and use what's available; falling back to REXML if needed.
