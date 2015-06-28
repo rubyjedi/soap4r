@@ -20,6 +20,11 @@ class NokogiriParser < XSD::XMLParser::Parser
   end
 
   add_factory(self)
+  
+  public :start_element
+  public :end_element
+  public :characters
+  public :xmldecl_encoding=
 end
 
 
@@ -28,29 +33,28 @@ class NokoDocHandler < Nokogiri::XML::SAX::Document
     @owner = (owner)
   end
 
+  def xmldecl(version, encoding, standalone)
+    @owner.xmldecl_encoding= encoding
+  end
+
   def start_element(name,attrs)
-    attr_hash = Hash.new
-    attrs.each do |kv_array|
-      attr_hash[kv_array[0]] = kv_array[1]
-    end
-    @owner.send(:start_element, name, attr_hash)
+    @owner.start_element(name,Hash[*attrs.flatten])
   end
   
   def end_element(name)
-    @owner.send(:end_element, name)
+    @owner.end_element(name)
   end
 
-
   def cdata_block(t)
-    @owner.send(:characters, t)
+    @owner.characters(t)
   end
   
   def characters(t)
-    @owner.send(:characters, t)
+    @owner.characters(t)
   end
   
   def comment(t)
-    @owner.send(:characters,t)
+    @owner.characters(t)
   end
 end
 
