@@ -6,7 +6,6 @@
 # redistribute it and/or modify it under the same terms of Ruby's license;
 # either the dual license version in 2003, or any later version.
 
-require 'pp'
 require 'oga'
 
 
@@ -17,7 +16,6 @@ class OgaParser < XSD::XMLParser::Parser
 
   def do_parse(string_or_readable)
     $stderr.puts "XSD::XMLParser::OgaParser.do_parse" if $DEBUG    
-    # Oga::XML::SaxParser.new(self, string_or_readable)    
     Oga.sax_parse_xml(self, string_or_readable)
   end
 
@@ -30,25 +28,16 @@ class OgaParser < XSD::XMLParser::Parser
     end_element(node_name(namespace, name))
   end
 
-
-  def on_cdata(t)
-    characters(t)
-  end
-  
-  def on_comment(t)
-    characters(t)
-  end
-
   def on_text(t)
     characters(t)
   end
 
-  
-  def on_xml_decl(attr_hash)
-    # attr_hash['version'] = '1.0'; attr_hash['encoding'] = 'utf-8' (usually)
-    # $stderr.puts "XML Document #{attr_hash['version']} in #{attr_hash['encoding']} encoding." 
-  end
+  alias_method :on_cdata,   :on_text
+  alias_method :on_comment, :on_text
 
+  def on_xml_decl(attr_hash)
+    send :xmldecl_encoding=,attr_hash['encoding'] 
+  end
 
   private
 
