@@ -9,7 +9,7 @@ if RUBY_VERSION.to_f <= 1.8
 else
   gem 'htmlentities', '~> 4.3.3'    # Require this if OxParser's built-in "Special Character" conversion isn't sufficient for your needs.
   gem 'nokogiri',     '~> 1.6.6'    # nokogiriparser ; Uses libxml2, libxslt, and zlib
-  gem 'oga'                         # ogaparser      ; Pure-Ruby Alternative ; Ruby 1.9 and above only.
+  gem 'rubyjedi-oga'                # ogaparser      ; Pure-Ruby Alternative ; Ruby 1.9 and above only. ## RubyJedi FORKED Gem until pull-request accepted.
   gem 'logger-application', :require=>'logger-application'
 end
 

@@ -9,7 +9,7 @@
 * ***NEW CODE!  Added Support for newer, faster XML Parsers***
     * **[Ox](https://github.com/ohler55/ox)** (Fully Functional),
     * **[Nokogiri](https://github.com/sparklemotion/nokogiri)** (Fully Functional)
-    * **[Oga](https://github.com/YorickPeterse/oga)** (currently broken, but is a work in progress)
+    * **[Oga](https://github.com/YorickPeterse/oga)** (Fully Functional)
 * ***Fully Operational Unit Test Suite***. NaHi's Unit Tests are astonishingly thorough, and have been instrumental in discovering issues that each new Ruby version brings up. Thanks to those Unit Tests, I'm **very** confident in the code quality of this fork.
 * ***Roadmap and Future Plans***
     * Much improved [GitHub-Pages Website](http://rubyjedi.github.io/soap4r/) for documentation and presentation purposes.
