@@ -8,94 +8,89 @@
 
 require 'ox'
 
-
 module XSD
 module XMLParser
 
 class OxParser < XSD::XMLParser::Parser
   def do_parse(string_or_readable)
     $stderr.puts "XSD::XMLParser::OxParser.do_parse" if $DEBUG
-    @element_stack = []
     begin
       require 'htmlentities' # Used to unescape html-escaped chars, if available
       @decoder = ::HTMLEntities.new(:expanded)
     rescue LoadError
       @decoder = nil
     end
+    handler = OxDocHandler.new(self, @decoder)
 
     string = string_or_readable.respond_to?(:read) ? string_or_readable.read : StringIO.new(string_or_readable)
     if @decoder.nil?
       # Use the built-in conversion with Ox.
-      ::Ox.sax_parse(self, string, {:symbolize=> false, :convert_special=> true, :skip=> :skip_return} )
+      ::Ox.sax_parse(handler, string, {:symbolize=> false, :convert_special=> true, :skip=> :skip_return} )
     else
       # Use HTMLEntities Decoder.  Leave the special-character conversion alone and let HTMLEntities decode it for us.
-      ::Ox.sax_parse(self, string, {})
+      ::Ox.sax_parse(handler, string, {})
     end
-  end
-
-
-  alias_method :base_start_element, :start_element
-  def start_element(n)
-    # $stderr.puts "OxParser.start_element INVOKED [#{n}]"
-    @element_stack.push n.to_s # Push the Element Name
-    @element_stack.push Hash.new
-  end
-
-  alias_method :base_end_element, :end_element
-  def end_element(n)
-    # $stderr.puts "OxParser.end_element INVOKED [#{n}]"
-    if @element_stack[-2].to_s == n.to_s
-      attr_hash = @element_stack.pop
-      attr_key  = @element_stack.pop
-    else
-      $stderr.puts "!!!! OxParser.end_element FAILED TO FIND STACK PAIR [#{n}] IN STACK [#{PP.pp(@element_stack,'')}]"
-    end
-    base_end_element(n.to_s)
-  end
-
-
-  def text(t)
-    @decoder.nil? ? characters(t) : characters(@decoder.decode(t))
-  end
-
-  def cdata(t)
-    ## CAUTION:  Ox Parser removes leading/trailing whitespace or blank lines. ##
-    ## This behavior is evident if you run the regression test:
-    ##
-    ##    SOAP4R_PARSERS=oxparser bundle exec rake test:single test/soap/test_response_as_xml.rb
-    ##
-    @decoder.nil? ? characters(t) : characters(@decoder.decode(t))
   end
   
-  def comment(t)
-    @decoder.nil? ? characters(t) : characters(@decoder.decode(t))
+  public :start_element
+  public :end_element
+  public :characters
+  public :xmldecl_encoding=
+
+  add_factory(self)
+end
+
+class OxDocHandler
+  
+  def initialize(owner, decoder)
+    @owner = owner
+    @decoder = decoder
+    reset_for_next_element
   end
-
-
-  def instruct(n)
-    # Do nothing. This is the outer "XML" tag.
-  end
-
-  def end_instruct(n)
-    # Do nothing.
-  end
-
-
-  def attr(key,val)
-    return if @element_stack[-1].nil?
-
-    attr_hash = @element_stack[-1]
-    attr_hash[key.to_s] = val
+  
+  def attr(key, val)
+    @attr_hash[key.to_s]=val
   end
   
   def attrs_done
-    attr_hash = @element_stack[-1]
-    name = @element_stack[-2]
-
-    base_start_element(name, attr_hash) unless attr_hash.nil?
+    unless @element_name.nil?
+      @owner.start_element(@element_name, @attr_hash) 
+      reset_for_next_element
+    end
+  end
+  
+  def start_element(name)
+    @element_name = name.to_s
+  end
+  
+  def end_element(name)
+    name = name.to_s
+    @owner.end_element(name) unless @element_name.nil?
   end
 
-  add_factory(self)
+  def text(t)
+    @decoder.nil? ? @owner.characters(t) : @owner.characters(@decoder.decode(t))
+  end
+  
+  alias_method :cdata, :text
+
+
+  def instruct(n)
+    # Set @element_name to nil so DocHandler does nothing with attrs or element name. This is the outer "XML" tag.
+    @element_name = nil
+  end
+
+  def end_instruct(n)
+    @owner.xmldecl_encoding= @attr_hash['encoding']
+    reset_for_next_element
+  end
+
+  private
+  
+  def reset_for_next_element
+    @attr_hash = {}
+    @element_name = ""
+  end  
 end
 
 end
