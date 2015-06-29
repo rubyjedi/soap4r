@@ -4,17 +4,30 @@ rvm:
   - 1.9.3
   - 2.0.0
   - 2.1.5
+  - 2.2
   - jruby
+  - rbx
+env:
+  - SOAP4R_PARSERS=oxparser
+  - SOAP4R_PARSERS=nokogiriparser
+  - SOAP4R_PARSERS=libxmlparser
+  - SOAP4R_PARSERS=ogaparser
+  - SOAP4R_PARSERS=rexmlparser
 
 gemfile:
-  - gemfiles/httpclient_nokogiriparser.gemfile
-  - gemfiles/httpclient_rexmlparser.gemfile
+  - gemfiles/httpclient.gemfile
 
 matrix:
+  exclude:
+    - rvm: 1.8.7
+      env: SOAP4R_PARSERS=ogaparser
+
   allow_failures:
-    - rvm: 2.0.0
-    - rvm: 2.1.5
+    - rvm: 2.2
     - rvm: jruby
+    - rvm: rbx
+    - env: SOAP4R_PARSERS=libxmlparser
+    - env: SOAP4R_PARSERS=ogaparser
 
 notifications:
   recipients:
