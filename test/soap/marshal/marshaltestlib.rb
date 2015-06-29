@@ -43,6 +43,14 @@ module MarshalTestLib
     end
   end
 
+  def marshal_equal_with_ancestry(o1, msg = nil)
+    marshal_equal(o1, msg) do |o|
+      ancestry = o.singleton_class.ancestors
+      ancestry[ancestry.index(o.singleton_class)] = :singleton_class
+      ancestry
+    end
+  end
+
   class MyObject; def initialize(v) @v = v end; attr_reader :v; end
   def test_object
     o1 = Object.new
@@ -451,10 +459,14 @@ module MarshalTestLib
     o = Object.new
     o.extend Mod1
     o.extend Mod2
-    marshal_equal(o) {|obj| class << obj; ancestors end}
+    if RUBY_VERSION.to_f >= 2.1
+      marshal_equal_with_ancestry(o)
+    else
+      marshal_equal(o) {|obj| class << obj; ancestors end}
+    end
     o = Object.new
     o.extend Module.new
-    assert_raises(TypeError) { marshaltest(o) }
+    assert_raise(TypeError) { marshaltest(o) }
   end
 
   def test_extend_string
@@ -464,10 +476,14 @@ module MarshalTestLib
     o = ""
     o.extend Mod1
     o.extend Mod2
-    marshal_equal(o) {|obj| class << obj; ancestors end}
+    if RUBY_VERSION.to_f >= 2.1
+      marshal_equal_with_ancestry(o)
+    else
+      marshal_equal(o) {|obj| class << obj; ancestors end}
+    end
     o = ""
     o.extend Module.new
-    assert_raises(TypeError) { marshaltest(o) }
+    assert_raise(TypeError) { marshaltest(o) }
   end
 
   def test_anonymous

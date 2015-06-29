@@ -100,7 +100,7 @@ __XML__
     @client.return_response_as_xml = false
     @client.test_loopback_response << RESPONSE_CDATA
     ret = @client.hellodoc(nil)
-    assert_equal("\n        <span>some html</span>\n      ", ret.htmlContent)
+    assert_xml_equal("\n        <span>some html</span>\n      ", ret.htmlContent)
     #
     @client.return_response_as_xml = true
     @client.test_loopback_response << RESPONSE_CDATA
