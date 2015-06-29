@@ -2,8 +2,6 @@ source 'http://rubygems.org'
 gem 'rake'
 
 gem 'httpclient'   # 2.1.5.2
-gem 'ox'                            # oxparser       ; Uses its own custom C-library
-gem 'libxml-ruby'                   # libxmlparser   ; Uses libxml2 
 
 if RUBY_VERSION.to_f <= 1.8
   gem 'htmlentities', '4.3.1'       # Require this if OxParser's built-in "Special Character" conversion isn't sufficient for your needs.
@@ -12,10 +10,17 @@ else
   gem 'htmlentities', '~> 4.3.3'    # Require this if OxParser's built-in "Special Character" conversion isn't sufficient for your needs.
   gem 'nokogiri',     '~> 1.6.6'    # nokogiriparser ; Uses libxml2, libxslt, and zlib
   gem 'oga'                         # ogaparser      ; Pure-Ruby Alternative ; Ruby 1.9 and above only.
-
   gem 'logger-application', :require=>'logger-application'
 end
 
+if RUBY_PLATFORM =~ /java/
+  gem 'libxml-jruby'                 # libxmlparser (Java Equivalent)
+else
+  gem 'libxml-ruby'                 # libxmlparser   ; Uses libxml2
+  gem 'ox'                            # oxparser       ; Uses its own custom C-library
+
+  gem 'curb'
+end
 
 ## # Testing Support ###
 group :test do
