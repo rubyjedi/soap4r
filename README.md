@@ -49,10 +49,14 @@ In fact, I'd much prefer spending time forward-porting **Soap4R** to keep this k
 ### Why Name This "Soap4R-ng" ?
 As felipec/soap4r (now soap2r) has pointed out upon renaming Soap2R, there is a LOT of competition to uniquely name the a "successor" to the original Soap4R. Soap2R came into being because "Soap5R" had already been claimed. :-)
 
-### Speed Boost : Use Ox or Nokogiri, not REXML
-Be sure to have Ox or Nokogiri available. Soap4R-ng will find and use what's available; falling back to REXML if needed.
+### How to Get a Speed Boost : Use Nokogiri or Ox, not REXML
+Be sure to have Nokogiri or Ox available in your Gemset. Soap4R-ng will find and use what's available (Ox has highest precedence, then Nokogiri, falling back to REXML as the last-resort if needed. 
 
-More documentation about these enhancements coming soon.  For now, just know that you need to have Nokogiri or Ox included in your Gemfile so Soap4R-ng can find and use it. :-)
+I personally recommend **Nokogiri** as the best performing, most flexible parser at this time, as it handles "special characters" like HTML ampersand-escaped characters internally. Ox doesn't handle such an extensive set of special-characters natively, so to get things up to par, I added **htmlentities** support if it's available when using the Ox parser. Using **htmlentities** with **Ox** in this manner adds a bit of a performance penalty, however.
+
+If you know your incoming XML is "clean", Ox is a really great alternative.
+
+**LibXML** is somewhat broken at this time. It's low-priority on the task list, as **Nokogiri** and **Ox** are more readily available. In fact, I may drop support for the **LibXML** parser in a future release.
 
 ***More to come soon*** I'm hammering on getting Soap4R-ng working under Ruby 2.2 (As in "Regression Tests pass with Zero Errors or Warnings") before tackling feature enhancements like **Oga** or **Curb**
 
