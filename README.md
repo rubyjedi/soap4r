@@ -57,12 +57,12 @@ IMHO, NaHi did a freaking brilliant job with **Soap4R**. The code is tight, the 
 In fact, I'd much prefer spending time forward-porting **Soap4R** to keep this known-good foundation library going, versus taking on the risky task of migrating already-written applications to a completely new SOAP implementation. Along the way in this journey, I'm adding support for newer XML Parsers like **[Ox](https://github.com/ohler55/ox)** (which is screaming fast, btw!) and **[Nokogiri](https://github.com/sparklemotion/nokogiri)**. I also have future plans to add support for newer HTTP Clients such as **[Curb](https://github.com/taf2/curb)**.
 
 #### Why Name This "Soap4R-ng" ?
-As **[felipec/soap4r](@felipec/soap4r)** (now **[soap2r](@felipec/soap4r)**) pointed out upon renaming his fork to **soap2r** , there is a LOT of competition to uniquely name the a "successor" to the original Soap4R. **soap2r** came into being because **"[Soap5R](aforward/soap4r)"** had already been claimed. :-)
+As **[felipec/soap4r](https://github.com/felipec/soap4r)** (now **[soap2r](https://github.com/felipec/soap4r)**) pointed out upon renaming his fork to **soap2r** , there is a LOT of competition to uniquely name the a "successor" to the original Soap4R. **soap2r** came into being because **"[Soap5R](https://github.com/aforward/soap4r)"** had already been claimed. :-)
 
 #### Other Soap4R Forks/Networks of Interest
- * [nahi/soap4r](@nahi/soap4r) - The original Soap4R by NaHi
- * [spox/soap4r-spox](@spox/soap4r-spox) - One of the first Ruby 1.9-compatible forks
- * [felipec/soap4r](@felipec/soap4r) - **Soap2R**
+ * [nahi/soap4r](https://github.com/nahi/soap4r) - The original Soap4R by NaHi
+ * [spox/soap4r-spox](https://github.com//spox/soap4r-spox) - One of the first Ruby 1.9-compatible forks
+ * [felipec/soap4r](https://github.com//felipec/soap4r) - **Soap2R**
 
 #### Testing or Contributing
 Diving into the Source? Sure, I can always use more eyes to improve the code quality. Welcome aboard!
