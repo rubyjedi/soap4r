@@ -396,12 +396,12 @@ module MarshalTestLib
     # once there was a bug caused by usec overflow.  try a little harder.
     10.times do
       t = Time.now
-      marshal_equal(t,t.usec.to_s) {|t| t.tv_nsec }
+      marshal_equal(t,t.usec.to_s) {|t| t.tv_usec }
     end
   end
 
   def test_time_subclass
-    marshal_equal(MyTime.new(10)) {|t| t.tv_nsec }
+    marshal_equal(MyTime.new(10)) {|t| t.tv_usec }
   end
 
   def test_time_ivar
