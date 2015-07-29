@@ -52,6 +52,7 @@ class TestEnvelopeNamespace < Test::Unit::TestCase
     @server.shutdown
     @server_thread.kill
     @server_thread.join
+    sleep 1
   end
 
   def teardown_client

@@ -19,7 +19,14 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
     RbConfig::CONFIG["ruby_install_name"] + RbConfig::CONFIG["EXEEXT"]
   )
   RUBYBIN << " -d" if $DEBUG
-  
+
+  logger_gem = Gem::Specification.find { |s| s.name == 'logger-application' }
+  if logger_gem
+    logger_gem.load_paths.each do |path|
+      RUBYBIN << " -I #{path}"
+    end
+  end
+
   Port = 17171
   PortName = 'http://tempuri.org/authHeaderPort'
   SupportPortName = 'http://tempuri.org/authHeaderSupportPort'
