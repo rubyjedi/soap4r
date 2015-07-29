@@ -27,15 +27,15 @@ module MarshalTestLib
     msg = msg ? msg + "(#{ caller[0] })" : caller[0]
     o2 = marshaltest(o1)
     assert_equal(o1.class, o2.class, msg)
-    
+
     iv1 = o1.instance_variables.sort
     iv2 = o2.instance_variables.sort
     assert_equal(iv1, iv2)
-    
+
     val1 = iv1.map {|var| o1.instance_eval( "#{var}" )}
     val2 = iv1.map {|var| o2.instance_eval( "#{var}" )}
     assert_equal(val1, val2, msg)
-    
+
     if block_given?
       assert_equal(yield(o1), yield(o2), msg)
     else
@@ -202,7 +202,7 @@ module MarshalTestLib
 
   def test_fixnum_ivar_self
     return if RUBY_VERSION.to_f > 1.9
-    begin    
+    begin
       o1 = 1
       o1.instance_eval { @iv = 1 }
       marshal_equal(o1) {|o| o.instance_eval { @iv }}
@@ -317,7 +317,7 @@ module MarshalTestLib
     class MyStruct
       def ==(rhs)
 	return true if __id__ == rhs.__id__
-	return false unless rhs.is_a?(::Struct) 
+	return false unless rhs.is_a?(::Struct)
 	return false if self.class != rhs.class
 	members.each do |member|
 	  return false if self.__send__(member) != rhs.__send__(member)
@@ -513,7 +513,7 @@ module MarshalTestLib
     class MyStruct2
       def ==(rhs)
 	return true if __id__ == rhs.__id__
-	return false unless rhs.is_a?(::Struct) 
+	return false unless rhs.is_a?(::Struct)
 	return false if self.class != rhs.class
 	members.each do |member|
 	  return false if self.__send__(member) != rhs.__send__(member)

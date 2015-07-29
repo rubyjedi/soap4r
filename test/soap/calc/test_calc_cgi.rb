@@ -18,6 +18,15 @@ class TestCalcCGI < Test::Unit::TestCase
   )
   RUBYBIN << " -d" if $DEBUG
 
+  if RUBY_VERSION.to_f >= 2.2
+    logger_gem = Gem::Specification.find { |s| s.name == 'logger-application' }
+    if logger_gem
+      logger_gem.load_paths.each do |path|
+        RUBYBIN << " -I #{path}"
+      end
+    end
+  end
+
   Port = 17171
 
   def setup
