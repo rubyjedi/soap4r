@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.org/rubyjedi/soap4r.svg?branch=master)](https://travis-ci.org/rubyjedi/soap4r)
 
 #### Soap4R (as maintained by RubyJedi)
-* Unit Tested to work under MRI Ruby **1.8.7** thru **2.1.5**
+* Unit Tested to work under MRI Ruby **1.8.7** thru **2.1.7**
 * ***NEW CODE!  Added Support for newer, faster XML Parsers***
     * **[Ox](https://github.com/ohler55/ox)** (Fully Functional),
     * **[Nokogiri](https://github.com/sparklemotion/nokogiri)** (Fully Functional)
