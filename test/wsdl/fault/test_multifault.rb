@@ -81,8 +81,8 @@ class TestMultiFault < Test::Unit::TestCase
 
   def test_driver
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/")
-    @client.mapping_registry = AddMappingRegistry::EncodedRegistry
-    @client.literal_mapping_registry = AddMappingRegistry::LiteralRegistry
+    @client.mapping_registry = AddMultiMappingRegistry::EncodedRegistry
+    @client.literal_mapping_registry = AddMultiMappingRegistry::LiteralRegistry
     @client.add_document_operation(
       "Add",
       "add",
@@ -100,8 +100,8 @@ class TestMultiFault < Test::Unit::TestCase
     wsdl = File.join(DIR, 'multifault.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.mapping_registry = AddMappingRegistry::EncodedRegistry
-    @client.literal_mapping_registry = AddMappingRegistry::LiteralRegistry
+    @client.mapping_registry = AddMultiMappingRegistry::EncodedRegistry
+    @client.literal_mapping_registry = AddMultiMappingRegistry::LiteralRegistry
     @client.wiredump_dev = STDOUT if $DEBUG
     do_test(@client)
   end
