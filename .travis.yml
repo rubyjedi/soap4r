@@ -26,6 +26,7 @@ matrix:
     - rvm: jruby
     - rvm: rbx
     - env: SOAP4R_PARSERS=libxmlparser
+    - rvm: 2.2.5
 
 notifications:
   recipients:

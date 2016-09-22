@@ -30,6 +30,9 @@ group :test do
     gem 'test-unit'
   end
 
+  platform :ruby_18, :ruby_19 do
+    gem 'json', '~> 1.8' # Mostly for Code Climate's benefit if running on Ruby 1.9 or less.
+  end  
   gem 'rubyjedi-testunitxml', :git=>'https://github.com/rubyjedi/testunitxml.git', :branch=>'master'
   gem "codeclimate-test-reporter", :require=>nil if RUBY_VERSION.to_f >= 1.9
   
