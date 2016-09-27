@@ -41,6 +41,7 @@ class HTTPServer < Logger::Application
     @router = ::SOAP::RPC::Router.new(actor)
     @soaplet = ::SOAP::RPC::SOAPlet.new(@router)
     on_init
+
     @server = WEBrick::HTTPServer.new(@webrick_config)
     @server.mount('/soaprouter', @soaplet)
     if wsdldir = config[:WSDLDocumentDirectory]
@@ -58,7 +59,13 @@ class HTTPServer < Logger::Application
   end
 
   def shutdown
-    @server.shutdown if @server
+    if @server
+      @server.shutdown
+      while (@server.listeners.length > 0) && (@server.tokens.length > 0) && (@server.status != :Stop) 
+        sleep(0.25)
+      end
+      sleep(0.25) # One more for good measure.
+    end
   end
 
   def authenticator
