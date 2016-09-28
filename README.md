@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.org/rubyjedi/soap4r.svg?branch=master)](https://travis-ci.org/rubyjedi/soap4r)
 
 #### Soap4R (as maintained by RubyJedi)
-* Unit Tested to work under MRI Ruby **1.8.7** thru **2.1.7**
+* Unit Tested to work under MRI Ruby **1.8.7** thru **2.2**
 * ***NEW CODE!  Added Support for newer, faster XML Parsers***
     * **[Ox](https://github.com/ohler55/ox)** (Fully Functional),
     * **[Nokogiri](https://github.com/sparklemotion/nokogiri)** (Fully Functional)
@@ -14,8 +14,8 @@
 * ***Roadmap and Future Plans***
     * Much improved [GitHub-Pages Website](http://rubyjedi.github.io/soap4r/) for documentation and presentation purposes.
     * Support for newer, faster HTTP Clients like [Curb](https://github.com/taf2/curb)
-    * Support for Ruby 2.2, JRuby, and (?) coming soon - depending on demand. (File an Issue, +1 to chime in and add support).
-    * ***More to come soon***  - I'm hammering on getting Soap4R-ng working under Ruby 2.2 (As in "Regression Tests pass with Zero Errors or Warnings") before tackling the feature enhancements like **Oga** or **Curb**.
+    * Support for Ruby 2.3, JRuby, and (?) coming soon - depending on demand. (File an Issue, +1 to chime in and add support).
+    * ***More to come soon***  - I'm hammering on getting Soap4R-ng working under Ruby 2.3 (As in "Regression Tests pass with Zero Errors or Warnings") before tackling the feature enhancements like **Oga** or **Curb**.
 
 #### How to Install 
 ##### (Bundler Gemfile / GitHub Hosted)
@@ -44,7 +44,7 @@ If you know your incoming XML is "clean", Ox is a really great alternative.
 
 **LibXML** is somewhat broken at this time. It's low-priority on the task list, as **Nokogiri** and **Ox** are more readily available. In fact, I may drop support for the **LibXML** parser in a future release.
 
-***More to come soon*** I'm hammering on getting Soap4R-ng working under Ruby 2.2 (As in "Regression Tests pass with Zero Errors or Warnings") before tackling feature enhancements like **Oga** or **Curb**
+***More to come soon*** I'm hammering on getting Soap4R-ng working under Ruby 2.3 (As in "Regression Tests pass with Zero Errors or Warnings") before tackling feature enhancements like **Oga** or **Curb**
 
 #### Project Motivation
 
