@@ -202,7 +202,7 @@ private
   HTTPVersion = WEBrick::HTTPVersion.new('1.0')       # dummy; ignored
 
   def run
-    res = WEBrick::HTTPResponse.new({:HTTPVersion => HTTPVersion})
+    res = WEBrick::HTTPResponse.new({:HTTPVersion => HTTPVersion, :Logger => logger})
     begin
       @log.info { "received a request from '#{ @remote_host }'" }
       if @fcgi
@@ -227,9 +227,12 @@ private
         r.send_http_header
         buf = res.body
       else
-        buf = ''
+        # since 2.5 it doesn't work with empty string in WEBRICK::HTTPResponse#send_header(socket)
+        # https://github.com/ruby/ruby/commit/c44978b99f0454b8f00674f2f407893c8c47248e
+        buf = StringIO.new
         res.send_response(buf)
-        buf.sub!(/^[^\r]+\r\n/, '')       # Trim status line.
+
+        buf = buf.string.sub(/^[^\r]+\r\n/, '')       # Trim status line.
       end
       @log.debug { "SOAP CGI Response:\n#{ buf }" }
       if @fcgi
