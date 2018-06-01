@@ -99,7 +99,7 @@ class TestSSL < Test::Unit::TestCase
     assert_equal("Hello World, from ssl client", @client.hello_world("ssl client"))
     assert(@verify_callback_called)
     #
-    cfg["protocol.http.ssl_config.verify_depth"] = "1"
+    cfg["protocol.http.ssl_config.verify_depth"] = "0"
     @verify_callback_called = false
     begin
       @client.hello_world("ssl client")
@@ -128,8 +128,7 @@ class TestSSL < Test::Unit::TestCase
     File.open(testpropertyname, "w") do |f|
       f<<<<__EOP__
 protocol.http.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_PEER
-# depth: 1 causes an error (intentional)
-protocol.http.ssl_config.verify_depth = 1
+protocol.http.ssl_config.verify_depth = 0
 protocol.http.ssl_config.client_cert = #{File.join(DIR, 'client.cert')}
 protocol.http.ssl_config.client_key = #{File.join(DIR, 'client.key')}
 protocol.http.ssl_config.ca_file = #{File.join(DIR, 'ca.cert')}
