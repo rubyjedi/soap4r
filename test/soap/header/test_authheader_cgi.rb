@@ -23,7 +23,8 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
   if RUBY_VERSION.to_f >= 2.2
     logger_gem = Gem::Specification.find { |s| s.name == 'logger-application' }
     if logger_gem
-      logger_gem.load_paths.each do |path|
+      paths = logger_gem.respond_to?(:full_require_paths) ? logger_gem.full_require_paths : logger_gem.load_paths
+      paths.each do |path|
         RUBYBIN << " -I #{path}"
       end
     end
