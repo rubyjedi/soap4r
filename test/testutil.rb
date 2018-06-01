@@ -52,4 +52,23 @@ module TestUtil
     }
     t
   end
+
+  def self.webrick_http_server(options)
+    webrick_server(WEBrick::HTTPServer, options)
+  end
+
+  def self.webrick_proxy_server(options)
+    webrick_server(WEBrick::HTTPProxyServer, options)
+  end
+
+  def self.webrick_server(klass, options)
+    try = 0
+    begin
+      klass.new(options)
+    rescue Errno::EADDRINUSE => e
+      STDERR.puts "Wait for available port for #{klass.name} (#{e.message}) [#{Thread.list.inspect}]"
+      sleep 1
+      ((try += 1) < 5) ? retry : raise(e)
+    end
+  end
 end
