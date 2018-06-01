@@ -36,7 +36,6 @@ group :test do
     gem 'test-unit', '~> 1.2.3'
     gem 'rake', '~> 10.4.2'
   else
-    gem 'test_xml'
     gem 'test-unit'
     gem 'rake'
   end
