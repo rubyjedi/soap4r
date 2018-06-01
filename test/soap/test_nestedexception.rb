@@ -42,10 +42,10 @@ class TestNestedException < Test::Unit::TestCase
   if (RUBY_VERSION.to_f >= 1.9)
     TOBE = [
       ":16:in `rescue in foo'",
-      ":13:in `foo'",
+      ":#{RESCUE_LINE_NUMBERS_FIXED ? 12 : 13}:in `foo'",
       ":34:in `test_nestedexception'",
       ":24:in `rescue in bar': bar (SOAP::TestNestedException::MyError) [NESTED]",
-      ":21:in `bar'",
+      ":#{RESCUE_LINE_NUMBERS_FIXED ? 20 : 21}:in `bar'",
       ":14:in `foo'",
       ":34:in `test_nestedexception'",
       ":29:in `baz': baz (SOAP::TestNestedException::MyError) [NESTED]",
