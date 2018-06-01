@@ -309,7 +309,11 @@ class TestStyleUse < Test::Unit::TestCase
   def test_doc_enc_doc_lit
     ret1, ret2 = @client.doc_enc_doc_lit('a', 1)
     # literal Array
-    assert_equal(['String', 'Fixnum'], ret1['obj1']['klass'])
+    if (RUBY_VERSION.to_f <= 2.3)
+      assert_equal(['String', 'Fixnum'], ret1['obj1']['klass'])
+    else
+      assert_equal(['String', 'Integer'], ret1['obj1']['klass'])
+    end
     # same value
     assert_equal(ret1['obj1']['klass'], ret2['obj2']['klass'])
     # not the same object (not encoded)
