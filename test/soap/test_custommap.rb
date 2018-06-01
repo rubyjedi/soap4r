@@ -76,8 +76,21 @@ class TestMap < Test::Unit::TestCase
     @client.reset_stream if @client
   end
 
-  def test_map
+  def test_map_with_frozen_literals
     h = {'a' => 1, 'b' => 2}
+    soap = SOAP::Marshal.marshal(h)
+    puts soap if $DEBUG
+    obj = SOAP::Marshal.unmarshal(soap)
+    assert_equal(h, obj)
+    #
+    soap = SOAP::Marshal.marshal(h, Map)
+    puts soap if $DEBUG
+    obj = SOAP::Marshal.unmarshal(soap, Map)
+    assert_equal(h, obj)
+  end
+
+  def test_map
+    h = {String.new('a') => 1, String.new('b') => 2}
     soap = SOAP::Marshal.marshal(h)
     puts soap if $DEBUG
     obj = SOAP::Marshal.unmarshal(soap)
