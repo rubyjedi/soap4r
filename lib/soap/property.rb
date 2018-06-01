@@ -33,7 +33,9 @@ module SOAP
 #     aaa.hhh = iii
 #
 class Property
-  FrozenError = (RUBY_VERSION >= "1.9.0") ? RuntimeError : TypeError
+  unless defined?(FrozenError) # defined since 2.5
+    FrozenError = (RUBY_VERSION >= "1.9.0") ? RuntimeError : TypeError
+  end
 
   include Enumerable
 
