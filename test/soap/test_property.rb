@@ -8,7 +8,9 @@ module SOAP
 
 
 class TestProperty < Test::Unit::TestCase
-  FrozenError = (RUBY_VERSION >= "1.9.0") ? RuntimeError : TypeError
+  unless defined?(FrozenError) # defined since 2.5
+    FrozenError = (RUBY_VERSION >= "1.9.0") ? RuntimeError : TypeError
+  end
 
   def setup
     @prop = ::SOAP::Property.new

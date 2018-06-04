@@ -6,6 +6,11 @@
 # redistribute it and/or modify it under the same terms of Ruby's license;
 # either the dual license version in 2003, or any later version.
 
+# in 2.4, 2.5 Fixnum/Bignum aliased to 'Integer'
+FixnumShim = 1.class
+FIXNUM_PRESENT = FixnumShim.name == 'Fixnum'
+BignumShim = (10**20).class
+BIGNUM_PRESENT = BignumShim.name == 'Bignum'
 
 require 'soap/baseData'
 require 'soap/mapping/mapping'
@@ -122,7 +127,7 @@ class EncodedRegistry
 
   StringFactory = StringFactory_.new
   BasetypeFactory = BasetypeFactory_.new
-  FixnumFactory = FixnumFactory_.new
+  FixnumFactory = FixnumFactory_.new if FIXNUM_PRESENT
   DateTimeFactory = DateTimeFactory_.new
   ArrayFactory = ArrayFactory_.new
   Base64Factory = Base64Factory_.new
@@ -146,7 +151,6 @@ class EncodedRegistry
       {:derived_class => true}],
     [::Float,        ::SOAP::SOAPFloat,      BasetypeFactory,
       {:derived_class => true}],
-    [::Fixnum,       ::SOAP::SOAPInt,        FixnumFactory],
     [::Integer,      ::SOAP::SOAPInt,        BasetypeFactory,
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPLong,       BasetypeFactory,
@@ -199,6 +203,8 @@ class EncodedRegistry
       {:type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException")}],
  ]
 
+  SOAPBaseMap << [FixnumShim, ::SOAP::SOAPInt, FixnumFactory] if FIXNUM_PRESENT
+
   RubyOriginalMap = [
     [::NilClass,     ::SOAP::SOAPNil,        BasetypeFactory],
     [::TrueClass,    ::SOAP::SOAPBoolean,    BasetypeFactory],
@@ -212,7 +218,6 @@ class EncodedRegistry
       {:derived_class => true}],
     [::Float,        ::SOAP::SOAPFloat,      BasetypeFactory,
       {:derived_class => true}],
-    [::Fixnum,       ::SOAP::SOAPInt,        FixnumFactory],
     [::Integer,      ::SOAP::SOAPInt,        BasetypeFactory,
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPLong,       BasetypeFactory,
@@ -262,6 +267,8 @@ class EncodedRegistry
                      ::SOAP::SOAPStruct,     TypedStructFactory,
       {:type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException")}],
   ]
+
+  RubyOriginalMap << [FixnumShim, ::SOAP::SOAPInt, FixnumFactory] if FIXNUM_PRESENT
 
   attr_accessor :default_factory
   attr_accessor :excn_handler_obj2soap
@@ -411,7 +418,10 @@ private
   end
 
   def addextend2soap(node, obj)
-    return if [Symbol, Fixnum, Bignum, Float].any?{ |c| obj.is_a?(c) }
+    return if [Symbol, Integer, Float].any?{ |c| obj.is_a?(c) }
+    return if FIXNUM_PRESENT && obj.is_a?(FixnumShim)
+    return if BIGNUM_PRESENT && obj.is_a?(BignumShim)
+    return if obj.is_a?(String) && obj.frozen?
     list = (class << obj; self; end).ancestors - obj.class.ancestors
     list = list.reject{|c| c.class == Class } ## As of Ruby 2.1 Singleton Classes are now included in the ancestry. Need to filter those out here.
 

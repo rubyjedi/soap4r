@@ -23,7 +23,8 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
   if RUBY_VERSION.to_f >= 2.2
     logger_gem = Gem::Specification.find { |s| s.name == 'logger-application' }
     if logger_gem
-      logger_gem.load_paths.each do |path|
+      paths = logger_gem.respond_to?(:full_require_paths) ? logger_gem.full_require_paths : logger_gem.load_paths
+      paths.each do |path|
         RUBYBIN << " -I #{path}"
       end
     end
@@ -69,7 +70,7 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
     @endpoint = "http://localhost:#{Port}/server.cgi"
     logger = Logger.new(STDERR)
     logger.level = Logger::Severity::ERROR
-    @server = WEBrick::HTTPServer.new(
+    @server = TestUtil.webrick_http_server(
       :BindAddress => "0.0.0.0",
       :Logger => logger,
       :Port => Port,
@@ -78,10 +79,7 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
       :CGIPathEnv => ENV['PATH'],
       :CGIInterpreter => RUBYBIN
     )
-    @t = Thread.new {
-      Thread.current.abort_on_exception = true
-      @server.start
-    }
+    @t = TestUtil.start_server_thread(@server)
   end
 
   def setup_client

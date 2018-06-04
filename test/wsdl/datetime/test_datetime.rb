@@ -22,10 +22,7 @@ class TestDatetime < Test::Unit::TestCase
   def setup_server
     @server = DatetimePortTypeApp.new('Datetime server', nil, '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @t = Thread.new {
-      Thread.current.abort_on_exception = true
-      @server.start
-    }
+    @t = TestUtil.start_server_thread(@server)
   end
 
   def setup_client

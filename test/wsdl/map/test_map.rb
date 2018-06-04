@@ -39,10 +39,7 @@ class TestMap < Test::Unit::TestCase
       :SOAPDefaultNamespace => "urn:map"
     )
     @server.level = Logger::Severity::ERROR
-    @t = Thread.new {
-      Thread.current.abort_on_exception = true
-      @server.start
-    }
+    @t = TestUtil.start_server_thread(@server)
   end
 
   def setup_client
