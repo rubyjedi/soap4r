@@ -16,6 +16,34 @@ module MarshalTestLib
   module Mod1; end
   module Mod2; end
 
+  def freezing_time(t=Time.now)
+    t.class.singleton_class.send :alias_method, :orig_now, :now
+    t.class.define_singleton_method(:now) { t }
+
+    yield(t)
+
+    t.class.singleton_class.send :alias_method, :now, :orig_now
+    t.class.singleton_class.send :undef_method, :orig_now
+  end
+
+  def without_did_you_mean!(exception)
+    # cannot map DidYouMean::* classes (with Proc)
+    if exception.instance_variable_defined? :@spell_checker
+      exception.instance_eval { remove_instance_variable(:@spell_checker) }
+    end
+    if exception.respond_to?(:corrections)
+      exception.singleton_class.send :alias_method, :orig_corrections, :corrections
+      exception.singleton_class.send :undef_method, :corrections
+    end
+
+    yield(exception)
+
+    if exception.respond_to?(:orig_corrections)
+      exception.singleton_class.send :alias_method, :corrections, :orig_corrections
+      exception.singleton_class.send :undef_method, :orig_corrections
+    end
+  end
+
   def marshaltest(o1)
     str = encode(o1)
     print str, "\n" if $DEBUG
@@ -110,7 +138,10 @@ module MarshalTestLib
   class MyException < Exception; def initialize(v, *args) super(*args); @v = v; end; attr_reader :v; end
   def test_exception
     marshal_equal(Exception.new('foo')) {|o| o.message}
-    marshal_equal(assert_raise(NoMethodError) {no_such_method()}) {|o| o.message}
+
+    without_did_you_mean!(assert_raise(NoMethodError) {no_such_method()}) do |exception|
+      marshal_equal(exception) {|o| o.message}
+    end
   end
 
   def test_exception_subclass
@@ -393,21 +424,22 @@ module MarshalTestLib
 
   class MyTime < Time; def initialize(v, *args) super(*args); @v = v; end end
   def test_time
-    # once there was a bug caused by usec overflow.  try a little harder.
-    10.times do
-      t = Time.now
+    freezing_time do |t|
       marshal_equal(t,t.usec.to_s) {|t| t.tv_usec }
     end
   end
 
   def test_time_subclass
-    marshal_equal(MyTime.new(10)) {|t| t.tv_usec }
+    freezing_time(MyTime.new(10)) do |t|
+      marshal_equal(t) {|t| t.tv_usec }
+    end
   end
 
   def test_time_ivar
-    o1 = Time.now
-    o1.instance_eval { @iv = 1 }
-    marshal_equal(o1) {|o| o.instance_eval { @iv }}
+    freezing_time do |t|
+      t.instance_eval { @iv = 1 }
+      marshal_equal(t) {|o| o.instance_eval { @iv }}
+    end
   end
 
   def test_true

@@ -50,7 +50,7 @@ class TestCookie < Test::Unit::TestCase
   end
 
   def setup_server
-    @server = WEBrick::HTTPServer.new(
+    @server = TestUtil.webrick_http_server(
       :BindAddress => "0.0.0.0",
       :Logger => @logger,
       :Port => Port,

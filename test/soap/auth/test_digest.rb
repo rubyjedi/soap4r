@@ -32,7 +32,7 @@ class TestDigest < Test::Unit::TestCase
   end
 
   def setup_server
-    @server = WEBrick::HTTPServer.new(
+    @server = TestUtil.webrick_http_server(
       :BindAddress => "0.0.0.0",
       :Logger => @logger,
       :Port => Port,
@@ -55,7 +55,7 @@ class TestDigest < Test::Unit::TestCase
   end
 
   def setup_proxyserver
-    @proxyserver = WEBrick::HTTPProxyServer.new(
+    @proxyserver = TestUtil.webrick_proxy_server(
       :BindAddress => "0.0.0.0",
       :Logger => @logger,
       :Port => ProxyPort,

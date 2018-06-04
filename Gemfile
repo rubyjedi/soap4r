@@ -7,7 +7,11 @@ if RUBY_VERSION.to_f <= 1.8
 else
   gem 'httpclient'   # 2.1.5.2
   gem 'htmlentities', '~> 4.3.3'    # Require this if OxParser's built-in "Special Character" conversion isn't sufficient for your needs.
-  gem 'nokogiri',     '~> 1.6.6'    # nokogiriparser ; Uses libxml2, libxslt, and zlib
+  if RUBY_VERSION.to_f <= 2.2
+    gem 'nokogiri',     '~> 1.6.6'    # nokogiriparser ; Uses libxml2, libxslt, and zlib
+  else
+    gem 'nokogiri',   '~> 1.8.2'
+  end
   gem 'oga'                         # ogaparser      ; Pure-Ruby Alternative ; Ruby 1.9 and above only.
   gem 'logger-application', :require=>'logger-application'
 end
@@ -15,10 +19,16 @@ end
 if RUBY_PLATFORM =~ /java/
   gem 'libxml-jruby'                 # libxmlparser (Java Equivalent)
 else
-  platform :ruby_18, :ruby_19 do
+  if RUBY_VERSION.to_f <= 1.9
     gem 'libxml-ruby', '~> 2.8.0'
+  else
+    gem 'libxml-ruby', '~> 3.1.0'
   end
-  gem 'ox'                            # oxparser       ; Uses its own custom C-library
+  if RUBY_VERSION.to_f <= 1.8
+    gem 'ox', '~> 2.4.5'
+  else
+    gem 'ox'                          # oxparser       ; Uses its own custom C-library
+  end
   gem 'curb'
 end
 
@@ -31,9 +41,11 @@ group :test do
     gem 'test-unit'
     gem 'rake'
   end
-  platform :ruby_18, :ruby_19 do
+  if RUBY_VERSION.to_f <= 1.9
     gem 'json', '~> 1.8' # Mostly for Code Climate's benefit if running on Ruby 1.9 or less.
-  end  
+  else
+    gem 'json', '~> 2.1'
+  end
   gem 'rubyjedi-testunitxml', :git=>'https://github.com/rubyjedi/testunitxml.git', :branch=>'master'
   gem "codeclimate-test-reporter", :require=>nil if RUBY_VERSION.to_f >= 1.9
   
@@ -44,6 +56,7 @@ group :test do
   # gem 'ruby-termios'               # Unroller requires this . . .
   # gem 'unroller', :git=>'https://github.com/jayjlawrence/unroller.git', :branch=>'master'
 
-  gem 'byebug' if RUBY_VERSION.to_f >= 2.0
+  gem 'pry-byebug', '< 3.6' if RUBY_VERSION.to_f >= 2.0
+  gem 'byebug', '< 10' if RUBY_VERSION.to_f >= 2.0
   gem 'soap4r-ng', :path=>'.'  # Make our development copy (this directory) available as a Gem via Bundler. Useful for running tests.
 end

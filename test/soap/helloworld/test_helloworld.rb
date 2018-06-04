@@ -15,10 +15,7 @@ class TestHelloWorld < Test::Unit::TestCase
   def setup
     @server = HelloWorldServer.new('hws', 'urn:hws', '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @t = Thread.new {
-      Thread.current.abort_on_exception = true
-      @server.start
-    }
+    @t = TestUtil.start_server_thread(@server)
     @endpoint = "http://localhost:#{Port}/"
     @client = SOAP::RPC::Driver.new(@endpoint, 'urn:hws')
     @client.wiredump_dev = STDERR if $DEBUG
