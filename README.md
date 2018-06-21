@@ -4,14 +4,18 @@
 [![Code Climate](https://codeclimate.com/github/rubyjedi/soap4r/badges/gpa.svg)](https://codeclimate.com/github/rubyjedi/soap4r)
 [![Build Status](https://travis-ci.org/rubyjedi/soap4r.svg?branch=master)](https://travis-ci.org/rubyjedi/soap4r)
 
+#### Fresh Blood... err... Maintainers Wanted
+* **2018-June-20** Apologies to my fellow Rubyists who are maintaining Legacy Code as much as I am. My product-maintenance workload has recently closed out the last remaining projects that require Ruby/SOAP support, and thus my availability to upkeep this library is minimal. It's time for me to move on and focus on new code adventures. Pull Requests are always be welcome, and if this project still has enough of a following and demand, I'd like to either add Collaborators, or transfer this project to a code-maintenance group in the future.
+
 #### Soap4R (as maintained by RubyJedi)
-* Unit Tested to work under MRI Ruby **1.8.7** thru **2.2**
+* Unit Tested to work under MRI Ruby **1.8.7** thru **2.4**
 * ***NEW CODE!  Added Support for newer, faster XML Parsers***
     * **[Ox](https://github.com/ohler55/ox)** (Fully Functional),
     * **[Nokogiri](https://github.com/sparklemotion/nokogiri)** (Fully Functional)
     * **[Oga](https://github.com/YorickPeterse/oga)** (Fully Functional)
 * ***Fully Operational Unit Test Suite***. NaHi's Unit Tests are astonishingly thorough, and have been instrumental in discovering issues that each new Ruby version brings up. Thanks to those Unit Tests, I'm **very** confident in the code quality of this fork.
 * ***Roadmap and Future Plans***
+    * **2018-Jun-20** : (Not likely to happen, given my limited availability noted above)
     * Much improved [GitHub-Pages Website](http://rubyjedi.github.io/soap4r/) for documentation and presentation purposes.
     * Support for newer, faster HTTP Clients like [Curb](https://github.com/taf2/curb)
     * Support for Ruby 2.3, JRuby, and (?) coming soon - depending on demand. (File an Issue, +1 to chime in and add support).
@@ -43,8 +47,6 @@ I personally recommend **Nokogiri** as the best performing, most flexible parser
 If you know your incoming XML is "clean", Ox is a really great alternative.
 
 **LibXML** is somewhat broken at this time. It's low-priority on the task list, as **Nokogiri** and **Ox** are more readily available. In fact, I may drop support for the **LibXML** parser in a future release.
-
-***More to come soon*** I'm hammering on getting Soap4R-ng working under Ruby 2.3 (As in "Regression Tests pass with Zero Errors or Warnings") before tackling feature enhancements like **Oga** or **Curb**
 
 #### Project Motivation
 
