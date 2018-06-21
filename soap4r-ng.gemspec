@@ -13,10 +13,6 @@ Gem::Specification.new do |s|
   s.summary     = "Soap4R-ng - Soap4R (as maintained by RubyJedi) for Ruby 1.8 thru 2.1 and beyond"
   s.description = "Soap4R NextGen (as maintained by RubyJedi) for Ruby 1.8 thru 2.1 and beyond"
 
-  s.add_dependency("httpclient", "~> 2.6")
-  s.add_dependency("logger-application", "~> 0.0.2")
-
-  s.has_rdoc = false # disable rdoc generation until we've got more
   s.requirements << 'none'
   s.require_path = 'lib'
 
