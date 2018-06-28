@@ -62,6 +62,11 @@ module MappingRegistryCreatorSupport
     parentmodule = var[:class]
     parsed_element =
       parse_elements(typedef.elements, qname.namespace, parentmodule, opt)
+    if typedef.content && (WSDL::XMLSchema::Group === typedef.content) && typedef.elements.empty?
+        g_parsed_element =
+            parse_elements(typedef.content.refelement.elements, qname.namespace, parentmodule, opt)
+        parsed_element = (g_parsed_element + parsed_element)        
+    end
     if typedef.choice?
       parsed_element.unshift(:choice)
     end
