@@ -1080,7 +1080,7 @@ private
     "#{typename}[" << ',' * (rank - 1) << ']'
   end
 
-  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$', nil, 'n')
+  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$', Regexp::NOENCODING)
 
   def self.parse_type(string)
     TypeParseRegexp =~ string
