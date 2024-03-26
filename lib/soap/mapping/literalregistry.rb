@@ -357,10 +357,12 @@ private
   # much memory for each singleton Object.  just instance_eval instead of it.
   def define_xmlattr_accessor(obj, qname)
     # untaint depends GenSupport.safemethodname
-    name = Mapping.safemethodname('xmlattr_' + qname.name).untaint
+    name = Mapping.safemethodname('xmlattr_' + qname.name)
+    name.untaint if RUBY_VERSION < '2.7'
     unless obj.respond_to?(name)
       # untaint depends QName#dump
-      qnamedump = qname.dump.untaint
+      qnamedump = qname.dump
+      qnamedump.untaint if RUBY_VERSION < '2.7'
       obj.instance_eval <<-EOS
         def #{name}
           @__xmlattr[#{qnamedump}]
