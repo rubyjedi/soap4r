@@ -107,9 +107,11 @@ private
   # much memory for each singleton Object.  just instance_eval instead of it.
   def __define_attr_accessor(qname)
     # untaint depends GenSupport.safemethodname
-    name = Mapping.safemethodname(qname.name).untaint
+    name = Mapping.safemethodname(qname.name)
+    name.untaint if RUBY_VERSION < '2.7'
     # untaint depends on QName#dump
-    qnamedump = qname.dump.untaint
+    qnamedump = qname.dump
+    qnamedump.untaint if RUBY_VERSION < '2.7'
     singleton = false
     unless self.respond_to?(name)
       singleton = true
