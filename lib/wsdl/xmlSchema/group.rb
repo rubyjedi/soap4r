@@ -9,13 +9,14 @@
 
 require 'wsdl/info'
 require 'wsdl/xmlSchema/ref'
+require 'wsdl/xmlSchema/complexType'
 
 
 module WSDL
 module XMLSchema
 
 
-class Group < Info
+class Group < ComplexType
   include Ref
 
   attr_writer :name	# required
@@ -89,7 +90,7 @@ class Group < Info
     end
   end
 
-private
+#private
 
   def refelement
     @refelement ||= (@ref ? root.collect_modelgroups[@ref] : nil)
