@@ -153,16 +153,16 @@ private
       WEBrick::HTTPServer.new(config)
     rescue Errno::EADDRINUSE => e
       sleep 1
-      # Widened from 5 to match test/testutil.rb's webrick_server retry
-      # budget -- this is the actual code path most of the test suite's
-      # server-creating tests go through (anything using
-      # SOAP::RPC::StandaloneServer directly, 45 of 52 test files, vs. 7
-      # using the TestUtil helper), so it needed the same fix: confirmed via
-      # CI logs (Ruby 2.6.10/2.7.8, run 28860682293) that a busy shared
-      # runner can hold port 17171 well past 5 seconds across a run of
-      # back-to-back tests. Widened again to 120 (2min) -- see
-      # test/testutil.rb's webrick_server for why 60 still wasn't enough.
-      ((try += 1) < 120) ? retry : raise(e)
+      # See test/testutil.rb's webrick_server for the full history and why
+      # this was pulled back down from 120 to 20 -- the real leak (Thread#kill
+      # racing WEBrick's own async shutdown cleanup in test teardown) is
+      # fixed now, so this only needs to cover transient scheduling delay,
+      # not a real leak. A large budget here actively hurts: sslsvr.rb (test
+      # SSL support script) calls into this same path, and its parent process
+      # blocks on a timeout-less read waiting for it to report a PID --
+      # confirmed a stuck retry here manifests as a multi-minute *silent
+      # hang* in CI (run 28892185757), not just a slow test.
+      ((try += 1) < 20) ? retry : raise(e)
     end
   end
 

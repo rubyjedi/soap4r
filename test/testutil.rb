@@ -68,16 +68,19 @@ module TestUtil
     rescue Errno::EADDRINUSE => e
       STDERR.puts "Wait for available port for #{klass.name} (#{e.message}) [#{Thread.list.inspect}]"
       sleep 1
-      # Confirmed via GitHub Actions logs (run 28849464390, Ruby 2.2 job) that
-      # a busy shared runner can hold port 17171 for 45+ seconds across a
-      # whole run of back-to-back tests (test_digest -> test_calc ->
-      # test_calc2 -> test_calc_cgi -> test_customfault all failed in
-      # sequence), well past the 10s budget that sufficed locally. 60 tries
-      # (60s) wasn't always enough either -- confirmed via run 28861909674
-      # (Ruby 2.6.10/2.7.8) still hitting isolated EADDRINUSE on this exact
-      # retry-wrapped path even at 60 tries. Widened further to 120 (2min);
-      # this only bounds an already-rare CI-only flake, not a hot path.
-      ((try += 1) < 120) ? retry : raise(e)
+      # This budget got widened all the way to 120 (2min) chasing what
+      # turned out to be a real leak: several test teardown methods called
+      # Thread#kill immediately after WEBrick's own shutdown, racing its
+      # async listener cleanup and occasionally leaving the port bound (see
+      # the removed .kill calls across 36 test files). With that fixed, this
+      # only needs to cover genuine transient scheduling delay on a busy
+      # runner, not a real leak -- and a large budget here is actively
+      # harmful now: compounded across several tests in one run it produces
+      # multi-minute *hangs* rather than fast, visible failures (confirmed:
+      # run 28892185757 stalled 20+ minutes with several retries stacking).
+      # Pulled back down to 20s, comfortably above what transient delay
+      # needs, far below what turns a rare miss into a CI-wrecking stall.
+      ((try += 1) < 20) ? retry : raise(e)
     end
   end
 end
