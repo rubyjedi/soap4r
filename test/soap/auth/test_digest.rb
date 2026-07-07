@@ -71,12 +71,26 @@ class TestDigest < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @server_thread.join(10)
+      @server_thread.kill
+      @server_thread.join
+    end
   end
 
   def teardown_proxyserver
     @proxyserver.shutdown
-    @proxyserver_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @proxyserver_thread.join(10)
+      @proxyserver_thread.kill
+      @proxyserver_thread.join
+    end
   end
 
   def teardown_client
