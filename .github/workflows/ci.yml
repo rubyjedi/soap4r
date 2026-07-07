@@ -18,7 +18,14 @@ jobs:
   # setup-ruby + bundle install per parser.
   test:
     name: Ruby ${{ matrix.ruby }}
-    runs-on: ${{ matrix.os }}
+    # matrix `include:` can't override os for an already-enumerated `ruby:`
+    # value -- GitHub Actions only merges an include entry into an existing
+    # combination when it wouldn't need to overwrite a key already produced
+    # by the matrix; since os here WOULD need overwriting for 1.9.3, it added
+    # a second, separate "Ruby 1.9.3" job on the ORIGINAL os instead of
+    # replacing it (confirmed: two distinct job IDs in run 28849464390, one
+    # still 404ing on ubuntu-24.04). A direct conditional avoids that trap.
+    runs-on: ${{ matrix.ruby == '1.9.3' && 'ubuntu-22.04' || 'ubuntu-latest' }}
     # continue-on-error is set for 3.0/3.1/3.2 specifically: all three have
     # one confirmed, understood, non-soap4r-bug failure (test_exception in
     # marshaltestlib.rb compares a live Test::Unit::TestCase#inspect dump
@@ -28,7 +35,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
         ruby:
           - '1.9.3'
           - '2.0.0'
@@ -45,15 +51,6 @@ jobs:
           - '3.3'
           - '3.4'
           - '4.0'
-        include:
-          # ruby-builder never published a ubuntu-24.04 build for 1.9.3
-          # (only ubuntu-22.04 and darwin) -- ubuntu-latest rolled forward
-          # to 24.04, so this pin is required or the download 404s before
-          # any test even runs. Confirmed via the ruby-builder releases API
-          # that every other version in this matrix (2.0.0+) has a 24.04
-          # build.
-          - ruby: '1.9.3'
-            os: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -62,10 +59,23 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
-      - name: Run all 5 parsers
+      - name: Run parsers
         run: |
           set -e
-          for parser in oxparser nokogiriparser libxmlparser ogaparser rexmlparser; do
+          PARSERS="oxparser nokogiriparser libxmlparser ogaparser rexmlparser"
+          # libxml-ruby 2.8.0's C extension (ruby_xml_node.c) uses `bool` as a
+          # parameter name, which collides with ubuntu-22.04's ICU-enabled
+          # system libxml2 headers transitively pulling in stdbool.h --
+          # "two or more data types in declaration specifiers" at compile
+          # time. Confirmed via CI log inspection (run 28849464390); doesn't
+          # reproduce in local Docker testing, which uses a non-ICU libxml2
+          # build. A bug in that gem's ancient C code, not soap4r-ng's --
+          # excluded here the same way oga/ox/libxml-ruby are excluded from
+          # environments that can't build or install them below.
+          if [ "${{ matrix.ruby }}" = "1.9.3" ]; then
+            PARSERS="oxparser nokogiriparser ogaparser rexmlparser"
+          fi
+          for parser in $PARSERS; do
             echo "::group::SOAP4R_PARSERS=$parser"
             SOAP4R_PARSERS=$parser bundle exec rake test:deep
             echo "::endgroup::"
