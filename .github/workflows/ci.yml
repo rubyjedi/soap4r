@@ -1,0 +1,183 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  # Every version here has prebuilt binaries via ruby/setup-ruby (backed by
+  # the ruby/ruby-builder project), so there's no from-source compilation
+  # involved. Runs test:deep (the complete suite, not just the surface
+  # subset) -- confirmed clean across the full matrix locally, including
+  # test files test:surface never reaches (SSL, CGI, calc, header/auth,
+  # several nested wsdl dirs). All 5 parsers run in one job per Ruby
+  # version (rather than a 15x5 matrix) to avoid paying for a redundant
+  # setup-ruby + bundle install per parser.
+  test:
+    name: Ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - '1.9.3'
+          - '2.0.0'
+          - '2.1'
+          - '2.2'
+          - '2.3'
+          - '2.4'
+          - '2.5'
+          - '2.6'
+          - '2.7'
+          - '3.0'
+          - '3.1'
+          - '3.2'
+          - '3.3'
+          - '3.4'
+          - '4.0'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run all 5 parsers
+        run: |
+          set -e
+          for parser in oxparser nokogiriparser libxmlparser ogaparser rexmlparser; do
+            echo "::group::SOAP4R_PARSERS=$parser"
+            SOAP4R_PARSERS=$parser bundle exec rake test:deep
+            echo "::endgroup::"
+          done
+
+  # Ruby 1.8.7 has no prebuilt binary anywhere (ruby/setup-ruby's oldest is
+  # 1.9.3) and no ruby-build definition that compiles against modern
+  # OpenSSL -- its ext/openssl accesses struct internals that became opaque
+  # in OpenSSL 1.1.0. Dockerfile.legacy187 builds it from source against a
+  # vendored OpenSSL 1.0.2u instead (confirmed working: openssl.so builds,
+  # and OpenSSL::SSL::SSLContext.new instantiates correctly at runtime).
+  #
+  # oga is intentionally excluded from the parser loop: it was never
+  # installed for Ruby <= 1.8 in the first place (its ruby-ll dependency
+  # needs Ruby >= 2.1), so xsd/xmlparser.rb's cascade correctly reports it
+  # unavailable -- that's an expected, non-zero-exit "failure", not a real
+  # one, so it's left out here rather than treated as a test result.
+  test-ruby-1_8_7:
+    name: Ruby 1.8.7 (built from source, vendored OpenSSL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Ruby 1.8.7 image
+        run: docker build -f .github/docker/Dockerfile.legacy187 -t soap4r-ruby187 .github/docker
+
+      - name: Run 4 parsers (oga is never installed below Ruby 1.9.3)
+        run: |
+          docker run --rm -v "${{ github.workspace }}":/repo-ro:ro soap4r-ruby187 bash -c '
+            set -e
+            mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
+            gem install bundler --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-ri --no-rdoc
+            bundle install
+            for parser in oxparser nokogiriparser libxmlparser rexmlparser; do
+              echo "--- SOAP4R_PARSERS=$parser ---"
+              SOAP4R_PARSERS=$parser bundle exec rake test:deep
+            done
+          '
+
+  # JRuby: nokogiri, oga, and rexml all work correctly. ox and libxml-ruby
+  # have no viable JRuby-compatible gem at all (ox has never had a JRuby
+  # port; libxml-jruby's one and only release is from 2010 and calls a
+  # since-removed JRuby API) -- both are excluded from the parser loop for
+  # the same reason oga is excluded from the 1.8.7 job above.
+  #
+  # continue-on-error is set because the remaining JRuby-specific behavioral
+  # differences are known, understood, and deterministic across all 3
+  # parsers on both jruby-9.4.15.0 and jruby-10.1.0.0 -- see "Known Test
+  # Suite Exceptions" in the README for the full root-cause breakdown
+  # (JRuby's Kernel#Integer() trailing-garbage validation, ENV's singleton
+  # representation, and a bug in httpclient's own JRuby SSL socket bridge).
+  # None of these are soap4r bugs. (A related set of calc/header failures
+  # that looked JRuby-specific turned out to be a real, fixable bug in
+  # lib/soap/mapping/mapping.rb#fault2exception -- already fixed.)
+  test-jruby:
+    name: JRuby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        # Full 4-part versions, matching exactly what was validated locally
+        # this round (partial specs like "jruby-9.4" are documented for MRI
+        # but not confirmed for JRuby -- not worth the risk of a silent
+        # resolution failure).
+        ruby:
+          - 'jruby-9.4.15.0'
+          - 'jruby-10.1.0.0'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run 3 parsers (ox and libxml-ruby have no JRuby port)
+        run: |
+          set -e
+          for parser in nokogiriparser ogaparser rexmlparser; do
+            echo "::group::SOAP4R_PARSERS=$parser"
+            SOAP4R_PARSERS=$parser bundle exec rake test:deep
+            echo "::endgroup::"
+          done
+
+  # Aggregates every job above (including each matrix expansion) into one
+  # markdown table on the run's summary page, so the full version x parser
+  # picture is visible at a glance instead of requiring a click into each
+  # job individually. `if: always()` so this still renders when something
+  # upstream failed -- that's the case it's most useful for.
+  summary:
+    name: Test Matrix Summary
+    needs: [test, test-ruby-1_8_7, test-jruby]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+              per_page: 100,
+            });
+
+            const icon = (conclusion) => {
+              switch (conclusion) {
+                case 'success': return ':white_check_mark:';
+                case 'skipped': return ':heavy_minus_sign:';
+                case 'cancelled': return ':no_entry_sign:';
+                case null: return ':hourglass:'; // still in progress
+                default: return ':x:'; // failure, timed_out, action_required, etc.
+              }
+            };
+
+            let table = '| Job | Result |\n|---|---|\n';
+            for (const job of data.jobs) {
+              if (job.name === 'Test Matrix Summary') continue;
+              table += `| ${job.name} | ${icon(job.conclusion)} ${job.conclusion ?? 'in progress'} |\n`;
+            }
+
+            await core.summary
+              .addHeading('Test Matrix Results')
+              .addRaw(table)
+              .addRaw('\n_See "Known Test Suite Exceptions" in the README for why a handful of JRuby and legacy-Ruby jobs are expected to show failures._')
+              .write();
