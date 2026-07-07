@@ -315,7 +315,7 @@ module MarshalTestLib
   end
 
   def test_string_ivar
-    o1 = ""
+    o1 = String.new
     o1.instance_eval { @iv = 1 }
     marshal_equal(o1) {|o| o.instance_eval { @iv }}
   end
@@ -334,7 +334,7 @@ module MarshalTestLib
   end
 
   def test_string_subclass_extend
-    o = "abc"
+    o = String.new("abc")
     o.extend(Mod1)
     str = MyString.new(o, "c")
     marshal_equal(str) { |o|
@@ -502,10 +502,10 @@ module MarshalTestLib
   end
 
   def test_extend_string
-    o = ""
+    o = String.new
     o.extend Mod1
     marshal_equal(o) { |obj| obj.kind_of? Mod1 }
-    o = ""
+    o = String.new
     o.extend Mod1
     o.extend Mod2
     if RUBY_VERSION.to_f >= 2.1
@@ -513,7 +513,7 @@ module MarshalTestLib
     else
       marshal_equal(o) {|obj| class << obj; ancestors end}
     end
-    o = ""
+    o = String.new
     o.extend Module.new
     assert_raise(TypeError) { marshaltest(o) }
   end
