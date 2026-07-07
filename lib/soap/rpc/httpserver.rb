@@ -153,7 +153,15 @@ private
       WEBrick::HTTPServer.new(config)
     rescue Errno::EADDRINUSE => e
       sleep 1
-      ((try += 1) < 5) ? retry : raise(e)
+      # Widened from 5 to match test/testutil.rb's webrick_server retry
+      # budget -- this is the actual code path most of the test suite's
+      # server-creating tests go through (anything using
+      # SOAP::RPC::StandaloneServer directly, 45 of 52 test files, vs. 7
+      # using the TestUtil helper), so it needed the same fix: confirmed via
+      # CI logs (Ruby 2.6.10/2.7.8, run 28860682293) that a busy shared
+      # runner can hold port 17171 well past 5 seconds across a run of
+      # back-to-back tests.
+      ((try += 1) < 60) ? retry : raise(e)
     end
   end
 
