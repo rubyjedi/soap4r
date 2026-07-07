@@ -75,20 +75,41 @@ jobs:
         run: |
           docker run --rm -v "${{ github.workspace }}":/repo-ro:ro ruby:${{ matrix.ruby }} bash -c '
             set -e
+            apt-get update -qq && apt-get install -y -qq psmisc
             mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
             gem install bundler --no-document 2>&1 \
               || gem install bundler -v 1.17.3 --no-document 2>&1 \
               || gem install bundler -v 1.17.3 --no-ri --no-rdoc
             bundle install
+            # set -e above covers setup (nothing to test if that fails), but
+            # must NOT apply to the loop itself: rake test:deep exits non-zero
+            # on any test failure, and 3.0.7/3.1.7/3.2.11 have exactly one
+            # guaranteed failure on every single parser (see README) -- under
+            # set -e that killed the script after oxparser alone, silently
+            # skipping nokogiri/libxml/oga/rexml every run without anyone
+            # noticing (confirmed: CI logs showed only one parser ever ran
+            # for those versions). Track failures instead and exit at the end
+            # so every parser actually runs regardless of earlier ones.
+            set +e
+            FAILED=0
             for parser in oxparser nokogiriparser libxmlparser ogaparser rexmlparser; do
+              # All 5 parsers run as separate `rake test:deep` invocations
+              # sequentially in this one long-lived container, sharing the
+              # test suite's hardcoded port 17171 -- confirmed via CI logs
+              # (Ruby 2.7.8, run 28854082576) that something can be left
+              # bound to that port across that process boundary for minutes,
+              # well past the widened retry budget in test/testutil.rb (60
+              # tries/1s). Never reproduced locally, and not root-caused
+              # (suspected a WEBrick/CGI-handler subprocess not fully
+              # released), so force-clear the port before every parser
+              # regardless of cause rather than keep guessing at timing.
+              fuser -k -n tcp 17171 >/dev/null 2>&1 || true
               echo "--- SOAP4R_PARSERS=$parser ---"
               SOAP4R_PARSERS=$parser bundle exec rake test:deep
-              # Belt-and-suspenders alongside the widened retry budget in
-              # test/testutil.rb (webrick_server, 60 tries/1s) -- confirmed
-              # via CI logs that a busy shared runner can hold port 17171 for
-              # 45+ seconds across a run of back-to-back tests.
+              [ $? -ne 0 ] && FAILED=1
               sleep 2
             done
+            exit $FAILED
           '
 
   # 1.9.3 and 2.0.0 have official Docker Hub images, but every tag in both
@@ -133,11 +154,19 @@ jobs:
               || gem install bundler -v 1.17.3 --no-ri --no-rdoc
             rbenv rehash 2>&1 || true
             bundle install
+            # See the `test` job above for why set -e must not wrap this loop,
+            # and why each iteration force-clears port 17171 first (psmisc is
+            # baked into this Dockerfile already).
+            set +e
+            FAILED=0
             for parser in oxparser nokogiriparser libxmlparser ogaparser rexmlparser; do
+              fuser -k -n tcp 17171 >/dev/null 2>&1 || true
               echo "--- SOAP4R_PARSERS=$parser ---"
               SOAP4R_PARSERS=$parser bundle exec rake test:deep
+              [ $? -ne 0 ] && FAILED=1
               sleep 2
             done
+            exit $FAILED
           '
 
   # Ruby 1.8.7 has no official Docker Hub image at all (the "ruby" library
@@ -183,11 +212,22 @@ jobs:
               || gem install bundler -v 1.17.3 --no-document 2>&1 \
               || gem install bundler -v 1.17.3 --no-ri --no-rdoc
             bundle install
+            # See the `test` job's comment for why set -e must not wrap this
+            # loop -- 1.8.7 has guaranteed failures on every parser
+            # (singleton_class), so this job in particular was only ever
+            # actually testing oxparser before this fix. Also force-clears
+            # port 17171 before each iteration (psmisc is baked into this
+            # Dockerfile already) -- see the `test` job's comment for why.
+            set +e
+            FAILED=0
             for parser in oxparser nokogiriparser libxmlparser rexmlparser; do
+              fuser -k -n tcp 17171 >/dev/null 2>&1 || true
               echo "--- SOAP4R_PARSERS=$parser ---"
               SOAP4R_PARSERS=$parser bundle exec rake test:deep
+              [ $? -ne 0 ] && FAILED=1
               sleep 2
             done
+            exit $FAILED
           '
 
   # JRuby: nokogiri, oga, and rexml all work correctly. ox and libxml-ruby
@@ -224,14 +264,32 @@ jobs:
         run: |
           docker run --rm -v "${{ github.workspace }}":/repo-ro:ro jruby:${{ matrix.ruby }} bash -c '
             set -e
+            # The official jruby image does not ship git, but the Gemfile
+            # pulls rubyjedi-testunitxml straight from its GitHub repo, so
+            # bundle install needs it -- confirmed missing locally too
+            # (apt-get install was already required there, just got dropped
+            # when this job was rewritten to a plain docker run). psmisc
+            # (fuser) is for the port-clearing step below.
+            apt-get update -qq && apt-get install -y -qq git psmisc
             mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
             gem install bundler --no-document
             bundle install
+            # See the `test` job's comment for why set -e must not wrap this
+            # loop -- JRuby has the same guaranteed-every-parser failure
+            # count (see README), so this job was also only ever actually
+            # testing nokogiriparser before this fix. Also force-clears port
+            # 17171 before each iteration for the same reason as the `test`
+            # job.
+            set +e
+            FAILED=0
             for parser in nokogiriparser ogaparser rexmlparser; do
+              fuser -k -n tcp 17171 >/dev/null 2>&1 || true
               echo "--- SOAP4R_PARSERS=$parser ---"
               SOAP4R_PARSERS=$parser bundle exec rake test:deep
+              [ $? -ne 0 ] && FAILED=1
               sleep 2
             done
+            exit $FAILED
           '
 
   # Aggregates every job above (including each matrix expansion) into one
@@ -267,14 +325,28 @@ jobs:
               }
             };
 
-            let table = '| Job | Result |\n|---|---|\n';
+            // core.summary.addTable() emits an actual <table> element rather
+            // than hand-rolled markdown pipe syntax. That matters here: a
+            // markdown table placed immediately after addHeading()'s <h2>
+            // HTML with no blank line in between doesn't get parsed as a
+            // table at all (GFM requires a fresh block boundary before table
+            // syntax) -- confirmed on a live run, where the whole thing
+            // rendered as one literal-pipe-character paragraph instead of a
+            // table. An HTML table sidesteps that block-adjacency rule
+            // entirely.
+            const rows = [
+              [
+                { data: 'Job', header: true },
+                { data: 'Result', header: true },
+              ],
+            ];
             for (const job of data.jobs) {
               if (job.name === 'Test Matrix Summary') continue;
-              table += `| ${job.name} | ${icon(job.conclusion)} ${job.conclusion ?? 'in progress'} |\n`;
+              rows.push([job.name, `${icon(job.conclusion)} ${job.conclusion ?? 'in progress'}`]);
             }
 
             await core.summary
               .addHeading('Test Matrix Results')
-              .addRaw(table)
+              .addTable(rows)
               .addRaw('\n_See "Known Test Suite Exceptions" in the README for why a handful of JRuby and legacy-Ruby jobs are expected to show failures._')
               .write();

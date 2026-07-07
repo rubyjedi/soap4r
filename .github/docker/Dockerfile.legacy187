@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential curl ca-certificates git \
     zlib1g-dev libreadline-dev libyaml-dev libncurses5-dev \
     libffi-dev libgdbm-dev libxml2-dev libxslt1-dev libcurl4-openssl-dev \
+    psmisc \
     && rm -rf /var/lib/apt/lists/*
 
 # Vendored OpenSSL 1.0.2u -- last release of the pre-opaque-struct 1.0 line.
@@ -28,13 +29,17 @@ RUN cd /tmp \
     && cd / && rm -rf /tmp/openssl-1.0.2u /tmp/openssl-1.0.2u.tar.gz
 
 # Ruby 1.8.7-p374, configured against the vendored OpenSSL above.
+# -j1: confirmed (via Dockerfile.legacy's rbenv build of 1.9.3, same era of
+# Makefile) that these ancient ext/ build systems lose a directory-creation
+# race under real parallelism on a many-core host -- serial build trades a
+# few extra minutes for a build that doesn't fail nondeterministically.
 RUN cd /tmp \
     && curl -sL -o ruby-1.8.7-p374.tar.bz2 https://cache.ruby-lang.org/pub/ruby/1.8/ruby-1.8.7-p374.tar.bz2 \
     && tar xjf ruby-1.8.7-p374.tar.bz2 \
     && cd ruby-1.8.7-p374 \
     && ./configure --prefix=/opt/ruby187 --with-openssl-dir=/opt/openssl102 \
          LDFLAGS="-Wl,-rpath,/opt/openssl102/lib" \
-    && make -j"$(nproc)" \
+    && make -j1 \
     && make install \
     && cd / && rm -rf /tmp/ruby-1.8.7-p374 /tmp/ruby-1.8.7-p374.tar.bz2
 
