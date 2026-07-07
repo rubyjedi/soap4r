@@ -75,7 +75,7 @@ class TestASPDotNet < Test::Unit::TestCase
       XSD::QName.new(Server::Namespace, 'SayHello'),
       XSD::QName.new(Server::Namespace, 'SayHelloResponse'))
     require 'rexml/document'
-    xml = <<__XML__
+    xml = +<<__XML__
 <n1:sayHello xmlns:n1="http://localhost/WebService/">
   <n1:name>Mike</n1:name>
 </n1:sayHello>

@@ -167,7 +167,7 @@ module Mapping
   #
   def self.name2elename(name)
     name.to_s.gsub(/([^a-zA-Z0-9:_\-]+)/n) {
-      '.' << $1.unpack('H2' * $1.size).join('.')
+      '.' + $1.unpack('H2' * $1.size).join('.')
     }.gsub(/::/n, '..')
   end
 

@@ -29,7 +29,7 @@ class ServantSkeltonCreator
   end
 
   def dump(porttype = nil)
-    result = ""
+    result = String.new
     if @modulepath
       result << "\n"
       modulepath = @modulepath.respond_to?(:lines) ? @modulepath.lines : @modulepath # RubyJedi: compatible with Ruby 1.8.6 and above      

@@ -32,7 +32,7 @@ class DriverCreator
   end
 
   def dump(porttype = nil)
-    result = "require 'soap/rpc/driver'\n\n"
+    result = String.new("require 'soap/rpc/driver'\n\n")
     if @modulepath
       modulepath = @modulepath.respond_to?(:lines) ? @modulepath.lines : @modulepath # RubyJedi: compatible with Ruby 1.8.6 and above
       modulepath.each do |name|
