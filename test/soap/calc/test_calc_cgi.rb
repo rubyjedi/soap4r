@@ -18,18 +18,12 @@ class TestCalcCGI < Test::Unit::TestCase
   )
   RUBYBIN << " -d" if $DEBUG
 
-  if RUBY_VERSION.to_f >= 2.2
-    # See test/soap/header/test_authheader_cgi.rb for why webrick needs the
-    # same -I load-path forwarding logger-application already relied on.
-    ['logger-application', 'webrick'].each do |gem_name|
-      gem_spec = Gem::Specification.find { |s| s.name == gem_name }
-      if gem_spec
-        paths = gem_spec.respond_to?(:full_require_paths) ? gem_spec.full_require_paths : gem_spec.load_paths
-        paths.each do |path|
-          RUBYBIN << " -I #{path}"
-        end
-      end
-    end
+  # See test/soap/header/test_authheader_cgi.rb for why this needs to run
+  # unconditionally (Ruby 1.8.7's ancient RubyGems has no
+  # Gem::Specification.find, hence the $LOAD_PATH-based lookup instead).
+  ['logger-application', 'webrick'].each do |feature|
+    dir = $LOAD_PATH.find { |path| File.exist?(File.join(path, "#{feature}.rb")) }
+    RUBYBIN << " -I #{dir}" if dir
   end
 
   Port = 17171

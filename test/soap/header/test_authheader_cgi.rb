@@ -20,24 +20,23 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
   )
   RUBYBIN << " -d" if $DEBUG
 
-  if RUBY_VERSION.to_f >= 2.2
-    # WEBrick::HTTPServlet::CGIHandler wipes the CGI child's entire ENV
-    # before exec'ing it (cgi_runner.rb: `ENV.keys.each{|name| ENV.delete(name)}`,
-    # standard CGI hygiene) -- so GEM_HOME/GEM_PATH/BUNDLE_GEMFILE never
-    # reach the spawned script, and any gem it needs must be forwarded via
-    # a raw -I load-path flag instead (bypasses RubyGems activation
-    # entirely, so it's immune to the ENV wipe). logger-application always
-    # needed this; webrick needs the same treatment now that Ruby 3.0+
-    # demoted it from stdlib to a real gem.
-    ['logger-application', 'webrick'].each do |gem_name|
-      gem_spec = Gem::Specification.find { |s| s.name == gem_name }
-      if gem_spec
-        paths = gem_spec.respond_to?(:full_require_paths) ? gem_spec.full_require_paths : gem_spec.load_paths
-        paths.each do |path|
-          RUBYBIN << " -I #{path}"
-        end
-      end
-    end
+  # WEBrick::HTTPServlet::CGIHandler wipes the CGI child's entire ENV
+  # before exec'ing it (cgi_runner.rb: `ENV.keys.each{|name| ENV.delete(name)}`,
+  # standard CGI hygiene) -- so GEM_HOME/GEM_PATH/BUNDLE_GEMFILE never
+  # reach the spawned script, and any gem it needs must be forwarded via
+  # a raw -I load-path flag instead (bypasses RubyGems activation
+  # entirely, so it's immune to the ENV wipe). logger-application always
+  # needed this; webrick needs the same treatment now that Ruby 3.0+
+  # demoted it from stdlib to a real gem.
+  #
+  # Uses $LOAD_PATH (not Gem::Specification.find, which doesn't exist on
+  # Ruby 1.8.7's ancient bundled RubyGems, and not $LOADED_FEATURES, which
+  # stores bare relative filenames like "webrick.rb" on 1.8.7 instead of
+  # absolute paths) to find each feature's actual directory -- this works
+  # identically on every supported Ruby version, gem or stdlib alike.
+  ['logger-application', 'webrick'].each do |feature|
+    dir = $LOAD_PATH.find { |path| File.exist?(File.join(path, "#{feature}.rb")) }
+    RUBYBIN << " -I #{dir}" if dir
   end
 
   Port = 17171
