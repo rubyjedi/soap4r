@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require 'helper'
+require 'timeout'
 begin
   require 'httpclient'
 rescue LoadError
@@ -213,7 +214,25 @@ private
     svrcmd = "#{q(RUBY)} "
     svrcmd << File.join(DIR, "sslsvr.rb")
     svrout = IO.popen(svrcmd)
-    @serverpid = Integer(svrout.gets.chomp)
+    # sslsvr.rb only prints its PID once its own WEBrick server has bound
+    # successfully (which retries internally on EADDRINUSE -- see
+    # lib/soap/rpc/httpserver.rb#new_webrick_server). Without a timeout here,
+    # a stuck child means this blocking read hangs indefinitely with zero
+    # console output -- confirmed via a local repro (pre-occupying port 17171
+    # made this block for the full retry window with nothing printed at all,
+    # looking exactly like the silent CI hangs seen in run 28892185757).
+    # Bounded slightly above that retry window so it only fires as a genuine
+    # backstop, not under normal contention.
+    line = nil
+    begin
+      Timeout.timeout(130) { line = svrout.gets }
+    rescue Timeout::Error
+      Process.kill('KILL', svrout.pid) rescue nil
+      Process.waitpid(svrout.pid) rescue nil
+      raise "sslsvr.rb did not report its PID within 130s -- likely stuck retrying its own port bind"
+    end
+    raise "sslsvr.rb exited without printing a PID (crashed before starting?)" if line.nil?
+    @serverpid = Integer(line.chomp)
   end
 
   def setup_client
