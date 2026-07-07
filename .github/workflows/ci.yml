@@ -94,9 +94,10 @@ jobs:
             FAILED=0
             for parser in oxparser nokogiriparser libxmlparser ogaparser rexmlparser; do
               # All 5 parsers run as separate `rake test:deep` invocations
-              # sequentially in this one long-lived container, sharing the
-              # test suite's hardcoded port 17171 -- confirmed via CI logs
-              # (Ruby 2.7.8, run 28854082576) that something can be left
+              # sequentially in this one long-lived container, sharing a
+              # hardcoded port (17171) used throughout the test suite --
+              # confirmed via CI logs (Ruby 2.7.8, run 28854082576) that
+              # something can be left
               # bound to that port across that process boundary for minutes,
               # well past the widened retry budget in test/testutil.rb (60
               # tries/1s). Never reproduced locally, and not root-caused
@@ -212,12 +213,12 @@ jobs:
               || gem install bundler -v 1.17.3 --no-document 2>&1 \
               || gem install bundler -v 1.17.3 --no-ri --no-rdoc
             bundle install
-            # See the `test` job's comment for why set -e must not wrap this
+            # See the comment on the `test` job above for why set -e must not wrap this
             # loop -- 1.8.7 has guaranteed failures on every parser
             # (singleton_class), so this job in particular was only ever
             # actually testing oxparser before this fix. Also force-clears
             # port 17171 before each iteration (psmisc is baked into this
-            # Dockerfile already) -- see the `test` job's comment for why.
+            # Dockerfile already) -- see the comment on the `test` job above for why.
             set +e
             FAILED=0
             for parser in oxparser nokogiriparser libxmlparser rexmlparser; do
@@ -274,7 +275,7 @@ jobs:
             mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
             gem install bundler --no-document
             bundle install
-            # See the `test` job's comment for why set -e must not wrap this
+            # See the comment on the `test` job above for why set -e must not wrap this
             # loop -- JRuby has the same guaranteed-every-parser failure
             # count (see README), so this job was also only ever actually
             # testing nokogiriparser before this fix. Also force-clears port
