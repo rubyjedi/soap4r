@@ -1,0 +1,23 @@
+# Builds a specific legacy Ruby version from source via rbenv/ruby-build.
+# Debian bullseye is used (not a newer release) because it still ships
+# OpenSSL 1.1.1 and an older GCC, both of which ruby-build's patches for
+# ancient Rubies (1.8.7 - 2.1.x) target. Newer OpenSSL 3.x breaks these
+# builds even with ruby-build's compatibility patches.
+FROM debian:bullseye-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential autoconf bison git ca-certificates curl pkg-config \
+    libssl-dev libreadline-dev zlib1g-dev libyaml-dev libncurses5-dev \
+    libffi-dev libgdbm-dev libxml2-dev libxslt1-dev libcurl4-openssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV RBENV_ROOT=/root/.rbenv
+RUN git clone --depth 1 https://github.com/rbenv/rbenv.git "$RBENV_ROOT" \
+    && git clone --depth 1 https://github.com/rbenv/ruby-build.git "$RBENV_ROOT/plugins/ruby-build"
+ENV PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH"
+
+ARG RUBY_VERSION
+RUN RUBY_CONFIGURE_OPTS="--disable-install-doc" rbenv install "$RUBY_VERSION" \
+    && rbenv global "$RUBY_VERSION"
+
+RUN echo 'eval "$(rbenv init -)"' >> /root/.bashrc

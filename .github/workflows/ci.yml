@@ -8,97 +8,144 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Every version here has prebuilt binaries via ruby/setup-ruby (backed by
-  # the ruby/ruby-builder project), so there's no from-source compilation
-  # involved. Runs test:deep (the complete suite, not just the surface
-  # subset) -- confirmed clean across the full matrix locally, including
-  # test files test:surface never reaches (SSL, CGI, calc, header/auth,
-  # several nested wsdl dirs). All 5 parsers run in one job per Ruby
-  # version (rather than a 15x5 matrix) to avoid paying for a redundant
-  # setup-ruby + bundle install per parser.
+  # Runs test:deep (the complete suite, not just the surface subset) inside
+  # the exact same official Docker Hub `ruby` image used for local
+  # validation of each version -- confirmed clean for every version here
+  # across all 5 parsers (see .github/docker/ and the "Known Test Suite
+  # Exceptions" section in the README for the few narrow, understood
+  # exceptions on 3.0/3.1/3.2).
+  #
+  # This replaces an earlier ruby/setup-ruby-based matrix that ran directly
+  # on the GitHub-hosted runner VM (Ubuntu). That base kept drifting out from
+  # under local validation in ways that cost a lot of debugging time: Ubuntu
+  # rolling ubuntu-latest forward from under a pinned Ruby version,
+  # ruby-builder not always publishing a binary for every Ruby x Ubuntu
+  # combination, and Ubuntu 22.04's ICU-enabled system libxml2 colliding with
+  # libxml-ruby's C extension in a way that never reproduced locally against
+  # Debian. Running inside the identical container we test against locally
+  # makes "works locally" and "works in CI" the same claim by construction.
+  #
+  # Exact patch-level tags are pinned (not the bare X.Y floating tag) to
+  # match precisely what was validated -- these are all EOL/frozen lines on
+  # Docker Hub so the floating tag would resolve to the same image anyway,
+  # but pinning removes any ambiguity.
   test:
     name: Ruby ${{ matrix.ruby }}
-    # matrix `include:` can't override os for an already-enumerated `ruby:`
-    # value -- GitHub Actions only merges an include entry into an existing
-    # combination when it wouldn't need to overwrite a key already produced
-    # by the matrix; since os here WOULD need overwriting for 1.9.3, it added
-    # a second, separate "Ruby 1.9.3" job on the ORIGINAL os instead of
-    # replacing it (confirmed: two distinct job IDs in run 28849464390, one
-    # still 404ing on ubuntu-24.04). A direct conditional avoids that trap.
-    runs-on: ${{ matrix.ruby == '1.9.3' && 'ubuntu-22.04' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ruby:${{ matrix.ruby }}
     # continue-on-error is set for 3.0/3.1/3.2 specifically: all three have
     # one confirmed, understood, non-soap4r-bug failure (test_exception in
     # marshaltestlib.rb compares a live Test::Unit::TestCase#inspect dump
     # that happens to render differently on this narrow range of Ruby
     # patch versions) -- see "Known Test Suite Exceptions" in the README.
-    continue-on-error: ${{ contains(fromJSON('["3.0", "3.1", "3.2"]'), matrix.ruby) }}
+    continue-on-error: ${{ contains(fromJSON('["3.0.7", "3.1.7", "3.2.11"]'), matrix.ruby) }}
     strategy:
       fail-fast: false
       matrix:
         ruby:
-          - '1.9.3'
-          - '2.0.0'
-          - '2.1'
-          - '2.2'
-          - '2.3'
-          - '2.4'
-          - '2.5'
-          - '2.6'
-          - '2.7'
-          - '3.0'
-          - '3.1'
-          - '3.2'
-          - '3.3'
-          - '3.4'
-          - '4.0'
+          - '2.1.10'
+          - '2.2.10'
+          - '2.3.8'
+          - '2.4.10'
+          - '2.5.9'
+          - '2.6.10'
+          - '2.7.8'
+          - '3.0.7'
+          - '3.1.7'
+          - '3.2.11'
+          - '3.3.11'
+          - '3.4.10'
+          - '4.0.5'
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
+      - name: Bundle install
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          gem install bundler --no-document 2>&1 \
+            || gem install bundler -v '~> 2.4.0' --no-document 2>&1 \
+            || gem install bundler -v 1.17.3 --no-document 2>&1 \
+            || gem install bundler -v 1.17.3 --no-ri --no-rdoc
+          bundle install
 
-      - name: Run parsers
+      - name: Run all 5 parsers
         run: |
           set -e
-          PARSERS="oxparser nokogiriparser libxmlparser ogaparser rexmlparser"
-          # libxml-ruby 2.8.0's C extension (ruby_xml_node.c) uses `bool` as a
-          # parameter name, which collides with ubuntu-22.04's ICU-enabled
-          # system libxml2 headers transitively pulling in stdbool.h --
-          # "two or more data types in declaration specifiers" at compile
-          # time. Confirmed via CI log inspection (run 28849464390); doesn't
-          # reproduce in local Docker testing, which uses a non-ICU libxml2
-          # build. A bug in that gem's ancient C code, not soap4r-ng's --
-          # excluded here the same way oga/ox/libxml-ruby are excluded from
-          # environments that can't build or install them below.
-          if [ "${{ matrix.ruby }}" = "1.9.3" ]; then
-            PARSERS="oxparser nokogiriparser ogaparser rexmlparser"
-          fi
-          for parser in $PARSERS; do
+          for parser in oxparser nokogiriparser libxmlparser ogaparser rexmlparser; do
             echo "::group::SOAP4R_PARSERS=$parser"
             SOAP4R_PARSERS=$parser bundle exec rake test:deep
             echo "::endgroup::"
-            # A brief settle window between consecutive `rake test:deep`
-            # process invocations in this loop -- confirmed on GitHub's
-            # shared runners (not reproducible locally) that the OS can
-            # take a moment to fully release a webrick test port between
-            # one parser's process exit and the next parser's first bind.
+            # Belt-and-suspenders alongside the widened retry budget in
+            # test/testutil.rb (webrick_server, 60 tries/1s) -- confirmed via
+            # CI logs that a busy shared runner can hold port 17171 for 45+
+            # seconds across a run of back-to-back tests.
             sleep 2
           done
 
-  # Ruby 1.8.7 has no prebuilt binary anywhere (ruby/setup-ruby's oldest is
-  # 1.9.3) and no ruby-build definition that compiles against modern
-  # OpenSSL -- its ext/openssl accesses struct internals that became opaque
-  # in OpenSSL 1.1.0. Dockerfile.legacy187 builds it from source against a
-  # vendored OpenSSL 1.0.2u instead (confirmed working: openssl.so builds,
-  # and OpenSSL::SSL::SSLContext.new instantiates correctly at runtime).
+  # 1.9.3 and 2.0.0 have official Docker Hub images, but every tag in both
+  # lines was published in the legacy Docker manifest v1 schema and is no
+  # longer pullable at all -- confirmed empirically ("not implemented: media
+  # type ... manifest.v1+prettyjws ... no longer supported since containerd
+  # v2.1") against every 1.9.x/2.0.x tag tried (bare, -slim, every specific
+  # patch level). GitHub-hosted runners are on similarly current
+  # Docker/containerd and hit the same wall, so `container: image: ruby:1.9.3`
+  # is a dead end here, not just a local quirk. Built from source instead via
+  # rbenv/ruby-build on Debian bullseye (Dockerfile.legacy) -- confirmed
+  # clean across all 5 parsers for both versions, including libxmlparser
+  # (Debian bullseye's libxml2-dev doesn't have the ICU/`bool`-collision
+  # problem ubuntu-22.04's does) and ogaparser (oga's ruby-ll dependency
+  # installs and works fine on both, contrary to earlier assumptions that it
+  # needed Ruby >= 2.1 -- that constraint turned out to only apply to 1.8).
+  test-legacy-source-build:
+    name: Ruby ${{ matrix.ruby }} (built from source via rbenv)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - '1.9.3-p551'
+          - '2.0.0-p648'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: |
+          docker build -f .github/docker/Dockerfile.legacy \
+            --build-arg RUBY_VERSION=${{ matrix.ruby }} \
+            -t soap4r-legacy:${{ matrix.ruby }} .github/docker
+
+      - name: Run all 5 parsers
+        run: |
+          docker run --rm -v "${{ github.workspace }}":/repo-ro:ro soap4r-legacy:${{ matrix.ruby }} bash -c '
+            set -e
+            mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
+            gem install bundler --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-ri --no-rdoc
+            rbenv rehash 2>&1 || true
+            bundle install
+            for parser in oxparser nokogiriparser libxmlparser ogaparser rexmlparser; do
+              echo "--- SOAP4R_PARSERS=$parser ---"
+              SOAP4R_PARSERS=$parser bundle exec rake test:deep
+              sleep 2
+            done
+          '
+
+  # Ruby 1.8.7 has no official Docker Hub image at all (the "ruby" library
+  # starts at 1.9) and no ruby-build definition with OpenSSL handling, so
+  # rbenv/ruby-build can't get this one for free the way 1.9.3/2.0.0 above
+  # do. Dockerfile.legacy187 builds it from source against a vendored
+  # OpenSSL 1.0.2u instead (confirmed working: openssl.so builds, and
+  # OpenSSL::SSL::SSLContext.new instantiates correctly at runtime).
   #
   # oga is intentionally excluded from the parser loop: it was never
   # installed for Ruby <= 1.8 in the first place (its ruby-ll dependency
-  # needs Ruby >= 2.1), so xsd/xmlparser.rb's cascade correctly reports it
-  # unavailable -- that's an expected, non-zero-exit "failure", not a real
-  # one, so it's left out here rather than treated as a test result.
+  # needs Ruby >= 2.1 -- confirmed this constraint is real for 1.8, unlike
+  # 1.9.3 above where ruby-ll installs and works fine), so xsd/xmlparser.rb's
+  # cascade correctly reports it unavailable -- that's an expected,
+  # non-zero-exit "failure", not a real one, so it's left out here rather
+  # than treated as a test result.
   #
   # continue-on-error is set: this job has two confirmed, understood,
   # non-soap4r-bug failure categories -- Kernel#singleton_class not
@@ -141,36 +188,34 @@ jobs:
   # since-removed JRuby API) -- both are excluded from the parser loop for
   # the same reason oga is excluded from the 1.8.7 job above.
   #
+  # Runs inside the official jruby Docker Hub image (same as local
+  # validation), matching the container-per-version approach used above
+  # instead of ruby/setup-ruby.
+  #
   # continue-on-error is set because the remaining JRuby-specific behavioral
-  # differences are known, understood, and deterministic across all 3
-  # parsers on both jruby-9.4.15.0 and jruby-10.1.0.0 -- see "Known Test
-  # Suite Exceptions" in the README for the full root-cause breakdown
-  # (JRuby's Kernel#Integer() trailing-garbage validation, ENV's singleton
-  # representation, and a bug in httpclient's own JRuby SSL socket bridge).
-  # None of these are soap4r bugs. (A related set of calc/header failures
-  # that looked JRuby-specific turned out to be a real, fixable bug in
-  # lib/soap/mapping/mapping.rb#fault2exception -- already fixed.)
+  # differences are known and confined to environment/dependency quirks
+  # rather than soap4r-ng bugs -- see "Known Test Suite Exceptions" in the
+  # README for the root-cause breakdown.
   test-jruby:
     name: JRuby ${{ matrix.ruby }}
     runs-on: ubuntu-latest
+    container:
+      image: jruby:${{ matrix.ruby }}
     continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
-        # Full 4-part versions, matching exactly what was validated locally
-        # this round (partial specs like "jruby-9.4" are documented for MRI
-        # but not confirmed for JRuby -- not worth the risk of a silent
-        # resolution failure).
         ruby:
-          - 'jruby-9.4.15.0'
-          - 'jruby-10.1.0.0'
+          - '9.4.15.0'
+          - '10.1.0.0'
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
+      - name: Bundle install
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          gem install bundler --no-document
+          bundle install
 
       - name: Run 3 parsers (ox and libxml-ruby have no JRuby port)
         run: |
@@ -189,7 +234,7 @@ jobs:
   # upstream failed -- that's the case it's most useful for.
   summary:
     name: Test Matrix Summary
-    needs: [test, test-ruby-1_8_7, test-jruby]
+    needs: [test, test-legacy-source-build, test-ruby-1_8_7, test-jruby]
     if: always()
     runs-on: ubuntu-latest
     permissions:
