@@ -73,9 +73,11 @@ module TestUtil
       # whole run of back-to-back tests (test_digest -> test_calc ->
       # test_calc2 -> test_calc_cgi -> test_customfault all failed in
       # sequence), well past the 10s budget that sufficed locally. 60 tries
-      # (60s) gives real margin over that observed worst case while still
-      # bounding a genuinely stuck test to a finite wait.
-      ((try += 1) < 60) ? retry : raise(e)
+      # (60s) wasn't always enough either -- confirmed via run 28861909674
+      # (Ruby 2.6.10/2.7.8) still hitting isolated EADDRINUSE on this exact
+      # retry-wrapped path even at 60 tries. Widened further to 120 (2min);
+      # this only bounds an already-rare CI-only flake, not a hot path.
+      ((try += 1) < 120) ? retry : raise(e)
     end
   end
 end

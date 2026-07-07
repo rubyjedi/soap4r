@@ -160,8 +160,9 @@ private
       # using the TestUtil helper), so it needed the same fix: confirmed via
       # CI logs (Ruby 2.6.10/2.7.8, run 28860682293) that a busy shared
       # runner can hold port 17171 well past 5 seconds across a run of
-      # back-to-back tests.
-      ((try += 1) < 60) ? retry : raise(e)
+      # back-to-back tests. Widened again to 120 (2min) -- see
+      # test/testutil.rb's webrick_server for why 60 still wasn't enough.
+      ((try += 1) < 120) ? retry : raise(e)
     end
   end
 
