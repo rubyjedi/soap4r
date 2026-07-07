@@ -8,7 +8,12 @@
 
 old_verbose, $VERBOSE = $VERBOSE, nil # silence warnings
 DATA_PRESENT = defined?(Data)
-DataShim = Kernel.const_get('Data') if DATA_PRESENT
+# DataShim must always be a defined class, since it's referenced unconditionally
+# in a `case/when` below. Ruby's old C-extension Data class was removed in 3.1,
+# then Ruby 3.2 introduced an unrelated Data.define -- so DATA_PRESENT is false
+# only on the 3.1.x line. Fall back to an anonymous class nothing will ever be
+# an instance of, so the `when` comparison is always valid but never matches.
+DataShim = DATA_PRESENT ? Kernel.const_get('Data') : Class.new
 $VERBOSE = old_verbose
 
 module SOAP

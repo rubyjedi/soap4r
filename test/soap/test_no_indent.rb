@@ -65,14 +65,14 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </env:Envelope>]
 
   def test_indent
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.options["soap.envelope.no_indent"] = false
     @client.nop
     assert_xml_equal(INDENT_XML, parse_requestxml(str))
   end
 
   def test_no_indent
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.options["soap.envelope.no_indent"] = true
     @client.nop
     assert_xml_equal(NO_INDENT_XML, parse_requestxml(str))

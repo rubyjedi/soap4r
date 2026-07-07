@@ -421,6 +421,14 @@ private
     return if [Symbol, Integer, Float].any?{ |c| obj.is_a?(c) }
     return if FIXNUM_PRESENT && obj.is_a?(FixnumShim)
     return if BIGNUM_PRESENT && obj.is_a?(BignumShim)
+    # NOTE: test/soap/marshal/marshaltestlib.rb#test_extend_string
+    # deliberately extends a String value with a module and expects that
+    # extension to round-trip through SOAP marshal -- so plain (non-frozen)
+    # strings can't be skipped outright here, even though opening a
+    # singleton class on one (below) trips Ruby 3.4+'s chilled-string
+    # warning for any ordinary string literal that happens to pass through
+    # unextended. Not cleanly fixable without breaking that real behavior;
+    # left as a known, harmless, forward-looking warning.
     return if obj.is_a?(String) && obj.frozen?
     list = (class << obj; self; end).ancestors - obj.class.ancestors
     list = list.reject{|c| c.class == Class } ## As of Ruby 2.1 Singleton Classes are now included in the ancestry. Need to filter those out here.

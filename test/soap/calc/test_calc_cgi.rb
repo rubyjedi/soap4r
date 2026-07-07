@@ -19,11 +19,15 @@ class TestCalcCGI < Test::Unit::TestCase
   RUBYBIN << " -d" if $DEBUG
 
   if RUBY_VERSION.to_f >= 2.2
-    logger_gem = Gem::Specification.find { |s| s.name == 'logger-application' }
-    if logger_gem
-      paths = logger_gem.respond_to?(:full_require_paths) ? logger_gem.full_require_paths : logger_gem.load_paths
-      paths.each do |path|
-        RUBYBIN << " -I #{path}"
+    # See test/soap/header/test_authheader_cgi.rb for why webrick needs the
+    # same -I load-path forwarding logger-application already relied on.
+    ['logger-application', 'webrick'].each do |gem_name|
+      gem_spec = Gem::Specification.find { |s| s.name == gem_name }
+      if gem_spec
+        paths = gem_spec.respond_to?(:full_require_paths) ? gem_spec.full_require_paths : gem_spec.load_paths
+        paths.each do |path|
+          RUBYBIN << " -I #{path}"
+        end
       end
     end
   end

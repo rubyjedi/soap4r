@@ -134,7 +134,7 @@ __EOX__
   end
 
   def test_normal
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
@@ -147,7 +147,7 @@ __EOX__
     @client = SOAP::RPC::Driver.new(URI.parse(@url), '')
     @client.add_method("do_server_proc")
     # same as test_normal
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
@@ -163,7 +163,7 @@ __EOX__
       return
     end
     @client.endpoint_url = @url + 'basic_auth'
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     @client.options['protocol.http.basic_auth']['0'] = [@url, "admin", "admin"]
     assert_nil(@client.do_server_proc_basic_auth)
@@ -180,7 +180,7 @@ __EOX__
       SOAP::NetHttpClient::NO_PROXY_HOSTS.clear
     end
     setup_proxyserver
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     @client.options["protocol.http.proxy"] = @proxyurl
     assert_nil(@client.do_server_proc)
@@ -199,7 +199,7 @@ __EOX__
   end
 
   def test_charset
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     @client.options["protocol.http.charset"] = "iso-8859-8"
     assert_nil(@client.do_server_proc)

@@ -42,7 +42,7 @@ class HTTPServer < Logger::Application
     @soaplet = ::SOAP::RPC::SOAPlet.new(@router)
     on_init
 
-    @server = WEBrick::HTTPServer.new(@webrick_config)
+    @server = new_webrick_server(@webrick_config)
     @server.mount('/soaprouter', @soaplet)
     if wsdldir = config[:WSDLDocumentDirectory]
       @server.mount('/wsdl', WEBrick::HTTPServlet::FileHandler, wsdldir)
@@ -136,6 +136,26 @@ class HTTPServer < Logger::Application
   end
 
 private
+
+  # A short retry-on-EADDRINUSE, matching test/testutil.rb's existing
+  # TestUtil.webrick_server helper, applied here so it covers every caller
+  # (not just tests that happen to go through that helper). Note: the mass
+  # EADDRINUSE cascade seen across the test suite (most test files share a
+  # single fixed port) turned out to be caused by a genuinely orphaned
+  # server -- test/soap/header/test_authheader_cgi.rb's teardown could
+  # raise before reaching teardown_server, permanently leaking that test's
+  # listener for the rest of the run -- not by transient TIME_WAIT. This
+  # retry is still worth keeping as a real defensive measure, just don't
+  # rely on it alone to mask a genuine leak elsewhere.
+  def new_webrick_server(config)
+    try = 0
+    begin
+      WEBrick::HTTPServer.new(config)
+    rescue Errno::EADDRINUSE => e
+      sleep 1
+      ((try += 1) < 5) ? retry : raise(e)
+    end
+  end
 
   def attrproxy
     @router

@@ -114,7 +114,7 @@ class TestQualified < Test::Unit::TestCase
       Dir.chdir(backupdir)
     end
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.GetPrimeNumbers(:Min => 2, :Max => 10)
     assert_xml_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
       [LOGIN_REQUEST_QUALIFIED, parse_requestxml(str)].join("\n\n"))
@@ -125,7 +125,7 @@ class TestQualified < Test::Unit::TestCase
     TestUtil.require(DIR, 'defaultDriver.rb', 'defaultMappingRegistry.rb', 'default.rb')
     @client = PnumSoap.new("http://localhost:#{Port}/")
 
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.getPrimeNumbers(GetPrimeNumbers.new(2, 10))
     assert_xml_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
       [LOGIN_REQUEST_QUALIFIED, parse_requestxml(str)].join("\n\n"))

@@ -128,20 +128,27 @@ public
     end
   end
 
+  # Regexp::NOENCODING doesn't exist pre-1.9 (part of Ruby's M17N overhaul);
+  # these regexes match raw byte patterns regardless of string encoding, so
+  # on 1.8.7 -- which has no per-string encoding concept at all -- byte
+  # matching is just the default behavior and 0 (no special options) is the
+  # equivalent.
+  NOENCODING_OPT = defined?(Regexp::NOENCODING) ? Regexp::NOENCODING : 0
+
   # us_ascii = '[\x00-\x7F]'
   us_ascii = '[\x9\xa\xd\x20-\x7F]'	# XML 1.0 restricted.
-  USASCIIRegexp = Regexp.new("\\A#{us_ascii}*\\z", Regexp::NOENCODING)
+  USASCIIRegexp = Regexp.new("\\A#{us_ascii}*\\z", NOENCODING_OPT)
 
   twobytes_euc = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])'
   threebytes_euc = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])'
   character_euc = "(?:#{us_ascii}|#{twobytes_euc}|#{threebytes_euc})"
-  EUCRegexp = Regexp.new("\\A#{character_euc}*\\z", Regexp::NOENCODING)
+  EUCRegexp = Regexp.new("\\A#{character_euc}*\\z", NOENCODING_OPT)
 
   # onebyte_sjis = '[\x00-\x7F\xA1-\xDF]'
   onebyte_sjis = '[\x9\xa\xd\x20-\x7F\xA1-\xDF]'	# XML 1.0 restricted.
   twobytes_sjis = '(?:[\x81-\x9F\xE0-\xFC][\x40-\x7E\x80-\xFC])'
   character_sjis = "(?:#{onebyte_sjis}|#{twobytes_sjis})"
-  SJISRegexp = Regexp.new("\\A#{character_sjis}*\\z", Regexp::NOENCODING)
+  SJISRegexp = Regexp.new("\\A#{character_sjis}*\\z", NOENCODING_OPT)
 
   # 0xxxxxxx
   # 110yyyyy 10xxxxxx
@@ -152,7 +159,7 @@ public
   fourbytes_utf8 = '(?:[\xF0-\xF7][\x80-\xBF][\x80-\xBF][\x80-\xBF])'
   character_utf8 =
     "(?:#{us_ascii}|#{twobytes_utf8}|#{threebytes_utf8}|#{fourbytes_utf8})"
-  UTF8Regexp = Regexp.new("\\A#{character_utf8}*\\z", Regexp::NOENCODING)
+  UTF8Regexp = Regexp.new("\\A#{character_utf8}*\\z", NOENCODING_OPT)
 
   def Charset.is_us_ascii(str)
     USASCIIRegexp =~ str

@@ -11,5 +11,5 @@ ENV['DEBUG_SOAP4R'] = 'true' ## Needed to force wsdl2ruby.rb and xsd2ruby.rb to 
 $DEBUG = !!ENV['WIREDUMPS']
 
 # see https://bugs.ruby-lang.org/issues/13181 & https://github.com/ruby/ruby/commit/86bfcc2da0
-RUBY_GEM_VERSION = Gem::Version.new(RUBY_VERSION)
+RUBY_GEM_VERSION = Gem::Version.new(RUBY_VERSION.dup) # .dup: RUBY_VERSION is frozen, and old RubyGems' Version#initialize mutates its argument in place
 RESCUE_LINE_NUMBERS_FIXED = (RUBY_GEM_VERSION >= Gem::Version.new('2.4.3')) || (RUBY_GEM_VERSION >= Gem::Version.new('2.3.6') && RUBY_GEM_VERSION < Gem::Version.new('2.4.0'))
