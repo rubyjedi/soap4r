@@ -238,7 +238,6 @@ class TestStyleUse < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.kill
     @server_thread.join
   end
 
