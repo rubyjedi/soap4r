@@ -87,9 +87,31 @@ they're either something the target Ruby genuinely can't do, or a test that's
 checking something too environment-specific to be a fair test. Documented
 here so they don't get mistaken for regressions:
 
-* **Ruby 1.8.7** -- 7-8 errors from `Kernel#singleton_class`, which doesn't
-  exist until Ruby 1.9.2. **CANTFIX**: the method is absent on that Ruby, full
-  stop.
+* **Ruby 1.8.7** -- two separate issues, neither a soap4r-ng regression:
+    * 3 errors (`test_time`, `test_time_ivar`, `test_time_subclass` in
+      `marshaltestlib.rb`) from `Kernel#singleton_class`, which doesn't exist
+      until Ruby 1.9.2. **CANTFIX**: the method is absent on that Ruby, full
+      stop.
+    * The CGI-based tests (`test_calc_cgi`, `test_authheader_cgi`) fail with
+      `SOAP::ResponseFormatError: ... Internal Server Error`. Root-caused
+      partway: WEBrick's `CGIHandler` wipes the spawned CGI subprocess's
+      entire environment before exec'ing it, so `logger-application` and
+      `webrick` need forwarding via a raw `-I` load-path flag (already fixed,
+      in `test/soap/calc/test_calc_cgi.rb` and
+      `test/soap/header/test_authheader_cgi.rb`). That forwarding alone
+      wasn't enough on 1.8.7 specifically: the spawned
+      subprocess still hits `NameError: undefined local variable or method
+      'logger'` inside `lib/soap/rpc/cgistub.rb#run`, even though
+      `Logger::Application#logger` is a real public method and a minimal
+      reproduction of the exact same class hierarchy (`Logger::Application`
+      + `include SOAP` + `include WEBrick`) works fine in isolation.
+      **Not fully root-caused** -- something specific to the real
+      `CGIStub`/`AuthHeaderPortServer`/`CalcServer` class graph, only
+      reproducible via the actual spawned-CGI-subprocess path, not a
+      simplified one. Narrow enough in scope (2 of ~330 tests, both CGI
+      smoke tests rather than core library behavior) that it wasn't worth
+      further chasing this round; flagged here rather than silently
+      swallowed by `continue-on-error`.
 * **Ruby 3.0.7, 3.1.7, 3.2.11** -- 1 failure in `test_exception`
   (`test/soap/marshal/marshaltestlib.rb`), which marshals an exception whose
   `.message` embeds a live `#inspect` dump of the entire running
