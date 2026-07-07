@@ -117,7 +117,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     wsdl = File.join(DIR, 'soaptype.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
 
     arg = Wrapper.new
     arg.short = 123
@@ -134,7 +134,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
 
   def test_stub
     @client = WSDL::RPC::Echo_port_type.new("http://localhost:#{Port}/")
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
 
     arg = WSDL::RPC::Wrapper.new
     arg.short = 123
@@ -153,7 +153,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/", 'urn:soaptype')
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.add_method('echo_soaptype', 'arg')
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.mapping_registry = WSDL::RPC::EchoMappingRegistry::EncodedRegistry
     @client.literal_mapping_registry = WSDL::RPC::EchoMappingRegistry::LiteralRegistry
 

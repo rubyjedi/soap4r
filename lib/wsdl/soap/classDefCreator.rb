@@ -43,7 +43,7 @@ class ClassDefCreator
   end
 
   def dump(type = nil)
-    result = "require 'xsd/qname'\n"
+    result = "require 'xsd/qname'\n".dup
     # cannot use @modulepath because of multiple classes
     if @modulepath
       result << "\n"

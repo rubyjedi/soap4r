@@ -67,7 +67,7 @@ class ModuleDef
   end
 
   def dump
-    buf = ""
+    buf = String.new
     unless @requirepath.empty?
       buf << dump_requirepath 
     end
@@ -141,7 +141,7 @@ private
     @methoddef.each do |visibility, method|
       (methods[visibility] ||= []) << method
     end
-    str = ""
+    str = String.new
     [:public, :protected, :private].each do |visibility|
       if methods[visibility]
         str << "\n" unless str.empty?

@@ -51,7 +51,7 @@ public
   end
 
   def generate(obj, io = nil)
-    @buf = io || ''
+    @buf = io || String.new
     @indent = ''
     @encode_char_regexp = get_encode_char_regexp()
 
@@ -273,9 +273,9 @@ private
     ENCODE_CHAR_REGEXP[XSD::Charset.encoding] ||= begin
       if RUBY_VERSION.to_f <= 1.8
         Regexp.new("[#{EncodeMap.keys.join}]", nil, XSD::Charset.encoding)
-      elsif RUBY_VERSION.to_f < 3.3
-        Regexp.new("[#{EncodeMap.keys.join}]", nil, nil) # RubyJedi: compatible with Ruby 1.8.6 and above
       else
+        # the deprecated 3-arg form's kcode argument was already nil here
+        # (a no-op since Ruby 1.9), so there's nothing lost by dropping it.
         Regexp.new("[#{EncodeMap.keys.join}]")
       end
     end

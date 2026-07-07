@@ -76,7 +76,10 @@ class TestResponseAsXml < Test::Unit::TestCase
 __XML__
 
   def test_hello
-    assert_xml_equal("hello world", @client.hello("world"))
+    # return_response_as_xml is still false here, so the client returns plain
+    # text, not XML -- assert_xml_equal would try to parse "hello world" as
+    # an XML document and raise REXML::ParseException.
+    assert_equal("hello world", @client.hello("world"))
     @client.return_response_as_xml = true
     xml = @client.hello("world")
     assert_xml_equal(RESPONSE_AS_XML, xml, [RESPONSE_AS_XML, xml].join("\n\n"))

@@ -21,11 +21,21 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
   RUBYBIN << " -d" if $DEBUG
 
   if RUBY_VERSION.to_f >= 2.2
-    logger_gem = Gem::Specification.find { |s| s.name == 'logger-application' }
-    if logger_gem
-      paths = logger_gem.respond_to?(:full_require_paths) ? logger_gem.full_require_paths : logger_gem.load_paths
-      paths.each do |path|
-        RUBYBIN << " -I #{path}"
+    # WEBrick::HTTPServlet::CGIHandler wipes the CGI child's entire ENV
+    # before exec'ing it (cgi_runner.rb: `ENV.keys.each{|name| ENV.delete(name)}`,
+    # standard CGI hygiene) -- so GEM_HOME/GEM_PATH/BUNDLE_GEMFILE never
+    # reach the spawned script, and any gem it needs must be forwarded via
+    # a raw -I load-path flag instead (bypasses RubyGems activation
+    # entirely, so it's immune to the ENV wipe). logger-application always
+    # needed this; webrick needs the same treatment now that Ruby 3.0+
+    # demoted it from stdlib to a real gem.
+    ['logger-application', 'webrick'].each do |gem_name|
+      gem_spec = Gem::Specification.find { |s| s.name == gem_name }
+      if gem_spec
+        paths = gem_spec.respond_to?(:full_require_paths) ? gem_spec.full_require_paths : gem_spec.load_paths
+        paths.each do |path|
+          RUBYBIN << " -I #{path}"
+        end
       end
     end
   end
@@ -93,6 +103,11 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
 
   def teardown
     @supportclient.delete_sessiondb if @supportclient
+  ensure
+    # Must run even if delete_sessiondb above raises (e.g. the CGI child
+    # process failing to start) -- otherwise @server is orphaned still
+    # listening on Port, and every later test file sharing that same fixed
+    # port fails with EADDRINUSE for the rest of the run.
     teardown_server if @server
     teardown_client if @client
   end

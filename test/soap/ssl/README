@@ -1,1 +1,9 @@
-* certificates and keys in this directory is copied from httpclient test.
+* certificates and keys in this directory were originally copied from httpclient's test suite.
+* regenerated 2026-07 with 2048-bit RSA keys and SHA-256 signatures: the
+  originals were 1024-bit RSA with SHA-1 signatures (created 2004), both
+  rejected outright by modern OpenSSL's default security level
+  ("SSL_CTX_use_certificate: ee key too small"). The CA -> SubCA -> server
+  chain topology, Subject DNs, and client cert issued directly by the root
+  CA (not via SubCA) are preserved exactly, since test_ssl.rb's assertions
+  depend on that specific chain structure to get expected pass/fail
+  behavior for its certificate-verification test cases.

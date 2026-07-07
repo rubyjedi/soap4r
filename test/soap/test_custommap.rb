@@ -104,17 +104,17 @@ class TestMap < Test::Unit::TestCase
 
   def test_rpc
     h = {'a' => 1, 'b' => 2}
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     assert_equal(h, @client.echo(h))
     assert_equal(0, str.scan(/customname/).size)
     #
     @client.setmap
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     assert_equal(h, @client.echo(h))
     assert_equal(4, str.scan(/customname/).size)
     #
     @client.mapping_registry = Map
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     assert_equal(h, @client.echo(h))
     assert_equal(8, str.scan(/customname/).size)
   end

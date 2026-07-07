@@ -68,7 +68,10 @@ module TestUtil
     rescue Errno::EADDRINUSE => e
       STDERR.puts "Wait for available port for #{klass.name} (#{e.message}) [#{Thread.list.inspect}]"
       sleep 1
-      ((try += 1) < 5) ? retry : raise(e)
+      # 5 retries (5s) was occasionally too tight under real host load --
+      # seen intermittently as a single isolated EADDRINUSE (not a cascade)
+      # on the proxy port, confirmed non-reproducing on a quiet host.
+      ((try += 1) < 10) ? retry : raise(e)
     end
   end
 end

@@ -73,14 +73,14 @@ class TestEmpty < Test::Unit::TestCase
 </env:Envelope>]
 
   def test_nop
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.nop
     assert_xml_equal(EMPTY_XML, parse_requestxml(str))
     assert_xml_equal(EMPTY_XML, parse_responsexml(str))
   end
 
   def test_nop_nil
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.nop_nil
     assert_xml_equal(EMPTY_XML, parse_requestxml(str))
     assert_xml_equal(EMPTY_XML, parse_responsexml(str))
@@ -88,7 +88,7 @@ class TestEmpty < Test::Unit::TestCase
 
   def test_empty_header
     @client.headerhandler << EmptyHeaderHandler.new(nil)
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.nop
     assert_xml_equal(EMPTY_HEADER_XML, parse_requestxml(str))
   end

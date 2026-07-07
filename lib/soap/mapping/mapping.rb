@@ -108,7 +108,7 @@ module Mapping
         e.set_backtrace(nil)
         raise e # ruby sets current caller as local backtrace of e => e2.
       rescue Exception => e
-	e.set_backtrace(remote_backtrace + e.backtrace[1..-1])
+	e.set_backtrace((remote_backtrace || []) + ((e.backtrace || [])[1..-1] || []))
         raise
       end
     else

@@ -105,7 +105,7 @@ __XML__
 
     def test_aspdotnethandler_envelope
       @client = SOAP::RPC::Driver.new(Endpoint, Server::Namespace)
-      @client.wiredump_dev = str = ''
+      @client.wiredump_dev = str = String.new
       @client.add_method_with_soapaction('sayHello', Server::Namespace + 'SayHello', 'name')
       @client.default_encodingstyle = SOAP::EncodingStyle::ASPDotNetHandler::Namespace
       assert_equal("Hello Mike", @client.sayHello("Mike"))

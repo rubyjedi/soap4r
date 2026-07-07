@@ -188,7 +188,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   def test_stub_echoStringArray
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
-    drv.wiredump_dev = str = ''
+    drv.wiredump_dev = str = String.new
     drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoStringArray(ArrayOfstring["a", "b", "c"])[0]
@@ -233,7 +233,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   def test_stub_echoStringArrayInline
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
-    drv.wiredump_dev = str = ''
+    drv.wiredump_dev = str = String.new
     drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoStringArrayInline(ArrayOfstringInline["a", "b", "c"])[0]
@@ -289,7 +289,7 @@ class TestRPCLIT < Test::Unit::TestCase
     wsdl = pathname('test-rpc-lit.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.generate_explicit_type = false
     # response contains only 1 part.
     result = @client.echoNestedStruct(SOAPStructStruct.new("str", 1, 1.0, SOAPStruct.new("str", 1, 1.0)))[0]
@@ -346,7 +346,7 @@ class TestRPCLIT < Test::Unit::TestCase
     wsdl = pathname('test-rpc-lit.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.generate_explicit_type = false
     result = @client.echoNestedStruct(SOAPStructStruct.new("str", nil, 1.0, SOAPStruct.new("str", ::SOAP::SOAPNil.new, 1.0)))[0]
     assert(!result.respond_to?(:varInt))
@@ -358,7 +358,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   def test_stub_echoNestedStruct
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
-    drv.wiredump_dev = str = ''
+    drv.wiredump_dev = str = String.new
     drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoNestedStruct(SOAPStructStruct.new("str", 1, 1.0, SOAPStruct.new("str", 1, 1.0)))[0]
@@ -374,7 +374,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   def test_stub_echoNestedStruct_nil
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
-    drv.wiredump_dev = str = ''
+    drv.wiredump_dev = str = String.new
     drv.generate_explicit_type = false
     # response contains only 1 part.
     result = drv.echoNestedStruct(SOAPStructStruct.new("str", nil, 1.0, SOAPStruct.new("str", ::SOAP::SOAPNil.new, 1.0)))[0]
@@ -435,7 +435,7 @@ class TestRPCLIT < Test::Unit::TestCase
     wsdl = pathname('test-rpc-lit.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.generate_explicit_type = false
     # response contains only 1 part.
     e = SOAPStruct.new("str", 2, 2.1)
@@ -447,7 +447,7 @@ class TestRPCLIT < Test::Unit::TestCase
 
   def test_stub_echoStructArray
     drv = SoapTestPortTypeRpcLit.new("http://localhost:#{Port}/")
-    drv.wiredump_dev = str = ''
+    drv.wiredump_dev = str = String.new
     drv.generate_explicit_type = false
     # response contains only 1 part.
     e = SOAPStruct.new("str", 2, 2.1)
