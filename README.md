@@ -87,6 +87,16 @@ they're either something the target Ruby genuinely can't do, or a test that's
 checking something too environment-specific to be a fair test. Documented
 here so they don't get mistaken for regressions:
 
+CI runs every version inside the same Docker image used for local
+validation (official `ruby:X.Y.Z` / `jruby:X.Y.Z.W` images where one exists;
+a from-source `rbenv` build on Debian bullseye for 1.9.3 and 2.0.0, whose
+official Docker Hub images are permanently unpullable -- every tag in both
+lines was published in the long-deprecated Docker manifest v1 schema; a
+from-source build against a vendored OpenSSL 1.0.2u for 1.8.7, which has no
+official image at all). Matching the exact environment means a clean local
+run and a clean CI run are the same claim -- there's no separate "works on
+my machine" environment for version-specific gotchas to hide in.
+
 * **Ruby 1.8.7** -- two separate issues, neither a soap4r-ng regression:
     * 3 errors (`test_time`, `test_time_ivar`, `test_time_subclass` in
       `marshaltestlib.rb`) from `Kernel#singleton_class`, which doesn't exist
