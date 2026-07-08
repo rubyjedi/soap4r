@@ -56,8 +56,14 @@ class TestSOAPBodyParts < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @t.kill
-    @t.join
+    # join with a bound, falling back to kill only if genuinely
+    # stuck (see git history: unconditional immediate kill raced
+    # WEBrick's own async listener cleanup and occasionally leaked
+    # the port).
+    unless @t.join(10)
+      @t.kill
+      @t.join
+    end
   end
 
   def teardown_client
