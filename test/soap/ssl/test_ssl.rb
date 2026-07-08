@@ -206,12 +206,18 @@ __EOP__
 
 private
 
-  def q(str)
-    %Q["#{str}"]
-  end
-
   def setup_server
-    svrcmd = "#{q(RUBY)} "
+    # No quoting around RUBY here: on POSIX, IO.popen only spawns an
+    # intermediary /bin/sh -c when the command string contains shell
+    # metacharacters. Quoting was doing exactly that (unnecessarily, since
+    # RbConfig's bindir path never has embedded whitespace), which made
+    # svrout.pid the *shell's* pid rather than sslsvr.rb's -- so the pid
+    # sslsvr.rb reports over stdout (its own $$) was a grandchild, not a
+    # direct child, and teardown_server's Process.waitpid below always
+    # failed with Errno::ECHILD (100% of the time, on every run). Dropping
+    # the quotes lets Ruby exec directly with no shell hop, so the reported
+    # pid is a real, waitable child again.
+    svrcmd = "#{RUBY} "
     svrcmd << File.join(DIR, "sslsvr.rb")
     svrout = IO.popen(svrcmd)
     # sslsvr.rb only prints its PID once its own WEBrick server has bound

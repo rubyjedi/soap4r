@@ -21,7 +21,11 @@ class TestCalcCGI < Test::Unit::TestCase
   # See test/soap/header/test_authheader_cgi.rb for why this needs to run
   # unconditionally (Ruby 1.8.7's ancient RubyGems has no
   # Gem::Specification.find, hence the $LOAD_PATH-based lookup instead).
-  ['logger-application', 'webrick'].each do |feature|
+  # 'logger' added alongside webrick/logger-application for the same reason:
+  # lib/soap/rpc/cgistub.rb requires it too, and on Ruby >= 4.0 it's also
+  # been demoted from stdlib to a real gem the CGI child can't find once its
+  # ENV is wiped.
+  ['logger-application', 'webrick', 'logger'].each do |feature|
     dir = $LOAD_PATH.find { |path| File.exist?(File.join(path, "#{feature}.rb")) }
     RUBYBIN << " -I #{dir}" if dir
   end
