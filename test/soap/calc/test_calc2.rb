@@ -30,8 +30,14 @@ class TestCalc2 < Test::Unit::TestCase
   def teardown
     @server.shutdown if @server
     if @t
-      @t.kill
-      @t.join
+      # join with a bound, falling back to kill only if genuinely
+      # stuck (see git history: unconditional immediate kill raced
+      # WEBrick's own async listener cleanup and occasionally leaked
+      # the port).
+      unless @t.join(10)
+        @t.kill
+        @t.join
+      end
     end
     @var.reset_stream if @var
   end
