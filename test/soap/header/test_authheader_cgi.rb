@@ -27,14 +27,15 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
   # a raw -I load-path flag instead (bypasses RubyGems activation
   # entirely, so it's immune to the ENV wipe). logger-application always
   # needed this; webrick needs the same treatment now that Ruby 3.0+
-  # demoted it from stdlib to a real gem.
+  # demoted it from stdlib to a real gem, and logger needs it too now that
+  # Ruby 4.0+ has done the same.
   #
   # Uses $LOAD_PATH (not Gem::Specification.find, which doesn't exist on
   # Ruby 1.8.7's ancient bundled RubyGems, and not $LOADED_FEATURES, which
   # stores bare relative filenames like "webrick.rb" on 1.8.7 instead of
   # absolute paths) to find each feature's actual directory -- this works
   # identically on every supported Ruby version, gem or stdlib alike.
-  ['logger-application', 'webrick'].each do |feature|
+  ['logger-application', 'webrick', 'logger'].each do |feature|
     dir = $LOAD_PATH.find { |path| File.exist?(File.join(path, "#{feature}.rb")) }
     RUBYBIN << " -I #{dir}" if dir
   end

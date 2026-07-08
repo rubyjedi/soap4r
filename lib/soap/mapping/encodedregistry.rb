@@ -12,6 +12,42 @@ FIXNUM_PRESENT = FixnumShim.name == 'Fixnum'
 BignumShim = (10**20).class
 BIGNUM_PRESENT = BignumShim.name == 'Bignum'
 
+if RUBY_VERSION.to_f >= 3.4 && defined?(Warning) && Warning.respond_to?(:warn)
+  # Ruby 3.4+'s chilled-string deprecation notice fires every time
+  # addextend2soap (below) opens a string's singleton class to check for a
+  # prior #extend, even when it turns out not to be extended -- unavoidable
+  # without breaking test/soap/marshal/marshaltestlib.rb#test_extend_string's
+  # real, tested round-trip behavior (see the NOTE on addextend2soap).
+  # Installed once, permanently, rather than swapped in/out per call: this
+  # method can run concurrently from multiple WEBrick request threads, and a
+  # temporary swap-and-restore around each call would race between threads.
+  # Matched on both the message text AND this file's own path, so no other
+  # chilled-string warning -- from elsewhere in this library, a dependency
+  # like simplecov, or the embedding application -- is ever affected.
+  #
+  # The override itself is built via class_eval on a *string* rather than
+  # literal keyword-argument syntax (`category:`) in this file: this file
+  # must parse cleanly on every supported Ruby back to 1.8.7, and Ruby
+  # parses an entire file up front regardless of the RUBY_VERSION guard
+  # above being a runtime check -- literal keyword-arg syntax here would be
+  # a SyntaxError on any pre-2.0 Ruby long before that guard ever runs
+  # (confirmed: broke the whole file, and everything requiring it, on
+  # 1.8.7). A string is just inert data to the parser; it's only parsed as
+  # code, by class_eval, once we're already inside the version-gated branch.
+  class << Warning
+    alias_method :__soap4r_encodedregistry_original_warn, :warn
+  end
+  Warning.singleton_class.class_eval(<<-'RUBY', __FILE__, __LINE__ + 1)
+    def warn(message, category: nil)
+      if message.include?("literal string will be frozen in the future") &&
+         message.include?("soap/mapping/encodedregistry.rb")
+        return
+      end
+      __soap4r_encodedregistry_original_warn(message, category: category)
+    end
+  RUBY
+end
+
 require 'soap/baseData'
 require 'soap/mapping/mapping'
 require 'soap/mapping/typeMap'

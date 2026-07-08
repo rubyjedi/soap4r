@@ -69,7 +69,13 @@ if RUBY_VERSION.to_f > 1.8
   # working built-in with a gem that hard-crashes at require time.
   gem 'rexml' if RUBY_VERSION.to_f >= 3.0   # no longer an implicit default gem under Bundler as of Ruby 3.0
   gem 'webrick' if RUBY_VERSION.to_f >= 3.0 # same; needed by lib/soap/rpc/{httpserver,cgistub,soaplet}.rb
-  gem 'logger' if RUBY_VERSION.to_f >= 4.0  # same; dropped in Ruby 4.0
+  # dropped in Ruby 4.0, but the "will no longer be part of the default
+  # gems" notice itself already starts firing a full version earlier, on a
+  # plain `require 'logger'` with no Bundler pinning involved at all --
+  # confirmed silent on 3.1.7/3.2.11/3.3.11, present starting 3.4.10. Gated
+  # here from 3.4 (not 4.0) to actually silence it, matching getoptlong
+  # below which has the same early-warning behavior.
+  gem 'logger' if RUBY_VERSION.to_f >= 3.4
   gem 'getoptlong' if RUBY_VERSION.to_f >= 3.4 # same; bin/{xsd2ruby,wsdl2ruby}.rb both need it unconditionally
   gem 'logger-application', :require=>'logger-application'
 end
