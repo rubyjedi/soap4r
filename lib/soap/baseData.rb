@@ -542,7 +542,7 @@ public
   end
 
   def to_s
-    str = ''
+    str = String.new
     self.each do |key, data|
       str << "#{key}: #{data}\n"
     end
@@ -1080,7 +1080,11 @@ private
     "#{typename}[" << ',' * (rank - 1) << ']'
   end
 
-  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$', nil, 'n')
+  # Regexp::NOENCODING doesn't exist pre-1.9 (part of Ruby's M17N overhaul);
+  # 0 (no special options) is the equivalent on 1.8.7, which has no
+  # per-string encoding concept for this flag to apply to in the first place.
+  TypeParseRegexp = Regexp.new('^(.+)\[([\d,]*)\]$',
+    defined?(Regexp::NOENCODING) ? Regexp::NOENCODING : 0)
 
   def self.parse_type(string)
     TypeParseRegexp =~ string

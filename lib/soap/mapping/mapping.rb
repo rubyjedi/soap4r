@@ -108,7 +108,7 @@ module Mapping
         e.set_backtrace(nil)
         raise e # ruby sets current caller as local backtrace of e => e2.
       rescue Exception => e
-	e.set_backtrace(remote_backtrace + e.backtrace[1..-1])
+	e.set_backtrace((remote_backtrace || []) + ((e.backtrace || [])[1..-1] || []))
         raise
       end
     else
@@ -167,7 +167,7 @@ module Mapping
   #
   def self.name2elename(name)
     name.to_s.gsub(/([^a-zA-Z0-9:_\-]+)/n) {
-      '.' << $1.unpack('H2' * $1.size).join('.')
+      '.' + $1.unpack('H2' * $1.size).join('.')
     }.gsub(/::/n, '..')
   end
 
@@ -333,7 +333,8 @@ module Mapping
     else
       values.each do |attr_name, value|
         # untaint depends GenSupport.safevarname
-        name = Mapping.safevarname(attr_name).untaint
+        name = Mapping.safevarname(attr_name)
+        name.untaint if RUBY_VERSION < '2.7'
         setter = name + "="
         if obj.respond_to?(setter)
           obj.__send__(setter, value)

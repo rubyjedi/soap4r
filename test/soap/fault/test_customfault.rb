@@ -26,10 +26,7 @@ class TestCustomFault < Test::Unit::TestCase
   def setup
     @server = CustomFaultServer.new('customfault', 'urn:customfault', '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @t = Thread.new {
-      Thread.current.abort_on_exception = true
-      @server.start
-    }
+    @t = TestUtil.start_server_thread(@server)
     @endpoint = "http://localhost:#{Port}/"
     @client = SOAP::RPC::Driver.new(@endpoint, 'urn:customfault')
     @client.wiredump_dev = STDERR if $DEBUG
@@ -39,8 +36,14 @@ class TestCustomFault < Test::Unit::TestCase
   def teardown
     @server.shutdown if @server
     if @t
-      @t.kill
-      @t.join
+      # join with a bound, falling back to kill only if genuinely
+      # stuck (see git history: unconditional immediate kill raced
+      # WEBrick's own async listener cleanup and occasionally leaked
+      # the port).
+      unless @t.join(10)
+        @t.kill
+        @t.join
+      end
     end
     @client.reset_stream if @client
   end

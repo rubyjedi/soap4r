@@ -49,8 +49,14 @@ class TestASPDotNet < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.kill
-    @server_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @server_thread.join(10)
+      @server_thread.kill
+      @server_thread.join
+    end
   end
 
   def test_document_method
@@ -69,7 +75,7 @@ class TestASPDotNet < Test::Unit::TestCase
       XSD::QName.new(Server::Namespace, 'SayHello'),
       XSD::QName.new(Server::Namespace, 'SayHelloResponse'))
     require 'rexml/document'
-    xml = <<__XML__
+    xml = (<<__XML__).dup
 <n1:sayHello xmlns:n1="http://localhost/WebService/">
   <n1:name>Mike</n1:name>
 </n1:sayHello>
@@ -105,7 +111,7 @@ __XML__
 
     def test_aspdotnethandler_envelope
       @client = SOAP::RPC::Driver.new(Endpoint, Server::Namespace)
-      @client.wiredump_dev = str = ''
+      @client.wiredump_dev = str = String.new
       @client.add_method_with_soapaction('sayHello', Server::Namespace + 'SayHello', 'name')
       @client.default_encodingstyle = SOAP::EncodingStyle::ASPDotNetHandler::Namespace
       assert_equal("Hello Mike", @client.sayHello("Mike"))

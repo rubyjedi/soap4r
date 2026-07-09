@@ -238,8 +238,14 @@ class TestStyleUse < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.kill
-    @server_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @server_thread.join(10)
+      @server_thread.kill
+      @server_thread.join
+    end
   end
 
   def teardown_client
@@ -309,7 +315,11 @@ class TestStyleUse < Test::Unit::TestCase
   def test_doc_enc_doc_lit
     ret1, ret2 = @client.doc_enc_doc_lit('a', 1)
     # literal Array
-    assert_equal(['String', 'Fixnum'], ret1['obj1']['klass'])
+    if (RUBY_VERSION.to_f <= 2.3)
+      assert_equal(['String', 'Fixnum'], ret1['obj1']['klass'])
+    else
+      assert_equal(['String', 'Integer'], ret1['obj1']['klass'])
+    end
     # same value
     assert_equal(ret1['obj1']['klass'], ret2['obj2']['klass'])
     # not the same object (not encoded)

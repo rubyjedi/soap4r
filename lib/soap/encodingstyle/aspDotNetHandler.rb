@@ -20,7 +20,7 @@ class ASPDotNetHandler < Handler
 
   def initialize(charset = nil)
     super(charset)
-    @textbuf = ''
+    @textbuf = String.new
     @decode_typemap = nil
   end
 
@@ -108,7 +108,7 @@ class ASPDotNetHandler < Handler
   end
 
   def decode_tag(ns, elename, attrs, parent)
-    @textbuf = ''
+    @textbuf = String.new
     o = SOAPUnknown.new(self, elename)
     o.parent = parent
     o
@@ -128,7 +128,7 @@ class ASPDotNetHandler < Handler
     end
 
     decode_textbuf(o)
-    @textbuf = ''
+    @textbuf = String.new
   end
 
   def decode_text(ns, text)

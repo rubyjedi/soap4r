@@ -72,8 +72,14 @@ class TestSOAPTYPE < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.kill
-    @server_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @server_thread.join(10)
+      @server_thread.kill
+      @server_thread.join
+    end
   end
 
   def pathname(filename)
@@ -117,7 +123,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     wsdl = File.join(DIR, 'soaptype.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
 
     arg = Wrapper.new
     arg.short = 123
@@ -134,7 +140,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
 
   def test_stub
     @client = WSDL::RPC::Echo_port_type.new("http://localhost:#{Port}/")
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
 
     arg = WSDL::RPC::Wrapper.new
     arg.short = 123
@@ -153,7 +159,7 @@ SOAPTYPE_NATIVE_XML = %q[<?xml version="1.0" encoding="utf-8" ?>
     @client = ::SOAP::RPC::Driver.new("http://localhost:#{Port}/", 'urn:soaptype')
     @client.endpoint_url = "http://localhost:#{Port}/"
     @client.add_method('echo_soaptype', 'arg')
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.mapping_registry = WSDL::RPC::EchoMappingRegistry::EncodedRegistry
     @client.literal_mapping_registry = WSDL::RPC::EchoMappingRegistry::LiteralRegistry
 

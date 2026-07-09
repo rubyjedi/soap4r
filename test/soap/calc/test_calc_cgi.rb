@@ -18,13 +18,16 @@ class TestCalcCGI < Test::Unit::TestCase
   )
   RUBYBIN << " -d" if $DEBUG
 
-  if RUBY_VERSION.to_f >= 2.2
-    logger_gem = Gem::Specification.find { |s| s.name == 'logger-application' }
-    if logger_gem
-      logger_gem.load_paths.each do |path|
-        RUBYBIN << " -I #{path}"
-      end
-    end
+  # See test/soap/header/test_authheader_cgi.rb for why this needs to run
+  # unconditionally (Ruby 1.8.7's ancient RubyGems has no
+  # Gem::Specification.find, hence the $LOAD_PATH-based lookup instead).
+  # 'logger' added alongside webrick/logger-application for the same reason:
+  # lib/soap/rpc/cgistub.rb requires it too, and on Ruby >= 4.0 it's also
+  # been demoted from stdlib to a real gem the CGI child can't find once its
+  # ENV is wiped.
+  ['logger-application', 'webrick', 'logger'].each do |feature|
+    dir = $LOAD_PATH.find { |path| File.exist?(File.join(path, "#{feature}.rb")) }
+    RUBYBIN << " -I #{dir}" if dir
   end
 
   Port = 17171
@@ -32,7 +35,7 @@ class TestCalcCGI < Test::Unit::TestCase
   def setup
     logger = Logger.new(STDERR)
     logger.level = Logger::Severity::ERROR
-    @server = WEBrick::HTTPServer.new(
+    @server = TestUtil.webrick_http_server(
       :BindAddress => "0.0.0.0",
       :Logger => logger,
       :Port => Port,
@@ -41,10 +44,7 @@ class TestCalcCGI < Test::Unit::TestCase
       :CGIPathEnv => ENV['PATH'],
       :CGIInterpreter => RUBYBIN
     )
-    @t = Thread.new {
-      Thread.current.abort_on_exception = true
-      @server.start
-    }
+    @t = TestUtil.start_server_thread(@server)
     @endpoint = "http://localhost:#{Port}/server.cgi"
     @calc = SOAP::RPC::Driver.new(@endpoint, 'http://tempuri.org/calcService')
     @calc.wiredump_dev = STDERR if $DEBUG
@@ -57,8 +57,14 @@ class TestCalcCGI < Test::Unit::TestCase
   def teardown
     @server.shutdown if @server
     if @t
-      @t.kill
-      @t.join
+      # join with a bound, falling back to kill only if genuinely
+      # stuck (see git history: unconditional immediate kill raced
+      # WEBrick's own async listener cleanup and occasionally leaked
+      # the port).
+      unless @t.join(10)
+        @t.kill
+        @t.join
+      end
     end
     @calc.reset_stream if @calc
   end

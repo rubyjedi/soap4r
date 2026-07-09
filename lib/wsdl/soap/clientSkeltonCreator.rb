@@ -31,7 +31,7 @@ class ClientSkeltonCreator
     unless services
       raise RuntimeError.new("service not defined: #{service_name}")
     end
-    result = ""
+    result = String.new
     if @modulepath
       result << "\n"
       modulepath = @modulepath.respond_to?(:lines) ? @modulepath.lines : @modulepath # RubyJedi: compatible with Ruby 1.8.6 and above      
@@ -57,7 +57,7 @@ private
     assigned_method = collect_assigned_method(@definitions, porttype.name, @modulepath)
     drv_name = mapped_class_basename(porttype.name, @modulepath)
 
-    result = ""
+    result = String.new
     result << <<__EOD__
 endpoint_url = ARGV.shift
 obj = #{ drv_name }.new(endpoint_url)

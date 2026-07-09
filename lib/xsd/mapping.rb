@@ -20,12 +20,12 @@ module XSD
 module Mapping
   MappingRegistry = SOAP::Mapping::LiteralRegistry.new
 
-  def self.obj2xml(obj, elename = nil, io = nil)
-    Mapper.new(MappingRegistry).obj2xml(obj, elename, io)
+  def self.obj2xml(obj, elename = nil, io = nil, options = {})
+    Mapper.new(MappingRegistry).obj2xml(obj, elename, io, options)
   end
 
-  def self.xml2obj(stream, klass = nil)
-    Mapper.new(MappingRegistry).xml2obj(stream, klass)
+  def self.xml2obj(stream, klass = nil, options = {})
+    Mapper.new(MappingRegistry).xml2obj(stream, klass, options)
   end
 
   class Mapper
@@ -39,8 +39,8 @@ module Mapping
       @registry = registry
     end
 
-    def obj2xml(obj, elename = nil, io = nil)
-      opt = MAPPING_OPT.dup
+    def obj2xml(obj, elename = nil, io = nil, options = {})
+      opt = MAPPING_OPT.dup.merge(options)
       unless elename
         if definition = @registry.elename_schema_definition_from_class(obj.class)
           elename = definition.elename
@@ -57,8 +57,9 @@ module Mapping
       generator.generate(soap, io)
     end
 
-    def xml2obj(stream, klass = nil)
-      parser = SOAP::Parser.new(MAPPING_OPT)
+    def xml2obj(stream, klass = nil, options = {})
+      opt = MAPPING_OPT.dup.merge(options)
+      parser = SOAP::Parser.new(opt)
       soap = parser.parse(stream)
       SOAP::Mapping.soap2obj(soap, @registry, klass)
     end

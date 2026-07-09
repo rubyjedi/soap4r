@@ -130,7 +130,7 @@ private
   def dump_inout_type(param, element_definitions)
     if param
       message = param.find_message
-      params = ""
+      params = String.new
       message.parts.each do |part|
         name = safevarname(part.name)
         if part.type
@@ -158,7 +158,7 @@ private
 
   def dump_inputparam(input)
     message = input.find_message
-    params = ""
+    params = String.new
     message.parts.each do |part|
       params << ", " unless params.empty?
       params << safevarname(part.name)

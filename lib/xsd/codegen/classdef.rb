@@ -42,7 +42,7 @@ class ClassDef < ModuleDef
   end
 
   def dump
-    buf = ""
+    buf = String.new
     unless @requirepath.empty?
       buf << dump_requirepath 
     end
@@ -110,7 +110,7 @@ private
   end
 
   def dump_attributes
-    str = ""
+    str = String.new
     @attrdef.each do |attrname, writable, varname|
       varname ||= attrname
       if attrname == varname

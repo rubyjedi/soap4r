@@ -1,5 +1,15 @@
 # encoding: UTF-8
-$:.unshift File.expand_path( File.dirname(__FILE__) + '../../../../lib') 
+$:.unshift File.expand_path( File.dirname(__FILE__) + '../../../../lib')
+
+# Spawned via a bare `ruby sslsvr.rb` (test_ssl.rb#setup_server), not
+# `bundle exec`, so without this it falls through to whatever RubyGems
+# activates by default -- the true standard-library copies of logger/webrick
+# on Ruby >= 3.0/4.0, which print a "will no longer be part of the default
+# gems" notice. This is a private test fixture that always runs inside this
+# repo's own checkout, so a Gemfile is always present; activating it here
+# picks up the same pinned gem versions the parent `bundle exec rake
+# test:deep` process already uses, silencing that notice.
+require 'bundler/setup'
 
 require 'webrick/https'
 require 'logger'

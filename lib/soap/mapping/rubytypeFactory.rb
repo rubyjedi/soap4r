@@ -6,6 +6,15 @@
 # redistribute it and/or modify it under the same terms of Ruby's license;
 # either the dual license version in 2003, or any later version.
 
+old_verbose, $VERBOSE = $VERBOSE, nil # silence warnings
+DATA_PRESENT = defined?(Data)
+# DataShim must always be a defined class, since it's referenced unconditionally
+# in a `case/when` below. Ruby's old C-extension Data class was removed in 3.1,
+# then Ruby 3.2 introduced an unrelated Data.define -- so DATA_PRESENT is false
+# only on the 3.1.x line. Fall back to an anonymous class nothing will ever be
+# an instance of, so the `when` comparison is always valid but never matches.
+DataShim = DATA_PRESENT ? Kernel.const_get('Data') : Class.new
+$VERBOSE = old_verbose
 
 module SOAP
 module Mapping
@@ -38,6 +47,7 @@ class RubytypeFactory < Factory
 
   def obj2soap(soap_class, obj, info, map)
     param = nil
+
     case obj
     when ::String
       unless @allow_original_mapping
@@ -193,7 +203,7 @@ class RubytypeFactory < Factory
         param.add('member', ele_member)
         addiv2soapattr(param, obj, map)
       end
-    when ::IO, ::Binding, ::Data, ::Dir, ::File::Stat,
+    when ::IO, ::Binding, DataShim, ::Dir, ::File::Stat,
         ::MatchData, Method, ::Proc, ::Process::Status, ::Thread,
         ::ThreadGroup, ::UnboundMethod
       return nil

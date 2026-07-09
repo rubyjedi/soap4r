@@ -28,7 +28,7 @@ class OxParser < XSD::XMLParser::Parser
       ::Ox.sax_parse(handler, string, {:symbolize=> false, :convert_special=> true, :skip=> :skip_return} )
     else
       # Use HTMLEntities Decoder.  Leave the special-character conversion alone and let HTMLEntities decode it for us.
-      ::Ox.sax_parse(handler, string, {})
+      ::Ox.sax_parse(handler, string, {:skip=> :skip_none})
     end
   end
   

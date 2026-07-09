@@ -26,13 +26,13 @@ class TestBasic < Test::Unit::TestCase
   end
 
   def teardown
-    teardown_client if @server
+    teardown_client if @client
     teardown_proxyserver if @proxyserver
-    teardown_server if @client
+    teardown_server if @server
   end
 
   def setup_server
-    @server = WEBrick::HTTPServer.new(
+    @server = TestUtil.webrick_http_server(
       :BindAddress => "0.0.0.0",
       :Logger => @logger,
       :Port => Port,
@@ -50,11 +50,12 @@ class TestBasic < Test::Unit::TestCase
       '/',
       WEBrick::HTTPServlet::ProcHandler.new(method(:do_server_proc).to_proc)
     )
+
     @server_thread = TestUtil.start_server_thread(@server)
   end
 
   def setup_proxyserver
-    @proxyserver = WEBrick::HTTPProxyServer.new(
+    @proxyserver = TestUtil.webrick_http_server(
       :BindAddress => "0.0.0.0",
       :Logger => @logger,
       :Port => ProxyPort,
@@ -70,14 +71,26 @@ class TestBasic < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.kill
-    @server_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @server_thread.join(10)
+      @server_thread.kill
+      @server_thread.join
+    end
   end
 
   def teardown_proxyserver
     @proxyserver.shutdown
-    @proxyserver_thread.kill
-    @proxyserver_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @proxyserver_thread.join(10)
+      @proxyserver_thread.kill
+      @proxyserver_thread.join
+    end
   end
 
   def teardown_client
