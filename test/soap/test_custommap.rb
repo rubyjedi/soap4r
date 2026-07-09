@@ -70,14 +70,33 @@ class TestMap < Test::Unit::TestCase
   def teardown
     @server.shutdown if @server
     if @t
-      @t.kill
-      @t.join
+      # join with a bound, falling back to kill only if genuinely
+      # stuck (see git history: unconditional immediate kill raced
+      # WEBrick's own async listener cleanup and occasionally leaked
+      # the port).
+      unless @t.join(10)
+        @t.kill
+        @t.join
+      end
     end
     @client.reset_stream if @client
   end
 
-  def test_map
+  def test_map_with_frozen_literals
     h = {'a' => 1, 'b' => 2}
+    soap = SOAP::Marshal.marshal(h)
+    puts soap if $DEBUG
+    obj = SOAP::Marshal.unmarshal(soap)
+    assert_equal(h, obj)
+    #
+    soap = SOAP::Marshal.marshal(h, Map)
+    puts soap if $DEBUG
+    obj = SOAP::Marshal.unmarshal(soap, Map)
+    assert_equal(h, obj)
+  end
+
+  def test_map
+    h = {String.new('a') => 1, String.new('b') => 2}
     soap = SOAP::Marshal.marshal(h)
     puts soap if $DEBUG
     obj = SOAP::Marshal.unmarshal(soap)
@@ -91,17 +110,17 @@ class TestMap < Test::Unit::TestCase
 
   def test_rpc
     h = {'a' => 1, 'b' => 2}
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     assert_equal(h, @client.echo(h))
     assert_equal(0, str.scan(/customname/).size)
     #
     @client.setmap
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     assert_equal(h, @client.echo(h))
     assert_equal(4, str.scan(/customname/).size)
     #
     @client.mapping_registry = Map
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     assert_equal(h, @client.echo(h))
     assert_equal(8, str.scan(/customname/).size)
   end

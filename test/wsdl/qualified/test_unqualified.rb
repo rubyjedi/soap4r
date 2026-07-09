@@ -82,8 +82,14 @@ class TestUnqualified < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.kill
-    @server_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @server_thread.join(10)
+      @server_thread.kill
+      @server_thread.join
+    end
   end
 
   def pathname(filename)
@@ -115,7 +121,7 @@ class TestUnqualified < Test::Unit::TestCase
       Dir.chdir(backupdir)
     end
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.login(:timezone => 'JST', :password => 'passwd',
       :username => 'NaHi')
     # untyped because of passing a Hash
@@ -127,7 +133,7 @@ class TestUnqualified < Test::Unit::TestCase
     TestUtil.require(DIR, 'lpDriver.rb', 'lpMappingRegistry.rb', 'lp.rb')
     @client = Lp_porttype.new("http://localhost:#{Port}/")
 
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.login(Login.new('NaHi', 'passwd', 'JST'))
     assert_xml_equal(LOGIN_REQUEST_QUALIFIED_UNTYPED, parse_requestxml(str))
   end

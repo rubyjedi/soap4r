@@ -62,7 +62,7 @@ public
   def parse(string_or_readable)
     @parsestack = []
     @lastnode = nil
-    @textbuf = ''
+    @textbuf = String.new
     @parser.do_parse(string_or_readable)
     @lastnode
   end

@@ -39,7 +39,7 @@ class MethodDef
   end
 
   def dump
-    buf = ""
+    buf = String.new
     buf << dump_comment if @comment
     buf << dump_method_def
     buf << dump_definition if @definition and !@definition.empty?

@@ -82,8 +82,14 @@ class TestQualified < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.kill
-    @server_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @server_thread.join(10)
+      @server_thread.kill
+      @server_thread.join
+    end
   end
 
   def pathname(filename)
@@ -114,7 +120,7 @@ class TestQualified < Test::Unit::TestCase
       Dir.chdir(backupdir)
     end
     @client.endpoint_url = "http://localhost:#{Port}/"
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.GetPrimeNumbers(:Min => 2, :Max => 10)
     assert_xml_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
       [LOGIN_REQUEST_QUALIFIED, parse_requestxml(str)].join("\n\n"))
@@ -125,7 +131,7 @@ class TestQualified < Test::Unit::TestCase
     TestUtil.require(DIR, 'defaultDriver.rb', 'defaultMappingRegistry.rb', 'default.rb')
     @client = PnumSoap.new("http://localhost:#{Port}/")
 
-    @client.wiredump_dev = str = ''
+    @client.wiredump_dev = str = String.new
     @client.getPrimeNumbers(GetPrimeNumbers.new(2, 10))
     assert_xml_equal(LOGIN_REQUEST_QUALIFIED, parse_requestxml(str),
       [LOGIN_REQUEST_QUALIFIED, parse_requestxml(str)].join("\n\n"))

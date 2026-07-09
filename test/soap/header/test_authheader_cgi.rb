@@ -20,13 +20,24 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
   )
   RUBYBIN << " -d" if $DEBUG
 
-  if RUBY_VERSION.to_f >= 2.2
-    logger_gem = Gem::Specification.find { |s| s.name == 'logger-application' }
-    if logger_gem
-      logger_gem.load_paths.each do |path|
-        RUBYBIN << " -I #{path}"
-      end
-    end
+  # WEBrick::HTTPServlet::CGIHandler wipes the CGI child's entire ENV
+  # before exec'ing it (cgi_runner.rb: `ENV.keys.each{|name| ENV.delete(name)}`,
+  # standard CGI hygiene) -- so GEM_HOME/GEM_PATH/BUNDLE_GEMFILE never
+  # reach the spawned script, and any gem it needs must be forwarded via
+  # a raw -I load-path flag instead (bypasses RubyGems activation
+  # entirely, so it's immune to the ENV wipe). logger-application always
+  # needed this; webrick needs the same treatment now that Ruby 3.0+
+  # demoted it from stdlib to a real gem, and logger needs it too now that
+  # Ruby 4.0+ has done the same.
+  #
+  # Uses $LOAD_PATH (not Gem::Specification.find, which doesn't exist on
+  # Ruby 1.8.7's ancient bundled RubyGems, and not $LOADED_FEATURES, which
+  # stores bare relative filenames like "webrick.rb" on 1.8.7 instead of
+  # absolute paths) to find each feature's actual directory -- this works
+  # identically on every supported Ruby version, gem or stdlib alike.
+  ['logger-application', 'webrick', 'logger'].each do |feature|
+    dir = $LOAD_PATH.find { |path| File.exist?(File.join(path, "#{feature}.rb")) }
+    RUBYBIN << " -I #{dir}" if dir
   end
 
   Port = 17171
@@ -69,7 +80,7 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
     @endpoint = "http://localhost:#{Port}/server.cgi"
     logger = Logger.new(STDERR)
     logger.level = Logger::Severity::ERROR
-    @server = WEBrick::HTTPServer.new(
+    @server = TestUtil.webrick_http_server(
       :BindAddress => "0.0.0.0",
       :Logger => logger,
       :Port => Port,
@@ -78,10 +89,7 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
       :CGIPathEnv => ENV['PATH'],
       :CGIInterpreter => RUBYBIN
     )
-    @t = Thread.new {
-      Thread.current.abort_on_exception = true
-      @server.start
-    }
+    @t = TestUtil.start_server_thread(@server)
   end
 
   def setup_client
@@ -95,14 +103,25 @@ class TestAuthHeaderCGI < Test::Unit::TestCase
 
   def teardown
     @supportclient.delete_sessiondb if @supportclient
+  ensure
+    # Must run even if delete_sessiondb above raises (e.g. the CGI child
+    # process failing to start) -- otherwise @server is orphaned still
+    # listening on Port, and every later test file sharing that same fixed
+    # port fails with EADDRINUSE for the rest of the run.
     teardown_server if @server
     teardown_client if @client
   end
 
   def teardown_server
     @server.shutdown
-    @t.kill
-    @t.join
+    # join with a bound, falling back to kill only if genuinely
+    # stuck (see git history: unconditional immediate kill raced
+    # WEBrick's own async listener cleanup and occasionally leaked
+    # the port).
+    unless @t.join(10)
+      @t.kill
+      @t.join
+    end
   end
 
   def teardown_client

@@ -6,15 +6,6 @@
 # redistribute it and/or modify it under the same terms of Ruby's license;
 # either the dual license version in 2003, or any later version.
 
-### WIP, 2015-June-13:  
-###
-### LibXML drops namespaces on Elements *AND* Attributes, which makes it impossible
-### to correctly associate Namespaces on Namespace-Declared Element Attributes when
-### more than one namespace exists.
-###
-### This issue is evident when you run test/soap/test_cookie.rb
-###
-
 require 'libxml'
 
 module XSD
@@ -22,113 +13,69 @@ module XMLParser
 
 
 class LibXMLParser < XSD::XMLParser::Parser
-  include ::LibXML::XML::SaxParser::Callbacks
-
+  # Parses via XML::Reader rather than the SaxParser callbacks used before.
+  # libxml-ruby's SAX2 callback (on_start_element_ns) never surfaces an
+  # attribute's own namespace prefix to Ruby: the C extension
+  # (ruby_xml_sax2_handler.c's start_element_ns_callback) only reads an
+  # attribute's local name and value, discarding the prefix/URI slots that
+  # libxml2 itself provides per attribute. That made it impossible to
+  # recognize namespace-qualified attributes such as xsi:type, xsi:nil, and
+  # xml:lang, which SOAP4R's demarshaller depends on to pick the right Ruby
+  # type -- values silently fell back to an untyped SOAP::Mapping::Object,
+  # or stayed raw strings instead of being cast to Integer/nil/etc. This gap
+  # is still present as of libxml-ruby 6.0.0 (2026); it isn't a matter of
+  # being on an old release.
+  #
+  # XML::Reader's per-attribute #name *does* return the full "prefix:local"
+  # form (confirmed against libxml-ruby 2.8.0, the version pinned for Ruby
+  # 1.9.3, through the current 3.x/6.x releases) -- matching exactly what
+  # REXML's tag_start and Ox's attr callbacks already hand back, so this
+  # mirrors their convention rather than trying to resolve namespace URIs
+  # itself.
   def do_parse(string_or_readable)
-    $stderr.puts "XSD::XMLParser::LibXMLParser.do_parse" if $DEBUG    
-    # string = string_or_readable.respond_to?(:read) ? string_or_readable.read : string_or_readable
-
+    $stderr.puts "XSD::XMLParser::LibXMLParser.do_parse" if $DEBUG
     @charset = 'utf-8'
-    string = StringIO.new(string_or_readable)
-    parser = LibXML::XML::SaxParser.io(string)
-    parser.callbacks = self
-    parser.parse
-  end
-
-  ENTITY_REF_MAP = {
-    'lt' => '<',
-    'gt' => '>',
-    'amp' => '&',
-    'quot' => '"',
-    'apos' => '\''
-  }
-
-  #def on_internal_subset(name, external_id, system_id)
-  #  nil
-  #end
-
-  #def on_is_standalone()
-  #  nil
-  #end
-
-  #def on_has_internal_subset()
-  #  nil
-  #end
-
-  #def on_has_external_subset()
-  #  nil
-  #end
-
-  #def on_start_document()
-  #  nil
-  #end
-
-  #def on_end_document()
-  #  nil
-  #end
-
-  def on_start_element_ns (name, attr_hash, prefix, uri, namespaces)
-    prefixed_ns = attr_hash.merge(Hash[namespaces.map{|k,v| ["xmlns:#{k}",v]}])
-    if prefix.nil?
-      start_element(name, prefixed_ns)
-    else
-      start_element("#{prefix}:#{name}", prefixed_ns)
+    string = string_or_readable.respond_to?(:read) ? string_or_readable.read : string_or_readable
+    reader = ::LibXML::XML::Reader.string(string)
+    while reader.read
+      case reader.node_type
+      when ::LibXML::XML::Reader::TYPE_ELEMENT
+        name = reader.name
+        attrs = read_attributes(reader)
+        empty = reader.empty_element?
+        start_element(name, attrs)
+        end_element(name) if empty
+      when ::LibXML::XML::Reader::TYPE_END_ELEMENT
+        end_element(reader.name)
+      when ::LibXML::XML::Reader::TYPE_TEXT,
+           ::LibXML::XML::Reader::TYPE_CDATA,
+           ::LibXML::XML::Reader::TYPE_SIGNIFICANT_WHITESPACE
+        characters(reader.value)
+      end
     end
-  end
-
-  def on_end_element_ns (name, prefix, uri)
-    if prefix.nil?
-      end_element(name)
-    else
-      end_element("#{prefix}:#{name}")
-    end
-  end
-
-  def on_start_element (name, attr_hash)
-    # start_element(name, attr_hash)
-  end
-
-  def on_end_element(name)
-    # end_element(name)
-  end
-
-  def on_reference(name)
-    characters(ENTITY_REF_MAP[name])
-  end
-
-  def on_characters(chars)
-    characters(chars)
-  end
-
-  #def on_processing_instruction(target, data)
-  #  nil
-  #end
-
-  #def on_comment(msg)
-  #  nil
-  #end
-
-  def on_parser_warning(msg)
-    warn(msg)
-  end
-
-  def on_parser_error(msg)
-    raise ParseError.new(msg)
-  end
-
-  def on_parser_fatal_error(msg)
-    raise ParseError.new(msg)
-  end
-
-  def on_cdata_block(cdata)
-    characters(cdata)
-  end
-
-  def on_external_subset(name, external_id, system_id)
-    nil
+  rescue ::LibXML::XML::Error => e
+    raise ParseError.new(e.message)
   end
 
   add_factory(self)
+
+  private
+
+  # Attribute names come back in literal "prefix:local" form already (see
+  # do_parse comment above), including xmlns:* declarations -- which are
+  # themselves just attributes as far as the reader is concerned, so no
+  # separate namespace-merging step is needed.
+  def read_attributes(reader)
+    attrs = {}
+    return attrs unless reader.has_attributes?
+    if reader.move_to_first_attribute == 1
+      begin
+        attrs[reader.name] = reader.value
+      end while reader.move_to_next_attribute == 1
+      reader.move_to_element
+    end
+    attrs
+  end
 end
 
 

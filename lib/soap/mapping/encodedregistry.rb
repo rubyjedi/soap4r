@@ -6,6 +6,47 @@
 # redistribute it and/or modify it under the same terms of Ruby's license;
 # either the dual license version in 2003, or any later version.
 
+# in 2.4, 2.5 Fixnum/Bignum aliased to 'Integer'
+FixnumShim = 1.class
+FIXNUM_PRESENT = FixnumShim.name == 'Fixnum'
+BignumShim = (10**20).class
+BIGNUM_PRESENT = BignumShim.name == 'Bignum'
+
+if RUBY_VERSION.to_f >= 3.4 && defined?(Warning) && Warning.respond_to?(:warn)
+  # Ruby 3.4+'s chilled-string deprecation notice fires every time
+  # addextend2soap (below) opens a string's singleton class to check for a
+  # prior #extend, even when it turns out not to be extended -- unavoidable
+  # without breaking test/soap/marshal/marshaltestlib.rb#test_extend_string's
+  # real, tested round-trip behavior (see the NOTE on addextend2soap).
+  # Installed once, permanently, rather than swapped in/out per call: this
+  # method can run concurrently from multiple WEBrick request threads, and a
+  # temporary swap-and-restore around each call would race between threads.
+  # Matched on both the message text AND this file's own path, so no other
+  # chilled-string warning -- from elsewhere in this library, a dependency
+  # like simplecov, or the embedding application -- is ever affected.
+  #
+  # The override itself is built via class_eval on a *string* rather than
+  # literal keyword-argument syntax (`category:`) in this file: this file
+  # must parse cleanly on every supported Ruby back to 1.8.7, and Ruby
+  # parses an entire file up front regardless of the RUBY_VERSION guard
+  # above being a runtime check -- literal keyword-arg syntax here would be
+  # a SyntaxError on any pre-2.0 Ruby long before that guard ever runs
+  # (confirmed: broke the whole file, and everything requiring it, on
+  # 1.8.7). A string is just inert data to the parser; it's only parsed as
+  # code, by class_eval, once we're already inside the version-gated branch.
+  class << Warning
+    alias_method :__soap4r_encodedregistry_original_warn, :warn
+  end
+  Warning.singleton_class.class_eval(<<-'RUBY', __FILE__, __LINE__ + 1)
+    def warn(message, category: nil)
+      if message.include?("literal string will be frozen in the future") &&
+         message.include?("soap/mapping/encodedregistry.rb")
+        return
+      end
+      __soap4r_encodedregistry_original_warn(message, category: category)
+    end
+  RUBY
+end
 
 require 'soap/baseData'
 require 'soap/mapping/mapping'
@@ -122,7 +163,7 @@ class EncodedRegistry
 
   StringFactory = StringFactory_.new
   BasetypeFactory = BasetypeFactory_.new
-  FixnumFactory = FixnumFactory_.new
+  FixnumFactory = FixnumFactory_.new if FIXNUM_PRESENT
   DateTimeFactory = DateTimeFactory_.new
   ArrayFactory = ArrayFactory_.new
   Base64Factory = Base64Factory_.new
@@ -146,7 +187,6 @@ class EncodedRegistry
       {:derived_class => true}],
     [::Float,        ::SOAP::SOAPFloat,      BasetypeFactory,
       {:derived_class => true}],
-    [::Fixnum,       ::SOAP::SOAPInt,        FixnumFactory],
     [::Integer,      ::SOAP::SOAPInt,        BasetypeFactory,
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPLong,       BasetypeFactory,
@@ -199,6 +239,8 @@ class EncodedRegistry
       {:type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException")}],
  ]
 
+  SOAPBaseMap << [FixnumShim, ::SOAP::SOAPInt, FixnumFactory] if FIXNUM_PRESENT
+
   RubyOriginalMap = [
     [::NilClass,     ::SOAP::SOAPNil,        BasetypeFactory],
     [::TrueClass,    ::SOAP::SOAPBoolean,    BasetypeFactory],
@@ -212,7 +254,6 @@ class EncodedRegistry
       {:derived_class => true}],
     [::Float,        ::SOAP::SOAPFloat,      BasetypeFactory,
       {:derived_class => true}],
-    [::Fixnum,       ::SOAP::SOAPInt,        FixnumFactory],
     [::Integer,      ::SOAP::SOAPInt,        BasetypeFactory,
       {:derived_class => true}],
     [::Integer,      ::SOAP::SOAPLong,       BasetypeFactory,
@@ -262,6 +303,8 @@ class EncodedRegistry
                      ::SOAP::SOAPStruct,     TypedStructFactory,
       {:type => XSD::QName.new(RubyCustomTypeNamespace, "SOAPException")}],
   ]
+
+  RubyOriginalMap << [FixnumShim, ::SOAP::SOAPInt, FixnumFactory] if FIXNUM_PRESENT
 
   attr_accessor :default_factory
   attr_accessor :excn_handler_obj2soap
@@ -411,7 +454,18 @@ private
   end
 
   def addextend2soap(node, obj)
-    return if [Symbol, Fixnum, Bignum, Float].any?{ |c| obj.is_a?(c) }
+    return if [Symbol, Integer, Float].any?{ |c| obj.is_a?(c) }
+    return if FIXNUM_PRESENT && obj.is_a?(FixnumShim)
+    return if BIGNUM_PRESENT && obj.is_a?(BignumShim)
+    # NOTE: test/soap/marshal/marshaltestlib.rb#test_extend_string
+    # deliberately extends a String value with a module and expects that
+    # extension to round-trip through SOAP marshal -- so plain (non-frozen)
+    # strings can't be skipped outright here, even though opening a
+    # singleton class on one (below) trips Ruby 3.4+'s chilled-string
+    # warning for any ordinary string literal that happens to pass through
+    # unextended. Not cleanly fixable without breaking that real behavior;
+    # left as a known, harmless, forward-looking warning.
+    return if obj.is_a?(String) && obj.frozen?
     list = (class << obj; self; end).ancestors - obj.class.ancestors
     list = list.reject{|c| c.class == Class } ## As of Ruby 2.1 Singleton Classes are now included in the ancestry. Need to filter those out here.
 

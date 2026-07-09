@@ -15,10 +15,7 @@ class TestCalc2 < Test::Unit::TestCase
   def setup
     @server = CalcServer2.new('CalcServer', 'http://tempuri.org/calcService', '0.0.0.0', Port)
     @server.level = Logger::Severity::ERROR
-    @t = Thread.new {
-      Thread.current.abort_on_exception = true
-      @server.start
-    }
+    @t = TestUtil.start_server_thread(@server)
     @endpoint = "http://localhost:#{Port}/"
     @var = SOAP::RPC::Driver.new(@endpoint, 'http://tempuri.org/calcService')
     @var.wiredump_dev = STDERR if $DEBUG
@@ -33,8 +30,14 @@ class TestCalc2 < Test::Unit::TestCase
   def teardown
     @server.shutdown if @server
     if @t
-      @t.kill
-      @t.join
+      # join with a bound, falling back to kill only if genuinely
+      # stuck (see git history: unconditional immediate kill raced
+      # WEBrick's own async listener cleanup and occasionally leaked
+      # the port).
+      unless @t.join(10)
+        @t.kill
+        @t.join
+      end
     end
     @var.reset_stream if @var
   end

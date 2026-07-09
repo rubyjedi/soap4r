@@ -1,0 +1,56 @@
+# Builds Ruby 1.8.7 from source against a vendored OpenSSL 1.0.2u.
+#
+# Unlike 1.9.3-2.1.x, ruby-build's own 1.8.7-p374 definition has no OpenSSL
+# handling at all (it's a bare install_package), so rbenv/ruby-build can't
+# get this one for free. Ruby 1.8.7's ext/openssl accesses OpenSSL struct
+# internals that became fully opaque in OpenSSL 1.1.0 (2016), so it can't
+# compile against this (or any modern) base image's system OpenSSL. Instead
+# we build OpenSSL 1.0.2u (the same version ruby-build vendors automatically
+# for 1.9.3+) from source ourselves and point Ruby's own ./configure at it
+# directly -- confirmed working: openssl.so builds, and
+# OpenSSL::SSL::SSLContext.new instantiates correctly at runtime.
+FROM debian:bullseye-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl ca-certificates git \
+    zlib1g-dev libreadline-dev libyaml-dev libncurses5-dev \
+    libffi-dev libgdbm-dev libxml2-dev libxslt1-dev libcurl4-openssl-dev \
+    psmisc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Vendored OpenSSL 1.0.2u -- last release of the pre-opaque-struct 1.0 line.
+RUN cd /tmp \
+    && curl -sL -o openssl-1.0.2u.tar.gz https://www.openssl.org/source/openssl-1.0.2u.tar.gz \
+    && tar xzf openssl-1.0.2u.tar.gz \
+    && cd openssl-1.0.2u \
+    && ./config --prefix=/opt/openssl102 --openssldir=/opt/openssl102/ssl shared zlib -fPIC \
+    && make -j"$(nproc)" \
+    && make install_sw \
+    && cd / && rm -rf /tmp/openssl-1.0.2u /tmp/openssl-1.0.2u.tar.gz
+
+# Ruby 1.8.7-p374, configured against the vendored OpenSSL above.
+# -j1: confirmed (via Dockerfile.legacy's rbenv build of 1.9.3, same era of
+# Makefile) that these ancient ext/ build systems lose a directory-creation
+# race under real parallelism on a many-core host -- serial build trades a
+# few extra minutes for a build that doesn't fail nondeterministically.
+RUN cd /tmp \
+    && curl -sL -o ruby-1.8.7-p374.tar.bz2 https://cache.ruby-lang.org/pub/ruby/1.8/ruby-1.8.7-p374.tar.bz2 \
+    && tar xjf ruby-1.8.7-p374.tar.bz2 \
+    && cd ruby-1.8.7-p374 \
+    && ./configure --prefix=/opt/ruby187 --with-openssl-dir=/opt/openssl102 \
+         LDFLAGS="-Wl,-rpath,/opt/openssl102/lib" \
+    && make -j1 \
+    && make install \
+    && cd / && rm -rf /tmp/ruby-1.8.7-p374 /tmp/ruby-1.8.7-p374.tar.bz2
+
+ENV PATH="/opt/ruby187/bin:${PATH}"
+
+# RubyGems wasn't bundled with the interpreter until Ruby 1.9 -- 1.8.7 needs
+# it installed as a wholly separate package (this is the same rubygems
+# release ruby-build itself pairs with 1.8.7).
+RUN cd /tmp \
+    && curl -sL -o rubygems-1.6.2.tgz https://rubygems.org/rubygems/rubygems-1.6.2.tgz \
+    && tar xzf rubygems-1.6.2.tgz \
+    && cd rubygems-1.6.2 \
+    && ruby setup.rb \
+    && cd / && rm -rf /tmp/rubygems-1.6.2 /tmp/rubygems-1.6.2.tgz

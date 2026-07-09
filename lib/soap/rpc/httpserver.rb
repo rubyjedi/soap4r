@@ -42,7 +42,7 @@ class HTTPServer < Logger::Application
     @soaplet = ::SOAP::RPC::SOAPlet.new(@router)
     on_init
 
-    @server = WEBrick::HTTPServer.new(@webrick_config)
+    @server = new_webrick_server(@webrick_config)
     @server.mount('/soaprouter', @soaplet)
     if wsdldir = config[:WSDLDocumentDirectory]
       @server.mount('/wsdl', WEBrick::HTTPServlet::FileHandler, wsdldir)
@@ -136,6 +136,35 @@ class HTTPServer < Logger::Application
   end
 
 private
+
+  # A short retry-on-EADDRINUSE, matching test/testutil.rb's existing
+  # TestUtil.webrick_server helper, applied here so it covers every caller
+  # (not just tests that happen to go through that helper). Note: the mass
+  # EADDRINUSE cascade seen across the test suite (most test files share a
+  # single fixed port) turned out to be caused by a genuinely orphaned
+  # server -- test/soap/header/test_authheader_cgi.rb's teardown could
+  # raise before reaching teardown_server, permanently leaking that test's
+  # listener for the rest of the run -- not by transient TIME_WAIT. This
+  # retry is still worth keeping as a real defensive measure, just don't
+  # rely on it alone to mask a genuine leak elsewhere.
+  def new_webrick_server(config)
+    try = 0
+    begin
+      WEBrick::HTTPServer.new(config)
+    rescue Errno::EADDRINUSE => e
+      sleep 1
+      # See test/testutil.rb's webrick_server for the full history and why
+      # this was pulled back down from 120 to 20 -- the real leak (Thread#kill
+      # racing WEBrick's own async shutdown cleanup in test teardown) is
+      # fixed now, so this only needs to cover transient scheduling delay,
+      # not a real leak. A large budget here actively hurts: sslsvr.rb (test
+      # SSL support script) calls into this same path, and its parent process
+      # blocks on a timeout-less read waiting for it to report a PID --
+      # confirmed a stuck retry here manifests as a multi-minute *silent
+      # hang* in CI (run 28892185757), not just a slow test.
+      ((try += 1) < 20) ? retry : raise(e)
+    end
+  end
 
   def attrproxy
     @router

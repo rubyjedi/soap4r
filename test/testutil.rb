@@ -52,4 +52,35 @@ module TestUtil
     }
     t
   end
+
+  def self.webrick_http_server(options)
+    webrick_server(WEBrick::HTTPServer, options)
+  end
+
+  def self.webrick_proxy_server(options)
+    webrick_server(WEBrick::HTTPProxyServer, options)
+  end
+
+  def self.webrick_server(klass, options)
+    try = 0
+    begin
+      klass.new(options)
+    rescue Errno::EADDRINUSE => e
+      STDERR.puts "Wait for available port for #{klass.name} (#{e.message}) [#{Thread.list.inspect}]"
+      sleep 1
+      # This budget got widened all the way to 120 (2min) chasing what
+      # turned out to be a real leak: several test teardown methods called
+      # Thread#kill immediately after WEBrick's own shutdown, racing its
+      # async listener cleanup and occasionally leaving the port bound (see
+      # the removed .kill calls across 36 test files). With that fixed, this
+      # only needs to cover genuine transient scheduling delay on a busy
+      # runner, not a real leak -- and a large budget here is actively
+      # harmful now: compounded across several tests in one run it produces
+      # multi-minute *hangs* rather than fast, visible failures (confirmed:
+      # run 28892185757 stalled 20+ minutes with several retries stacking).
+      # Pulled back down to 20s, comfortably above what transient delay
+      # needs, far below what turns a rare miss into a CI-wrecking stall.
+      ((try += 1) < 20) ? retry : raise(e)
+    end
+  end
 end

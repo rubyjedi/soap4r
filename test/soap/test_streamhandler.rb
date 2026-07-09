@@ -32,7 +32,7 @@ class TestStreamHandler < Test::Unit::TestCase
   end
 
   def setup_server
-    @server = WEBrick::HTTPServer.new(
+    @server = TestUtil.webrick_http_server(
       :BindAddress => "0.0.0.0",
       :Logger => @logger,
       :Port => Port,
@@ -58,7 +58,7 @@ class TestStreamHandler < Test::Unit::TestCase
   end
 
   def setup_proxyserver
-    @proxyserver = WEBrick::HTTPProxyServer.new(
+    @proxyserver = TestUtil.webrick_proxy_server(
       :BindAddress => "0.0.0.0",
       :Logger => @logger,
       :Port => ProxyPort,
@@ -75,14 +75,26 @@ class TestStreamHandler < Test::Unit::TestCase
 
   def teardown_server
     @server.shutdown
-    @server_thread.kill
-    @server_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @server_thread.join(10)
+      @server_thread.kill
+      @server_thread.join
+    end
   end
 
   def teardown_proxyserver
     @proxyserver.shutdown
-    @proxyserver_thread.kill
-    @proxyserver_thread.join
+    # join with a bound, falling back to kill only if the thread
+    # is genuinely stuck (not as an unconditional first resort --
+    # that raced WEBrick's own async listener cleanup and
+    # occasionally leaked the port; see git history).
+    unless @proxyserver_thread.join(10)
+      @proxyserver_thread.kill
+      @proxyserver_thread.join
+    end
   end
 
   def teardown_client
@@ -134,7 +146,7 @@ __EOX__
   end
 
   def test_normal
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
@@ -147,7 +159,7 @@ __EOX__
     @client = SOAP::RPC::Driver.new(URI.parse(@url), '')
     @client.add_method("do_server_proc")
     # same as test_normal
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     assert_nil(@client.do_server_proc)
     r, h = parse_req_header(str)
@@ -163,7 +175,7 @@ __EOX__
       return
     end
     @client.endpoint_url = @url + 'basic_auth'
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     @client.options['protocol.http.basic_auth']['0'] = [@url, "admin", "admin"]
     assert_nil(@client.do_server_proc_basic_auth)
@@ -180,7 +192,7 @@ __EOX__
       SOAP::NetHttpClient::NO_PROXY_HOSTS.clear
     end
     setup_proxyserver
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     @client.options["protocol.http.proxy"] = @proxyurl
     assert_nil(@client.do_server_proc)
@@ -199,7 +211,7 @@ __EOX__
   end
 
   def test_charset
-    str = ""
+    str = String.new
     @client.wiredump_dev = str
     @client.options["protocol.http.charset"] = "iso-8859-8"
     assert_nil(@client.do_server_proc)

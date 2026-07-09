@@ -34,7 +34,7 @@ class EncodedMappingRegistryCreator
 
   def dump(varname)
     @varname = varname
-    result = ''
+    result = String.new
     str = dump_complextype
     unless str.empty?
       result << "\n" unless result.empty?

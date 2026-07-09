@@ -225,7 +225,7 @@ class MIMEMessage
   end
 
   def content_str
-    str = ''
+    str = String.new
     @parts.each do |prt|
       str << "--" + boundary + "\r\n"
       str << prt.to_s + "\r\n"

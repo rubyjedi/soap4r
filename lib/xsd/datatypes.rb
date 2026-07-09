@@ -256,7 +256,7 @@ private
   def screen_data(d)
     if d.is_a?(String)
       # Integer("00012") => 10 in Ruby.
-      d.sub!(/^([+\-]?)0*(?=\d)/, "\\1")
+      d = d.sub(/^([+\-]?)0*(?=\d)/, "\\1")
     end
     screen_data_str(d)
   end
@@ -480,14 +480,14 @@ private
   end
 
   def _to_s
-    str = ''
+    str = String.new
     str << @sign if @sign
     str << 'P'
-    l = ''
+    l = String.new
     l << "#{ @year }Y" if @year.nonzero?
     l << "#{ @month }M" if @month.nonzero?
     l << "#{ @day }D" if @day.nonzero?
-    r = ''
+    r = String.new
     r << "#{ @hour }H" if @hour.nonzero?
     r << "#{ @min }M" if @min.nonzero?
     r << "#{ @sec }S" if @sec.nonzero?
@@ -568,7 +568,7 @@ module XSDDateTimeImpl
     if diffmin.zero?
       'Z'
     else
-      ((diffmin < 0) ? '-' : '+') << format('%02d:%02d',
+      ((diffmin < 0) ? '-' : '+') + format('%02d:%02d',
     	(diffmin.abs / 60.0).to_i, (diffmin.abs % 60.0).to_i)
     end
   end
@@ -629,8 +629,18 @@ private
     zonestr = $8
     data = DateTime.civil(year, mon, mday, hour, min, sec, tz2of(zonestr))
     if secfrac
-      diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / DayInSec
-      data += diffday
+      if RUBY_VERSION.to_f >= 1.9
+        diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / DayInSec
+        data += diffday
+      else
+        # DateTime#+ produces wildly wrong results for certain Rational
+        # values on Ruby 1.8.7's date library (confirmed directly: e.g.
+        # adding Rational(1, 86400000) sends the date to 4763 BC). Baking
+        # the fraction into DateTime.civil's own seconds argument instead
+        # of adding it afterwards avoids the buggy code path entirely.
+        fracval = secfrac.to_i.to_r / (10 ** secfrac.size)
+        data = DateTime.civil(year, mon, mday, hour, min, sec + fracval, tz2of(zonestr))
+      end
       # FYI: new! and jd_to_rjd are not necessary to use if you don't have
       # exceptional reason.
     end
@@ -683,8 +693,18 @@ private
     zonestr = $5
     data = DateTime.civil(1, 1, 1, hour, min, sec, tz2of(zonestr))
     if secfrac
-      diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / DayInSec
-      data += diffday
+      if RUBY_VERSION.to_f >= 1.9
+        diffday = secfrac.to_i.to_r / (10 ** secfrac.size) / DayInSec
+        data += diffday
+      else
+        # DateTime#+ produces wildly wrong results for certain Rational
+        # values on Ruby 1.8.7's date library (confirmed directly: e.g.
+        # adding Rational(1, 86400000) sends the date to 4763 BC). Baking
+        # the fraction into DateTime.civil's own seconds argument instead
+        # of adding it afterwards avoids the buggy code path entirely.
+        fracval = secfrac.to_i.to_r / (10 ** secfrac.size)
+        data = DateTime.civil(1, 1, 1, hour, min, sec + fracval, tz2of(zonestr))
+      end
     end
     [data, secfrac]
   end

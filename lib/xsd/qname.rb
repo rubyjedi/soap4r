@@ -33,6 +33,7 @@ class QName
   end
 
   def match(rhs)
+    return false unless rhs.is_a?(XSD::QName)
     if rhs.namespace and (rhs.namespace != @namespace)
       return false
     end
@@ -43,7 +44,7 @@ class QName
   end
 
   def ==(rhs)
-    !rhs.nil? and @namespace == rhs.namespace and @name == rhs.name
+    rhs.is_a?(XSD::QName) and @namespace == rhs.namespace and @name == rhs.name
   end
 
   def ===(rhs)

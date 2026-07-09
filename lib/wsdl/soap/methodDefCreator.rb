@@ -37,7 +37,7 @@ class MethodDefCreator
   end
 
   def dump(name)
-    methoddef = ""
+    methoddef = String.new
     porttype = @definitions.porttype(name)
     binding = porttype.find_binding
     if binding
@@ -94,7 +94,7 @@ private
     if paramstr.empty?
       paramstr = '[]'
     else
-      paramstr = "[ " << paramstr.split(/\r?\n/).join("\n    ") << " ]"
+      paramstr = "[ " + paramstr.split(/\r?\n/).join("\n    ") + " ]"
     end
     definitions = <<__EOD__
 #{ndq(mdef.soapaction)},
