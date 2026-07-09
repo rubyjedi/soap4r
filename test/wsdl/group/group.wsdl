@@ -50,6 +50,23 @@
         </xsd:complexType>
 
         <xsd:element name="groupele" type="txd:groupele_type"/>
+
+        <!-- Regression coverage for a group ref used as a complexType's
+             sole, direct content, with no wrapping sequence, choice, or
+             all around the group ref itself. This is distinct from
+             groupele_type above, where the group ref is nested inside an
+             explicit sequence. Before this was fixed, generating a class
+             definition for a complexType shaped this way crashed with
+             "undefined method have_any? for an instance of
+             WSDL::XMLSchema::Group", since Group didn't yet have the
+             ComplexType-derived methods (elements, have_any?, attributes)
+             needed once it's asked to stand in directly for a
+             complexType's content. -->
+        <xsd:complexType name="groupdirect_type">
+          <xsd:group ref="txd:common_element"/>
+        </xsd:complexType>
+
+        <xsd:element name="groupdirect" type="txd:groupdirect_type"/>
       </xsd:schema>
     </types>
 
