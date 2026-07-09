@@ -103,6 +103,29 @@ class TestGroup < Test::Unit::TestCase
     compare("expectedDriver.rb", "echoDriver.rb")
   end
 
+  # Regression test for a <xsd:group ref="..."/> used as a complexType's
+  # sole, direct content (groupdirect_type in group.wsdl), as opposed to
+  # groupele_type's group ref nested inside an explicit <xsd:sequence>.
+  # Before this was fixed, generating a class definition for a complexType
+  # shaped this way crashed with "undefined method 'have_any?' for an
+  # instance of WSDL::XMLSchema::Group" (classDefCreator.rb calling
+  # ComplexType#elements, which delegates straight to the bare Group
+  # instance since it's the complexType's only content, but Group didn't
+  # yet have any of the ComplexType-derived methods that requires). This
+  # test only needs test_generate (above) to have already run without
+  # raising to prove the crash is fixed; it additionally confirms the
+  # generated class actually has the fields pulled in from the referenced
+  # group (comment/element/eletype, from common_element's own nested
+  # group ref to common plus a choice) rather than silently coming up
+  # empty.
+  def test_groupdirect_classdef
+    obj = Groupdirect_type.new("a comment", "an element", nil)
+    assert_equal("a comment", obj.comment)
+    assert_equal("an element", obj.element)
+    assert_nil(obj.eletype)
+    assert_respond_to(obj, :set_any)
+  end
+
   def test_wsdl
     wsdl = File.join(DIR, 'group.wsdl')
     @client = ::SOAP::WSDLDriverFactory.new(wsdl).create_rpc_driver

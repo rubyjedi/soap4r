@@ -276,6 +276,12 @@ private
     parentmodule = mapped_class_name(qname, mpath)
     init_lines, init_params =
       parse_elements(c, typedef.elements, qname.namespace, parentmodule)
+    if typedef.content && (WSDL::XMLSchema::Group === typedef.content)
+        g_init_lines, g_init_params =
+            parse_elements(c, typedef.content.refelement.elements, qname.namespace, parentmodule)
+        init_lines = (g_init_lines + init_lines)
+        init_params = (g_init_params + init_params)
+    end
     unless typedef.attributes.empty?
       define_attribute(c, typedef.attributes)
       init_lines << "@__xmlattr = {}"
@@ -337,6 +343,9 @@ private
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Group
+        if element.ref && element.content.nil?
+            element.content = element.refelement
+        end
         if element.content.nil?
           warn("no group definition found: #{element}")
           next

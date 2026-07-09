@@ -9,13 +9,14 @@
 
 require 'wsdl/info'
 require 'wsdl/xmlSchema/ref'
+require 'wsdl/xmlSchema/complexType'
 
 
 module WSDL
 module XMLSchema
 
 
-class Group < Info
+class Group < ComplexType
   include Ref
 
   attr_writer :name	# required
@@ -89,8 +90,9 @@ class Group < Info
     end
   end
 
-private
-
+  # No longer private: classDefCreator.rb and mappingRegistryCreatorSupport.rb
+  # both need to resolve a group ref's actual definition when generating code
+  # for a complexType whose sole content is a <xsd:group ref="..."/>.
   def refelement
     @refelement ||= (@ref ? root.collect_modelgroups[@ref] : nil)
   end
