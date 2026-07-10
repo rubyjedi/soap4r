@@ -13,11 +13,11 @@
            used to collect one init_params entry per element it walked into
            without deduplicating by name, so generating a class for a type
            shaped this way emitted `def initialize(shared = nil,
-           shared = nil)` -- a Ruby SyntaxError (duplicate argument name)
+           shared = nil)`, a Ruby SyntaxError (duplicate argument name)
            the moment the generated file was loaded. This is legal,
            unambiguous XSD: inside a <sequence> (not <choice>), position is
            fixed and deterministic, so Unique Particle Attribution isn't
-           violated by two same-named siblings -- it's the same pattern as
+           violated by two same-named siblings; it's the same pattern as
            `<xsd:element name="shared"/><xsd:element name="shared"/>`
            appearing at two distinct, ordered positions, same as many real
            schemas do for repeated same-named fields. The second occurrence
