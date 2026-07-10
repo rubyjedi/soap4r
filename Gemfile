@@ -24,7 +24,12 @@ else
   # an unresolvable-symbol crash at native-ext load time (not a catchable
   # LoadError). 2.4.5 predates that and is already the known-good pin used
   # for Ruby <= 1.8 above; it also covers 1.9.x - 2.1.x.
-  gem 'ox', '~> 2.4.5'
+  #
+  # Must be pinned exactly ("= 2.4.5", not "~> 2.4.5"): later 2.4.x patches
+  # (confirmed with 2.4.13) hit a second, different unresolvable-symbol
+  # crash of their own (RSTRUCT_GET) on these old Rubies, so a floating
+  # patch-level constraint silently re-breaks this the same way.
+  gem 'ox', '= 2.4.5'
 end
 
 if RUBY_VERSION.to_f <= 1.8
