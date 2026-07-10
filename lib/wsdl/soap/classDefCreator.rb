@@ -274,11 +274,17 @@ private
     c.comment = "#{qname}"
     c.comment << "\nabstract" if typedef.abstract
     parentmodule = mapped_class_name(qname, mpath)
+    # Shared across both parse_elements calls below (and all of their
+    # recursive descendants) so that a name reachable through two
+    # independent paths -- e.g. two group refs each declaring an element
+    # called "shared" -- is detected as a collision no matter which branch
+    # of the content model it comes from.
+    varnames = {}
     init_lines, init_params =
-      parse_elements(c, typedef.elements, qname.namespace, parentmodule)
+      parse_elements(c, typedef.elements, qname.namespace, parentmodule, false, varnames)
     if typedef.content && (WSDL::XMLSchema::Group === typedef.content)
         g_init_lines, g_init_params =
-            parse_elements(c, typedef.content.refelement.elements, qname.namespace, parentmodule)
+            parse_elements(c, typedef.content.refelement.elements, qname.namespace, parentmodule, false, varnames)
         init_lines = (g_init_lines + init_lines)
         init_params = (g_init_params + init_params)
     end
@@ -292,7 +298,20 @@ private
     c
   end
 
-  def parse_elements(c, elements, base_namespace, mpath, as_array = false)
+  # varnames tracks every attribute/param name assigned so far across the
+  # whole recursive walk for one class (threaded through by the caller, and
+  # passed on unchanged to every recursive call below), so that a name
+  # reachable through two independent paths -- e.g. two group refs each
+  # declaring an element called "shared" -- collides no matter which branch
+  # of the content model it comes from. Without this, the second "shared"
+  # would emit an `attr_accessor :shared` and `def initialize(shared = nil)`
+  # entry identical to the first, silently wiring both onto the very same
+  # @shared ivar (a plain Array#uniq on init_params alone would only paper
+  # over the resulting SyntaxError, not this data loss: the two occurrences
+  # would remain last-write-wins instead of independently addressable). We
+  # instead suffix the repeat, the same way define_attribute already
+  # disambiguates colliding attribute constants below.
+  def parse_elements(c, elements, base_namespace, mpath, as_array = false, varnames = {})
     init_lines = []
     init_params = []
     any = false
@@ -323,6 +342,12 @@ private
         unless as_array
           attrname = safemethodname(name)
           varname = safevarname(name)
+          varnames[varname] ||= 0
+          if (varnames[varname] += 1) > 1
+            suffix = "_#{varnames[varname]}"
+            attrname += suffix
+            varname += suffix
+          end
           c.def_attr(attrname, true, varname)
           init_lines << "@#{varname} = #{varname}"
           if element.map_as_array?
@@ -334,12 +359,12 @@ private
         end
       when WSDL::XMLSchema::Sequence
         child_init_lines, child_init_params =
-          parse_elements(c, element.elements, base_namespace, mpath, as_array)
+          parse_elements(c, element.elements, base_namespace, mpath, as_array, varnames)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Choice
         child_init_lines, child_init_params =
-          parse_elements(c, element.elements, base_namespace, mpath, as_array)
+          parse_elements(c, element.elements, base_namespace, mpath, as_array, varnames)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       when WSDL::XMLSchema::Group
@@ -351,7 +376,7 @@ private
           next
         end
         child_init_lines, child_init_params =
-          parse_elements(c, element.content.elements, base_namespace, mpath, as_array)
+          parse_elements(c, element.content.elements, base_namespace, mpath, as_array, varnames)
         init_lines.concat(child_init_lines)
         init_params.concat(child_init_params)
       else
@@ -363,7 +388,10 @@ private
 
   def define_attribute(c, attributes)
     const = {}
-    unless attributes.empty?
+    # No __xmlattr-backed storage is needed when every attribute is fixed:
+    # their getters return the fixed literal directly and none of them get
+    # a setter (see below), so there's nothing left to read the hash for.
+    unless attributes.empty? || attributes.all? { |attribute| attribute.fixed }
       c.def_method("__xmlattr") do <<-__EOD__
           @__xmlattr ||= {}
         __EOD__
@@ -378,15 +406,34 @@ private
         constname += "_#{const[constname]}"
       end
       c.def_const(constname, dqname(name))
-      c.def_method(methodname) do <<-__EOD__
-          __xmlattr[#{constname}]
-        __EOD__
+      c.def_method(methodname) do
+        define_attribute_reader_body(attribute, constname)
       end
-      c.def_method(methodname + '=', 'value') do <<-__EOD__
-          __xmlattr[#{constname}] = value
-        __EOD__
+      # XSD's `fixed` value constraint means any value other than the fixed
+      # one is invalid, so there's no legitimate value a setter could ever
+      # assign; omit it entirely rather than generate a footgun.
+      unless attribute.fixed
+        c.def_method(methodname + '=', 'value') do <<-__EOD__
+            __xmlattr[#{constname}] = value
+          __EOD__
+        end
       end
       c.comment << "\n  #{methodname} - #{attribute_basetype(attribute) || '(any)'}"
+    end
+  end
+
+  # Per XML Schema Part 1 S3.2.1, a `fixed` or `default` value constraint
+  # means an omitted attribute is treated as if it were present with that
+  # value -- this was previously discarded at codegen time, silently
+  # dropping that XSD semantic. `fixed` wins if both are somehow set, since
+  # WSDL::XMLSchema::Attribute itself only ever populates one or the other.
+  def define_attribute_reader_body(attribute, constname)
+    if f = attribute.fixed
+      %Q{"#{f}"}
+    elsif d = attribute.default
+      %Q{__xmlattr[#{constname}] || "#{d}"}
+    else
+      "__xmlattr[#{constname}]"
     end
   end
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions
+    name="attrdefault"
+    targetNamespace="urn:attrdefault"
+    xmlns:tns="urn:attrdefault"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema elementFormDefault="unqualified" targetNamespace="urn:attrdefault">
+
+      <!-- Regression coverage: classDefCreator#define_attribute ignores
+           the XSD `fixed`/`default` attribute constraints entirely, even
+           though WSDL::XMLSchema::Attribute already parses and exposes
+           them (attribute.fixed / attribute.default). "version" below is
+           fixed, "lang" has a default, "plain" has neither. See
+           nedap/soap4r fork commit 0739995 ("Add fixed and default
+           attributes to class gen"), which makes the fixed attribute's
+           getter always return the fixed value (and drops its setter),
+           and makes the default attribute's getter fall back to the
+           default when unset. -->
+      <xsd:complexType name="attrdefault_type">
+        <xsd:sequence>
+          <xsd:element name="body" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="version" type="xsd:string" fixed="1.0"/>
+        <xsd:attribute name="lang" type="xsd:string" default="en"/>
+        <xsd:attribute name="plain" type="xsd:string"/>
+      </xsd:complexType>
+
+    </xsd:schema>
+  </types>
+</definitions>
