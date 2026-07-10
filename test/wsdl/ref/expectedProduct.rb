@@ -194,7 +194,7 @@ class ProductBag
   end
 
   def xmlattr_yesno
-    __xmlattr[AttrYesno]
+    __xmlattr[AttrYesno] || "Y"
   end
 
   def xmlattr_yesno=(value)

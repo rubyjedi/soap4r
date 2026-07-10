@@ -30,7 +30,7 @@ class Groupele_type
   end
 
   def xmlattr_attr_min
-    __xmlattr[AttrAttr_min]
+    __xmlattr[AttrAttr_min] || "0"
   end
 
   def xmlattr_attr_min=(value)
@@ -38,7 +38,7 @@ class Groupele_type
   end
 
   def xmlattr_attr_max
-    __xmlattr[AttrAttr_max]
+    __xmlattr[AttrAttr_max] || "0"
   end
 
   def xmlattr_attr_max=(value)

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions
+    name="dup"
+    targetNamespace="urn:dupinitparams"
+    xmlns:tns="urn:dupinitparams"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema elementFormDefault="unqualified" targetNamespace="urn:dupinitparams">
+
+      <!-- Regression coverage: a complexType whose content declares the
+           same element name ("shared") twice. classDefCreator#parse_elements
+           used to collect one init_params entry per element it walked into
+           without deduplicating by name, so generating a class for a type
+           shaped this way emitted `def initialize(shared = nil,
+           shared = nil)` -- a Ruby SyntaxError (duplicate argument name)
+           the moment the generated file was loaded. This is legal,
+           unambiguous XSD: inside a <sequence> (not <choice>), position is
+           fixed and deterministic, so Unique Particle Attribution isn't
+           violated by two same-named siblings -- it's the same pattern as
+           `<xsd:element name="shared"/><xsd:element name="shared"/>`
+           appearing at two distinct, ordered positions, same as many real
+           schemas do for repeated same-named fields. The second occurrence
+           is now renamed "shared_2" (see parse_elements' varnames
+           tracking) rather than collapsed away, so both values stay
+           independently addressable on the generated object. -->
+      <xsd:complexType name="dup_type">
+        <xsd:sequence>
+          <xsd:element name="shared" type="xsd:string" minOccurs="0"/>
+          <xsd:element name="shared" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+    </xsd:schema>
+  </types>
+</definitions>
