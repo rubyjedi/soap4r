@@ -138,6 +138,82 @@ jobs:
             SOAP4R_HTTP_CLIENTS=net_http SOAP4R_PARSERS=oxparser bundle exec rake test:deep
           '
 
+      # curb and faraday are opt-in (Gemfile groups :http_curb/:http_faraday,
+      # both `optional: true`) since curb needs a system libcurl-dev present
+      # at compile time -- installing it unconditionally would break `bundle
+      # install` for every contributor who never touches this backend. This
+      # job's matrix is MRI-only (JRuby is the separate test-jruby job
+      # below, which curb/patron -- both native extensions with no JRuby
+      # port -- are deliberately not added to), and isn't validated below
+      # Ruby 2.2, so this step only runs where the Gemfile actually declares
+      # the gem; older Rubies in this matrix just install an empty group.
+      - name: Run curb HTTP client backend (oxparser)
+        run: |
+          docker run --rm -v "${{ github.workspace }}":/repo-ro:ro ruby:${{ matrix.ruby }} bash -c '
+            set -e
+            apt-get update -qq && apt-get install -y -qq psmisc libcurl4-openssl-dev pkg-config build-essential
+            mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
+            gem install bundler --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-ri --no-rdoc
+            bundle config set with "http_curb"
+            bundle install
+            fuser -k -n tcp 17171 >/dev/null 2>&1 || true
+            SOAP4R_HTTP_CLIENTS=curb SOAP4R_PARSERS=oxparser bundle exec rake test:deep
+          '
+
+      # Faraday is itself pluggable underneath our own backend selection
+      # (SOAP4R_FARADAY_ADAPTER -- see lib/soap/faradayClient.rb): this
+      # exercises our one bridge adapter against two meaningfully different
+      # underlying transports rather than an exhaustive sweep of everything
+      # Faraday supports, which would mostly re-test Faraday's own adapters
+      # rather than anything specific to soap4r-ng. :net_http (the default)
+      # proves the common case; :patron (libcurl-based, like curb but a
+      # separate, less actively maintained gem) proves the bridge's
+      # proxy/SSL/timeout config plumbing survives a differently-shaped
+      # transport underneath.
+      - name: Run faraday HTTP client backend, net_http adapter (oxparser)
+        run: |
+          docker run --rm -v "${{ github.workspace }}":/repo-ro:ro ruby:${{ matrix.ruby }} bash -c '
+            set -e
+            apt-get update -qq && apt-get install -y -qq psmisc
+            mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
+            gem install bundler --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-ri --no-rdoc
+            bundle config set with "http_faraday"
+            bundle install
+            fuser -k -n tcp 17171 >/dev/null 2>&1 || true
+            SOAP4R_HTTP_CLIENTS=faraday SOAP4R_PARSERS=oxparser bundle exec rake test:deep
+          '
+
+      # continue-on-error here: this spot-check has one confirmed, narrow,
+      # understood exception -- test_calc_cgi and test_authheader_cgi both
+      # fail with Faraday::ConnectionFailed ("Callback aborted") from
+      # patron/libcurl specifically against WEBrick's CGI-subprocess
+      # responses (which stream back without a Content-Length, relying on
+      # connection-close framing -- a notoriously inconsistent case across
+      # HTTP client implementations). Not reproducible with any other
+      # backend in this matrix, including curb (also libcurl-based) or
+      # faraday's own net_http adapter above -- narrowed to something
+      # specific to patron's own handling of that response shape. See
+      # "Known Test Suite Exceptions" in the README.
+      - name: Run faraday HTTP client backend, patron adapter spot-check (oxparser)
+        continue-on-error: true
+        run: |
+          docker run --rm -v "${{ github.workspace }}":/repo-ro:ro ruby:${{ matrix.ruby }} bash -c '
+            set -e
+            apt-get update -qq && apt-get install -y -qq psmisc libcurl4-openssl-dev pkg-config build-essential
+            mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
+            gem install bundler --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-ri --no-rdoc
+            bundle config set with "http_faraday"
+            bundle install
+            fuser -k -n tcp 17171 >/dev/null 2>&1 || true
+            SOAP4R_HTTP_CLIENTS=faraday SOAP4R_FARADAY_ADAPTER=patron SOAP4R_PARSERS=oxparser bundle exec rake test:deep
+          '
+
   # 1.9.3 and 2.0.0 have official Docker Hub images, but every tag in both
   # lines was published in the legacy Docker manifest v1 schema and is no
   # longer pullable at all -- confirmed empirically ("not implemented: media

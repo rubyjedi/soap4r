@@ -33,6 +33,9 @@ gem 'webrick'
 gem 'logger'
 
 gem 'httpclient' # Strongly recommended. See "HTTP Client Backends" below for the Net::HTTP fallback's limitations.
+## curb and faraday are additional, opt-in HTTP client backends -- not
+## needed unless you specifically want one of them; see "HTTP Client
+## Backends" below.
 
 gem 'soap4r-ng', :git=>'https://github.com/rubyjedi/soap4r.git', :branch=>"master"
 ```
@@ -95,12 +98,32 @@ is a drop-in file rather than a change to library code.
   predecessor, by the same author. Historically the second fallback, but it's
   no longer published on RubyGems.org at all, so in practice this backend is
   unreachable today unless you vendor the gem yourself.
+* **[curb](https://github.com/taf2/curb)** -- libcurl bindings. Opt-in (see
+  below): needs a system `libcurl-dev` present at compile time, unlike every
+  other backend here. Supports proxying, SSL/TLS configuration, and -- via
+  libcurl's own challenge negotiation -- both basic and digest
+  WWW-Authenticate auth (`test/soap/auth/test_basic.rb` and
+  `test_digest.rb` both pass against it unmodified). Cookies and
+  request/response filters are not wired up (same limitation as
+  `SOAP::NetHttpClient` below). No JRuby port at all (native extension), and
+  not validated below Ruby 2.2.
+* **[faraday](https://github.com/lostisland/faraday)** -- Faraday is itself
+  pluggable underneath our own backend selection: it has its own adapter
+  system, defaulting to `:net_http` and overridable with
+  `SOAP4R_FARADAY_ADAPTER` (e.g. `SOAP4R_FARADAY_ADAPTER=patron`) -- a
+  second, independent config knob layered under `SOAP4R_HTTP_CLIENTS`, not a
+  replacement for it. Opt-in (see below). Supports proxying and basic auth
+  (sent proactively via a manually-built `Authorization` header, since
+  Faraday's core has no bundled auth middleware); does **not** support
+  challenge-response (WWW-Authenticate) auth, cookies, or request/response
+  filters, since none of those have a core-Faraday equivalent that would
+  work uniformly across every adapter Faraday itself supports.
 * **`SOAP::NetHttpClient`** -- this project's own wrapper around stdlib
-  `Net::HTTP`, used only when neither gem above is installed. It does **not**
-  support basic/digest auth, cookies, or request/response filters (all raise
-  `NotImplementedError`, or are silently inert for filters) -- these were
-  never wired up for this backend. It's a reasonable fallback for simple
-  unauthenticated SOAP calls when you can't add a gem dependency, but
+  `Net::HTTP`, used only when none of the above are installed. It does
+  **not** support basic/digest auth, cookies, or request/response filters
+  (all raise `NotImplementedError`, or are silently inert for filters) --
+  these were never wired up for this backend. It's a reasonable fallback for
+  simple unauthenticated SOAP calls when you can't add a gem dependency, but
   `httpclient` is what most of this library's real-world testing and feature
   support assumes.
 
@@ -109,16 +132,34 @@ run the test suite against a backend other than the default) with:
 ```
 SOAP4R_HTTP_CLIENTS=net_http bundle exec rake test:deep
 ```
-Valid names are `httpclient`, `http_access2`, and `net_http`, matching the
-files under `lib/soap/httpbackend/`. CI runs the full suite against
-`net_http` too (single-parser, since this is about the HTTP layer, not XML
-parsing) precisely because, before this option existed, nothing in the test
-suite could ever actually reach that fallback -- this project's own Gemfile
-always installs `httpclient`, so the fallback cascade never had a reason to
-fall through. Making it independently selectable surfaced (and fixed) a real
-bug in the process: `SOAP::NetHttpClient`'s wiredump output duplicated
-request/response bodies and was missing the raw request-line/header block
-entirely, corrupting any test or tool that parsed `wiredump_dev` output.
+Valid names are `httpclient`, `http_access2`, `curb`, `faraday`, and
+`net_http`, matching the files under `lib/soap/httpbackend/`. `curb` and
+`faraday` are opt-in Bundler groups (`bundle config set with "http_curb
+http_faraday"` before `bundle install`) rather than main-Gemfile
+dependencies, since curb in particular needs a system library present just
+to compile -- installing it unconditionally would break `bundle install` for
+every contributor who never touches this backend.
+
+CI runs the full suite against `net_http`, `curb`, and `faraday` too
+(single-parser each, since this is about the HTTP layer, not XML parsing)
+precisely because, before `SOAP4R_HTTP_CLIENTS` existed, nothing in the test
+suite could ever actually reach the `net_http` fallback -- this project's own
+Gemfile always installed `httpclient`, so the fallback cascade never had a
+reason to fall through. Making backends independently selectable surfaced
+(and fixed) real bugs in the process: `SOAP::NetHttpClient`'s wiredump output
+duplicated request/response bodies and was missing the raw
+request-line/header block entirely, corrupting any test or tool that parsed
+`wiredump_dev` output. Faraday's own adapter list is deliberately *not*
+swept exhaustively -- our own bridge code (`lib/soap/faradayClient.rb`) is
+what we're testing, and sweeping every adapter Faraday itself supports would
+mostly re-test Faraday's own correctness rather than anything specific to
+soap4r-ng. Instead, CI spot-checks that bridge against two meaningfully
+different transports: Faraday's default `:net_http` adapter, and `:patron`
+(libcurl-based, like curb, but a separate and considerably less actively
+maintained gem). That spot-check has one confirmed, narrow exception: with
+`:patron`, `test_calc_cgi` and `test_authheader_cgi` fail with
+`Faraday::ConnectionFailed: Callback aborted` -- see "Known Test Suite
+Exceptions" below.
 
 **A note on TLS trust for the `httpclient` backend**: `httpclient`'s
 `SSLConfig` doesn't trust your system's CA bundle unless told to -- left
@@ -222,6 +263,18 @@ my machine" environment for version-specific gotchas to hide in.
   programmatically-constructed (never actually `raise`d-and-caught)
   exception object. Fixed with a nil-guard; confirmed clean on both JRuby and
   MRI afterward.
+* **`SOAP4R_HTTP_CLIENTS=faraday SOAP4R_FARADAY_ADAPTER=patron`** -- 1
+  failure + 4 errors, all in the CGI-based tests (`test_calc_cgi`,
+  `test_authheader_cgi`), all `Faraday::ConnectionFailed: Callback aborted`
+  raised from inside `patron`/libcurl. Narrowed to something specific to
+  patron's handling of WEBrick's CGI-subprocess responses (which stream back
+  without a `Content-Length`, relying on connection-close framing -- a
+  notoriously inconsistent case across HTTP client implementations): not
+  reproducible with `curb` (also libcurl-based) or with Faraday's own
+  default `:net_http` adapter against the exact same server. **Accepted
+  spot-check exception** rather than a soap4r-ng bug -- see "HTTP Client
+  Backends" above for why `:patron` is only ever spot-checked, not a fully
+  supported target in its own right.
 
 #### How to Use
 * [NaHi's Original documentation](https://web.archive.org/web/20101212040735/http://dev.ctor.org/soap4r/wiki/) -- the authoritative reference material is still available through the Wayback Machine, thankfully!

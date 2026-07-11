@@ -17,6 +17,8 @@ else
   backend_list = [
     'httpclient',     ## Uses the httpclient gem
     'http_access2',   ## Uses the http-access2 gem ; no longer published on RubyGems.org
+    'curb',           ## Uses the curb gem (libcurl bindings) ; not installed by default, opt-in
+    'faraday',        ## Uses the faraday gem (itself pluggable -- see soap/faradayClient.rb) ; not installed by default, opt-in
     'net_http',       ## Falls back to this project's own wrapper around stdlib Net::HTTP
   ]
 end

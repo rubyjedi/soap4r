@@ -189,16 +189,22 @@ __EOX__
     assert_nil(@client.do_server_proc_basic_auth)
   end
 
+  # Every backend that owns a NO_PROXY_HOSTS constant treats 'localhost' as
+  # never-proxied by default (see e.g. lib/soap/netHttpClient.rb,
+  # lib/soap/curbClient.rb, lib/soap/faradayClient.rb) -- this test needs
+  # the opposite for its own assertions, so it clears whichever class is
+  # ACTIVE, not a hardcoded HTTPClient-or-NetHttpClient binary choice (that
+  # binary check predates SOAP4R_HTTP_CLIENTS making more than two backends
+  # reachable -- see lib/soap/httpbackend.rb).
+  def no_proxy_hosts_holder
+    SOAP::HTTPStreamHandler::Client.const_defined?(:NO_PROXY_HOSTS, false) ?
+      SOAP::HTTPStreamHandler::Client : nil
+  end
+
   def test_proxy
-    # See test_basic_auth above for why this checks the ACTIVE backend
-    # rather than merely whether HTTPClient happens to be loaded.
-    if defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
-      backup = HTTPClient::NO_PROXY_HOSTS.dup
-      HTTPClient::NO_PROXY_HOSTS.clear
-    else
-      backup = SOAP::NetHttpClient::NO_PROXY_HOSTS.dup
-      SOAP::NetHttpClient::NO_PROXY_HOSTS.clear
-    end
+    holder = no_proxy_hosts_holder
+    backup = holder ? holder::NO_PROXY_HOSTS.dup : nil
+    holder&.const_get(:NO_PROXY_HOSTS)&.clear
     setup_proxyserver
     str = String.new
     @client.wiredump_dev = str
@@ -211,11 +217,8 @@ __EOX__
       @client.options["protocol.http.proxy"] = 'ftp://foo:8080'
     end
   ensure
-    if defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
-      HTTPClient::NO_PROXY_HOSTS.replace(backup)
-    else
-      SOAP::NetHttpClient::NO_PROXY_HOSTS.replace(backup)
-    end
+    holder = no_proxy_hosts_holder
+    holder::NO_PROXY_HOSTS.replace(backup) if holder && backup
   end
 
   def test_charset

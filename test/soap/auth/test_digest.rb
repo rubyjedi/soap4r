@@ -130,14 +130,19 @@ __EOX__
 
   private
 
-  # SOAP::NetHttpClient#set_auth explicitly raises NotImplementedError --
-  # soap4r + net/http never supported WWW-Authenticate-style auth. This is
-  # a real, permanent backend limitation, not a bug, so skip cleanly under
-  # SOAP4R_HTTP_CLIENTS=net_http instead of failing (see
-  # lib/soap/httpbackend.rb; test_streamhandler.rb's test_basic_auth uses
-  # the same pattern).
+  # SOAP::NetHttpClient#set_auth and SOAP::FaradayClient#set_auth both
+  # explicitly raise NotImplementedError -- neither soap4r + net/http nor
+  # soap4r + faraday (whose core has no bundled challenge-response
+  # middleware) support WWW-Authenticate-style auth. This is a real,
+  # permanent limitation for those backends, not a bug, so skip cleanly
+  # rather than fail (see lib/soap/httpbackend.rb;
+  # test_streamhandler.rb's test_basic_auth uses the same pattern).
+  # SOAP::CurbClient DOES support this (libcurl negotiates the challenge
+  # itself), so it's deliberately absent from this list.
+  AUTH_UNSUPPORTED_BACKENDS = %w[SOAP::NetHttpClient SOAP::FaradayClient]
+
   def auth_supported?
-    SOAP::HTTPStreamHandler::Client != SOAP::NetHttpClient
+    !AUTH_UNSUPPORTED_BACKENDS.include?(SOAP::HTTPStreamHandler::Client.name)
   end
 end
 

@@ -9,6 +9,37 @@ else
 end
 
 # ---------------------------------------------------------------------------
+# Additional (opt-in) HTTP client backends -- see "HTTP Client Backends" in
+# README.md and lib/soap/httpbackend.rb. Neither is installed by default:
+# `bundle install` alone skips these groups entirely (Bundler's own
+# `optional: true`), since curb needs a system libcurl-dev present at
+# compile time (unlike the httpclient/net_http backends above, which need
+# nothing beyond Ruby itself) and both are meant to be picked deliberately,
+# not forced on every contributor who never touches them. Install with:
+#   bundle install --with http_curb http_faraday
+# curb has no JRuby port at all (same reason ox/libxml-ruby are excluded
+# there -- no native-extension support on JRuby) and hasn't been validated
+# against this project's full legacy-Ruby matrix (1.8.7-2.1.x); it's gated
+# to a modern floor here rather than guessing at older compatibility.
+group :http_curb, optional: true do
+  gem 'curb' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
+end
+group :http_faraday, optional: true do
+  gem 'faraday'
+  # faraday-net_http ships as faraday's own default-adapter dependency
+  # already; faraday-patron is this project's second, deliberately
+  # different (libcurl-based) spot-check adapter for the same bridge code
+  # (see lib/soap/faradayClient.rb, SOAP4R_FARADAY_ADAPTER).
+  gem 'faraday-patron' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
+  gem 'patron' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
+  # lib/soap/faradayClient.rb needs this for its own manual Basic-auth
+  # header encoding -- same early-demotion behavior as logger/getoptlong
+  # below (a plain `require 'base64'` starts warning, then fails outright
+  # once Bundler enforces the Gemfile.lock, on Ruby >= 3.4).
+  gem 'base64' if RUBY_VERSION.to_f >= 3.4
+end
+
+# ---------------------------------------------------------------------------
 # XML parser backends, declared in the same precedence order xsd/xmlparser.rb
 # tries them in (see its parser_list): oxparser, nokogiriparser,
 # libxmlparser, ogaparser, rexmlparser.
