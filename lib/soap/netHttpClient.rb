@@ -132,8 +132,22 @@ private
     extra['User-Agent'] = @agent if @agent
     res = start(url) { |http|
       if @debug_dev
+        # Mirrors httpclient's wiredump block layout (marker line, blank
+        # line, raw request-line + headers, blank line, body) -- callers
+        # that parse wiredump_dev output by block position or by scanning
+        # for a "POST ..." line (e.g. test/soap/test_streamhandler.rb's
+        # parse_req_header) depend on that exact shape regardless of which
+        # backend produced it.
+        # Real proxied requests go out in absolute-form (Net::HTTP handles
+        # this itself at the socket level once the connection is built
+        # with Net::HTTP::Proxy) -- match that here too, or the dump shows
+        # origin-form even when a proxy is actually in use.
+        request_line = http.proxy? ? url.to_s : url.request_uri
         @debug_dev << "= Request\n\n"
-        @debug_dev << req_body << "\n"
+        @debug_dev << "POST #{request_line} HTTP/1.1\n"
+        extra.each { |k, v| @debug_dev << "#{k}: #{v}\n" }
+        @debug_dev << "\n"
+        @debug_dev << req_body
       end
       http.post(url.request_uri, req_body, extra)
     }
@@ -158,7 +172,14 @@ private
       worker.finish
     }
     if @debug_dev
+      # response here is the raw Net::HTTPResponse yielded by http.start,
+      # not yet wrapped into our own Response class (that happens back in
+      # post_redirect/get_content) -- so this uses Net::HTTPResponse's own
+      # #code/#message/#[] rather than #status/#reason/#contenttype.
       @debug_dev << "\n\n= Response\n\n"
+      @debug_dev << "HTTP/1.1 #{response.code} #{response.message}\n"
+      @debug_dev << "Content-Type: #{response['content-type']}\n" if response['content-type']
+      @debug_dev << "\n"
       @debug_dev << response.body << "\n"
     end
     response
@@ -173,9 +194,17 @@ private
       proxy_password = @proxy.password
     end
     http = Net::HTTP::Proxy(proxy_host, proxy_port, proxy_user, proxy_password).new(url.host, url.port)
-    if http.respond_to?(:set_debug_output)
-      http.set_debug_output(@debug_dev)
-    end
+    # Deliberately NOT wiring Net::HTTP's own set_debug_output here: this
+    # class already writes its own structured "= Request"/"= Response"
+    # dump to @debug_dev in #post_redirect/#start (matching the other
+    # backends' wiredump shape, which callers/tests parse by splitting on
+    # blank lines). Net::HTTP's raw wire-level trace uses a different
+    # format and writes the same request/response bodies to the same
+    # stream a second time -- confirmed this was corrupting every
+    # blank-line-block-indexed wiredump parse in the suite (e.g. a request
+    # body substring counted twice, or a parse landing on a "= Response"
+    # marker line instead of XML) the first time this backend was actually
+    # exercised end-to-end (SOAP4R_HTTP_CLIENTS=net_http).
     http.open_timeout = @connect_timeout if @connect_timeout
     http.read_timeout = @receive_timeout if @receive_timeout
     case url

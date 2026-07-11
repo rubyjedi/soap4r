@@ -9,6 +9,7 @@
 
 require 'soap/soap'
 require 'soap/httpconfigloader'
+require 'soap/httpbackend'
 require 'soap/filter/filterchain'
 begin
   require 'stringio'
@@ -92,25 +93,8 @@ end
 class HTTPStreamHandler < StreamHandler
   include SOAP
 
-  begin
-    require 'httpclient'
-    Client = HTTPClient
-    RETRYABLE = true
-  rescue LoadError
-    begin
-      require 'http-access2'
-      if HTTPAccess2::VERSION < "2.0"
-        raise LoadError.new("http-access/2.0 or later is required.")
-      end
-      Client = HTTPAccess2::Client
-      RETRYABLE = true
-    rescue LoadError
-      warn("Loading http-access2 failed.  Net/http is used.") if $DEBUG
-      require 'soap/netHttpClient'
-      Client = SOAP::NetHttpClient
-      RETRYABLE = false
-    end
-  end
+  Client = SOAP::HTTPBackend.client_class
+  RETRYABLE = SOAP::HTTPBackend.retryable?
 
   class HttpPostRequestFilter
     def initialize(filterchain)

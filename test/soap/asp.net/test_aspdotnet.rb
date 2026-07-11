@@ -94,7 +94,12 @@ __XML__
     assert_equal("Hello Mike", @client.sayHello("Mike"))
   end
 
-  if defined?(HTTPClient)
+  # Fixture/assertions below assume httpclient's wiredump format, so this
+  # must check the ACTIVE backend (SOAP4R_HTTP_CLIENTS can force a
+  # different one -- see lib/soap/httpbackend.rb), not merely whether the
+  # gem happens to be loaded in this process (e.g. test/soap/ssl/test_ssl.rb
+  # requires it unconditionally regardless of the active backend).
+  if defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
 
     # qualified!
     REQUEST_ASPDOTNETHANDLER =

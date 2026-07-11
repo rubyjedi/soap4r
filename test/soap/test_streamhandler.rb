@@ -168,7 +168,13 @@ __EOX__
   end
 
   def test_basic_auth
-    unless Object.const_defined?('HTTPClient')
+    # Checking Object.const_defined?('HTTPClient') alone isn't enough now
+    # that the HTTP client backend is independently selectable
+    # (SOAP4R_HTTP_CLIENTS -- see lib/soap/httpbackend.rb):
+    # test/soap/ssl/test_ssl.rb requires the httpclient gem unconditionally
+    # regardless of the active backend, so this must check the ACTIVE
+    # backend instead of merely whether the gem happens to be loaded.
+    unless defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
       # soap4r + net/http + basic_auth is not supported.
       # use httpclient instead.
       assert(true)
@@ -184,7 +190,9 @@ __EOX__
   end
 
   def test_proxy
-    if Object.const_defined?('HTTPClient')
+    # See test_basic_auth above for why this checks the ACTIVE backend
+    # rather than merely whether HTTPClient happens to be loaded.
+    if defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
       backup = HTTPClient::NO_PROXY_HOSTS.dup
       HTTPClient::NO_PROXY_HOSTS.clear
     else
@@ -203,7 +211,7 @@ __EOX__
       @client.options["protocol.http.proxy"] = 'ftp://foo:8080'
     end
   ensure
-    if Object.const_defined?('HTTPClient')
+    if defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
       HTTPClient::NO_PROXY_HOSTS.replace(backup)
     else
       SOAP::NetHttpClient::NO_PROXY_HOSTS.replace(backup)

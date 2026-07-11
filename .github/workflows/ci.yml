@@ -113,6 +113,31 @@ jobs:
             exit $FAILED
           '
 
+      # HTTP client backend is independently selectable too (see
+      # lib/soap/httpbackend.rb, same mechanism as SOAP4R_PARSERS above).
+      # httpclient is already exercised by every run of the loop above (it's
+      # the default), so this only adds the net_http fallback -- the one
+      # backend that, prior to this, no test in the suite could ever
+      # actually reach (it's only selected when both httpclient and
+      # http-access2 fail to load, and this project's Gemfile always
+      # installs httpclient). http-access2 itself is left out: it's no
+      # longer published on RubyGems.org at all, so there's nothing
+      # installable to sweep. A single parser (oxparser) is enough here --
+      # this is about exercising the HTTP backend, not the XML parser.
+      - name: Run net_http HTTP client backend (oxparser)
+        run: |
+          docker run --rm -v "${{ github.workspace }}":/repo-ro:ro ruby:${{ matrix.ruby }} bash -c '
+            set -e
+            apt-get update -qq && apt-get install -y -qq psmisc
+            mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
+            gem install bundler --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-document 2>&1 \
+              || gem install bundler -v 1.17.3 --no-ri --no-rdoc
+            bundle install
+            fuser -k -n tcp 17171 >/dev/null 2>&1 || true
+            SOAP4R_HTTP_CLIENTS=net_http SOAP4R_PARSERS=oxparser bundle exec rake test:deep
+          '
+
   # 1.9.3 and 2.0.0 have official Docker Hub images, but every tag in both
   # lines was published in the legacy Docker manifest v1 schema and is no
   # longer pullable at all -- confirmed empirically ("not implemented: media

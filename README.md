@@ -32,7 +32,7 @@ gem 'webrick'
 ## Ruby 4.0+ did the same to logger:
 gem 'logger'
 
-gem 'httpclient' # Absolutely necessary for soap4r-ng. Net::HTTP Fallback is quite broken, so don't let that happen.
+gem 'httpclient' # Strongly recommended. See "HTTP Client Backends" below for the Net::HTTP fallback's limitations.
 
 gem 'soap4r-ng', :git=>'https://github.com/rubyjedi/soap4r.git', :branch=>"master"
 ```
@@ -79,6 +79,63 @@ JRuby API) -- both parsers gracefully report unavailable rather than
 crashing. `nokogiri`, `oga`, and `rexml` all work normally. `byebug` and
 `pry-byebug` (dev-only debugging aids, not required to run anything) are
 skipped entirely on JRuby since their C extension needs MRI's `ruby.h`.
+
+#### HTTP Client Backends
+Like the XML parsers above, the HTTP client is pluggable: `lib/soap/streamHandler.rb`
+picks one at load time via `lib/soap/httpbackend.rb`, using the exact same
+pattern as `SOAP4R_PARSERS` (`lib/xsd/xmlparser.rb`) -- a hardcoded
+preference order, overridable with an environment variable, so a new backend
+is a drop-in file rather than a change to library code.
+
+* **[httpclient](https://github.com/nahi/httpclient)** -- the default and
+  strongly recommended backend. Fully featured: proxying, basic/digest auth,
+  cookies, SSL/TLS configuration, request/response filters (used for things
+  like cookie handling -- see `test/soap/test_cookie.rb`).
+* **[http-access2](https://rubygems.org/gems/http-access2)** -- httpclient's
+  predecessor, by the same author. Historically the second fallback, but it's
+  no longer published on RubyGems.org at all, so in practice this backend is
+  unreachable today unless you vendor the gem yourself.
+* **`SOAP::NetHttpClient`** -- this project's own wrapper around stdlib
+  `Net::HTTP`, used only when neither gem above is installed. It does **not**
+  support basic/digest auth, cookies, or request/response filters (all raise
+  `NotImplementedError`, or are silently inert for filters) -- these were
+  never wired up for this backend. It's a reasonable fallback for simple
+  unauthenticated SOAP calls when you can't add a gem dependency, but
+  `httpclient` is what most of this library's real-world testing and feature
+  support assumes.
+
+Force a specific backend (e.g. to debug something backend-specific, or to
+run the test suite against a backend other than the default) with:
+```
+SOAP4R_HTTP_CLIENTS=net_http bundle exec rake test:deep
+```
+Valid names are `httpclient`, `http_access2`, and `net_http`, matching the
+files under `lib/soap/httpbackend/`. CI runs the full suite against
+`net_http` too (single-parser, since this is about the HTTP layer, not XML
+parsing) precisely because, before this option existed, nothing in the test
+suite could ever actually reach that fallback -- this project's own Gemfile
+always installs `httpclient`, so the fallback cascade never had a reason to
+fall through. Making it independently selectable surfaced (and fixed) a real
+bug in the process: `SOAP::NetHttpClient`'s wiredump output duplicated
+request/response bodies and was missing the raw request-line/header block
+entirely, corrupting any test or tool that parsed `wiredump_dev` output.
+
+**A note on TLS trust for the `httpclient` backend**: `httpclient`'s
+`SSLConfig` doesn't trust your system's CA bundle unless told to -- left
+unconfigured, it lazily falls back to its own gem-vendored `cacert.pem`
+snapshot, which can go stale relative to a real server's certificate chain as
+CAs rotate their intermediates (confirmed directly: a real Let's
+Encrypt-signed endpoint failed verification against an older bundled
+snapshot while verifying fine against the host's own, actively-maintained CA
+bundle). `lib/soap/httpbackend/httpclient.rb` calls `set_default_paths` on
+every `httpclient` connection's `ssl_config` by default now, which defers to
+whatever CA store OpenSSL was actually built to trust on your platform --
+portable across Debian/RHEL/Alpine/etc, and layered *before* any
+`ssl_config.ca_file`/`ca_path`/`cert_store` you set yourself, so explicit
+configuration still works exactly as before. `SOAP::NetHttpClient` was never
+affected by this -- it has no SSL configuration surface of its own and
+simply defers to Ruby's own stdlib `Net::HTTP`/OpenSSL defaults, which
+already trust the system store without any help.
 
 #### Known Test Suite Exceptions
 Running `rake test:deep` (the complete suite) across the full version matrix
