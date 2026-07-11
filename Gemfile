@@ -27,9 +27,21 @@ end
 group :http_faraday, optional: true do
   gem 'faraday'
   # faraday-net_http ships as faraday's own default-adapter dependency
-  # already; faraday-patron is this project's second, deliberately
-  # different (libcurl-based) spot-check adapter for the same bridge code
-  # (see lib/soap/faradayClient.rb, SOAP4R_FARADAY_ADAPTER).
+  # already. faraday-typhoeus is this project's real second spot-check
+  # adapter for the same bridge code (see lib/soap/faradayClient.rb,
+  # SOAP4R_FARADAY_ADAPTER) -- chosen over faraday-patron because it's the
+  # adapter people actually use in practice (28 reverse dependencies on
+  # RubyGems vs. patron's 3 -- see Ruby Toolbox). typhoeus/ethon load
+  # libcurl via FFI at runtime rather than compiling against it, so no
+  # libcurl-dev is needed to install this one, just the runtime .so
+  # (already present wherever curb's libcurl-dev is installed).
+  gem 'faraday-typhoeus' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
+  gem 'typhoeus' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
+  # faraday-patron is kept as a third, optional spot-check adapter --
+  # libcurl-based like curb, but through a different, considerably less
+  # popular gem (3 reverse dependencies) with its own quirks (see
+  # SOAP4R_FARADAY_ADAPTER=patron and "Known Test Suite Exceptions" in
+  # README.md).
   gem 'faraday-patron' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
   gem 'patron' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
   # lib/soap/faradayClient.rb needs this for its own manual Basic-auth

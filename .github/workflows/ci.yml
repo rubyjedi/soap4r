@@ -163,20 +163,22 @@ jobs:
           '
 
       # Faraday is itself pluggable underneath our own backend selection
-      # (SOAP4R_FARADAY_ADAPTER -- see lib/soap/faradayClient.rb): this
-      # exercises our one bridge adapter against two meaningfully different
-      # underlying transports rather than an exhaustive sweep of everything
-      # Faraday supports, which would mostly re-test Faraday's own adapters
-      # rather than anything specific to soap4r-ng. :net_http (the default)
-      # proves the common case; :patron (libcurl-based, like curb but a
-      # separate, less actively maintained gem) proves the bridge's
-      # proxy/SSL/timeout config plumbing survives a differently-shaped
-      # transport underneath.
-      - name: Run faraday HTTP client backend, net_http adapter (oxparser)
+      # (SOAP4R_FARADAY_ADAPTER -- see lib/soap/faradayClient.rb). Its
+      # default sub-adapter (:net_http) is deliberately NOT given its own CI
+      # step here: it would just re-exercise stdlib Net::HTTP, which the
+      # net_http backend above already covers end-to-end -- the whole point
+      # of carrying Faraday at all is reaching backends we have no native
+      # adapter for. :typhoeus (libcurl-based via ethon/FFI) is that
+      # backend, and it's also the one people actually reach for in
+      # practice -- 28 reverse dependencies on RubyGems vs. e.g.
+      # faraday-patron's 3 -- so it doubles as this bridge's real
+      # correctness check (proxy/SSL/timeout config plumbing) and a
+      # genuinely useful capability, not just a synthetic test target.
+      - name: Run faraday HTTP client backend, typhoeus adapter (oxparser)
         run: |
           docker run --rm -v "${{ github.workspace }}":/repo-ro:ro ruby:${{ matrix.ruby }} bash -c '
             set -e
-            apt-get update -qq && apt-get install -y -qq psmisc
+            apt-get update -qq && apt-get install -y -qq psmisc libcurl4-openssl-dev
             mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
             gem install bundler --no-document 2>&1 \
               || gem install bundler -v 1.17.3 --no-document 2>&1 \
@@ -184,35 +186,20 @@ jobs:
             bundle config set with "http_faraday"
             bundle install
             fuser -k -n tcp 17171 >/dev/null 2>&1 || true
-            SOAP4R_HTTP_CLIENTS=faraday SOAP4R_PARSERS=oxparser bundle exec rake test:deep
+            SOAP4R_HTTP_CLIENTS=faraday SOAP4R_FARADAY_ADAPTER=typhoeus SOAP4R_PARSERS=oxparser bundle exec rake test:deep
           '
 
-      # continue-on-error here: this spot-check has one confirmed, narrow,
-      # understood exception -- test_calc_cgi and test_authheader_cgi both
-      # fail with Faraday::ConnectionFailed ("Callback aborted") from
-      # patron/libcurl specifically against WEBrick's CGI-subprocess
-      # responses (which stream back without a Content-Length, relying on
-      # connection-close framing -- a notoriously inconsistent case across
-      # HTTP client implementations). Not reproducible with any other
-      # backend in this matrix, including curb (also libcurl-based) or
-      # faraday's own net_http adapter above -- narrowed to something
-      # specific to patron's own handling of that response shape. See
-      # "Known Test Suite Exceptions" in the README.
-      - name: Run faraday HTTP client backend, patron adapter spot-check (oxparser)
-        continue-on-error: true
-        run: |
-          docker run --rm -v "${{ github.workspace }}":/repo-ro:ro ruby:${{ matrix.ruby }} bash -c '
-            set -e
-            apt-get update -qq && apt-get install -y -qq psmisc libcurl4-openssl-dev pkg-config build-essential
-            mkdir -p /app && cp -r /repo-ro/. /app/ && cd /app
-            gem install bundler --no-document 2>&1 \
-              || gem install bundler -v 1.17.3 --no-document 2>&1 \
-              || gem install bundler -v 1.17.3 --no-ri --no-rdoc
-            bundle config set with "http_faraday"
-            bundle install
-            fuser -k -n tcp 17171 >/dev/null 2>&1 || true
-            SOAP4R_HTTP_CLIENTS=faraday SOAP4R_FARADAY_ADAPTER=patron SOAP4R_PARSERS=oxparser bundle exec rake test:deep
-          '
+      # :patron was tried as a third spot-check adapter and deliberately
+      # dropped from CI: test_calc_cgi/test_authheader_cgi fail under it with
+      # Patron::Aborted: Callback aborted, and this was root-caused down to
+      # patron itself, not our bridge or Faraday -- reproduced with a bare
+      # Patron::Session#post against the exact same WEBrick CGI-subprocess
+      # server, with zero soap4r-ng or Faraday code in the path at all. Not
+      # reproducible with curb (also libcurl-based) or either adapter above.
+      # The gem itself (see "HTTP Client Backends" in README.md) is still a
+      # usable SOAP4R_FARADAY_ADAPTER value for anyone who wants it and
+      # doesn't hit CGI-dispatched endpoints -- it's just not part of the
+      # automated matrix, since we have no fix available for an upstream bug.
 
   # 1.9.3 and 2.0.0 have official Docker Hub images, but every tag in both
   # lines was published in the legacy Docker manifest v1 schema and is no

@@ -110,7 +110,7 @@ is a drop-in file rather than a change to library code.
 * **[faraday](https://github.com/lostisland/faraday)** -- Faraday is itself
   pluggable underneath our own backend selection: it has its own adapter
   system, defaulting to `:net_http` and overridable with
-  `SOAP4R_FARADAY_ADAPTER` (e.g. `SOAP4R_FARADAY_ADAPTER=patron`) -- a
+  `SOAP4R_FARADAY_ADAPTER` (e.g. `SOAP4R_FARADAY_ADAPTER=typhoeus`) -- a
   second, independent config knob layered under `SOAP4R_HTTP_CLIENTS`, not a
   replacement for it. Opt-in (see below). Supports proxying and basic auth
   (sent proactively via a manually-built `Authorization` header, since
@@ -118,6 +118,8 @@ is a drop-in file rather than a change to library code.
   challenge-response (WWW-Authenticate) auth, cookies, or request/response
   filters, since none of those have a core-Faraday equivalent that would
   work uniformly across every adapter Faraday itself supports.
+  `SOAP4R_FARADAY_ADAPTER=patron` also works for ordinary requests, but see
+  the note below -- it isn't part of the automated test matrix.
 * **`SOAP::NetHttpClient`** -- this project's own wrapper around stdlib
   `Net::HTTP`, used only when none of the above are installed. It does
   **not** support basic/digest auth, cookies, or request/response filters
@@ -153,13 +155,26 @@ request-line/header block entirely, corrupting any test or tool that parsed
 swept exhaustively -- our own bridge code (`lib/soap/faradayClient.rb`) is
 what we're testing, and sweeping every adapter Faraday itself supports would
 mostly re-test Faraday's own correctness rather than anything specific to
-soap4r-ng. Instead, CI spot-checks that bridge against two meaningfully
-different transports: Faraday's default `:net_http` adapter, and `:patron`
-(libcurl-based, like curb, but a separate and considerably less actively
-maintained gem). That spot-check has one confirmed, narrow exception: with
-`:patron`, `test_calc_cgi` and `test_authheader_cgi` fail with
-`Faraday::ConnectionFailed: Callback aborted` -- see "Known Test Suite
-Exceptions" below.
+soap4r-ng. Faraday's *default* sub-adapter (`:net_http`) doesn't get its own
+CI step at all, for the same reason: it would just re-exercise stdlib
+`Net::HTTP`, which the `net_http` backend above already covers end-to-end --
+the whole point of carrying Faraday here is reaching backends we have no
+native adapter for. So CI runs Faraday with `:typhoeus` (libcurl-based via
+`ethon`/FFI): it doubles as this bridge's real correctness check
+(proxy/SSL/timeout config plumbing against a transport genuinely different
+from the other four) and a real capability, since it's also the adapter
+people actually reach for in practice -- 28 reverse dependencies on
+RubyGems versus, say, `faraday-patron`'s 3, per [Ruby Toolbox](https://www.ruby-toolbox.com/projects/faraday-typhoeus).
+
+`:patron` was tried as a second spot-check adapter too and dropped: two CGI
+tests fail under it with `Patron::Aborted: Callback aborted`, root-caused to
+patron itself rather than this bridge or Faraday -- reproduced with a bare
+`Patron::Session#post` against the exact same server, no soap4r-ng or
+Faraday code involved at all. Not reproducible with curb (also
+libcurl-based) or `:typhoeus` above. The Gemfile still installs it
+(`SOAP4R_FARADAY_ADAPTER=patron` works for ordinary requests), it's just not
+part of the automated matrix, since there's no fix available on our end for
+an upstream bug -- see "Known Test Suite Exceptions" below.
 
 **A note on TLS trust for the `httpclient` backend**: `httpclient`'s
 `SSLConfig` doesn't trust your system's CA bundle unless told to -- left
@@ -263,18 +278,23 @@ my machine" environment for version-specific gotchas to hide in.
   programmatically-constructed (never actually `raise`d-and-caught)
   exception object. Fixed with a nil-guard; confirmed clean on both JRuby and
   MRI afterward.
-* **`SOAP4R_HTTP_CLIENTS=faraday SOAP4R_FARADAY_ADAPTER=patron`** -- 1
-  failure + 4 errors, all in the CGI-based tests (`test_calc_cgi`,
-  `test_authheader_cgi`), all `Faraday::ConnectionFailed: Callback aborted`
-  raised from inside `patron`/libcurl. Narrowed to something specific to
-  patron's handling of WEBrick's CGI-subprocess responses (which stream back
-  without a `Content-Length`, relying on connection-close framing -- a
-  notoriously inconsistent case across HTTP client implementations): not
-  reproducible with `curb` (also libcurl-based) or with Faraday's own
-  default `:net_http` adapter against the exact same server. **Accepted
-  spot-check exception** rather than a soap4r-ng bug -- see "HTTP Client
-  Backends" above for why `:patron` is only ever spot-checked, not a fully
-  supported target in its own right.
+* **`SOAP4R_HTTP_CLIENTS=faraday SOAP4R_FARADAY_ADAPTER=patron`** -- not run
+  in CI at all (see "HTTP Client Backends" above), but documented here since
+  it's a real, reproducible issue for anyone who does reach for it: the
+  CGI-based tests (`test_calc_cgi`, `test_authheader_cgi`) fail with
+  `Patron::Aborted: Callback aborted`. Root-caused down to `patron` itself,
+  not this project's code: reproduced with a bare `Patron::Session#post`
+  against the exact same WEBrick CGI-subprocess server, with no soap4r-ng or
+  Faraday code in the path at all. A raw TCP-level dump of that server's
+  response ruled out the obvious suspect (a missing `Content-Length` forcing
+  connection-close framing) -- the response has one. Most likely explanation
+  left unconfirmed without reading patron's C extension directly: patron
+  implements its own request timeouts via a libcurl progress callback, and
+  the CGI handler's per-request subprocess spawn (a few hundred ms before
+  the first byte, unlike every other test's in-process handler) is the one
+  thing that reliably distinguishes the failing requests from every passing
+  one, including under `curb` (also libcurl-based) and both adapters CI
+  actually runs. **CANTFIX** without a patron-side fix we don't control.
 
 #### How to Use
 * [NaHi's Original documentation](https://web.archive.org/web/20101212040735/http://dev.ctor.org/soap4r/wiki/) -- the authoritative reference material is still available through the Wayback Machine, thankfully!
