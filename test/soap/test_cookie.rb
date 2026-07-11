@@ -107,9 +107,8 @@ __EOX__
   # (so streamHandler.rb's respond_to?(:request_filter) check passes and
   # wires this filter in), but none of them actually invoke it anywhere in
   # their own request/response code -- it's a genuinely inert accessor on
-  # all three, like #ssl_config is for NetHttpClient. Only httpclient and
-  # http-access2 (which have their own native filter-chain support) really
-  # honor it.
+  # all three, like #ssl_config is for NetHttpClient. Only httpclient (which
+  # has its own native filter-chain support) really honors it.
   FILTER_CHAIN_INERT_BACKENDS = %w[SOAP::NetHttpClient SOAP::CurbClient SOAP::FaradayClient]
 
   def test_normal

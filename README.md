@@ -93,11 +93,11 @@ is a drop-in file rather than a change to library code.
 * **[httpclient](https://github.com/nahi/httpclient)** -- the default and
   strongly recommended backend. Fully featured: proxying, basic/digest auth,
   cookies, SSL/TLS configuration, request/response filters (used for things
-  like cookie handling -- see `test/soap/test_cookie.rb`).
-* **[http-access2](https://rubygems.org/gems/http-access2)** -- httpclient's
-  predecessor, by the same author. Historically the second fallback, but it's
-  no longer published on RubyGems.org at all, so in practice this backend is
-  unreachable today unless you vendor the gem yourself.
+  like cookie handling -- see `test/soap/test_cookie.rb`). Formerly named
+  `http-access2` (same author, Hiroaki "NaHi" Nakamura, renamed it years
+  ago) -- that old name is no longer published on RubyGems.org at all and
+  was retired from this project's own backend cascade for the same reason;
+  see git history if you need the adapter that used to sit here.
 * **[curb](https://github.com/taf2/curb)** -- libcurl bindings. Opt-in (see
   below): needs a system `libcurl-dev` present at compile time, unlike every
   other backend here. Supports proxying, SSL/TLS configuration, and -- via
@@ -134,8 +134,8 @@ run the test suite against a backend other than the default) with:
 ```
 SOAP4R_HTTP_CLIENTS=net_http bundle exec rake test:deep
 ```
-Valid names are `httpclient`, `http_access2`, `curb`, `faraday`, and
-`net_http`, matching the files under `lib/soap/httpbackend/`. `curb` and
+Valid names are `httpclient`, `curb`, `faraday`, and `net_http`, matching
+the files under `lib/soap/httpbackend/`. `curb` and
 `faraday` are opt-in Bundler groups (`bundle config set with "http_curb
 http_faraday"` before `bundle install`) rather than main-Gemfile
 dependencies, since curb in particular needs a system library present just

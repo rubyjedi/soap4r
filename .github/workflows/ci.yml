@@ -118,12 +118,10 @@ jobs:
       # httpclient is already exercised by every run of the loop above (it's
       # the default), so this only adds the net_http fallback -- the one
       # backend that, prior to this, no test in the suite could ever
-      # actually reach (it's only selected when both httpclient and
-      # http-access2 fail to load, and this project's Gemfile always
-      # installs httpclient). http-access2 itself is left out: it's no
-      # longer published on RubyGems.org at all, so there's nothing
-      # installable to sweep. A single parser (oxparser) is enough here --
-      # this is about exercising the HTTP backend, not the XML parser.
+      # actually reach (it's only selected when httpclient fails to load,
+      # and this project's Gemfile always installs httpclient). A single
+      # parser (oxparser) is enough here -- this is about exercising the
+      # HTTP backend, not the XML parser.
       - name: Run net_http HTTP client backend (oxparser)
         run: |
           docker run --rm -v "${{ github.workspace }}":/repo-ro:ro ruby:${{ matrix.ruby }} bash -c '

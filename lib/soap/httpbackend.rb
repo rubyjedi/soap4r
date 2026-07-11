@@ -11,12 +11,19 @@ require 'soap/httpbackend/registry'
 # anyone debugging a backend-specific issue) actually exercise
 # SOAP::NetHttpClient end-to-end instead of it only ever being reachable
 # when every other backend happens to fail to load.
+# http-access2 (httpclient's own predecessor, by the same author) used to
+# sit in this cascade too. Removed: the gem was renamed to httpclient years
+# ago and is no longer published on RubyGems.org at all, so that entry
+# could never actually load -- confirmed empirically (`gem install
+# http-access2` fails outright). Anyone still vendoring the old gem
+# directly (e.g. via a git ref) can select it by placing a matching
+# lib/soap/httpbackend/http_access2.rb adapter back on their own
+# $LOAD_PATH; see git history for the version that shipped here.
 if ENV.has_key?('SOAP4R_HTTP_CLIENTS')
   backend_list = ENV['SOAP4R_HTTP_CLIENTS'].to_s.split(',')
 else
   backend_list = [
     'httpclient',     ## Uses the httpclient gem
-    'http_access2',   ## Uses the http-access2 gem ; no longer published on RubyGems.org
     'curb',           ## Uses the curb gem (libcurl bindings) ; not installed by default, opt-in
     'faraday',        ## Uses the faraday gem (itself pluggable -- see soap/faradayClient.rb) ; not installed by default, opt-in
     'net_http',       ## Falls back to this project's own wrapper around stdlib Net::HTTP
