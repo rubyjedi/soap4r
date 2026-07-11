@@ -7,12 +7,16 @@ module SOAP
 
 # Covers SOAP::NetHttpClient#create_connection directly (via #send, since
 # it's private) rather than through the full driver/streamHandler stack:
-# HTTPStreamHandler only falls back to NetHttpClient when both httpclient
-# and http-access2 fail to load, and this project's Gemfile always
-# requires httpclient, so nothing else in the suite ever exercises this
-# file. create_connection only builds and configures a Net::HTTP object
-# (no #start call), so this is safe to test without a real network call
-# or proxy server.
+# by default HTTPStreamHandler only falls back to NetHttpClient when both
+# httpclient and http-access2 fail to load, and this project's Gemfile
+# always installs httpclient, so nothing else in the suite exercises this
+# file under the default backend order. create_connection only builds and
+# configures a Net::HTTP object (no #start call), so this is safe to test
+# without a real network call or proxy server.
+#
+# For real end-to-end coverage of this backend (live WEBrick round trips,
+# proxying, basic auth, etc.), force it via SOAP4R_HTTP_CLIENTS=net_http --
+# see lib/soap/httpbackend.rb -- which is what CI's HTTP-backend sweep does.
 class TestNetHttpClient < Test::Unit::TestCase
   TARGET = URI.parse("http://target.example.com/")
 

@@ -7,7 +7,15 @@ rescue LoadError
 end
 require 'soap/rpc/driver'
 
-if defined?(HTTPClient) and defined?(OpenSSL)
+# Checking defined?(HTTPClient) alone isn't enough now that the HTTP client
+# backend is independently selectable (SOAP4R_HTTP_CLIENTS -- see
+# lib/soap/httpbackend.rb): the require above pulls in the gem regardless of
+# which backend SOAP::HTTPStreamHandler actually picked, so HTTPClient can be
+# defined while, say, SOAP::NetHttpClient (whose #ssl_config is always nil)
+# is the active one. Every assertion below assumes httpclient's SSLConfig
+# shape, so this must check the ACTIVE backend, not merely whether the gem
+# loaded.
+if SOAP::HTTPStreamHandler::Client == HTTPClient and defined?(OpenSSL)
 
 module SOAP; module SSL
 

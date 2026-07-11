@@ -113,17 +113,31 @@ __EOX__
   end
 
   def test_direct
+    return unless auth_supported?
     @client.wiredump_dev = STDOUT if $DEBUG
     @client.options["protocol.http.auth"] << [@url, "admin", "admin"]
     assert_equal("OK", @client.do_server_proc)
   end
 
   def test_proxy
+    return unless auth_supported?
     setup_proxyserver
     @client.wiredump_dev = STDOUT if $DEBUG
     @client.options["protocol.http.proxy"] = @proxyurl
     @client.options["protocol.http.auth"] << [@url, "guest", "guest"]
     assert_equal("OK", @client.do_server_proc)
+  end
+
+  private
+
+  # SOAP::NetHttpClient#set_auth explicitly raises NotImplementedError --
+  # soap4r + net/http never supported WWW-Authenticate-style auth. This is
+  # a real, permanent backend limitation, not a bug, so skip cleanly under
+  # SOAP4R_HTTP_CLIENTS=net_http instead of failing (see
+  # lib/soap/httpbackend.rb; test_streamhandler.rb's test_basic_auth uses
+  # the same pattern).
+  def auth_supported?
+    SOAP::HTTPStreamHandler::Client != SOAP::NetHttpClient
   end
 end
 

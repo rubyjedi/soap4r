@@ -3,8 +3,6 @@ require 'helper'
 require 'soap/httpconfigloader'
 require 'soap/rpc/driver'
 
-if defined?(HTTPClient)
-
 module SOAP
 
 
@@ -30,6 +28,17 @@ class TestHTTPConfigLoader < Test::Unit::TestCase
   end
 
   def test_property
+    # Assertions below (h.www_auth.basic_auth) assume httpclient's specific
+    # client shape, so this must check the ACTIVE backend (SOAP4R_HTTP_CLIENTS
+    # can force a different one -- see lib/soap/httpbackend.rb), not merely
+    # whether the gem happens to be loaded in this process (e.g.
+    # test/soap/ssl/test_ssl.rb requires it unconditionally regardless of the
+    # active backend). Unlike this class's other tests (which exercise
+    # HTTPConfigLoader.set_options against plain fakes and don't care which
+    # backend is active), this one drives a real SOAP::RPC::Driver end to end.
+    unless defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
+      return
+    end
     testpropertyname = File.join(DIR, 'soapclient.properties')
     File.open(testpropertyname, "w") do |f|
       f<<<<__EOP__
@@ -64,9 +73,55 @@ __EOP__
       File.unlink(testpropertyname)  if File.file?(testpropertyname)
     end
   end
+
+  # Regression test for the stale-bundled-CA-snapshot issue: httpclient's
+  # SSLConfig doesn't trust the system CA bundle unless told to, and its
+  # own lazy fallback (its gem-vendored cacert.pem) can go stale relative
+  # to a real server's cert chain. HTTPConfigLoader.set_options must call
+  # set_default_paths on every client's ssl_config by default.
+  class FakeSSLConfig
+    attr_reader :default_paths_called
+    attr_reader :trusted
+
+    def initialize
+      @default_paths_called = false
+      @trusted = []
+    end
+
+    def set_default_paths
+      @default_paths_called = true
+    end
+
+    def set_trust_ca(value)
+      @trusted << value
+    end
+  end
+
+  class FakeClient
+    attr_accessor :proxy
+    attr_accessor :no_proxy
+    attr_reader :ssl_config
+
+    def initialize
+      @ssl_config = FakeSSLConfig.new
+    end
+  end
+
+  def test_set_options_defaults_ssl_config_to_system_trust
+    client = FakeClient.new
+    SOAP::HTTPConfigLoader.set_options(client, ::SOAP::Property.new)
+    assert_equal(true, client.ssl_config.default_paths_called)
+  end
+
+  def test_set_options_still_layers_explicit_ca_file_on_top_of_default
+    client = FakeClient.new
+    options = ::SOAP::Property.new
+    options["ssl_config.ca_file"] = '/some/custom/ca.pem'
+    SOAP::HTTPConfigLoader.set_options(client, options)
+    assert_equal(true, client.ssl_config.default_paths_called)
+    assert_equal(['/some/custom/ca.pem'], client.ssl_config.trusted)
+  end
 end
 
-
-end
 
 end

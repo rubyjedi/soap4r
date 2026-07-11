@@ -31,6 +31,26 @@ module_function
         client.protocol_version = value
       end
     end
+    # httpclient's SSLConfig doesn't trust the system's CA bundle by
+    # default -- left unconfigured, it lazily falls back to its own
+    # gem-vendored cacert.pem snapshot (ssl_config.rb's
+    # `load_trust_ca unless @cacerts_loaded`), which can go stale
+    # relative to a real server's cert chain as CAs rotate intermediates
+    # (confirmed directly: a real Let's Encrypt-signed endpoint failed
+    # verification against httpclient 2.9.0's bundled snapshot while
+    # verifying fine against the host's own, actively-maintained CA
+    # bundle). set_default_paths defers to whatever OpenSSL was actually
+    # built to trust on this platform -- no hardcoded path, so it stays
+    # portable across the Debian/RHEL/Alpine/etc. layouts this project's
+    # Ruby-version matrix runs on. Called unconditionally, before any
+    # user-supplied ssl_config options are applied below, so it's just
+    # the baseline: an explicit ca_file/ca_path/cert_store still layers
+    # on top exactly as before (add_trust_ca merely adds to whatever's
+    # already in the store; cert_store= replaces it outright for anyone
+    # who wants full manual control).
+    if (cfg = client.ssl_config) && cfg.respond_to?(:set_default_paths)
+      cfg.set_default_paths
+    end
     ssl_config = options["ssl_config"] ||= ::SOAP::Property.new
     set_ssl_config(client, ssl_config)
     ssl_config.add_hook(true) do |key, value|
