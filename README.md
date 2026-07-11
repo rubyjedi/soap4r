@@ -227,7 +227,8 @@ my machine" environment for version-specific gotchas to hide in.
       'logger'` inside `lib/soap/rpc/cgistub.rb#run`, even though
       `Logger::Application#logger` is a real public method and a minimal
       reproduction of the exact same class hierarchy (`Logger::Application`
-      + `include SOAP` + `include WEBrick`) works fine in isolation.
+      combined with `include SOAP` and `include WEBrick`) works fine in
+      isolation.
       **Not fully root-caused** -- something specific to the real
       `CGIStub`/`AuthHeaderPortServer`/`CalcServer` class graph, only
       reproducible via the actual spawned-CGI-subprocess path, not a
