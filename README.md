@@ -100,24 +100,42 @@ is a drop-in file rather than a change to library code.
   see git history if you need the adapter that used to sit here.
 * **[curb](https://github.com/taf2/curb)** -- libcurl bindings. Opt-in (see
   below): needs a system `libcurl-dev` present at compile time, unlike every
-  other backend here. Supports proxying, SSL/TLS configuration, and -- via
-  libcurl's own challenge negotiation -- both basic and digest
+  other backend here. Supports proxying, SSL/TLS configuration (ca_file,
+  client cert/key, and cipher-list restriction -- the last of these has no
+  dedicated setter at all on `Curl::Easy`, despite libcurl itself supporting
+  it; reached via `#setopt(Curl::CURLOPT_SSL_CIPHER_LIST, ...)` instead),
+  and -- via libcurl's own challenge negotiation -- both basic and digest
   WWW-Authenticate auth (`test/soap/auth/test_basic.rb` and
   `test_digest.rb` both pass against it unmodified). Cookies and
   request/response filters are not wired up (same limitation as
   `SOAP::NetHttpClient` below). No JRuby port at all (native extension), and
-  not validated below Ruby 2.2.
+  not validated below Ruby 2.2. **No `ssl_config.verify_callback` support**
+  -- libcurl's C API exposes no per-certificate Ruby callback hook at all,
+  so this is a hard architectural gap, not something left unwired; see
+  `test/soap/ssl/test_ssl.rb`'s `test_verification`/`test_property` for what
+  that means for test coverage.
 * **[faraday](https://github.com/lostisland/faraday)** -- Faraday is itself
   pluggable underneath our own backend selection: it has its own adapter
   system, defaulting to `:net_http` and overridable with
   `SOAP4R_FARADAY_ADAPTER` (e.g. `SOAP4R_FARADAY_ADAPTER=typhoeus`) -- a
   second, independent config knob layered under `SOAP4R_HTTP_CLIENTS`, not a
-  replacement for it. Opt-in (see below). Supports proxying and basic auth
+  replacement for it. Opt-in (see below). Supports proxying, basic auth
   (sent proactively via a manually-built `Authorization` header, since
-  Faraday's core has no bundled auth middleware); does **not** support
-  challenge-response (WWW-Authenticate) auth, cookies, or request/response
-  filters, since none of those have a core-Faraday equivalent that would
-  work uniformly across every adapter Faraday itself supports.
+  Faraday's core has no bundled auth middleware), and SSL/TLS configuration
+  (ca_file, client cert/key -- passed as file paths, since confirmed
+  empirically that at least the `:typhoeus` adapter rejects in-memory
+  `OpenSSL::X509::Certificate`/`OpenSSL::PKey::RSA` objects despite
+  `Faraday::SSLOptions` documenting them as accepted). Does **not** support
+  challenge-response (WWW-Authenticate) auth, cookies, request/response
+  filters, or `ssl_config.verify_callback` (no adapter Faraday supports
+  exposes a per-certificate Ruby callback either -- same underlying
+  limitation as libcurl-based backends generally), since none of those have
+  a core-Faraday equivalent that would work uniformly across every adapter.
+  Cipher-list restriction is passed through to whichever adapter is active,
+  but confirmed empirically that `:typhoeus` silently ignores it (Faraday's
+  own `faraday-typhoeus` adapter never forwards `ciphers` to `ethon`'s
+  `ssl_cipher_list` option at all) -- a real gap in that third-party
+  adapter, not this bridge.
   `SOAP4R_FARADAY_ADAPTER=patron` also works for ordinary requests, but see
   the note below -- it isn't part of the automated test matrix.
 * **`SOAP::NetHttpClient`** -- this project's own wrapper around stdlib
@@ -175,6 +193,39 @@ libcurl-based) or `:typhoeus` above. The Gemfile still installs it
 (`SOAP4R_FARADAY_ADAPTER=patron` works for ordinary requests), it's just not
 part of the automated matrix, since there's no fix available on our end for
 an upstream bug -- see "Known Test Suite Exceptions" below.
+
+**Test parity across backends**: several tests (WSDL-driven codegen
+round-trips, request-envelope assertions, ASP.NET-handler interop -- see
+e.g. `test/wsdl/rpc/test_rpc_lit.rb`, `test/wsdl/qualified/`,
+`test/soap/test_no_indent.rb`) used to be gated to `httpclient` only,
+because they parse `wiredump_dev` output and were written assuming its
+specific block layout. That layout turned out to already be backend-neutral
+*by design* once `NetHttpClient`/`CurbClient`/`FaradayClient` were all built
+to mirror it (see the wiredump-format work above) -- confirmed by simply
+removing the gates and running the suite, which passed unmodified under
+every backend. The duplicated parsing logic across those files is now
+consolidated into `TestUtil.parse_wiredump_request_body`/
+`parse_wiredump_response_body` (`test/testutil.rb`), documented there as the
+one place a future backend's format quirks would need handling, if one ever
+had them.
+
+`test/soap/ssl/test_ssl.rb` similarly now runs its SSL config-loading
+coverage against every SSL-capable backend (httpclient, curb, faraday),
+not just httpclient -- `test_ca_verification` (ca_file-based verification
+success/failure, backend-neutral) and `test_ciphers` (rewritten to expect
+each backend's own real exception class, empirically confirmed rather than
+guessed: `OpenSSL::SSL::SSLError` for httpclient, `Curl::Err::CurlError`
+for curb, `Faraday::Error` for Faraday -- test-unit's `assert_raise` wants
+an *exact* class match, unlike plain Ruby `rescue`, so backend-specific
+subclasses are caught via `rescue`, matching this file's existing
+convention). `test_options`/`test_verification`/`test_property` stay
+httpclient-only: they're built around `ssl_config.verify_callback`, and
+neither libcurl-based backend (curb, or Faraday riding on typhoeus/patron)
+exposes a per-certificate Ruby callback hook at all -- confirmed against
+both libraries' public APIs, not assumed. That's the one piece of "full
+parity" across backends that isn't achievable without a capability that
+simply doesn't exist outside OpenSSL-native clients (httpclient, stdlib
+`Net::HTTP`).
 
 **A note on TLS trust for the `httpclient` backend**: `httpclient`'s
 `SSLConfig` doesn't trust your system's CA bundle unless told to -- left

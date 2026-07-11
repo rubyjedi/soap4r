@@ -12,6 +12,7 @@
 
 require 'faraday'
 require 'base64'
+require 'tempfile'
 require 'soap/filter/filterchain'
 
 
@@ -125,6 +126,24 @@ private
         ssl: {
           ca_file: cfg && cfg.ca_file,
           verify: !(cfg && cfg.verify_mode == OpenSSL::SSL::VERIFY_NONE),
+          # Faraday::SSLOptions documents client_cert/client_key as accepting
+          # OpenSSL objects directly, but confirmed empirically that the
+          # :typhoeus adapter rejects them ("Problem with the local SSL
+          # certificate") and only accepts file paths -- same requirement as
+          # curb's C binding (see curbClient.rb), so round-trip the same way
+          # here for whichever adapter is actually active.
+          client_cert: cfg && cfg.client_cert && write_pem_tempfile(cfg.client_cert, 'cert'),
+          client_key: cfg && cfg.client_key && write_pem_tempfile(cfg.client_key, 'key'),
+          # ciphers is passed through for adapters that honor Faraday's own
+          # SSLOptions#ciphers, but confirmed empirically that :typhoeus
+          # silently ignores it (Faraday's own typhoeus adapter doesn't
+          # forward it to ethon's ssl_cipher_list at all) -- a real,
+          # external gap in that adapter, not something this bridge can
+          # paper over. verify_depth/cert_store have the same caveat: no
+          # guarantee every adapter honors them.
+          ciphers: cfg && cfg.ciphers,
+          verify_depth: cfg && cfg.verify_depth,
+          cert_store: cfg && cfg.cert_store,
         }
       ) do |f|
       f.adapter ADAPTER
@@ -132,6 +151,23 @@ private
       conn.options.open_timeout = @connect_timeout if @connect_timeout
       conn.options.timeout = @receive_timeout if @receive_timeout
     end
+  end
+
+  def write_pem_tempfile(openssl_obj, basename)
+    f = Tempfile.new(["soap4r-faraday-#{basename}-", '.pem'])
+    f.write(openssl_obj.to_pem)
+    f.close
+    # The finalizer proc must not be created in an instance-method context
+    # closing over self -- see the identical comment in curbClient.rb's own
+    # write_pem_tempfile for why (confirmed: Ruby warns "finalizer
+    # references object to be finalized" and the tempfile never actually
+    # got cleaned up otherwise).
+    ObjectSpace.define_finalizer(self, self.class.tempfile_unlinker(f))
+    f.path
+  end
+
+  def self.tempfile_unlinker(file)
+    proc { file.unlink rescue nil }
   end
 
   def dump_wiredump(url, header, req_body, response)
@@ -174,15 +210,23 @@ private
   end
 
   class SSLConfig
-    attr_accessor :client_cert	# not applied -- see build_connection; client-cert auth would need per-adapter wiring Faraday doesn't unify.
+    # client_cert/client_key/ciphers/verify_depth/cert_store are all applied
+    # via Faraday::SSLOptions in build_connection -- Faraday's options
+    # struct accepts the same OpenSSL::X509::Certificate/OpenSSL::PKey::RSA
+    # objects HTTPConfigLoader already builds for httpclient's sake. Whether
+    # each one is actually *honored* still depends on which concrete adapter
+    # Faraday is riding on (SOAP4R_FARADAY_ADAPTER) -- confirmed working for
+    # :net_http and :typhoeus, not verified against every adapter Faraday
+    # supports.
+    attr_accessor :client_cert
     attr_accessor :client_key
     attr_accessor :client_ca
     attr_accessor :verify_mode
-    attr_accessor :verify_depth	# no unified Faraday equivalent across adapters; stored only.
-    attr_accessor :options
-    attr_accessor :ciphers		# ditto.
-    attr_accessor :verify_callback	# ditto.
-    attr_accessor :cert_store		# ditto.
+    attr_accessor :verify_depth
+    attr_accessor :options		# no unified Faraday equivalent across adapters (OpenSSL::SSL::SSLContext#options bitmask); stored only.
+    attr_accessor :ciphers
+    attr_accessor :verify_callback	# NOT supported -- no adapter Faraday supports exposes a per-certificate Ruby callback hook (same underlying limitation as libcurl-based backends generally).
+    attr_accessor :cert_store
     attr_reader :ca_file
 
     def set_trust_ca(value)

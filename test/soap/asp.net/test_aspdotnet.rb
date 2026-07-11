@@ -94,15 +94,8 @@ __XML__
     assert_equal("Hello Mike", @client.sayHello("Mike"))
   end
 
-  # Fixture/assertions below assume httpclient's wiredump format, so this
-  # must check the ACTIVE backend (SOAP4R_HTTP_CLIENTS can force a
-  # different one -- see lib/soap/httpbackend.rb), not merely whether the
-  # gem happens to be loaded in this process (e.g. test/soap/ssl/test_ssl.rb
-  # requires it unconditionally regardless of the active backend).
-  if defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
-
-    # qualified!
-    REQUEST_ASPDOTNETHANDLER =
+  # qualified!
+  REQUEST_ASPDOTNETHANDLER =
 %q[<?xml version="1.0" encoding="utf-8" ?>
 <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
@@ -114,20 +107,18 @@ __XML__
   </env:Body>
 </env:Envelope>]
 
-    def test_aspdotnethandler_envelope
-      @client = SOAP::RPC::Driver.new(Endpoint, Server::Namespace)
-      @client.wiredump_dev = str = String.new
-      @client.add_method_with_soapaction('sayHello', Server::Namespace + 'SayHello', 'name')
-      @client.default_encodingstyle = SOAP::EncodingStyle::ASPDotNetHandler::Namespace
-      assert_equal("Hello Mike", @client.sayHello("Mike"))
-      assert_xml_equal(REQUEST_ASPDOTNETHANDLER, parse_requestxml(str),
-        [REQUEST_ASPDOTNETHANDLER, parse_requestxml(str)].join("\n\n"))
-    end
+  def test_aspdotnethandler_envelope
+    @client = SOAP::RPC::Driver.new(Endpoint, Server::Namespace)
+    @client.wiredump_dev = str = String.new
+    @client.add_method_with_soapaction('sayHello', Server::Namespace + 'SayHello', 'name')
+    @client.default_encodingstyle = SOAP::EncodingStyle::ASPDotNetHandler::Namespace
+    assert_equal("Hello Mike", @client.sayHello("Mike"))
+    assert_xml_equal(REQUEST_ASPDOTNETHANDLER, parse_requestxml(str),
+      [REQUEST_ASPDOTNETHANDLER, parse_requestxml(str)].join("\n\n"))
+  end
 
-    def parse_requestxml(str)
-      str.split(/\r?\n\r?\n/)[3]
-    end
-
+  def parse_requestxml(str)
+    TestUtil.parse_wiredump_request_body(str)
   end
 end
 

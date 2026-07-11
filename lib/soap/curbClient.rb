@@ -121,7 +121,11 @@ private
     curl.ssl_verify_peer = (cfg.verify_mode != OpenSSL::SSL::VERIFY_NONE)
     curl.ssl_verify_host = (cfg.verify_mode == OpenSSL::SSL::VERIFY_NONE) ? 0 : 2
     curl.cacert = cfg.ca_file if cfg.ca_file
-    curl.ciphers = cfg.ciphers if cfg.ciphers
+    # Curl::Easy has no dedicated ciphers=/cipher_list= method at all
+    # (confirmed empirically -- NoMethodError) despite libcurl itself
+    # supporting CURLOPT_SSL_CIPHER_LIST; #setopt with the raw constant is
+    # curb's only way to reach it.
+    curl.setopt(Curl::CURLOPT_SSL_CIPHER_LIST, cfg.ciphers) if cfg.ciphers
     # Curl::Easy#cert=/#cert_key= want file paths, but
     # HTTPConfigLoader#cert_from_file/#key_from_file (lib/soap/httpconfigloader.rb)
     # already parsed the configured files into OpenSSL::X509::Certificate/
@@ -135,8 +139,19 @@ private
     f = Tempfile.new(["soap4r-curb-#{basename}-", '.pem'])
     f.write(openssl_obj.to_pem)
     f.close
-    ObjectSpace.define_finalizer(self, proc { f.unlink rescue nil })
+    # The finalizer proc must not be created in an instance-method context
+    # closing over self -- that makes self itself unreachable-but-not-quite
+    # (reachable only via its own finalizer), so it never actually becomes
+    # eligible for GC and the finalizer never runs (confirmed: Ruby warns
+    # "finalizer references object to be finalized" and the tempfile never
+    # got cleaned up). Building the proc in a class method keeps the
+    # closure's only capture to f, not self.
+    ObjectSpace.define_finalizer(self, self.class.tempfile_unlinker(f))
     f.path
+  end
+
+  def self.tempfile_unlinker(file)
+    proc { file.unlink rescue nil }
   end
 
   def dump_wiredump(curl, req_body)
