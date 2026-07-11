@@ -197,14 +197,18 @@ __EOX__
   # binary check predates SOAP4R_HTTP_CLIENTS making more than two backends
   # reachable -- see lib/soap/httpbackend.rb).
   def no_proxy_hosts_holder
-    SOAP::HTTPStreamHandler::Client.const_defined?(:NO_PROXY_HOSTS, false) ?
+    # const_defined?'s 2-arg (inherit) form is Ruby 1.9+ only -- the 1-arg
+    # form works identically here across every supported Ruby version since
+    # SOAP::HTTPStreamHandler::Client itself (not some ancestor) is always
+    # what actually defines NO_PROXY_HOSTS on every backend that has one.
+    SOAP::HTTPStreamHandler::Client.const_defined?(:NO_PROXY_HOSTS) ?
       SOAP::HTTPStreamHandler::Client : nil
   end
 
   def test_proxy
     holder = no_proxy_hosts_holder
     backup = holder ? holder::NO_PROXY_HOSTS.dup : nil
-    holder&.const_get(:NO_PROXY_HOSTS)&.clear
+    holder::NO_PROXY_HOSTS.clear if holder
     setup_proxyserver
     str = String.new
     @client.wiredump_dev = str

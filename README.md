@@ -287,6 +287,21 @@ my machine" environment for version-specific gotchas to hide in.
       smoke tests rather than core library behavior) that it wasn't worth
       further chasing this round; flagged here rather than silently
       swallowed by `continue-on-error`.
+    * Collateral damage from the CGI issue above: `test_nil_attribute` and
+      `test_wsdl_with_map` (`test/wsdl/document/test_rpc.rb`) intermittently
+      receive a garbage `dateTime` value (`XSD::ValueSpaceError`, a string
+      that isn't a valid `dateTime` at all) when run as part of the full
+      `rake test:deep` suite, but pass cleanly every time when that same
+      file is run in isolation (`SCOPE=wsdl/document`). Confirmed this is
+      state leaking from a still-lingering CGI subprocess/WEBrick server
+      thread earlier in the same single-process test run (the CGI tests
+      execute well before this file alphabetically), not a genuine 1.8.7
+      `Date`/`DateTime` arithmetic bug -- ruled that out directly, since
+      `XSDDateTimeImpl#screen_data`'s `Time` branch produces a correct
+      result in isolation. **Not independently fixable**: same underlying
+      CGI/WEBrick environment fragility as the bullet above, just showing
+      up on a different, unrelated test as collateral rather than on the
+      CGI test itself.
 * **Ruby 3.0.7, 3.1.7, 3.2.11** -- 1 failure in `test_exception`
   (`test/soap/marshal/marshaltestlib.rb`), which marshals an exception whose
   `.message` embeds a live `#inspect` dump of the entire running

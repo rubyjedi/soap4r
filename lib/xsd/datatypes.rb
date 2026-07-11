@@ -584,10 +584,18 @@ module XSDDateTimeImpl
       t <<= 12 if t.year < 0
       t
     elsif t.is_a?(Time)
-      jd = DateTime.send(:civil_to_jd, t.year, t.mon, t.mday, DateTime::ITALY)
-      fr = DateTime.send(:time_to_day_fraction, t.hour, t.min, [t.sec, 59].min) + t.usec.to_r / DayInMicro
+      # Reached only on Rubies without Time#to_datetime (in practice, 1.8.7
+      # only, since the to_datetime branch above wins on every later
+      # version). The civil_to_jd/jd_to_ajd route below built a Rational
+      # day-fraction and hit the exact same Ruby 1.8.7 DateTime/Rational
+      # arithmetic bug documented in screen_data_str's secfrac handling
+      # below (confirmed: produced a bogus ~4714 BC date). Build via
+      # DateTime.civil directly with the sub-second fraction baked into
+      # the seconds argument instead, avoiding the buggy code path
+      # entirely, same fix as that other call site.
       of = t.utc_offset.to_r / DayInSec
-      DateTime.new!(DateTime.send(:jd_to_ajd, jd, fr, of), of, DateTime::ITALY)
+      secfrac = t.usec.to_r / SecInMicro
+      DateTime.civil(t.year, t.mon, t.mday, t.hour, t.min, t.sec + secfrac, of)
     else
       screen_data_str(t)
     end

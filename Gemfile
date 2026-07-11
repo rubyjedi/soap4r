@@ -21,10 +21,10 @@ end
 # there -- no native-extension support on JRuby) and hasn't been validated
 # against this project's full legacy-Ruby matrix (1.8.7-2.1.x); it's gated
 # to a modern floor here rather than guessing at older compatibility.
-group :http_curb, optional: true do
+group :http_curb, :optional => true do
   gem 'curb' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
 end
-group :http_faraday, optional: true do
+group :http_faraday, :optional => true do
   gem 'faraday'
   # faraday-net_http ships as faraday's own default-adapter dependency
   # already. faraday-typhoeus is this project's real second spot-check

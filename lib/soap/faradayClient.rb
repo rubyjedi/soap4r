@@ -121,19 +121,19 @@ private
   def build_connection(url)
     cfg = @ssl_config
     Faraday.new(
-        url: url,
-        proxy: no_proxy?(URI.parse(url)) ? nil : @proxy,
-        ssl: {
-          ca_file: cfg && cfg.ca_file,
-          verify: !(cfg && cfg.verify_mode == OpenSSL::SSL::VERIFY_NONE),
+        :url => url,
+        :proxy => no_proxy?(URI.parse(url)) ? nil : @proxy,
+        :ssl => {
+          :ca_file => cfg && cfg.ca_file,
+          :verify => !(cfg && cfg.verify_mode == OpenSSL::SSL::VERIFY_NONE),
           # Faraday::SSLOptions documents client_cert/client_key as accepting
           # OpenSSL objects directly, but confirmed empirically that the
           # :typhoeus adapter rejects them ("Problem with the local SSL
           # certificate") and only accepts file paths -- same requirement as
           # curb's C binding (see curbClient.rb), so round-trip the same way
           # here for whichever adapter is actually active.
-          client_cert: cfg && cfg.client_cert && write_pem_tempfile(cfg.client_cert, 'cert'),
-          client_key: cfg && cfg.client_key && write_pem_tempfile(cfg.client_key, 'key'),
+          :client_cert => cfg && cfg.client_cert && write_pem_tempfile(cfg.client_cert, 'cert'),
+          :client_key => cfg && cfg.client_key && write_pem_tempfile(cfg.client_key, 'key'),
           # ciphers is passed through for adapters that honor Faraday's own
           # SSLOptions#ciphers, but confirmed empirically that :typhoeus
           # silently ignores it (Faraday's own typhoeus adapter doesn't
@@ -141,9 +141,9 @@ private
           # external gap in that adapter, not something this bridge can
           # paper over. verify_depth/cert_store have the same caveat: no
           # guarantee every adapter honors them.
-          ciphers: cfg && cfg.ciphers,
-          verify_depth: cfg && cfg.verify_depth,
-          cert_store: cfg && cfg.cert_store,
+          :ciphers => cfg && cfg.ciphers,
+          :verify_depth => cfg && cfg.verify_depth,
+          :cert_store => cfg && cfg.cert_store,
         }
       ) do |f|
       f.adapter ADAPTER
