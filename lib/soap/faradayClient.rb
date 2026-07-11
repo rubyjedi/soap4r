@@ -120,31 +120,40 @@ private
 
   def build_connection(url)
     cfg = @ssl_config
+    ssl_opts = {
+      :ca_file => cfg && cfg.ca_file,
+      :verify => !(cfg && cfg.verify_mode == OpenSSL::SSL::VERIFY_NONE),
+      # Faraday::SSLOptions documents client_cert/client_key as accepting
+      # OpenSSL objects directly, but confirmed empirically that the
+      # :typhoeus adapter rejects them ("Problem with the local SSL
+      # certificate") and only accepts file paths -- same requirement as
+      # curb's C binding (see curbClient.rb), so round-trip the same way
+      # here for whichever adapter is actually active.
+      :client_cert => cfg && cfg.client_cert && write_pem_tempfile(cfg.client_cert, 'cert'),
+      :client_key => cfg && cfg.client_key && write_pem_tempfile(cfg.client_key, 'key'),
+      :verify_depth => cfg && cfg.verify_depth,
+      :cert_store => cfg && cfg.cert_store,
+    }
+    # Faraday::SSLOptions is a Struct, and Faraday's own connection setup
+    # merges this hash into it via []= -- which raises NameError for any
+    # key that isn't a struct member, rather than just ignoring it the way
+    # a Hash would. :ciphers was dropped from that struct for a stretch of
+    # faraday 2.x releases and later restored (confirmed: present on
+    # 2.14.3, absent on 2.8.1 -- exactly what Ruby 3.3+ vs. 2.6/2.7
+    # resolve to respectively) -- confirmed crashing every single request
+    # on the versions missing it. Only include the key at all when this
+    # faraday actually has it; it's passed through for adapters that honor
+    # SSLOptions#ciphers, but confirmed empirically that :typhoeus silently
+    # ignores it either way (Faraday's own typhoeus adapter doesn't
+    # forward it to ethon's ssl_cipher_list at all) -- a real, external gap
+    # in that adapter, not something this bridge can paper over.
+    # verify_depth/cert_store have the same no-guarantee-every-adapter-
+    # honors-them caveat.
+    ssl_opts[:ciphers] = cfg && cfg.ciphers if Faraday::SSLOptions.members.include?(:ciphers)
     Faraday.new(
         :url => url,
-        :proxy => no_proxy?(URI.parse(url)) ? nil : @proxy,
-        :ssl => {
-          :ca_file => cfg && cfg.ca_file,
-          :verify => !(cfg && cfg.verify_mode == OpenSSL::SSL::VERIFY_NONE),
-          # Faraday::SSLOptions documents client_cert/client_key as accepting
-          # OpenSSL objects directly, but confirmed empirically that the
-          # :typhoeus adapter rejects them ("Problem with the local SSL
-          # certificate") and only accepts file paths -- same requirement as
-          # curb's C binding (see curbClient.rb), so round-trip the same way
-          # here for whichever adapter is actually active.
-          :client_cert => cfg && cfg.client_cert && write_pem_tempfile(cfg.client_cert, 'cert'),
-          :client_key => cfg && cfg.client_key && write_pem_tempfile(cfg.client_key, 'key'),
-          # ciphers is passed through for adapters that honor Faraday's own
-          # SSLOptions#ciphers, but confirmed empirically that :typhoeus
-          # silently ignores it (Faraday's own typhoeus adapter doesn't
-          # forward it to ethon's ssl_cipher_list at all) -- a real,
-          # external gap in that adapter, not something this bridge can
-          # paper over. verify_depth/cert_store have the same caveat: no
-          # guarantee every adapter honors them.
-          :ciphers => cfg && cfg.ciphers,
-          :verify_depth => cfg && cfg.verify_depth,
-          :cert_store => cfg && cfg.cert_store,
-        }
+        :proxy => no_proxy?(url.is_a?(URI) ? url : URI.parse(url)) ? nil : @proxy,
+        :ssl => ssl_opts
       ) do |f|
       f.adapter ADAPTER
     end.tap do |conn|
@@ -176,7 +185,7 @@ private
     # wiredump_dev output by block position or by scanning for a "POST ..."
     # line (e.g. test/soap/test_streamhandler.rb's parse_req_header) depend
     # on that exact shape regardless of which backend produced it.
-    uri = URI.parse(url)
+    uri = url.is_a?(URI) ? url : URI.parse(url)
     request_line = (@proxy && !no_proxy?(uri)) ? url : uri.request_uri
     @debug_dev << "= Request\n\n"
     @debug_dev << "POST #{request_line} HTTP/1.1\n"

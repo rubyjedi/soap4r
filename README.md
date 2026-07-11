@@ -302,6 +302,17 @@ my machine" environment for version-specific gotchas to hide in.
       CGI/WEBrick environment fragility as the bullet above, just showing
       up on a different, unrelated test as collateral rather than on the
       CGI test itself.
+* **Ruby 2.4.10, 2.5.9, `SOAP4R_HTTP_CLIENTS=curb`** -- `test_ca_verification`
+  and `test_ciphers` (`test/soap/ssl/test_ssl.rb`) fail with
+  `Curl::Err::SSLPeerCertificateError: ... unable to get issuer certificate`,
+  even though the test supplies a correct, complete CA chain. **CANTFIX**:
+  confirmed environment-specific, not a soap4r-ng or curb bug -- the official
+  `ruby:2.4.10`/`ruby:2.5.9` Docker Hub images ship libcurl 7.64.0/OpenSSL
+  1.1.1d, while `ruby:2.6.10` and later ship libcurl 7.74.0/OpenSSL 1.1.1n;
+  the same chain validates cleanly under the newer pair. httpclient and
+  net_http (unaffected by libcurl version at all) pass this same test
+  cleanly on every Ruby version, confirming this is specific to that older
+  libcurl build, not this bridge's CA-file wiring.
 * **Ruby 3.0.7, 3.1.7, 3.2.11** -- 1 failure in `test_exception`
   (`test/soap/marshal/marshaltestlib.rb`), which marshals an exception whose
   `.message` embeds a live `#inspect` dump of the entire running

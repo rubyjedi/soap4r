@@ -22,7 +22,13 @@ end
 # against this project's full legacy-Ruby matrix (1.8.7-2.1.x); it's gated
 # to a modern floor here rather than guessing at older compatibility.
 group :http_curb, :optional => true do
-  gem 'curb' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
+  # Gated to >= 2.4, not >= 2.2: curb's C extension (curb.c) references
+  # CURL_SSLVERSION_MAX_* constants that don't exist before libcurl 7.54.0,
+  # and the official ruby:2.2.10/ruby:2.3.8 Docker Hub images' system
+  # libcurl-dev predates that -- confirmed a hard compile failure there,
+  # not a graceful skip. ruby:2.4.10's image has a new-enough libcurl-dev;
+  # everything from there up compiles cleanly.
+  gem 'curb' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.4
 end
 group :http_faraday, :optional => true do
   gem 'faraday'
@@ -35,15 +41,32 @@ group :http_faraday, :optional => true do
   # libcurl via FFI at runtime rather than compiling against it, so no
   # libcurl-dev is needed to install this one, just the runtime .so
   # (already present wherever curb's libcurl-dev is installed).
-  gem 'faraday-typhoeus' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
-  gem 'typhoeus' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
+  # Gated to >= 2.6, not the >= 2.2 floor everything else in this group
+  # uses: faraday-typhoeus's oldest release still on RubyGems (1.0.0) pulls
+  # in a current, unconstrained `logger` needing Ruby >= 2.5, and its next
+  # release (1.1.0) directly requires Ruby >= 2.6 itself -- there's no
+  # version of faraday-typhoeus left that installs cleanly below that,
+  # confirmed empirically. Same "modern floor" reasoning already used for
+  # curb above, not a guess.
+  gem 'faraday-typhoeus' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.6
+  gem 'typhoeus' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.6
+  # ethon (typhoeus's own dependency) pulls in ffi unconstrained; current
+  # ffi releases need Ruby >= 3.0 (1.17+) -- Bundler's resolver has no way
+  # to know that from the >= 2.6 gate above alone. Confirmed this hard-fails
+  # `bundle install` (not a graceful per-gem skip) on 2.6.10 without an
+  # explicit pin. 1.12.2 is the newest release confirmed installable there.
+  gem 'ffi', '~> 1.12.2' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.6 && RUBY_VERSION.to_f < 3.0
   # faraday-patron is kept as a third, optional spot-check adapter --
   # libcurl-based like curb, but through a different, considerably less
   # popular gem (3 reverse dependencies) with its own quirks (see
   # SOAP4R_FARADAY_ADAPTER=patron and "Known Test Suite Exceptions" in
-  # README.md).
-  gem 'faraday-patron' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
-  gem 'patron' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.2
+  # README.md). Gated to >= 2.4, not the >= 2.2 floor everything else in
+  # this group uses: confirmed faraday-patron has no release compatible
+  # with 2.2/2.3 at all (1.0.0, its oldest ever published version, already
+  # requires Ruby >= 2.4) -- this hard-fails `bundle install` on 2.2.10/
+  # 2.3.8 otherwise, not a graceful per-gem skip.
+  gem 'faraday-patron' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.4
+  gem 'patron' if RUBY_PLATFORM !~ /java/ && RUBY_VERSION.to_f >= 2.4
   # lib/soap/faradayClient.rb needs this for its own manual Basic-auth
   # header encoding -- same early-demotion behavior as logger/getoptlong
   # below (a plain `require 'base64'` starts warning, then fails outright

@@ -94,13 +94,20 @@ class CurbClient
 private
 
   def build_curl(url, header)
-    curl = Curl::Easy.new(url)
+    # Curl::Easy.new needs a String -- given a URI object instead (the
+    # driver's endpoint can be constructed from either, see test_uri in
+    # test/soap/test_streamhandler.rb), curb's C extension doesn't coerce
+    # it and silently stores nil for the URL internally, surfacing much
+    # later as "TypeError: no implicit conversion of nil into String"
+    # inside curl/multi.rb's own perform machinery rather than failing
+    # here where the actual mistake is.
+    curl = Curl::Easy.new(url.to_s)
     curl.headers = header.dup
     curl.headers['User-Agent'] = @agent if @agent
     curl.follow_location = false	# streamHandler.rb's own send_post loop handles redirects.
     curl.connect_timeout = @connect_timeout if @connect_timeout
     curl.timeout = @receive_timeout if @receive_timeout
-    unless no_proxy?(URI.parse(url))
+    unless no_proxy?(url.is_a?(URI) ? url : URI.parse(url))
       curl.proxy_url = @proxy
     end
     if @challenge_auth
