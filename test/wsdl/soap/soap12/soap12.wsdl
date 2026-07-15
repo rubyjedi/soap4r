@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions
+    name="soap12echo"
+    targetNamespace="urn:soap12echo"
+    xmlns:tns="urn:soap12echo"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+  <message name="echo_in">
+    <part name="msg" type="xsd:string"/>
+  </message>
+  <message name="echo_out">
+    <part name="return" type="xsd:string"/>
+  </message>
+
+  <portType name="soap12echo_porttype">
+    <operation name="echo">
+      <input message="tns:echo_in" />
+      <output message="tns:echo_out" />
+    </operation>
+  </portType>
+
+  <!-- The one thing this fixture exists to exercise: a <soap12:binding>
+       (namespace http://schemas.xmlsoap.org/wsdl/soap12/) instead of the
+       SOAP 1.1 <soap:binding> every other WSDL fixture in this test
+       suite uses. RPC/literal style, matching the already-proven simple
+       server setup pattern (add_rpc_method); document style would also
+       need a WSDL-driven type registry set up server-side, which is an
+       orthogonal concern to what this fixture is actually testing. -->
+  <binding name="soap12echo_binding" type="tns:soap12echo_porttype">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+    <operation name="echo">
+      <soap12:operation soapAction="urn:soap12echo:echo" />
+      <input>
+        <soap12:body use="literal" namespace="urn:soap12echo" />
+      </input>
+      <output>
+        <soap12:body use="literal" namespace="urn:soap12echo" />
+      </output>
+    </operation>
+  </binding>
+
+  <service name="soap12echo_service">
+    <port name="soap12echo_service_port" binding="tns:soap12echo_binding">
+      <soap12:address location="http://localhost:17171/" />
+    </port>
+  </service>
+</definitions>

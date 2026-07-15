@@ -38,8 +38,9 @@ class Binding < Info
       o = OperationBinding.new
       @operations << o
       o
-    when SOAPBindingName
+    when SOAPBindingName, SOAP12BindingName
       o = WSDL::SOAP::Binding.new
+      o.soap12 = (element == SOAP12BindingName)
       @soapbinding = o
       o
     when DocumentationName

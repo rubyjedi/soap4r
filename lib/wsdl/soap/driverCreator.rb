@@ -83,9 +83,12 @@ Methods = [
     EOD
     wsdl_name = @definitions.name ? @definitions.name.name : 'default'
     mrname = safeconstname(wsdl_name + 'MappingRegistry')
+    soap_version_line =
+      binding.soapbinding.soap12 ? %Q[self.soap_version = ::SOAP::SOAPVersion1_2\n] : ''
     c.def_method("initialize", "endpoint_url = nil") do
       %Q[endpoint_url ||= DefaultEndpointUrl\n] +
       %Q[super(endpoint_url, nil)\n] +
+      soap_version_line +
       %Q[self.mapping_registry = #{mrname}::EncodedRegistry\n] +
       %Q[self.literal_mapping_registry = #{mrname}::LiteralRegistry\n] +
       %Q[init_methods]

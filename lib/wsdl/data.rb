@@ -51,6 +51,19 @@ SOAPBodyName = XSD::QName.new(SOAPBindingNamespace, 'body')
 SOAPFaultName = XSD::QName.new(SOAPBindingNamespace, 'fault')
 SOAPOperationName = XSD::QName.new(SOAPBindingNamespace, 'operation')
 
+# SOAP 1.2 WSDL binding extension elements -- same local names, different
+# namespace. Routed to the exact same WSDL::SOAP::* classes as their 1.1
+# counterparts at every dispatch point (binding.rb, operationBinding.rb,
+# param.rb, port.rb, service.rb, soap/header.rb): only the recognized
+# input namespace differs, the object model doesn't need to know or care
+# which SOAP version bound a given WSDL operation.
+SOAP12AddressName = XSD::QName.new(SOAP12BindingNamespace, 'address')
+SOAP12BindingName = XSD::QName.new(SOAP12BindingNamespace, 'binding')
+SOAP12HeaderName = XSD::QName.new(SOAP12BindingNamespace, 'header')
+SOAP12BodyName = XSD::QName.new(SOAP12BindingNamespace, 'body')
+SOAP12FaultName = XSD::QName.new(SOAP12BindingNamespace, 'fault')
+SOAP12OperationName = XSD::QName.new(SOAP12BindingNamespace, 'operation')
+
 BindingAttrName = XSD::QName.new(nil, 'binding')
 ElementAttrName = XSD::QName.new(nil, 'element')
 LocationAttrName = XSD::QName.new(nil, 'location')

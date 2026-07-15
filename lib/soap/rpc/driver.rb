@@ -30,6 +30,7 @@ class Driver
   attr_proxy :literal_mapping_registry, true
   attr_proxy :allow_unqualified_element, true
   attr_proxy :default_encodingstyle, true
+  attr_proxy :soap_version, true
   attr_proxy :generate_explicit_type, true
   attr_proxy :use_default_namespace, true
   attr_proxy :return_response_as_xml, true
@@ -165,7 +166,7 @@ private
   end
 
   def create_header(headers)
-    header = SOAPHeader.new()
+    header = SOAPHeader.new(@proxy.soap_version)
     headers.each do |content, mustunderstand, encodingstyle|
       header.add(SOAPHeaderItem.new(content, mustunderstand, encodingstyle))
     end

@@ -113,6 +113,9 @@ private
   end
 
   def init_driver(drv, binding)
+    if binding.soapbinding && binding.soapbinding.soap12
+      drv.soap_version = ::SOAP::SOAPVersion1_2
+    end
     wsdl_elements = @wsdl.collect_elements
     wsdl_types = @wsdl.collect_complextypes + @wsdl.collect_simpletypes
     rpc_decode_typemap = wsdl_types +

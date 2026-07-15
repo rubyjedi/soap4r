@@ -29,6 +29,7 @@ class HTTPServer < Logger::Application
   attr_proxy :literal_mapping_registry, true
   attr_proxy :generate_explicit_type, true
   attr_proxy :use_default_namespace, true
+  attr_proxy :soap_version, true
 
   def initialize(config)
     actor = config[:SOAPHTTPServerApplicationName] || self.class.name

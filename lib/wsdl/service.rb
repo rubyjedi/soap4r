@@ -36,7 +36,7 @@ class Service < Info
       o = Port.new
       @ports << o
       o
-    when SOAPAddressName
+    when SOAPAddressName, SOAP12AddressName
       o = WSDL::SOAP::Address.new
       @soap_address = o
       o

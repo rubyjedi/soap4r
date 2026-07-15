@@ -8,6 +8,7 @@
 
 
 require 'soap/soap'
+require 'soap/soapversion'
 require 'soap/processor'
 require 'soap/mapping'
 require 'soap/mapping/literalregistry'
@@ -32,6 +33,7 @@ public
   attr_accessor :mandatorycharset
   attr_accessor :allow_unqualified_element
   attr_accessor :default_encodingstyle
+  attr_accessor :soap_version
   attr_accessor :generate_explicit_type
   attr_accessor :use_default_namespace
   attr_accessor :return_response_as_xml
@@ -57,6 +59,7 @@ public
     # TODO: set to false by default or drop thie option in 1.6.0
     @allow_unqualified_element = true
     @default_encodingstyle = nil
+    @soap_version = SOAPVersion1_1
     @generate_explicit_type = nil
     @use_default_namespace = false
     @return_response_as_xml = false
@@ -126,7 +129,8 @@ public
     req_header = create_request_header
     req_body = SOAPBody.new(
       op_info.request_body(params, @mapping_registry,
-        @literal_mapping_registry, mapping_opt)
+        @literal_mapping_registry, mapping_opt),
+      false, @soap_version
     )
     reqopt = create_encoding_opt(
       :soapaction => op_info.soapaction || @soapaction,
@@ -167,14 +171,14 @@ public
   end
 
   def route(req_header, req_body, reqopt, resopt)
-    req_env = ::SOAP::SOAPEnvelope.new(req_header, req_body)
+    req_env = ::SOAP::SOAPEnvelope.new(req_header, req_body, @soap_version)
     unless reqopt[:envelopenamespace].nil?
       set_envelopenamespace(req_env, reqopt[:envelopenamespace])
     end
     reqopt[:external_content] = nil
     conn_data = marshal(req_env, reqopt)
     if ext = reqopt[:external_content]
-      mime = MIMEMessage.new
+      mime = MIMEMessage.new(@soap_version)
       ext.each do |k, v|
       	mime.add_attachment(v.data)
       end
@@ -182,8 +186,10 @@ public
       mime.close
       conn_data.send_string = mime.content_str
       conn_data.send_contenttype = mime.headers['content-type'].str
+      conn_data.multipart = true
     end
     conn_data.soapaction = reqopt[:soapaction]
+    conn_data.soap_version = @soap_version
     conn_data = @streamhandler.send(@endpoint_url, conn_data)
     if conn_data.receive_string.empty?
       return nil
@@ -243,7 +249,7 @@ private
   end
 
   def create_request_header
-    header = ::SOAP::SOAPHeader.new
+    header = ::SOAP::SOAPHeader.new(@soap_version)
     items = @headerhandler.on_outbound(header)
     items.each do |item|
       header.add(item.elename.name, item)
@@ -304,6 +310,7 @@ private
     opt[:default_encodingstyle] = @default_encodingstyle
     opt[:allow_unqualified_element] = @allow_unqualified_element
     opt[:generate_explicit_type] = @generate_explicit_type
+    opt[:soap_version] = @soap_version
     opt[:no_indent] = @options["soap.envelope.no_indent"]
     opt[:use_numeric_character_reference] =
       @options["soap.envelope.use_numeric_character_reference"]

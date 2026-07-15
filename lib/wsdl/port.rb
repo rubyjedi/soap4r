@@ -39,7 +39,7 @@ class Port < Info
 
   def parse_element(element)
     case element
-    when SOAPAddressName
+    when SOAPAddressName, SOAP12AddressName
       o = WSDL::SOAP::Address.new
       @soap_address = o
       o

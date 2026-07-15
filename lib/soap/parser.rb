@@ -9,6 +9,7 @@
 
 require 'xsd/xmlparser'
 require 'soap/soap'
+require 'soap/soapversion'
 require 'soap/ns'
 require 'soap/baseData'
 require 'soap/encodingstyle/handler'
@@ -74,6 +75,7 @@ public
   attr_accessor :default_encodingstyle
   attr_accessor :decode_typemap
   attr_accessor :allow_unqualified_element
+  attr_accessor :soap_version
 
   def initialize(opt = {})
     @opt = opt
@@ -82,7 +84,9 @@ public
     @recycleframe = nil
     @lastnode = nil
     @handlers = {}
-    @envelopenamespace = opt[:envelopenamespace] || EnvelopeNamespace
+    @soap_version = opt[:soap_version] || SOAPVersion1_1
+    @envelopenamespace =
+      opt[:envelopenamespace] || @soap_version.envelope_namespace
     @default_encodingstyle = opt[:default_encodingstyle] || EncodingNamespace
     @decode_typemap = opt[:decode_typemap] || nil
     @allow_unqualified_element = opt[:allow_unqualified_element] || false
@@ -202,7 +206,7 @@ private
   def decode_soap_envelope(ns, ele, attrs, parent)
     o = nil
     if ele.name == EleEnvelope
-      o = SOAPEnvelope.new
+      o = SOAPEnvelope.new(nil, nil, @soap_version)
       if ext = @opt[:external_content]
 	ext.each do |k, v|
 	  o.external_content[k] = v
@@ -210,23 +214,24 @@ private
       end
     elsif ele.name == EleHeader
       return nil unless parent.node.is_a?(SOAPEnvelope)
-      o = SOAPHeader.new
+      o = SOAPHeader.new(@soap_version)
       parent.node.header = o
     elsif ele.name == EleBody
       return nil unless parent.node.is_a?(SOAPEnvelope)
-      o = SOAPBody.new
+      o = SOAPBody.new(nil, false, @soap_version)
       parent.node.body = o
     elsif ele.name == EleFault
+      fault_class = (@soap_version == SOAPVersion1_2) ? SOAP12Fault : SOAPFault
       if parent.node.is_a?(SOAPBody)
-        o = SOAPFault.new
+        o = fault_class.new
         parent.node.fault = o
       elsif parent.node.is_a?(SOAPEnvelope)
         # live.com server returns SOAPFault as a direct child of SOAPEnvelope.
         # support it even if it's not spec compliant.
         warn("Fault must be a child of Body.")
-        body = SOAPBody.new
+        body = SOAPBody.new(nil, false, @soap_version)
         parent.node.body = body
-        o = SOAPFault.new
+        o = fault_class.new
         body.fault = o
       else
         return nil

@@ -141,6 +141,14 @@ private
     conn_data.receive_string = req.body
     conn_data.receive_contenttype = req['content-type']
     conn_data.soapaction = parse_soapaction(req.meta_vars['HTTP_SOAPACTION'])
+    # SOAP 1.2 has no separate SOAPAction header -- the action travels as
+    # a Content-Type parameter instead. Only consulted when the header is
+    # absent, so this is a pure fallback: 1.1 traffic (which always sends
+    # the header) is completely unaffected.
+    if conn_data.soapaction.nil?
+      conn_data.soapaction =
+        StreamHandler.parse_action_from_content_type(conn_data.receive_contenttype)
+    end
   end
 
   def setup_res(conn_data, req, res)
