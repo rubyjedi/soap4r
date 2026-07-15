@@ -119,6 +119,37 @@ class SOAPBody < SOAPStruct
   end
 
   def encode(generator, ns, attrs = {})
+    # extraattr can hold XSD::QName-keyed custom attributes (e.g. a
+    # wsu:Id for a WS-Security signature Reference to target) -- unlike
+    # an ordinary SOAPElement (which serializes itself via #to_xmlpart, a
+    # self-contained mini-serializer with its own locally-scoped prefix
+    # assignment), SOAPBody goes through the shared, document-wide `ns`
+    # prefix registry here, so any QName-keyed attrs need the same
+    # explicit assign-then-rekey treatment SOAPFault#encode already does
+    # above for its own two hardcoded namespaces -- just generalized to
+    # whatever namespace(s) actually show up here. A no-op when extraattr
+    # has no QName keys (the common case), so existing behavior for
+    # every caller that's never needed this is unaffected.
+    #
+    # `attrs` here (via encode_element in generator.rb) *is* obj.extraattr
+    # itself, not a copy -- rekeying in place would permanently replace
+    # the QName key with a resolved string on the object being marshaled,
+    # so a second #marshal of the same envelope (e.g. WS-Security's own
+    # preview-then-real two-pass signing, see lib/soap/wssecurity.rb)
+    # would silently stop re-registering the namespace the second time,
+    # possibly with a fresh `ns` registry assigning a different prefix.
+    # Marshaling must never mutate the object it's marshaling. Build a
+    # fresh hash instead.
+    qname_keys = attrs.keys.select { |key| key.is_a?(XSD::QName) }
+    unless qname_keys.empty?
+      attrs = attrs.dup
+      qname_keys.each do |key|
+        Generator.assign_ns(attrs, ns, key.namespace) if key.namespace
+      end
+      qname_keys.each do |key|
+        attrs[ns.name(key)] = attrs.delete(key)
+      end
+    end
     name = ns.name(@elename)
     generator.encode_tag(name, attrs)
     @data.each do |data|

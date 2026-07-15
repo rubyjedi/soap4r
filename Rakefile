@@ -38,12 +38,24 @@ namespace :test do
 
   desc 'Run a single test by specifying its filename within "test/**/test_*.rb"'
   Rake::TestTask.new(:single) do |t|
-    
+
     test_file = ARGV[1]
 
     t.test_files = FileList[ test_file ]
     t.warning = !!ENV['WARNINGS']
     t.verbose = !!ENV['VERBOSE']
     t.libs << 'test'
+  end
+
+  # Deliberately lives outside test/**/test_*.rb (see
+  # test_ws_security_e2e/README.md) so it's never picked up by
+  # test:deep/test:surface's own globs, regardless of SCOPE -- these need a
+  # live, self-hosted WS-Security test server, not just local fixtures.
+  desc 'Run the WS-Security e2e tests against a live WSS4J/XWSS test server -- see test_ws_security_e2e/README.md'
+  Rake::TestTask.new(:ws_security_e2e) do |t|
+    t.test_files = FileList['test_ws_security_e2e/test_*.rb']
+    t.warning = !!ENV['WARNINGS']
+    t.verbose = !!ENV['VERBOSE']
+    t.libs << 'test' << 'test_ws_security_e2e'
   end
 end
