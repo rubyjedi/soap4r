@@ -18,6 +18,10 @@ Version = '0.0.2'
 
 Namespace = 'http://schemas.xmlsoap.org/wsdl/'
 SOAPBindingNamespace ='http://schemas.xmlsoap.org/wsdl/soap/'
+# From the "SOAP 1.2 Binding for WSDL 1.1" W3C submission, S2.1: the
+# namespace implementations MUST use for soap12:binding/operation/body/
+# header/fault/address WSDL extension elements.
+SOAP12BindingNamespace = 'http://schemas.xmlsoap.org/wsdl/soap12/'
 
 class Error < StandardError; include ::SOAP::NestedException; end
 

@@ -25,6 +25,7 @@ module SOAP
 
 
 HeaderFaultName = XSD::QName.new(SOAPBindingNamespace, 'headerfault')
+SOAP12HeaderFaultName = XSD::QName.new(SOAP12BindingNamespace, 'headerfault')
 
 LocationAttrName = XSD::QName.new(nil, 'location')
 StyleAttrName = XSD::QName.new(nil, 'style')

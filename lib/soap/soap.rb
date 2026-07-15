@@ -99,17 +99,34 @@ class FaultError < Error
   attr_reader :faultactor
   attr_accessor :detail
 
+  # fault is either a SOAPFault (1.1's flat faultcode/faultstring/
+  # faultactor/detail) or a SOAP12Fault (1.2's nested Code/Reason/Role/
+  # Detail) -- exposed through this same set of reader names either way,
+  # since callers already rely on this shape and the two protocols'
+  # underlying fault semantics don't need identical Ruby types to be
+  # usable, just a reasonable value for each. code_value/reason_text/role
+  # are already the natural Ruby values (QName-or-string/string/string);
+  # faultcode/faultactor for 1.1 stay exactly as before (whatever
+  # SOAPFault#faultcode/#faultactor already returned).
   def initialize(fault)
-    @faultcode = fault.faultcode
-    @faultstring = fault.faultstring
-    @faultactor = fault.faultactor
+    if fault.is_a?(SOAP12Fault)
+      @faultcode = fault.code_value
+      @faultstring = fault.reason_text
+      @faultactor = fault.role
+    else
+      @faultcode = fault.faultcode
+      @faultstring = fault.faultstring
+      @faultactor = fault.faultactor
+    end
     @detail = fault.detail
     super(self.to_s)
   end
 
   def to_s
     str = nil
-    if @faultstring and @faultstring.respond_to?('data')
+    if @faultstring.is_a?(String)
+      str = @faultstring
+    elsif @faultstring and @faultstring.respond_to?('data')
       str = @faultstring.data
     end
     str || '(No faultstring)'

@@ -8,6 +8,7 @@
 
 
 require 'soap/soap'
+require 'soap/soapversion'
 require 'soap/processor'
 require 'soap/mapping'
 require 'soap/mapping/literalregistry'
@@ -33,6 +34,7 @@ class Router
   attr_accessor :generate_explicit_type
   attr_accessor :use_default_namespace
   attr_accessor :external_ces
+  attr_accessor :soap_version
   attr_reader :filterchain
 
   def initialize(actor)
@@ -43,6 +45,7 @@ class Router
     @generate_explicit_type = true
     @use_default_namespace = false
     @external_ces = nil
+    @soap_version = SOAPVersion1_1
     @operation_by_soapaction = {}
     @operation_by_qname = {}
     @headerhandlerfactory = []
@@ -191,15 +194,16 @@ class Router
       conn_data.is_nocontent = true
       conn_data
     else
-      body = SOAPBody.new(soap_response, conn_data.is_fault)
-      env = SOAPEnvelope.new(header, body)
+      body = SOAPBody.new(soap_response, conn_data.is_fault, @soap_version)
+      env = SOAPEnvelope.new(header, body, @soap_version)
       marshal(conn_data, env, default_encodingstyle)
     end
   end
 
   # Create fault response string.
   def create_fault_response(e)
-    env = SOAPEnvelope.new(SOAPHeader.new, SOAPBody.new(fault(e, nil), true))
+    env = SOAPEnvelope.new(SOAPHeader.new(@soap_version),
+      SOAPBody.new(fault(e, nil), true, @soap_version), @soap_version)
     opt = {}
     opt[:external_content] = nil
     @filterchain.reverse_each do |filter|
@@ -277,7 +281,7 @@ private
   end
 
   def call_headers(headerhandler)
-    header = ::SOAP::SOAPHeader.new
+    header = ::SOAP::SOAPHeader.new(@soap_version)
     items = headerhandler.on_outbound(header)
     items.each do |item|
       header.add(item.elename.name, item)
@@ -292,6 +296,7 @@ private
   def unmarshal(conn_data)
     xml = nil
     opt = {}
+    opt[:soap_version] = @soap_version
     contenttype = conn_data.receive_contenttype
     if /#{MIMEMessage::MultipartContentType}/i =~ contenttype
       opt[:external_content] = {}
@@ -316,7 +321,7 @@ private
     end
     env = Processor.unmarshal(xml, opt)
     charset = opt[:charset]
-    conn_data.send_contenttype = "text/xml; charset=\"#{charset}\""
+    conn_data.send_contenttype = @soap_version.build_content_type(charset)
     env
   end
 
@@ -324,6 +329,7 @@ private
     opt = {}
     opt[:external_content] = nil
     opt[:default_encodingstyle] = default_encodingstyle
+    opt[:soap_version] = @soap_version
     opt[:generate_explicit_type] = @generate_explicit_type
     opt[:use_default_namespace] = @use_default_namespace
     @filterchain.reverse_each do |filter|
@@ -339,7 +345,7 @@ private
   end
 
   def mimeize(conn_data, ext)
-    mime = MIMEMessage.new
+    mime = MIMEMessage.new(@soap_version)
     ext.each do |k, v|
       mime.add_attachment(v.data)
     end
@@ -352,10 +358,18 @@ private
 
   # Create fault response.
   def fault(e, wsdl_fault_details)
-    if e.is_a?(UnhandledMustUnderstandHeaderError)
-      faultcode = FaultCode::MustUnderstand
+    if @soap_version == SOAPVersion1_2
+      if e.is_a?(UnhandledMustUnderstandHeaderError)
+        faultcode = FaultCode12::MustUnderstand
+      else
+        faultcode = FaultCode12::Receiver
+      end
     else
-      faultcode = FaultCode::Server
+      if e.is_a?(UnhandledMustUnderstandHeaderError)
+        faultcode = FaultCode::MustUnderstand
+      else
+        faultcode = FaultCode::Server
+      end
     end
 
     # If the exception represents a WSDL fault, the fault element should
@@ -385,11 +399,15 @@ private
       detail = SOAPString.new("failed to serialize detail object: #{$!}")
     end
 
-    SOAPFault.new(
-      SOAPElement.new(nil, faultcode),
-      SOAPString.new(e.to_s),
-      SOAPString.new(@actor),
-      detail)
+    if @soap_version == SOAPVersion1_2
+      SOAP12Fault.new(faultcode, e.to_s, nil, @actor, detail)
+    else
+      SOAPFault.new(
+        SOAPElement.new(nil, faultcode),
+        SOAPString.new(e.to_s),
+        SOAPString.new(@actor),
+        detail)
+    end
   end
 
   def create_mapping_opt

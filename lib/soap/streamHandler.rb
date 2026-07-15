@@ -8,6 +8,7 @@
 
 
 require 'soap/soap'
+require 'soap/soapversion'
 require 'soap/httpconfigloader'
 require 'soap/httpbackend'
 require 'soap/filter/filterchain'
@@ -35,6 +36,18 @@ class StreamHandler
     attr_accessor :is_fault
     attr_accessor :is_nocontent
     attr_accessor :soapaction
+    attr_accessor :soap_version
+    # True when send_string/send_contenttype are a MIME multipart message
+    # (SOAP-with-Attachments) -- send_post uses this to still emit the
+    # legacy SOAPAction header even under SOAP 1.2, where it's otherwise
+    # folded into the Content-Type's action parameter instead. That
+    # folding isn't attempted for the multipart case at all (see
+    # MIMEMessage): action placement for attachments+1.2 combined isn't
+    # settled by any spec this was checked against, and real-world use of
+    # that combination is rare enough that falling back to the
+    # widely-supported legacy header is the pragmatic choice, not a gap
+    # left to fix later.
+    attr_accessor :multipart
 
     def initialize(send_string = nil)
       @send_string = send_string
@@ -44,6 +57,8 @@ class StreamHandler
       @is_fault = false
       @is_nocontent = false
       @soapaction = nil
+      @soap_version = nil
+      @multipart = false
     end
   end
 
@@ -51,17 +66,36 @@ class StreamHandler
     @filterchain = Filter::FilterChain.new
   end
 
+  # Recognizes both SOAP 1.1's media type (text/xml) and 1.2's
+  # (application/soap+xml). Unlike the original 1.1-only version, this
+  # isn't fully anchored to the end of the string: a 1.2 Content-Type can
+  # carry an additional action="..." parameter alongside charset, in
+  # either order, which parse_action_from_content_type below extracts
+  # separately.
   def self.parse_media_type(str)
-    if /^#{ MediaType }(?:\s*;\s*charset=([^"]+|"[^"]+"))?$/i !~ str
-      return nil
+    return nil unless str
+    return nil unless /^(?:#{Regexp.escape(MediaType)}|application\/soap\+xml)\b/i =~ str
+    if /charset=("[^"]*"|[^;\s]+)/i =~ str
+      charset = $1
+      charset = charset.gsub(/"/, '')
     end
-    charset = $1
-    charset.gsub!(/"/, '') if charset
     charset || 'utf-8'
   end
 
-  def self.create_media_type(charset)
-    "#{ MediaType }; charset=#{ charset }"
+  # SOAP 1.2 only: the Content-Type "action" parameter that replaces the
+  # 1.1 SOAPAction header. nil if absent (1.1 traffic, or a 1.2 request
+  # with no action).
+  def self.parse_action_from_content_type(str)
+    return nil unless str
+    if /action=("[^"]*"|[^;\s]+)/i =~ str
+      $1.gsub(/"/, '')
+    end
+  end
+
+  def self.create_media_type(charset, media_type = MediaType, action = nil)
+    ct = "#{ media_type }; charset=#{ charset }"
+    ct += %Q{; action="#{ action }"} if action
+    ct
   end
 
   def send(url, conn_data, soapaction = nil, charset = nil)
@@ -201,7 +235,10 @@ private
   end
 
   def send_post(url, conn_data, charset)
-    conn_data.send_contenttype ||= StreamHandler.create_media_type(charset)
+    soap_version = conn_data.soap_version || SOAPVersion1_1
+    conn_data.send_contenttype ||=
+      StreamHandler.create_media_type(charset, soap_version.media_type,
+        soap_version.action_in_content_type ? conn_data.soapaction : nil)
 
     if @wiredump_file_base
       filename = @wiredump_file_base + '_request.xml'
@@ -212,7 +249,11 @@ private
 
     extheader = {}
     extheader['Content-Type'] = conn_data.send_contenttype
-    extheader['SOAPAction'] = "\"#{ conn_data.soapaction }\""
+    # See ConnectionData#multipart's comment -- attachments always get the
+    # legacy header too, regardless of version.
+    if !soap_version.action_in_content_type || conn_data.multipart
+      extheader['SOAPAction'] = "\"#{ conn_data.soapaction }\""
+    end
     extheader['Accept-Encoding'] = 'gzip' if send_accept_encoding_gzip?
     send_string = conn_data.send_string
     @wiredump_dev << "Wire dump:\n\n" if @wiredump_dev

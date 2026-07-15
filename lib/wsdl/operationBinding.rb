@@ -177,7 +177,7 @@ class OperationBinding < Info
       o = Param.new
       @fault << o
       o
-    when SOAPOperationName
+    when SOAPOperationName, SOAP12OperationName
       o = WSDL::SOAP::Operation.new
       @soapoperation = o
       o

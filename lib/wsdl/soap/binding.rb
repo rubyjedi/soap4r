@@ -17,11 +17,18 @@ module SOAP
 class Binding < Info
   attr_reader :style
   attr_reader :transport
+  # Set by WSDL::Binding#parse_element (lib/wsdl/binding.rb) based on
+  # whether the <soap:binding> or <soap12:binding> element matched --
+  # this class itself is identical either way, only the WSDL author's
+  # chosen namespace differs, so that's the one place that actually knows
+  # which one it was.
+  attr_accessor :soap12
 
   def initialize
     super
     @style = nil
     @transport = nil
+    @soap12 = false
   end
 
   def parse_element(element)

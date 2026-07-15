@@ -55,15 +55,15 @@ class Param < Info
 
   def parse_element(element)
     case element
-    when SOAPBodyName
+    when SOAPBodyName, SOAP12BodyName
       o = WSDL::SOAP::Body.new
       @soapbody = o
       o
-    when SOAPHeaderName
+    when SOAPHeaderName, SOAP12HeaderName
       o = WSDL::SOAP::Header.new
       @soapheader << o
       o
-    when SOAPFaultName
+    when SOAPFaultName, SOAP12FaultName
       o = WSDL::SOAP::Fault.new
       @soapfault = o
       o

@@ -52,7 +52,7 @@ class Header < Info
 
   def parse_element(element)
     case element
-    when HeaderFaultName
+    when HeaderFaultName, SOAP12HeaderFaultName
       o = WSDL::SOAP::HeaderFault.new
       @headerfault = o
       o

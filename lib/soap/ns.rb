@@ -10,6 +10,7 @@
 require 'xsd/datatypes'
 require 'xsd/ns'
 require 'soap/soap'
+require 'soap/soapversion'
 
 
 module SOAP
@@ -21,7 +22,8 @@ XSINamespaceTag  = 'xsi'
 
 class NS < XSD::NS
   KNOWN_TAG = XSD::NS::KNOWN_TAG.dup.update(
-    SOAP::EnvelopeNamespace => 'env'
+    SOAP::EnvelopeNamespace => 'env',
+    SOAP::SOAPVersion1_2.envelope_namespace => 'env'
   )
 
   def initialize(tag2ns = nil)

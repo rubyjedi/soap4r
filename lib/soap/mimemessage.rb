@@ -8,6 +8,7 @@
 
 
 require 'soap/attachment'
+require 'soap/soapversion'
 
 
 module SOAP
@@ -147,11 +148,17 @@ class MIMEMessage
     end
   end
 
-  def initialize
+  # soap_version governs the media type this message's parts declare
+  # (root part and the outer multipart's own "type" parameter) -- defaults
+  # to SOAPVersion1_1 so parsing an incoming message (which doesn't care
+  # what media type the parts claim; see #root) and any other caller that
+  # never had a version to give aren't affected.
+  def initialize(soap_version = SOAPVersion1_1)
     @parts = []
     @headers = Headers.new
     @root = nil
     @boundary = nil
+    @soap_version = soap_version
   end
 
   def self.parse(head, str)
@@ -163,7 +170,7 @@ class MIMEMessage
   def close
     @headers.add(
       "Content-Type",
-      "multipart/related; type=\"text/xml\"; boundary=\"#{boundary}\"; start=\"#{@parts[0].contentid}\""
+      "multipart/related; type=\"#{@soap_version.media_type}\"; boundary=\"#{boundary}\"; start=\"#{@parts[0].contentid}\""
     )
   end
 
@@ -202,7 +209,7 @@ class MIMEMessage
   def add_part(content)
     part = Part.new
     part.headers.add("Content-Type",
-      "text/xml; charset=" + XSD::Charset.xml_encoding_label)
+      "#{@soap_version.media_type}; charset=" + XSD::Charset.xml_encoding_label)
     part.headers.add("Content-ID", Attachment.contentid(part))
     part.body = content
     @parts.unshift(part)
