@@ -103,15 +103,19 @@ __EOX__
 
   end
 
+  # SOAP::NetHttpClient/CurbClient/FaradayClient all expose #request_filter
+  # (so streamHandler.rb's respond_to?(:request_filter) check passes and
+  # wires this filter in), but none of them actually invoke it anywhere in
+  # their own request/response code -- it's a genuinely inert accessor on
+  # all three, like #ssl_config is for NetHttpClient. Only httpclient (which
+  # has its own native filter-chain support) really honors it.
+  FILTER_CHAIN_INERT_BACKENDS = %w[SOAP::NetHttpClient SOAP::CurbClient SOAP::FaradayClient]
+
   def test_normal
-    # SOAP::NetHttpClient exposes #request_filter (so streamHandler.rb's
-    # respond_to?(:request_filter) check passes and wires this filter in),
-    # but never actually invokes it anywhere in its own request/response
-    # code -- it's a genuinely inert accessor, like #ssl_config. Skip
-    # cleanly under that backend rather than fail on a feature it was never
-    # wired up to support (see lib/soap/httpbackend.rb for how the active
-    # backend is selected/forced).
-    return if SOAP::HTTPStreamHandler::Client == SOAP::NetHttpClient
+    # Skip cleanly under a backend that never wired this up, rather than
+    # fail on a feature it doesn't support (see lib/soap/httpbackend.rb for
+    # how the active backend is selected/forced).
+    return if FILTER_CHAIN_INERT_BACKENDS.include?(SOAP::HTTPStreamHandler::Client.name)
     @client.wiredump_dev = STDOUT if $DEBUG
     filter = CookieFilter.new
     @client.streamhandler.filterchain << filter

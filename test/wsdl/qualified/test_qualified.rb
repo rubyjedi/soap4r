@@ -6,13 +6,6 @@ require 'soap/rpc/standaloneServer'
 require 'soap/wsdlDriver'
 
 
-# Assertions below assume httpclient's wiredump format, so this must check
-# the ACTIVE backend (SOAP4R_HTTP_CLIENTS can force a different one -- see
-# lib/soap/httpbackend.rb), not merely whether the gem happens to be loaded
-# in this process (e.g. test/soap/ssl/test_ssl.rb requires it unconditionally
-# regardless of the active backend).
-if defined?(HTTPClient) and SOAP::HTTPStreamHandler::Client == HTTPClient
-
 module WSDL
 
 
@@ -143,11 +136,9 @@ class TestQualified < Test::Unit::TestCase
   end
 
   def parse_requestxml(str)
-    str.split(/\r?\n\r?\n/)[3]
+    TestUtil.parse_wiredump_request_body(str)
   end
 end
 
-
-end
 
 end

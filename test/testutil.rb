@@ -61,6 +61,27 @@ module TestUtil
     webrick_server(WEBrick::HTTPProxyServer, options)
   end
 
+  # Extracts the request body XML out of a wiredump_dev capture. Every HTTP
+  # client backend (see lib/soap/httpbackend.rb) writes the same block
+  # layout -- "Wire dump:", "= Request", the raw request-line+headers, the
+  # body, "= Response", the raw response-line+headers, the response body --
+  # separated by blank lines, so the body is always the 4th block (index 3)
+  # regardless of which backend produced the dump. This was confirmed by
+  # design, not by accident: SOAP::NetHttpClient/CurbClient/FaradayClient
+  # were all built to match httpclient's own block layout exactly (see the
+  # "Mirrors httpclient's wiredump block layout" comments in
+  # lib/soap/netHttpClient.rb, curbClient.rb, and faradayClient.rb) precisely
+  # so callers like this one don't need to special-case any of them.
+  def self.parse_wiredump_request_body(str)
+    str.split(/\r?\n\r?\n/)[3]
+  end
+
+  # Same deal, for the response body (block index 6 -- see
+  # parse_wiredump_request_body above for the full block layout).
+  def self.parse_wiredump_response_body(str)
+    str.split(/\r?\n\r?\n/)[6]
+  end
+
   def self.webrick_server(klass, options)
     try = 0
     begin

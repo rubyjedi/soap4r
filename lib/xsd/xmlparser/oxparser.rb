@@ -23,11 +23,17 @@ class OxParser < XSD::XMLParser::Parser
     handler = OxDocHandler.new(self, @decoder)
 
     string = string_or_readable.respond_to?(:read) ? string_or_readable.read : StringIO.new(string_or_readable)
+    # :skip_none regardless of decoder: the old no-decoder default
+    # (:skip_return) discarded \r entirely, breaking CRLF round-tripping
+    # (see test_string_crlf) whenever htmlentities wasn't installed.
     if @decoder.nil?
-      # Use the built-in conversion with Ox.
-      ::Ox.sax_parse(handler, string, {:symbolize=> false, :convert_special=> true, :skip=> :skip_return} )
+      # Ox's own :convert_special decodes the full named-entity set, but this
+      # path segfaults on complex documents under Ox 2.14.14 (the version
+      # Ruby 2.2.x-2.6.x are stuck on) -- htmlentities is required there
+      # specifically to avoid this branch entirely (see Gemfile).
+      ::Ox.sax_parse(handler, string, {:symbolize=> false, :convert_special=> true, :skip=> :skip_none} )
     else
-      # Use HTMLEntities Decoder.  Leave the special-character conversion alone and let HTMLEntities decode it for us.
+      # Let HTMLEntities decode instead; leave Ox's own conversion off.
       ::Ox.sax_parse(handler, string, {:skip=> :skip_none})
     end
   end
