@@ -92,287 +92,78 @@ is a drop-in file rather than a change to library code.
 
 * **[httpclient](https://github.com/nahi/httpclient)** -- the default and
   strongly recommended backend. Fully featured: proxying, basic/digest auth,
-  cookies, SSL/TLS configuration, request/response filters (used for things
-  like cookie handling -- see `test/soap/test_cookie.rb`). Formerly named
-  `http-access2` (same author, Hiroaki "NaHi" Nakamura, renamed it years
-  ago) -- that old name is no longer published on RubyGems.org at all and
-  was retired from this project's own backend cascade for the same reason;
-  see git history if you need the adapter that used to sit here.
+  cookies, SSL/TLS configuration, request/response filters. (Formerly named
+  `http-access2`; see CHANGELOG.md if you need that old adapter.)
 * **[curb](https://github.com/taf2/curb)** -- libcurl bindings. Opt-in (see
-  below): needs a system `libcurl-dev` present at compile time, unlike every
-  other backend here. Supports proxying, SSL/TLS configuration (ca_file,
-  client cert/key, and cipher-list restriction -- the last of these has no
-  dedicated setter at all on `Curl::Easy`, despite libcurl itself supporting
-  it; reached via `#setopt(Curl::CURLOPT_SSL_CIPHER_LIST, ...)` instead),
-  and -- via libcurl's own challenge negotiation -- both basic and digest
-  WWW-Authenticate auth (`test/soap/auth/test_basic.rb` and
-  `test_digest.rb` both pass against it unmodified). Cookies and
-  request/response filters are not wired up (same limitation as
-  `SOAP::NetHttpClient` below). No JRuby port at all (native extension), and
-  not validated below Ruby 2.2. **No `ssl_config.verify_callback` support**
-  -- libcurl's C API exposes no per-certificate Ruby callback hook at all,
-  so this is a hard architectural gap, not something left unwired; see
-  `test/soap/ssl/test_ssl.rb`'s `test_verification`/`test_property` for what
-  that means for test coverage.
-* **[faraday](https://github.com/lostisland/faraday)** -- Faraday is itself
-  pluggable underneath our own backend selection: it has its own adapter
-  system, defaulting to `:net_http` and overridable with
+  below), needs system `libcurl-dev` at compile time. Supports proxying,
+  SSL/TLS config (ca_file, client cert/key, cipher-list restriction), and
+  basic/digest WWW-Authenticate auth. No cookies or request/response
+  filters, and no `ssl_config.verify_callback` (libcurl's C API exposes no
+  per-certificate Ruby callback hook). No JRuby port; gated to Ruby >= 2.4.
+* **[faraday](https://github.com/lostisland/faraday)** -- gated to Ruby
+  >= 2.6 (see CHANGELOG.md for why). Has its own adapter system underneath
+  our backend selection, defaulting to `:net_http` and overridable with
   `SOAP4R_FARADAY_ADAPTER` (e.g. `SOAP4R_FARADAY_ADAPTER=typhoeus`) -- a
-  second, independent config knob layered under `SOAP4R_HTTP_CLIENTS`, not a
-  replacement for it. Opt-in (see below). Supports proxying, basic auth
-  (sent proactively via a manually-built `Authorization` header, since
-  Faraday's core has no bundled auth middleware), and SSL/TLS configuration
-  (ca_file, client cert/key -- passed as file paths, since confirmed
-  empirically that at least the `:typhoeus` adapter rejects in-memory
-  `OpenSSL::X509::Certificate`/`OpenSSL::PKey::RSA` objects despite
-  `Faraday::SSLOptions` documenting them as accepted). Does **not** support
-  challenge-response (WWW-Authenticate) auth, cookies, request/response
-  filters, or `ssl_config.verify_callback` (no adapter Faraday supports
-  exposes a per-certificate Ruby callback either -- same underlying
-  limitation as libcurl-based backends generally), since none of those have
-  a core-Faraday equivalent that would work uniformly across every adapter.
-  Cipher-list restriction is passed through to whichever adapter is active,
-  but confirmed empirically that `:typhoeus` silently ignores it (Faraday's
-  own `faraday-typhoeus` adapter never forwards `ciphers` to `ethon`'s
-  `ssl_cipher_list` option at all) -- a real gap in that third-party
-  adapter, not this bridge.
-  `SOAP4R_FARADAY_ADAPTER=patron` also works for ordinary requests, but see
-  the note below -- it isn't part of the automated test matrix.
+  second, independent knob layered under `SOAP4R_HTTP_CLIENTS`. Opt-in (see
+  below). Supports proxying, basic auth (sent proactively via a
+  manually-built header), and SSL/TLS config (ca_file, client cert/key as
+  file paths). No challenge-response auth, cookies, request/response
+  filters, or `verify_callback`. Cipher-list restriction passes through to
+  the active adapter, but `:typhoeus` silently ignores it (an upstream gap,
+  not this bridge). `SOAP4R_FARADAY_ADAPTER=patron` also works for ordinary
+  requests but isn't part of the automated test matrix (see "Known Test
+  Suite Exceptions" below).
 * **`SOAP::NetHttpClient`** -- this project's own wrapper around stdlib
-  `Net::HTTP`, used only when none of the above are installed. It does
-  **not** support basic/digest auth, cookies, or request/response filters
-  (all raise `NotImplementedError`, or are silently inert for filters) --
-  these were never wired up for this backend. It's a reasonable fallback for
-  simple unauthenticated SOAP calls when you can't add a gem dependency, but
-  `httpclient` is what most of this library's real-world testing and feature
-  support assumes.
+  `Net::HTTP`, used only when none of the above are installed. No
+  basic/digest auth, cookies, or request/response filters. A reasonable
+  fallback for simple unauthenticated SOAP calls when you can't add a gem
+  dependency, but `httpclient` is what most of this library's real-world
+  testing assumes.
 
-Force a specific backend (e.g. to debug something backend-specific, or to
-run the test suite against a backend other than the default) with:
+Force a specific backend with:
 ```
 SOAP4R_HTTP_CLIENTS=net_http bundle exec rake test:deep
 ```
 Valid names are `httpclient`, `curb`, `faraday`, and `net_http`, matching
-the files under `lib/soap/httpbackend/`. `curb` and
-`faraday` are opt-in Bundler groups (`bundle config set with "http_curb
-http_faraday"` before `bundle install`) rather than main-Gemfile
-dependencies, since curb in particular needs a system library present just
-to compile -- installing it unconditionally would break `bundle install` for
-every contributor who never touches this backend.
+the files under `lib/soap/httpbackend/`. `curb` and `faraday` are opt-in
+Bundler groups: `BUNDLE_WITH="http_curb:http_faraday" bundle install`
+(an env var, not `bundle config set with "..."` -- see CHANGELOG.md).
 
 CI runs the full suite against `net_http`, `curb`, and `faraday` too
-(single-parser each, since this is about the HTTP layer, not XML parsing)
-precisely because, before `SOAP4R_HTTP_CLIENTS` existed, nothing in the test
-suite could ever actually reach the `net_http` fallback -- this project's own
-Gemfile always installed `httpclient`, so the fallback cascade never had a
-reason to fall through. Making backends independently selectable surfaced
-(and fixed) real bugs in the process: `SOAP::NetHttpClient`'s wiredump output
-duplicated request/response bodies and was missing the raw
-request-line/header block entirely, corrupting any test or tool that parsed
-`wiredump_dev` output. Faraday's own adapter list is deliberately *not*
-swept exhaustively -- our own bridge code (`lib/soap/faradayClient.rb`) is
-what we're testing, and sweeping every adapter Faraday itself supports would
-mostly re-test Faraday's own correctness rather than anything specific to
-soap4r-ng. Faraday's *default* sub-adapter (`:net_http`) doesn't get its own
-CI step at all, for the same reason: it would just re-exercise stdlib
-`Net::HTTP`, which the `net_http` backend above already covers end-to-end --
-the whole point of carrying Faraday here is reaching backends we have no
-native adapter for. So CI runs Faraday with `:typhoeus` (libcurl-based via
-`ethon`/FFI): it doubles as this bridge's real correctness check
-(proxy/SSL/timeout config plumbing against a transport genuinely different
-from the other four) and a real capability, since it's also the adapter
-people actually reach for in practice -- 28 reverse dependencies on
-RubyGems versus, say, `faraday-patron`'s 3, per [Ruby Toolbox](https://www.ruby-toolbox.com/projects/faraday-typhoeus).
-
-`:patron` was tried as a second spot-check adapter too and dropped: two CGI
-tests fail under it with `Patron::Aborted: Callback aborted`, root-caused to
-patron itself rather than this bridge or Faraday -- reproduced with a bare
-`Patron::Session#post` against the exact same server, no soap4r-ng or
-Faraday code involved at all. Not reproducible with curb (also
-libcurl-based) or `:typhoeus` above. The Gemfile still installs it
-(`SOAP4R_FARADAY_ADAPTER=patron` works for ordinary requests), it's just not
-part of the automated matrix, since there's no fix available on our end for
-an upstream bug -- see "Known Test Suite Exceptions" below.
-
-**Test parity across backends**: several tests (WSDL-driven codegen
-round-trips, request-envelope assertions, ASP.NET-handler interop -- see
-e.g. `test/wsdl/rpc/test_rpc_lit.rb`, `test/wsdl/qualified/`,
-`test/soap/test_no_indent.rb`) used to be gated to `httpclient` only,
-because they parse `wiredump_dev` output and were written assuming its
-specific block layout. That layout turned out to already be backend-neutral
-*by design* once `NetHttpClient`/`CurbClient`/`FaradayClient` were all built
-to mirror it (see the wiredump-format work above) -- confirmed by simply
-removing the gates and running the suite, which passed unmodified under
-every backend. The duplicated parsing logic across those files is now
-consolidated into `TestUtil.parse_wiredump_request_body`/
-`parse_wiredump_response_body` (`test/testutil.rb`), documented there as the
-one place a future backend's format quirks would need handling, if one ever
-had them.
-
-`test/soap/ssl/test_ssl.rb` similarly now runs its SSL config-loading
-coverage against every SSL-capable backend (httpclient, curb, faraday),
-not just httpclient -- `test_ca_verification` (ca_file-based verification
-success/failure, backend-neutral) and `test_ciphers` (rewritten to expect
-each backend's own real exception class, empirically confirmed rather than
-guessed: `OpenSSL::SSL::SSLError` for httpclient, `Curl::Err::CurlError`
-for curb, `Faraday::Error` for Faraday -- test-unit's `assert_raise` wants
-an *exact* class match, unlike plain Ruby `rescue`, so backend-specific
-subclasses are caught via `rescue`, matching this file's existing
-convention). `test_options`/`test_verification`/`test_property` stay
-httpclient-only: they're built around `ssl_config.verify_callback`, and
-neither libcurl-based backend (curb, or Faraday riding on typhoeus/patron)
-exposes a per-certificate Ruby callback hook at all -- confirmed against
-both libraries' public APIs, not assumed. That's the one piece of "full
-parity" across backends that isn't achievable without a capability that
-simply doesn't exist outside OpenSSL-native clients (httpclient, stdlib
-`Net::HTTP`).
-
-**A note on TLS trust for the `httpclient` backend**: `httpclient`'s
-`SSLConfig` doesn't trust your system's CA bundle unless told to -- left
-unconfigured, it lazily falls back to its own gem-vendored `cacert.pem`
-snapshot, which can go stale relative to a real server's certificate chain as
-CAs rotate their intermediates (confirmed directly: a real Let's
-Encrypt-signed endpoint failed verification against an older bundled
-snapshot while verifying fine against the host's own, actively-maintained CA
-bundle). `lib/soap/httpbackend/httpclient.rb` calls `set_default_paths` on
-every `httpclient` connection's `ssl_config` by default now, which defers to
-whatever CA store OpenSSL was actually built to trust on your platform --
-portable across Debian/RHEL/Alpine/etc, and layered *before* any
-`ssl_config.ca_file`/`ca_path`/`cert_store` you set yourself, so explicit
-configuration still works exactly as before. `SOAP::NetHttpClient` was never
-affected by this -- it has no SSL configuration surface of its own and
-simply defers to Ruby's own stdlib `Net::HTTP`/OpenSSL defaults, which
-already trust the system store without any help.
+(single-parser each -- this is about the HTTP layer, not XML parsing).
+Faraday runs with the `:typhoeus` adapter specifically (real correctness
+check plus the most-used adapter in practice); `:patron` was tried and
+dropped from CI (real upstream bug, not ours -- see "Known Test Suite
+Exceptions" below). Full backstory on the backend rollout (wiredump-parity
+work, TLS-trust defaults, per-backend test coverage decisions) is in
+CHANGELOG.md.
 
 #### Known Test Suite Exceptions
-Running `rake test:deep` (the complete suite) across the full version matrix
-surfaces a small, understood set of failures that aren't soap4r-ng bugs --
-they're either something the target Ruby genuinely can't do, or a test that's
-checking something too environment-specific to be a fair test. Documented
-here so they don't get mistaken for regressions:
+Running `rake test:deep` across the full version matrix surfaces a small,
+understood set of failures that aren't soap4r-ng bugs -- either something
+the target Ruby/engine genuinely can't do, or a test checking something too
+environment-specific to be fair. Documented here so they don't get mistaken
+for regressions; full root-cause writeups are in CHANGELOG.md.
 
-CI runs every version inside the same Docker image used for local
-validation (official `ruby:X.Y.Z` / `jruby:X.Y.Z.W` images where one exists;
-a from-source `rbenv` build on Debian bullseye for 1.9.3 and 2.0.0, whose
-official Docker Hub images are permanently unpullable -- every tag in both
-lines was published in the long-deprecated Docker manifest v1 schema; a
-from-source build against a vendored OpenSSL 1.0.2u for 1.8.7, which has no
-official image at all). Matching the exact environment means a clean local
-run and a clean CI run are the same claim -- there's no separate "works on
-my machine" environment for version-specific gotchas to hide in.
-
-* **Ruby 1.8.7** -- two separate issues, neither a soap4r-ng regression:
-    * 3 errors (`test_time`, `test_time_ivar`, `test_time_subclass` in
-      `marshaltestlib.rb`) from `Kernel#singleton_class`, which doesn't exist
-      until Ruby 1.9.2. **CANTFIX**: the method is absent on that Ruby, full
-      stop.
-    * The CGI-based tests (`test_calc_cgi`, `test_authheader_cgi`) fail with
-      `SOAP::ResponseFormatError: ... Internal Server Error`. Root-caused
-      partway: WEBrick's `CGIHandler` wipes the spawned CGI subprocess's
-      entire environment before exec'ing it, so `logger-application` and
-      `webrick` need forwarding via a raw `-I` load-path flag (already fixed,
-      in `test/soap/calc/test_calc_cgi.rb` and
-      `test/soap/header/test_authheader_cgi.rb`). That forwarding alone
-      wasn't enough on 1.8.7 specifically: the spawned
-      subprocess still hits `NameError: undefined local variable or method
-      'logger'` inside `lib/soap/rpc/cgistub.rb#run`, even though
-      `Logger::Application#logger` is a real public method and a minimal
-      reproduction of the exact same class hierarchy (`Logger::Application`
-      combined with `include SOAP` and `include WEBrick`) works fine in
-      isolation.
-      **Not fully root-caused** -- something specific to the real
-      `CGIStub`/`AuthHeaderPortServer`/`CalcServer` class graph, only
-      reproducible via the actual spawned-CGI-subprocess path, not a
-      simplified one. Narrow enough in scope (2 of ~330 tests, both CGI
-      smoke tests rather than core library behavior) that it wasn't worth
-      further chasing this round; flagged here rather than silently
-      swallowed by `continue-on-error`.
-    * Collateral damage from the CGI issue above: `test_nil_attribute` and
-      `test_wsdl_with_map` (`test/wsdl/document/test_rpc.rb`) intermittently
-      receive a garbage `dateTime` value (`XSD::ValueSpaceError`, a string
-      that isn't a valid `dateTime` at all) when run as part of the full
-      `rake test:deep` suite, but pass cleanly every time when that same
-      file is run in isolation (`SCOPE=wsdl/document`). Confirmed this is
-      state leaking from a still-lingering CGI subprocess/WEBrick server
-      thread earlier in the same single-process test run (the CGI tests
-      execute well before this file alphabetically), not a genuine 1.8.7
-      `Date`/`DateTime` arithmetic bug -- ruled that out directly, since
-      `XSDDateTimeImpl#screen_data`'s `Time` branch produces a correct
-      result in isolation. **Not independently fixable**: same underlying
-      CGI/WEBrick environment fragility as the bullet above, just showing
-      up on a different, unrelated test as collateral rather than on the
-      CGI test itself.
-* **Ruby 2.4.10, 2.5.9, `SOAP4R_HTTP_CLIENTS=curb`** -- `test_ca_verification`
-  and `test_ciphers` (`test/soap/ssl/test_ssl.rb`) fail with
-  `Curl::Err::SSLPeerCertificateError: ... unable to get issuer certificate`,
-  even though the test supplies a correct, complete CA chain. **CANTFIX**:
-  confirmed environment-specific, not a soap4r-ng or curb bug -- the official
-  `ruby:2.4.10`/`ruby:2.5.9` Docker Hub images ship libcurl 7.64.0/OpenSSL
-  1.1.1d, while `ruby:2.6.10` and later ship libcurl 7.74.0/OpenSSL 1.1.1n;
-  the same chain validates cleanly under the newer pair. httpclient and
-  net_http (unaffected by libcurl version at all) pass this same test
-  cleanly on every Ruby version, confirming this is specific to that older
-  libcurl build, not this bridge's CA-file wiring.
-* **Ruby 3.0.7, 3.1.7, 3.2.11** -- 1 failure in `test_exception`
-  (`test/soap/marshal/marshaltestlib.rb`), which marshals an exception whose
-  `.message` embeds a live `#inspect` dump of the entire running
-  `Test::Unit::TestCase` (memory addresses, internal test-framework state and
-  all). **WONTFIX**: confirmed via a minimal reproduction that soap4r-ng's own
-  exception-marshaling code round-trips correctly; the test itself is
-  fragile because it's comparing volatile process/framework internals that
-  happen to render differently across this narrow range of Ruby patch
-  versions, not anything under this library's control.
-* **JRuby** (9.4.15.0 and 10.1.0.0, identical on both) -- 13 confirmed
-  environment-specific items, none of them soap4r-ng bugs:
-    * 7 `XSD::ValueSpaceError` tests (`test_SOAPInteger`, `test_XSDInteger`,
-      and friends) -- JRuby's `Kernel#Integer()` silently stops validating
-      trailing garbage characters (e.g. a trailing `.`) once the digit count
-      gets long enough, where MRI correctly raises `ArgumentError` regardless
-      of length. **CANTFIX**: a JRuby core-method behavior difference.
-    * `test_singleton` (`marshaltestlib.rb`) -- expects marshaling `ENV` to
-      raise `TypeError` (Ruby singleton objects can't be dumped). JRuby's
-      `ENV` is backed by a `Hash`-flavored object rather than MRI's
-      anonymous-object singleton, so it never trips the singleton-detection
-      check at all. **CANTFIX**: a JRuby object-representation difference,
-      and not a realistic thing to special-case for one object.
-    * `test_ciphers`, `test_property`, `test_verification`
-      (`test/soap/ssl/test_ssl.rb`) -- fail with
-      `TypeError: failed to coerce java.lang.String to [Ljava.lang.String;`.
-      Confirmed via backtrace inspection that this is entirely inside the
-      `httpclient` gem's own JRuby-specific SSL socket bridge
-      (`httpclient/jruby_ssl_socket.rb`), not soap4r-ng's code.
-      **CANTFIX** (upstream, in a dependency).
-    * `test_nestedexception` (both `SOAP::TestMapping` and
-      `SOAP::TestNestedException`) -- JRuby's backtrace formatting differs
-      from every MRI format the test already branches on by Ruby version.
-      **CANTFIX**: nothing to version-branch against, since it's the Ruby
-      engine that differs, not the Ruby version.
-
-  A handful of other JRuby-only failures (`test_calc`, `test_calc2`,
-  `test_calc_cgi`, `test_authfailure` x2, `test_mu`) turned out to be a real,
-  fixable bug rather than a JRuby limitation: `SOAP::Mapping.fault2exception`
-  (`lib/soap/mapping/mapping.rb`) assumed a reconstructed fault exception
-  always has a non-nil `.backtrace`, which doesn't hold on JRuby for a
-  programmatically-constructed (never actually `raise`d-and-caught)
-  exception object. Fixed with a nil-guard; confirmed clean on both JRuby and
-  MRI afterward.
+* **Ruby 1.8.7** -- 3 errors from `Kernel#singleton_class` not existing
+  until Ruby 1.9.2 (CANTFIX), plus the CGI-based tests
+  (`test_calc_cgi`, `test_authheader_cgi`) and two collateral WSDL tests
+  failing from a not-fully-root-caused WEBrick/CGI-subprocess environment
+  issue.
+* **Ruby 2.4.10, 2.5.9, `SOAP4R_HTTP_CLIENTS=curb`** -- `test_ca_verification`/
+  `test_ciphers` fail from those Docker images' older libcurl/OpenSSL
+  (CANTFIX, environment-specific, not a soap4r-ng/curb bug).
+* **Ruby 3.0.7, 3.1.7, 3.2.11** -- `test_exception` fails because it compares
+  a live `Test::Unit::TestCase#inspect` dump that renders differently across
+  this patch-version range (WONTFIX, not under this library's control).
+* **JRuby** (9.4.15.0, 10.1.0.0) -- 13 confirmed environment/engine
+  differences (integer parsing, `ENV` object model, SSL socket bridge,
+  backtrace formatting), all CANTFIX/upstream. A handful of other JRuby-only
+  failures were a real, fixable bug (`SOAP::Mapping.fault2exception` assumed
+  a non-nil `.backtrace`) -- fixed with a nil-guard.
 * **`SOAP4R_HTTP_CLIENTS=faraday SOAP4R_FARADAY_ADAPTER=patron`** -- not run
-  in CI at all (see "HTTP Client Backends" above), but documented here since
-  it's a real, reproducible issue for anyone who does reach for it: the
-  CGI-based tests (`test_calc_cgi`, `test_authheader_cgi`) fail with
-  `Patron::Aborted: Callback aborted`. Root-caused down to `patron` itself,
-  not this project's code: reproduced with a bare `Patron::Session#post`
-  against the exact same WEBrick CGI-subprocess server, with no soap4r-ng or
-  Faraday code in the path at all. A raw TCP-level dump of that server's
-  response ruled out the obvious suspect (a missing `Content-Length` forcing
-  connection-close framing) -- the response has one. Most likely explanation
-  left unconfirmed without reading patron's C extension directly: patron
-  implements its own request timeouts via a libcurl progress callback, and
-  the CGI handler's per-request subprocess spawn (a few hundred ms before
-  the first byte, unlike every other test's in-process handler) is the one
-  thing that reliably distinguishes the failing requests from every passing
-  one, including under `curb` (also libcurl-based) and both adapters CI
-  actually runs. **CANTFIX** without a patron-side fix we don't control.
+  in CI; the CGI-based tests fail with `Patron::Aborted: Callback aborted`,
+  root-caused to patron itself, not this project's code (CANTFIX).
 
 #### How to Use
 * [NaHi's Original documentation](https://web.archive.org/web/20101212040735/http://dev.ctor.org/soap4r/wiki/) -- the authoritative reference material is still available through the Wayback Machine, thankfully!
@@ -381,7 +172,7 @@ my machine" environment for version-specific gotchas to hide in.
 #### How to Get a Speed Boost : Use Nokogiri or Ox, not REXML
 Be sure to have Nokogiri or Ox available in your Gemset. Soap4R-ng will find and use what's available (Ox has highest precedence, then Nokogiri, then LibXML, then Oga, falling back to REXML as the last resort if needed).
 
-I personally recommend **Nokogiri** as the best performing, most flexible parser at this time, as it handles "special characters" like HTML ampersand-escaped characters internally. Ox doesn't handle such an extensive set of special-characters natively, so to get things up to par, I added **htmlentities** support if it's available when using the Ox parser. Using **htmlentities** with **Ox** in this manner adds a bit of a performance penalty, however.
+I personally recommend **Nokogiri** as the best performing, most flexible parser at this time, as it handles "special characters" like HTML ampersand-escaped characters internally. Ox needs **htmlentities** as a fallback on Ruby 1.8.7 (stuck on the old Ox 2.4.5, which only decodes the 5 basic XML entities) and on Ruby 2.2.x-2.6.x (stuck on Ox 2.14.14, which segfaults on complex documents without it -- see CHANGELOG.md). Ruby 1.9.3-2.1.x and Ruby >= 2.7 both resolve an Ox release that decodes entities natively and safely, so htmlentities is dead weight there.
 
 If you know your incoming XML is "clean", Ox is a really great alternative.
 

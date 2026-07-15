@@ -1,0 +1,406 @@
+# Changelog
+
+Detailed rationale and investigation notes for non-obvious dependency and
+compatibility decisions. Kept separate from README.md/code comments so
+those stay skimmable; this is the place to look for the "why" in full.
+
+## Unreleased
+
+### Faraday gated to Ruby >= 2.6
+
+`gem 'faraday'` was previously unconstrained, which resolved *some* old
+release for every Ruby down to 1.9.3 -- but that old-Faraday territory
+turned out to be broken, not just untested:
+
+- Below Faraday 1.10 (resolved as far up as Ruby 2.3.8), net_http support
+  is bundled directly into the main `faraday` gem with no separate
+  `faraday-net_http` package. `lib/soap/faradayClient.rb`'s
+  `require "faraday/#{adapter}"` convention assumes the modern
+  split-into-per-adapter-gems architecture, so it can't load any adapter
+  at all there -- an architecture mismatch, not a version-selection bug.
+- Ruby 2.4.10/2.5.9 resolve Faraday 1.10.6, which does carry a real
+  `faraday-net_http` dependency and gets further, but hits a distinct bug:
+  `TypeError: wrong argument (String)! (Expected kind of
+  OpenSSL::X509::Certificate)` deep inside `Net::HTTP#connect`, from
+  `faradayClient.rb` passing a raw file-path string where curb's own
+  client already correctly converts to a parsed certificate object.
+
+Decision: Faraday is a modern-transport enhancement, not a legacy
+capability worth carrying forward two Ruby versions for. Gated to
+`>= 2.6` outright, matching `faraday-typhoeus`'s own real floor
+(confirmed: its oldest RubyGems release needs Ruby >= 2.5's `logger`, and
+the next release requires Ruby >= 2.6 directly). `faraday-patron` bumped
+to the same floor since an adapter gem is inert without its host.
+
+`curb` has the equivalent floor for an unrelated reason: its C extension
+references `CURL_SSLVERSION_MAX_*` constants absent before libcurl 7.54.0.
+The official `ruby:2.2.10`/`ruby:2.3.8` Docker Hub images' system
+`libcurl-dev` predates that (confirmed hard compile failure, not a
+graceful skip); `ruby:2.4.10`'s image is new enough.
+
+CI had a latent bug matching both of these: `bundle config set with "..."`
+is Bundler 2.x-only syntax. Bundler 1.17.3 (what every Ruby < 3.2 falls
+back to) has no `set` verb and silently creates a bogus config key
+literally named `"set"` -- meaning curb/faraday were never actually
+exercised in CI below Ruby 3.2. Fixed with the `BUNDLE_WITH="group1:group2"`
+env var instead (confirmed identical behavior on both Bundler
+generations), exported (not just prefixed on the `bundle install` line)
+since `bundle exec`'s own `Bundler.setup` re-checks group inclusion
+independently for that invocation too. Both `ci.yml` steps also needed
+explicit skip-and-exit-0 logic below their respective floors --
+previously a Ruby version below the floor would hard-fail the whole job
+(`RuntimeError: HTTP client backend not found`) rather than skip cleanly.
+
+### Ox pin split three ways (dropping htmlentities where possible)
+
+The Gemfile pins Ox differently depending on Ruby version because
+compatibility and entity-decoding behavior don't move together, or even
+monotonically, across releases -- confirmed by installing every Ox
+release from 2.4.5 through 2.14.28 across Ruby 1.8.7, 1.9.3, 2.0.0, and
+2.1.10 and testing both (a) whether it loads and (b) whether it decodes
+named HTML entities (`&hellip;`, `&mdash;`) natively via
+`:convert_special => true`:
+
+- Entity decoding never improves anywhere in 2.4.5-2.8.0 (identical,
+  undecoded output throughout every version tested). It first improves at
+  **2.13.4** (2020-09-12), which decodes the same named-entity set
+  htmlentities does, byte-identical on direct comparison.
+- **2.14.7** is the first release to call `rb_utf8_str_new`, a symbol not
+  exported by Ruby's shared lib before 2.2 -- `undefined symbol:
+  rb_utf8_str_new` at native-ext load time on Ruby 2.0.0/2.1.10. Oddly,
+  this does *not* reproduce on Ruby 1.9.3 even with the same Ox version --
+  Ox's extconf must feature-detect the symbol differently depending on
+  which Ruby's headers are present at compile time, so the boundary isn't
+  a simple "older Ruby is safer" gradient; each version needs testing
+  directly rather than assumed from a neighbor.
+- **2.14.6** is therefore the newest release confirmed to work, with
+  correct entity decoding, on 1.9.3, 2.0.0, *and* 2.1.10 uniformly. Pinned
+  exactly (`= 2.14.6`), since the very next patch release breaks it.
+- **Ruby 1.8.7** can't use 2.14.6 at all: its `extconf.rb` fails outright
+  with `undefined method 'slice!' for nil:NilClass`, an mkmf/extconf
+  incompatibility with 1.8.7's build tooling, unrelated to the
+  `rb_utf8_str_new` issue above. Falls back to the older `= 2.4.5` pin,
+  which does compile and load there but only decodes the basic 5 XML
+  entities -- htmlentities is still required, and only there.
+  - Pinned exactly (`= 2.4.5`, not `~>`): later 2.4.x patches (confirmed
+    with 2.4.13) hit a *second*, different unresolvable-symbol crash
+    (`RSTRUCT_GET`) on Ruby 2.0.0/2.1.10 -- though notably *not* on
+    1.8.7/1.9.3, the same non-monotonic pattern as the 2.14.x boundary
+    above. Moot now that 1.8.7 is the only Ruby left in this branch, but a
+    floating patch-level constraint would silently regress this the
+    moment that changes.
+  - `htmlentities 4.3.1` pinned exactly there too: 4.3.3+ hard-fails on
+    1.8.7 with `NameError: uninitialized constant
+    HTMLEntities::Decoder::Encoding` (references Ruby's `Encoding` class,
+    introduced in 1.9, absent on 1.8.7).
+
+A CRLF regression was found and fixed along the way, incidental to this
+investigation: `lib/xsd/xmlparser/oxparser.rb`'s no-decoder branch used
+`:skip => :skip_return`, which discards `\r` -- unrelated to entity
+decoding, but broke CRLF round-tripping (`test_string_crlf`) for anyone
+running without htmlentities installed. Changed to `:skip_none`
+unconditionally.
+
+Regression matrix re-run after these changes: 1.9.3, 2.0.0, and 2.1.10 all
+green; 1.8.7 shows only its pre-existing, already-documented exceptions
+(see "Known Test Suite Exceptions" below) -- no new failures introduced.
+**This re-run did not include Ruby >= 2.2** (its `gem 'ox'` branch wasn't
+touched by this change, so it seemed out of scope at the time) -- see the
+correction directly below, found days later while reordering these same
+Gemfile branches for an unrelated reason.
+
+### Correction: htmlentities still required on Ruby 2.2.x - 2.6.x
+
+The "htmlentities is dead weight above 1.9.3" conclusion above was wrong
+for part of that range. `gem 'ox'` unconstrained (the `>= 2.2` branch)
+resolves whatever the newest Ox release is for the running Ruby -- and Ox
+added a hard `Ruby >= 2.7.0` requirement to its own gemspec starting at
+2.14.15. That means Ruby 2.2.x-2.6.x are stuck resolving **2.14.14** (the
+last release before that floor), while Ruby >= 2.7 gets 2.14.15+.
+
+2.14.14 segfaults inside `Ox.sax_parse`'s `:convert_special => true` path
+on complex documents -- confirmed via a real crash in `test_mapping.rb`
+(`[BUG] Segmentation fault` at `oxparser.rb:33`), reproduced identically on
+Ruby 2.2.10, 2.3.8, 2.4.10, and 2.6.10, while a bare, simple XML string
+through the same code path does *not* crash (so it's data/complexity
+dependent, not a trivial always-fails bug -- a quick smoke test wouldn't
+have caught it). Ruby 2.7.8 (resolving Ox 2.14.28) and Ruby 3.0.7/3.4.10/
+4.0.5 all run the same test cleanly.
+
+`htmlentities` avoids the bug entirely by design, not by luck:
+`oxparser.rb` only passes `:convert_special => true` when no decoder is
+present; with htmlentities installed, Ox is called without that option and
+never enters the buggy path. So for Ruby 2.2.x-2.6.x, htmlentities is a
+required workaround, not an optional speed boost -- `gem 'htmlentities'`
+was restored there (Gemfile), unconstrained Ox unconstrained-and-safe only
+from Ruby >= 2.7.
+
+This was only caught because a later, unrelated task (reordering the
+Gemfile's version-gate branches newest-first) prompted a fresh full-matrix
+re-run that happened to include Ruby 2.2.10 for the first time since the
+original htmlentities change. The lesson: a version-gate boundary that
+touches one branch's *dependency count* (adding/removing a gem) can change
+behavior in a sibling branch that looks untouched, if both branches share
+downstream code (`oxparser.rb`) that behaves differently based on which
+gems happen to be present -- worth re-running the full matrix after any
+Gemfile change that touches a shared code path, not just the Ruby
+versions whose own branch changed.
+
+### CI: Docker-per-version architecture, not ruby/setup-ruby
+
+`ci.yml`'s `test` job runs each Ruby version via a plain `docker run` of
+the exact same official `ruby:X.Y.Z` image used for local validation,
+rather than a `ruby/setup-ruby`-based matrix on the GitHub-hosted runner
+VM directly, and rather than the job-level `container:` key.
+
+- The earlier `ruby/setup-ruby` approach kept drifting from local
+  validation in ways that cost real debugging time: `ubuntu-latest`
+  rolling forward under a pinned Ruby version, `ruby-builder` not always
+  publishing a binary for every Ruby x Ubuntu combination, and Ubuntu
+  22.04's ICU-enabled system libxml2 colliding with `libxml-ruby`'s C
+  extension in a way that never reproduced locally against Debian. Running
+  the identical container makes "works locally" and "works in CI" the same
+  claim by construction.
+- `container:` was tried and rejected: GitHub Actions injects its own
+  Node.js runtime into container jobs to run JS-based steps like
+  `actions/checkout`, and most of these official `ruby` images are old
+  enough (Debian jessie/stretch-era glibc) that the injected Node 24
+  binary can't execute (`version 'GLIBC_2.27' not found`), failing
+  checkout before a single test runs. Confirmed empirically: every job up
+  through Ruby 2.7 failed this way. Checkout instead runs on the runner VM
+  as normal, and a plain `docker run` does the actual `bundle install`/test
+  run inside the target image.
+- Exact patch-level tags (e.g. `2.4.10`, not `2.4`) are pinned to match
+  precisely what was locally validated, even though these are all
+  EOL/frozen lines where the floating tag would resolve identically.
+
+### CI: BUNDLE_WITH bug (curb/faraday silently never tested below Ruby 3.2)
+
+`bundle config set with "http_curb"` is Bundler 2.x-only syntax. Every
+Ruby below 3.2 in this matrix falls back to Bundler 1.17.3 (the last
+release installable there), whose `config` CLI has no `set` verb at all --
+under 1.17.3 that command silently creates a bogus config key literally
+named `"set"` (value `"with http_curb"`) instead of configuring the `with`
+group list. Confirmed empirically: `bundle config` afterward showed the
+bogus key, and `SOAP4R_HTTP_CLIENTS=curb` then failed with "HTTP client
+backend not found" against a gem that was never installed. Meaning: every
+curb/faraday CI step below Ruby 3.2 had been silently testing nothing.
+
+Fixed with the `BUNDLE_WITH="group1:group2"` env var instead -- the same
+underlying mechanism a persisted `bundle config` writes to, confirmed
+working identically on both Bundler generations. It must be `export`ed
+(not just prefixed on the `bundle install` line): `bundle install` alone
+happily installs an optional group's gems to disk even without
+`BUNDLE_WITH` set for a later command, but `bundle exec`'s own
+`Bundler.setup` excludes `:optional => true` groups from the load path by
+default unless told to include them for that invocation too -- confirmed
+empirically that a `bundle exec` immediately after a successful,
+curb-installing `bundle install` still raised `LoadError` on `require
+'curb'` without `BUNDLE_WITH` set again.
+
+Both the curb and faraday CI steps also needed explicit skip-and-exit-0
+logic below their respective Gemfile floors (Ruby >= 2.4 / >= 2.6): without
+it, a matrix entry below the floor would hard-fail the whole job
+(`RuntimeError: HTTP client backend not found`) under `set -e` with no
+`continue-on-error` at that granularity, rather than skip cleanly.
+
+### CI: port 17171 clearing between parser runs
+
+All parsers/backends run as separate `rake test:deep` invocations
+sequentially in one long-lived container, sharing a hardcoded port (17171)
+used throughout the test suite. Confirmed via CI logs (Ruby 2.7.8, run
+28854082576) that something can stay bound to that port across a process
+boundary for minutes, well past the widened retry budget in
+`test/testutil.rb` (60 tries/1s). Never reproduced locally, and not fully
+root-caused (suspected a WEBrick/CGI-handler subprocess not fully
+released) -- `fuser -k -n tcp 17171` runs before every iteration
+regardless of cause rather than keep guessing at timing.
+
+Relatedly, `set -e` must not wrap the parser loop itself (only the setup
+steps before it): `rake test:deep` exits non-zero on any test failure, and
+several Ruby versions have exactly one guaranteed failure on every parser
+(see "Known Test Suite Exceptions" below) -- under `set -e` that killed the
+script after the first parser alone, silently skipping the rest without
+anyone noticing (confirmed: CI logs showed only one parser ever ran for
+those versions). Failures are tracked in a variable and the loop always
+runs to completion instead.
+
+### CI: summary job's GFM table-adjacency gotcha
+
+The `summary` job uses `core.summary.addTable()` (an actual HTML
+`<table>`) rather than hand-rolled markdown pipe syntax, because a
+markdown table placed immediately after `addHeading()`'s `<h2>` HTML with
+no blank line in between doesn't get parsed as a table at all (GitHub
+Flavored Markdown requires a fresh block boundary before table syntax) --
+confirmed on a live run, where the whole thing rendered as one
+literal-pipe-character paragraph instead of a table.
+
+### CI: legacy Ruby build strategy (1.9.3, 2.0.0, 1.8.7)
+
+1.9.3 and 2.0.0 have official Docker Hub images, but every tag in both
+lines was published in the legacy Docker manifest v1 schema and is no
+longer pullable at all (confirmed empirically: `not implemented: media
+type ... manifest.v1+prettyjws ... no longer supported since containerd
+v2.1`, against every tag tried). GitHub-hosted runners hit the same wall.
+Built from source instead via rbenv/ruby-build on Debian bullseye
+(`Dockerfile.legacy`) -- confirmed clean across all 5 parsers for both
+versions, including libxmlparser (bullseye's libxml2-dev doesn't have
+Ubuntu 22.04's ICU/`bool`-collision problem) and ogaparser (oga's ruby-ll
+dependency installs and works fine on both, unlike 1.8.7 below).
+
+1.8.7 has no official Docker Hub image at all (the `ruby` library starts
+at 1.9) and no ruby-build definition with OpenSSL handling, so
+rbenv/ruby-build can't get it for free. `Dockerfile.legacy187` builds it
+from source against a vendored OpenSSL 1.0.2u instead (confirmed working:
+`openssl.so` builds, `OpenSSL::SSL::SSLContext.new` instantiates
+correctly). `oga` is intentionally excluded from its parser loop: its
+`ruby-ll` dependency genuinely needs Ruby >= 2.1 on this version (unlike
+1.9.3 above), so it's correctly never installed there.
+
+### HTTP client backend rollout (curb/faraday, wiredump parity, TLS trust)
+
+`http-access2` (httpclient's old name, same author) is no longer published
+on RubyGems.org at all; retired from the backend cascade for the same
+reason. See git history for the adapter that used to sit here.
+
+Before `SOAP4R_HTTP_CLIENTS` existed as an independently selectable env
+var, nothing in the test suite could ever actually reach the `net_http`
+fallback -- this project's Gemfile always installs `httpclient`, so the
+cascade never had a reason to fall through to it. Making backends
+independently selectable surfaced (and fixed) a real bug in the process:
+`SOAP::NetHttpClient`'s wiredump output duplicated request/response bodies
+and was missing the raw request-line/header block entirely, corrupting
+any test or tool parsing `wiredump_dev` output.
+
+Several tests (WSDL-driven codegen round-trips, request-envelope
+assertions, ASP.NET-handler interop) used to be gated to `httpclient` only
+because they parsed `wiredump_dev` output assuming its specific block
+layout. That layout turned out to already be backend-neutral by design
+once `NetHttpClient`/`CurbClient`/`FaradayClient` were all built to mirror
+it -- confirmed by simply removing the gates and running the suite
+unmodified under every backend. The duplicated parsing logic across those
+test files is now consolidated into
+`TestUtil.parse_wiredump_request_body`/`parse_wiredump_response_body`
+(`test/testutil.rb`).
+
+`test/soap/ssl/test_ssl.rb` runs its SSL config-loading coverage against
+every SSL-capable backend now, not just httpclient: `test_ca_verification`
+and `test_ciphers` (rewritten to expect each backend's own real exception
+class -- `OpenSSL::SSL::SSLError` for httpclient, `Curl::Err::CurlError`
+for curb, `Faraday::Error` for Faraday; confirmed empirically, since
+test-unit's `assert_raise` wants an exact class match).
+`test_options`/`test_verification`/`test_property` stay httpclient-only:
+they're built around `ssl_config.verify_callback`, and neither
+libcurl-based backend (curb, or Faraday on typhoeus/patron) exposes a
+per-certificate Ruby callback hook at all -- confirmed against both
+libraries' public APIs. Faraday's own adapter list is deliberately not
+swept exhaustively in CI -- `lib/soap/faradayClient.rb` is what's under
+test, and sweeping every adapter Faraday supports would mostly re-test
+Faraday's own correctness. `:typhoeus` was chosen as the one CI adapter
+because it's also the one people actually reach for in practice (28
+reverse dependencies on RubyGems vs. `faraday-patron`'s 3, per [Ruby
+Toolbox](https://www.ruby-toolbox.com/projects/faraday-typhoeus)); Faraday's
+own `faraday-typhoeus` adapter was confirmed to silently drop the
+`ciphers` option (never forwards it to `ethon`'s `ssl_cipher_list`) -- a
+real gap in that third-party adapter, not this bridge.
+
+`httpclient`'s `SSLConfig` doesn't trust the system CA bundle unless told
+to -- left unconfigured, it lazily falls back to its own gem-vendored
+`cacert.pem` snapshot, which can go stale relative to a real server's
+certificate chain as CAs rotate intermediates (confirmed directly: a real
+Let's Encrypt-signed endpoint failed verification against an older bundled
+snapshot while verifying fine against the host's own CA bundle).
+`lib/soap/httpbackend/httpclient.rb` now calls `set_default_paths` on
+every connection's `ssl_config` by default, deferring to whatever CA store
+OpenSSL was built to trust on the platform, layered before any
+`ssl_config.ca_file`/`ca_path`/`cert_store` set explicitly. `NetHttpClient`
+was never affected -- it has no SSL config surface of its own and defers
+to stdlib `Net::HTTP`/OpenSSL defaults directly.
+
+## Known Test Suite Exceptions (full detail)
+
+Short summary lives in README.md; full root-cause narrative here.
+
+- **Ruby 1.8.7**:
+  - 3 errors (`test_time`, `test_time_ivar`, `test_time_subclass` in
+    `marshaltestlib.rb`): `Kernel#singleton_class` doesn't exist until Ruby
+    1.9.2. CANTFIX -- the method is absent on that Ruby, full stop.
+  - CGI-based tests (`test_calc_cgi`, `test_authheader_cgi`) fail with
+    `SOAP::ResponseFormatError: ... Internal Server Error`. Root-caused
+    partway: WEBrick's `CGIHandler` wipes the spawned CGI subprocess's
+    entire environment before exec'ing it, so `logger-application` and
+    `webrick` need forwarding via a raw `-I` load-path flag (already fixed,
+    in both test files). That forwarding alone wasn't enough on 1.8.7
+    specifically: the spawned subprocess still hits `NameError: undefined
+    local variable or method 'logger'` inside
+    `lib/soap/rpc/cgistub.rb#run`, even though `Logger::Application#logger`
+    is a real public method and a minimal reproduction of the same class
+    hierarchy works fine in isolation. Not fully root-caused -- something
+    specific to the real `CGIStub`/`AuthHeaderPortServer`/`CalcServer`
+    class graph, only reproducible via the actual spawned-CGI-subprocess
+    path. Narrow enough (2 of ~330 tests, both CGI smoke tests) that it
+    wasn't worth further chasing.
+  - Collateral damage from the CGI issue above: `test_nil_attribute` and
+    `test_wsdl_with_map` (`test/wsdl/document/test_rpc.rb`) intermittently
+    receive a garbage `dateTime` value (`XSD::ValueSpaceError`) when run as
+    part of the full suite, but pass cleanly in isolation
+    (`SCOPE=wsdl/document`). Confirmed state leaking from a still-lingering
+    CGI subprocess/WEBrick thread earlier in the same run, not a genuine
+    1.8.7 `Date`/`DateTime` bug -- `XSDDateTimeImpl#screen_data`'s `Time`
+    branch produces a correct result in isolation. Not independently
+    fixable -- same underlying CGI/WEBrick fragility, different test.
+- **Ruby 2.4.10, 2.5.9, `SOAP4R_HTTP_CLIENTS=curb`**: `test_ca_verification`
+  and `test_ciphers` (`test/soap/ssl/test_ssl.rb`) fail with
+  `Curl::Err::SSLPeerCertificateError: ... unable to get issuer
+  certificate`, even with a correct, complete CA chain supplied. CANTFIX --
+  confirmed environment-specific: the official `ruby:2.4.10`/`ruby:2.5.9`
+  images ship libcurl 7.64.0/OpenSSL 1.1.1d, while `ruby:2.6.10`+ ship
+  libcurl 7.74.0/OpenSSL 1.1.1n; the same chain validates cleanly under the
+  newer pair. httpclient/net_http (unaffected by libcurl version) pass
+  this same test cleanly everywhere, confirming this is that older libcurl
+  build, not this bridge's CA-file wiring.
+- **Ruby 3.0.7, 3.1.7, 3.2.11**: 1 failure in `test_exception`
+  (`marshaltestlib.rb`), which marshals an exception whose `.message`
+  embeds a live `#inspect` dump of the entire running
+  `Test::Unit::TestCase` (memory addresses, internal framework state and
+  all). WONTFIX -- confirmed via minimal reproduction that soap4r-ng's own
+  exception-marshaling round-trips correctly; the test itself compares
+  volatile process/framework internals that render differently across this
+  narrow patch-version range.
+- **JRuby** (9.4.15.0 and 10.1.0.0, identical on both) -- 13 confirmed
+  environment-specific items:
+  - 7 `XSD::ValueSpaceError` tests (`test_SOAPInteger`, `test_XSDInteger`,
+    etc.): JRuby's `Kernel#Integer()` silently stops validating trailing
+    garbage once the digit count gets long enough, where MRI always raises
+    `ArgumentError`. CANTFIX -- JRuby core-method behavior difference.
+  - `test_singleton` (`marshaltestlib.rb`): expects marshaling `ENV` to
+    raise `TypeError`. JRuby's `ENV` is backed by a `Hash`-flavored object
+    rather than MRI's anonymous-object singleton, so it never trips the
+    check. CANTFIX -- JRuby object-representation difference.
+  - `test_ciphers`, `test_property`, `test_verification`
+    (`test/soap/ssl/test_ssl.rb`): `TypeError: failed to coerce
+    java.lang.String to [Ljava.lang.String;`, confirmed entirely inside
+    `httpclient`'s own JRuby SSL socket bridge
+    (`httpclient/jruby_ssl_socket.rb`). CANTFIX (upstream dependency).
+  - `test_nestedexception` (both variants): JRuby's backtrace formatting
+    differs from every MRI format already branched on. CANTFIX -- the
+    engine differs, not the Ruby version.
+  - A handful of other JRuby-only failures (`test_calc`, `test_calc2`,
+    `test_calc_cgi`, `test_authfailure` x2, `test_mu`) turned out to be a
+    real, fixable bug: `SOAP::Mapping.fault2exception` assumed a
+    reconstructed fault exception always has a non-nil `.backtrace`, false
+    on JRuby for a programmatically-constructed exception. Fixed with a
+    nil-guard.
+- **`SOAP4R_HTTP_CLIENTS=faraday SOAP4R_FARADAY_ADAPTER=patron`** -- not run
+  in CI, but documented for anyone who reaches for it: CGI-based tests
+  fail with `Patron::Aborted: Callback aborted`. Root-caused to `patron`
+  itself: reproduced with a bare `Patron::Session#post` against the exact
+  same WEBrick CGI-subprocess server, no soap4r-ng or Faraday code in the
+  path. A raw TCP-level dump ruled out a missing `Content-Length`. Most
+  likely explanation, unconfirmed without reading patron's C extension
+  directly: patron implements its own request timeouts via a libcurl
+  progress callback, and the CGI handler's per-request subprocess spawn (a
+  few hundred ms before the first byte, unlike every other test's
+  in-process handler) is the one thing distinguishing failing requests
+  from passing ones, including under `curb` (also libcurl-based) and both
+  adapters CI actually runs. CANTFIX without a patron-side fix.
