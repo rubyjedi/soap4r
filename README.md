@@ -13,6 +13,8 @@
     * **[LibXML](https://github.com/xml4r/libxml-ruby)**
     * **REXML** (the built-in fallback, bundled with Ruby)
 * ***Fully Operational Unit Test Suite***. NaHi's Unit Tests are astonishingly thorough, and have been instrumental in discovering issues that each new Ruby version brings up. Thanks to those Unit Tests, I'm **very** confident in the code quality of this fork.
+* ***SOAP 1.2 support***, alongside the original SOAP 1.1 -- opt-in per driver, see "SOAP Version (1.1 vs 1.2)" below.
+* ***WS-Security support*** -- UsernameToken (plain/digest), XML Signature, and XML Encryption, verified against real WSS4J and XWSS servers. See "WS-Security" below.
 
 #### How to Install 
 ##### (Bundler Gemfile / GitHub Hosted)
@@ -137,6 +139,53 @@ dropped from CI (real upstream bug, not ours -- see "Known Test Suite
 Exceptions" below). Full backstory on the backend rollout (wiredump-parity
 work, TLS-trust defaults, per-backend test coverage decisions) is in
 CHANGELOG.md.
+
+#### SOAP Version (1.1 vs 1.2)
+soap4r-ng defaults to SOAP 1.1 (unchanged behavior). Opt into SOAP 1.2 per
+driver:
+```ruby
+driver.soap_version = SOAP::SOAPVersion1_2
+```
+This switches the envelope namespace, the header block's addressing
+attribute (1.1's `actor` becomes 1.2's `role`, plus the 1.2-only `relay`
+attribute), the fault model (1.2's `Code`/`Reason`/`Node`/`Role`/`Detail`
+instead of 1.1's `faultcode`/`faultstring`/`faultactor`/`detail`), and the
+HTTP transport (`application/soap+xml` with the SOAPAction folded into the
+Content-Type's `action` parameter, instead of 1.1's separate `SOAPAction`
+header) -- all per spec. WSDL binding parsing recognizes the SOAP 1.2
+binding namespace alongside 1.1's. SOAP-with-Attachments (MIME multipart)
+also honors whichever version is set for the parts' media type, with one
+pragmatic exception: multipart requests still send the legacy `SOAPAction`
+header even under 1.2, since action-placement for multipart+1.2 combined
+isn't settled by any spec and real-world use of that combination is rare.
+
+#### WS-Security
+`lib/soap/wssecurity.rb` adds `SOAP::WSSE::UsernameTokenFilter`,
+`SignatureFilter`, and `EncryptionFilter`, plugging into the same
+envelope-level filter chain every HTTP backend already shares:
+```ruby
+driver.filterchain.add(SOAP::WSSE::UsernameTokenFilter.new(user, pass, :digest => true))
+driver.filterchain.add(SOAP::WSSE::SignatureFilter.new(key_path, cert_path))
+driver.filterchain.add(SOAP::WSSE::EncryptionFilter.new(cert_path))
+```
+* **UsernameTokenFilter** -- WS-Security UsernameToken Profile 1.0/1.1,
+  plain (`PasswordText`) or digested (`PasswordDigest`: nonce + timestamp +
+  SHA-1) passwords.
+* **SignatureFilter** -- XML Signature over the SOAP Body (exclusive C14N,
+  RSA-SHA1), the shape a typical WSS4J/XWSS default configuration expects.
+  Also verifies signed responses (`on_inbound`), checking every signed
+  `Reference`'s digest against a configurable trusted certificate.
+* **EncryptionFilter** -- XML Encryption (AES-128-CBC content encryption,
+  RSA-OAEP key transport), including decrypting encrypted responses
+  (`on_inbound`).
+
+Both `SignatureFilter` and `EncryptionFilter` need Nokogiri specifically
+(the only one of the five supported XML parsers with a correct C14N
+implementation -- see the file-level comment in `lib/soap/wssecurity.rb`
+for why libxml-ruby's was rejected after surfacing a real namespace-node
+bug). `UsernameTokenFilter` has no such dependency. All three were verified
+against a real, self-hosted WSS4J/XWSS test server (see
+`test_ws_security_e2e/README.md`), not just synthetic fixtures.
 
 #### Known Test Suite Exceptions
 Running `rake test:deep` across the full version matrix surfaces a small,

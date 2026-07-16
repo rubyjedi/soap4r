@@ -2,8 +2,8 @@
 module SOAP
   module VERSION #:nodoc:
     MAJOR = 2
-    MINOR = 1
-    TINY  = 1
+    MINOR = 2
+    TINY  = 0
     STRING = [MAJOR, MINOR, TINY].join('.')
     
     FORK  = "SOAP4R-NG"
