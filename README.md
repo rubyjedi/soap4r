@@ -12,6 +12,11 @@
     * **[Oga](https://github.com/YorickPeterse/oga)**
     * **[LibXML](https://github.com/xml4r/libxml-ruby)**
     * **REXML** (the built-in fallback, bundled with Ruby)
+* ***Pluggable HTTP Client backends -- two of them opt-in***, see "HTTP Client Backends" below.
+    * **[httpclient](https://github.com/nahi/httpclient)** (the default, strongly recommended)
+    * **[curb](https://github.com/taf2/curb)** (opt-in)
+    * **[faraday](https://github.com/lostisland/faraday)** (opt-in)
+    * `SOAP::NetHttpClient` (stdlib `Net::HTTP` fallback, used only when none of the above are installed)
 * ***Fully Operational Unit Test Suite***. NaHi's Unit Tests are astonishingly thorough, and have been instrumental in discovering issues that each new Ruby version brings up. Thanks to those Unit Tests, I'm **very** confident in the code quality of this fork.
 * ***SOAP 1.2 support***, alongside the original SOAP 1.1 -- opt-in per driver, see "SOAP Version (1.1 vs 1.2)" below.
 * ***WS-Security support*** -- UsernameToken (plain/digest), XML Signature, and XML Encryption, verified against real WSS4J and XWSS servers. See "WS-Security" below.
@@ -102,9 +107,9 @@ is a drop-in file rather than a change to library code.
   basic/digest WWW-Authenticate auth. No cookies or request/response
   filters, and no `ssl_config.verify_callback` (libcurl's C API exposes no
   per-certificate Ruby callback hook). No JRuby port; gated to Ruby >= 2.4.
-* **[faraday](https://github.com/lostisland/faraday)** -- gated to Ruby
-  >= 2.6 (see CHANGELOG.md for why). Has its own adapter system underneath
-  our backend selection, defaulting to `:net_http` and overridable with
+* **[faraday](https://github.com/lostisland/faraday)** -- gated to Ruby >= 2.6
+  (see CHANGELOG.md for why). Has its own adapter system underneath our
+  backend selection, defaulting to `:net_http` and overridable with
   `SOAP4R_FARADAY_ADAPTER` (e.g. `SOAP4R_FARADAY_ADAPTER=typhoeus`) -- a
   second, independent knob layered under `SOAP4R_HTTP_CLIENTS`. Opt-in (see
   below). Supports proxying, basic auth (sent proactively via a
