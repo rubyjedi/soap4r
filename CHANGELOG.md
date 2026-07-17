@@ -6,6 +6,144 @@ those stay skimmable; this is the place to look for the "why" in full.
 
 ## Unreleased
 
+### WS-Security: two real Ruby 1.8.7 bugs found and fixed
+
+The WS-Security work above was verified end-to-end against a minimum
+viable sample of the full supported Ruby range -- 1.8.7 (oldest), 3.4.10,
+and 4.0.5 (newest) -- both via `rake test:deep` (all applicable XML
+parsers: oxparser/nokogiriparser/libxmlparser/rexmlparser on 1.8.7, plus
+ogaparser on 3.4.10/4.0.5) and via a fresh e2e script exercising real
+WS-Security operations against all four test-server engines
+(bernardo-mg, rub-nds-cxf, rub-nds-metro, rub-nds-axis2), across every
+applicable parser on each Ruby version. This surfaced two real,
+previously-unknown Ruby 1.8.7 bugs in `wssecurity.rb` -- both pre-existing
+(neither is in code this session's SOAP 1.2 fix touched), and both fixed:
+
+1. **`decrypt_xml_enc_content`'s de-padding used `padded.bytes.last`.**
+   `String#bytes` without a block returns an Array on Ruby >= 1.9 but an
+   Enumerator on 1.8.7, and 1.8.7's Enumerator backport has no `#last` --
+   `NoMethodError: undefined method 'last' for #<Enumerable::Enumerator>`
+   on every single decryption (any endpoint using `EncryptionFilter`,
+   standalone or combined). Fixed with `padded.unpack('C*').last` instead
+   -- `String#unpack('C*')` has meant "Array of byte values" consistently
+   across every Ruby version this library supports.
+
+2. **A real old-libxml2 fragment-parsing bug, not a soap4r logic bug.**
+   After the fix above, CXF's `/encsign` (combined Encrypt+Sign) still
+   failed on 1.8.7 specifically with `VerificationError: digest mismatch
+   for signed reference`, while the identical combined-sign-encrypt flow
+   passed cleanly against bernardo-mg, rub-nds-metro, and rub-nds-axis2 on
+   the same Ruby version -- ruling out a general 1.8.7 problem and
+   pointing at something CXF-response-shape-specific instead. Captured
+   the actual decrypted plaintext and its post-fragment-reparse
+   canonical form side by side: the plaintext's unprefixed `<return>`
+   child (correctly namespace-less -- only a *prefixed* `xmlns:ns2` was
+   in scope, no default `xmlns=`) canonicalized as `<ns2:return>` after
+   `Nokogiri::XML.fragment(plaintext)` -- Nokogiri 1.5.11 (the version
+   this project pins for Ruby 1.8.7, bundling a circa-2013 libxml2)
+   incorrectly makes an unprefixed element inherit a same-scope
+   *prefixed* sibling namespace declaration when reparsing a standalone
+   fragment with no surrounding document context. Modern Nokogiri/libxml2
+   (confirmed on 3.4.10/4.0.5) resolves the same fragment correctly.
+   Fixed without forking any version-specific logic: a new
+   `WSSE.fragment_with_scoped_default_ns` helper makes the "no default
+   namespace" already implied by the fragment *explicit*
+   (`xmlns=""` injected onto the root element, only if one isn't already
+   present) before parsing -- a no-op for a correctly-behaving parser,
+   since it doesn't change what the fragment's own namespace resolution
+   already was, but forces the buggy old parser to resolve it correctly
+   too. Applied at both `Nokogiri::XML.fragment(plaintext)` call sites
+   (`EncryptionFilter`'s real decrypt, `SignatureFilter`'s
+   pre-encryption-plaintext verification fallback) since either could hit
+   the same bug given the right response shape.
+
+**Full result after both fixes**: `rake test:deep` is clean (374 tests,
+2712 assertions, 0 failures/errors) on 3.4.10 and 4.0.5 across all 5
+parsers; 1.8.7 matches its own documented "Known Test Suite Exceptions"
+baseline exactly (CGI/WEBrick-subprocess flakiness, `Kernel#singleton_class`
+not existing until 1.9.2, occasional Time-arithmetic flakiness in a WSDL
+date-marshaling test -- none WS-Security-related) across all 4 applicable
+parsers, no new failures. The WS-Security e2e script passes 13/13 checks
+against all four test-server engines, on every applicable parser, on all
+three Ruby versions (1.8.7, 3.4.10, 4.0.5) -- Signature-only,
+Timestamp-only, Encryption-only, combined Encrypt+Sign (both SOAP 1.1 and
+1.2), and UsernameToken all confirmed working end to end regardless of
+Ruby version or XML parser backend.
+
+### WS-Security: SOAP 1.2 support (`security_header_for`, `EncryptionFilter`)
+
+SOAP 1.2 support itself (`SOAP::SOAPVersion`, `lib/soap/soapversion.rb`) has
+been in master since `f28df683`, and every version-sensitive piece of the
+core library (`SOAPHeader`/`SOAPBody`/`SOAPEnvelope`, `Proxy#route`) already
+threads a driver's configured `soap_version` through correctly. WS-Security
+never got the same treatment: `wssecurity.rb` built its own header and body
+elements without passing that value through, so they silently fell back to
+their constructors' `SOAPVersion1_1` default regardless of what the driver
+was actually configured for. Three call sites needed fixing, all the same
+root cause:
+
+1. `WSSE.security_header_for` built `SOAP::SOAPHeader.new` with no
+   arguments -- always 1.1-shaped. Now takes the filter's `opt` hash
+   (already available in every `on_outbound(envelope, opt)` -- `opt`
+   is set by `Proxy#create_encoding_opt` on every request, no new
+   plumbing needed) and passes `opt[:soap_version]` through.
+2. `EncryptionFilter#on_outbound` set the Security header's
+   `mustUnderstand` attribute using the hardcoded, SOAP-1.1-only
+   `AttrMustUnderstandName` constant (`lib/soap/soap.rb`) instead of the
+   version-aware `mustunderstand_attr_name` that `SOAPHeaderItem#encode`
+   already uses elsewhere in the codebase.
+3. `EncryptionFilter#on_outbound` replaced the message Body with a bare
+   `SOAP::SOAPBody.new` (again 1.1-shaped by default) when swapping the
+   plaintext payload for `xenc:EncryptedData`.
+
+Confirmed via `rake test:deep` (374 tests, 2712 assertions, same
+pre-existing unrelated 1-failure baseline -- no regressions) and end to
+end against a real server: of the four WS-Security test engines in
+`soap4r-ws-security-testbed`, only `rub-nds-axis2` actually publishes a
+SOAP 1.2 binding/port (`axis2-encsignHttpSoap12Endpoint` -- Axis2
+auto-generates SOAP 1.1, SOAP 1.2, and plain-HTTP ports for every deployed
+service; bernardo-mg/Spring-WS, rub-nds-cxf, and rub-nds-metro's WSDLs
+exposed SOAP 1.1 only). Ran the same combined Encrypt-then-Sign chain this
+session already fixed for SOAP 1.1 against Axis2's SOAP 1.2 port:
+
+- Before the fix: crashed client-side before any bytes hit the wire --
+  `XSD::NS::FormatError: namespace: http://schemas.xmlsoap.org/soap/envelope/
+  not defined yet` -- because the hardcoded 1.1 constructs collided with
+  the SOAP 1.2 envelope's own namespace table during serialization. Not
+  just a cosmetic mismatch; the request couldn't even be built.
+- After the fix: succeeds end to end (`getServerTime` round-trips
+  correctly), and the wire dump confirms the Security header's
+  `mustUnderstand` attribute correctly uses the SOAP 1.2 envelope
+  namespace (`http://www.w3.org/2003/05/soap-envelope`) with value `"1"`,
+  matching the driver's configured `soap_version`.
+
+(A signature-only call against the same Axis2 SOAP 1.2 port failed with
+`400: Expected encrypted part missing` -- that's the endpoint's own
+WS-SecurityPolicy requiring both encryption and signing, not a soap4r
+issue; the `/encsign` name says as much.)
+
+Follow-up: the four test engines were then extended (see
+soap4r-ws-security-testbed's own CHANGELOG.md, "rub-nds-cxf/rub-nds-axis2:
+new SOAP 1.2 and UsernameToken endpoints") specifically to close the gap
+above, adding SOAP 1.2 ports for Signature-only and Timestamp-only
+(`rub-nds-cxf`'s new `/sign12`, `/ts12`) and for UsernameToken
+(`rub-nds-axis2`'s new `axis2-ut`, `axis2-ut-digest`), none of which
+existed anywhere in this testbed before.
+
+- **`TimestampFilter`/`SignatureFilter` under SOAP 1.2**: fully verified
+  end-to-end against `rub-nds-cxf`, passing identically to their existing
+  SOAP 1.1 counterparts, wire dumps confirming the correct SOAP 1.2
+  envelope namespace throughout.
+- **`UsernameTokenFilter` under SOAP 1.2**: soap4r's own wire format is
+  confirmed correct in both modes (PasswordText accepted structurally by
+  `rub-nds-axis2`; PasswordDigest's Nonce+Created+digest bytes
+  independently confirmed correct by cross-checking the identical soap4r
+  code against `bernardo-mg`'s separate WSS4J stack, which accepts it
+  cleanly). Full accept/reject round-tripping against Rampart specifically
+  is blocked by what looks like a genuine Rampart 1.8.0/WSS4J 3.0.3
+  version-mismatch bug in that engine (see the testbed CHANGELOG for the
+  detailed trace) -- a testbed/server limitation, not a soap4r defect.
+
 ### WS-Security: combined sign+encrypt fix (`/encsign`, `/enctssign`)
 
 `SignatureFilter` + `EncryptionFilter` chained together (WS-Security

@@ -185,11 +185,41 @@ def self.decrypt_xml_enc_content(encrypted_data_node, encrypted_key_node, privat
   cipher.key = aes_key
   cipher.iv = iv
   padded = cipher.update(ciphertext) + cipher.final
-  padded[0...-padded.bytes.last]
+  # String#bytes without a block returns an Array on Ruby >= 1.9 but an
+  # Enumerator on 1.8.7 (whose Enumerator backport has no #last) --
+  # String#unpack('C*') has meant "Array of byte values" consistently
+  # across both, so use that instead for a result portable to 1.8.7.
+  padded[0...-padded.unpack('C*').last]
 end
 
-def self.security_header_for(envelope)
-  envelope.header ||= SOAP::SOAPHeader.new
+# Old libxml2 (bundled with Nokogiri 1.5.11, the version this project pins
+# for Ruby 1.8.7) has a real fragment-parsing bug: reparsing decrypted
+# XML-Enc content via Nokogiri::XML.fragment with no surrounding document
+# context, an unprefixed child element with no default namespace in scope
+# should stay namespace-less, but old libxml2 instead incorrectly makes it
+# inherit a same-scope *prefixed* sibling declaration. Confirmed against a
+# real CXF response: decrypted plaintext
+# `<ns2:getServerTimeResponse xmlns:ns2="..."><return>...</return>...`
+# canonicalizes as `<ns2:return>` instead of `<return>` after
+# fragment-parsing under Nokogiri 1.5.11, corrupting the signed
+# reference's digest (modern Nokogiri/libxml2 handles this correctly).
+# Making the "no default namespace" already implied by the fragment
+# explicit works around the buggy parser and is a no-op for a correct
+# one, since it doesn't change what the fragment's namespace resolution
+# already was.
+def self.fragment_with_scoped_default_ns(xml_fragment)
+  return xml_fragment if xml_fragment =~ /\A\s*<[^>]*[\s"']xmlns\s*=/
+  xml_fragment.sub(/\A(\s*<[A-Za-z_][\w:.-]*)/, '\1 xmlns=""')
+end
+
+# opt[:soap_version] is threaded through from Proxy#create_encoding_opt,
+# same as every other version-sensitive piece of soap4r already reads it
+# (SOAPHeader/SOAPHeaderItem in lib/soap/element.rb) -- needed here since
+# SOAPHeader.new defaults to SOAPVersion1_1 if not told otherwise, which
+# would silently build a 1.1-shaped header even under a SOAPVersion1_2
+# driver.
+def self.security_header_for(envelope, opt = {})
+  envelope.header ||= SOAP::SOAPHeader.new(opt[:soap_version] || SOAP::SOAPVersion1_1)
   # SOAPHeader#add wraps whatever it's given in a SOAPHeaderItem (it
   # needs somewhere to track actor/mustUnderstand/encodingStyle), so a
   # previously-stored Security element comes back wrapped -- unwrap it so
@@ -235,7 +265,7 @@ class UsernameTokenFilter < SOAP::Filter::Handler
   end
 
   def on_outbound(envelope, opt)
-    security = WSSE.security_header_for(envelope)
+    security = WSSE.security_header_for(envelope, opt)
     security.add(build_username_token)
     envelope
   end
@@ -304,7 +334,7 @@ class TimestampFilter < SOAP::Filter::Handler
   end
 
   def on_outbound(envelope, opt)
-    security = WSSE.security_header_for(envelope)
+    security = WSSE.security_header_for(envelope, opt)
     security.add(build_timestamp)
     envelope
   end
@@ -427,7 +457,7 @@ class SignatureFilter < SOAP::Filter::Handler
     signature_value_ele = SOAP::SOAPString.new('')
     signature_value_ele.elename = XSD::QName.new(DS_NS, 'SignatureValue')
 
-    security = WSSE.security_header_for(envelope)
+    security = WSSE.security_header_for(envelope, opt)
     add_signature_to_security(security, body_id, cert_id, digest_value_ele, signature_value_ele)
 
     # Preview pass: same envelope, same opt, just to get real serialized
@@ -540,7 +570,7 @@ class SignatureFilter < SOAP::Filter::Handler
       encrypted_key_node = WSSE.resolve_encrypted_key(scratch, encrypted_data_node)
       return nil unless encrypted_key_node
       plaintext = WSSE.decrypt_xml_enc_content(encrypted_data_node, encrypted_key_node, @private_key)
-      encrypted_data_node.replace(Nokogiri::XML.fragment(plaintext))
+      encrypted_data_node.replace(Nokogiri::XML.fragment(WSSE.fragment_with_scoped_default_ns(plaintext)))
     end
     WSSE.strict_base64encode(
       Digest::SHA1.digest(target_node.canonicalize(
@@ -697,8 +727,14 @@ class EncryptionFilter < SOAP::Filter::Handler
     cert_id = "X509-#{SecureRandom.hex(8)}"
     enc_key_id = "EK-#{SecureRandom.hex(8)}"
 
-    security = WSSE.security_header_for(envelope)
-    security.extraattr[AttrMustUnderstandName] = '1'
+    security = WSSE.security_header_for(envelope, opt)
+    # AttrMustUnderstandName (lib/soap/soap.rb) is SOAP 1.1's mustUnderstand
+    # QName specifically -- under a SOAPVersion1_2 driver this needs the
+    # 1.2 envelope namespace instead, same version-aware attribute
+    # SOAPHeaderItem#encode already uses elsewhere in the codebase. The
+    # value itself ('1', not 'true') doesn't need to change: SOAPHeaderItem
+    # emits '1'/'0' unconditionally regardless of SOAP version too.
+    security.extraattr[(opt[:soap_version] || SOAP::SOAPVersion1_1).mustunderstand_attr_name] = '1'
 
     bst = SOAP::SOAPString.new(WSSE.strict_base64encode(@cert.to_der))
     bst.elename = XSD::QName.new(WSSE_NS, 'BinarySecurityToken')
@@ -721,7 +757,11 @@ class EncryptionFilter < SOAP::Filter::Handler
 
     security.add(build_reference_list([enc_data_id]))
 
-    new_body = SOAP::SOAPBody.new
+    # SOAPBody.new defaults to SOAPVersion1_1 same as SOAPHeader.new does
+    # (see security_header_for's own comment) -- pass the driver's actual
+    # version through so replacing the Body under a SOAPVersion1_2 driver
+    # doesn't silently swap in a 1.1-namespaced one.
+    new_body = SOAP::SOAPBody.new(nil, false, opt[:soap_version] || SOAP::SOAPVersion1_1)
     # Preserve the original Body's own extraattr -- notably a wsu:Id a
     # preceding SignatureFilter in the chain may have set (see
     # SOAPBody#encode's own comment: it's specifically designed to carry
@@ -772,7 +812,7 @@ class EncryptionFilter < SOAP::Filter::Handler
       # EncryptedData (which took that element's exact spot) with it
       # reconstructs that instead. Both cases are the same operation here:
       # replace this node with whatever the decrypted fragment parses to.
-      encrypted_data_node.replace(Nokogiri::XML.fragment(plaintext))
+      encrypted_data_node.replace(Nokogiri::XML.fragment(WSSE.fragment_with_scoped_default_ns(plaintext)))
     end
 
     # Remove just this filter's own contribution (the EncryptedKey(s) it
