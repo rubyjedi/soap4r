@@ -159,7 +159,7 @@ class TestWSSecurity < Test::Unit::TestCase
     Dir.mktmpdir('wssec_e2e_signature_tamper') do |tmpdir|
       driver = build_driver('signature/wss4j/entities', tmpdir)
       wrong_cert_path = File.join(tmpdir, 'wrong-cert.pem')
-      File.write(wrong_cert_path, generate_throwaway_cert_pem)
+      File.open(wrong_cert_path, 'w') { |f| f.write(generate_throwaway_cert_pem) }
       driver.filterchain << SOAP::WSSE::SignatureFilter.new(KEY_PATH, CERT_PATH, wrong_cert_path)
       assert_raise(SOAP::WSSE::VerificationError) { driver.getEntity(request_element) }
     end

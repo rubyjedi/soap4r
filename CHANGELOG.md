@@ -6,6 +6,50 @@ those stay skimmable; this is the place to look for the "why" in full.
 
 ## Unreleased
 
+### WS-Security: refreshed the formal e2e suite (test_ws_security_e2e/) for all 4 engines
+
+`test_ws_security_e2e/` (the formal, `rake test:ws_security_e2e`-integrated
+suite, distinct from this session's own throwaway scratch scripts) covered
+only bernardo-mg's 9 endpoints -- predating this whole round of
+WS-Security work, so none of it (combined Encrypt+Sign, SOAP 1.2,
+rub-nds-cxf/rub-nds-metro/rub-nds-axis2 at all) was captured anywhere a
+future regression could actually be caught by CI. Renamed the original
+file to `test_ws_security_bernardo.rb` and added one file per remaining
+engine (`test_ws_security_cxf.rb`, `test_ws_security_metro.rb`,
+`test_ws_security_axis2.rb`) -- the Rakefile task already globs
+`test_ws_security_e2e/test_*.rb`, so no task wiring changed. Each new file
+follows the existing per-server `omit`-if-unreachable convention, with its
+own `SOAP4R_TEST_WSSECURITY_{CXF,METRO,AXIS2}_URL` override, and vendors
+its own engine's client+server cert/key PEMs under `keys/{cxf,metro,axis2}/`
+(these three use separate client/server identities, unlike bernardo-mg's
+shared one). rub-nds-cxf's file covers all 10 endpoints including the new
+`/sign12`/`/ts12`; rub-nds-axis2's covers combined Encrypt+Sign under both
+SOAP versions but deliberately excludes `axis2-ut`/`axis2-ut-digest`
+(UsernameToken) since those hit a genuine server-side Rampart/WSS4J
+version-mismatch bug, not soap4r-ng behavior worth locking into a formal
+suite as "expected."
+
+Writing these surfaced two more real, narrow bugs, both fixed:
+
+- CXF and Metro's WSDL declares an explicit `wsdl:definitions` service
+  name, so `wsdl2ruby.rb` names the generated driver file after it (e.g.
+  `AdminConfigImplServiceDriver.rb`) rather than falling back to the
+  generic `defaultDriver.rb` that bernardo-mg's and rub-nds-axis2's
+  nameless WSDLs produce -- confirmed directly (`Dir.entries` on the
+  generation tmpdir) after blindly copying bernardo's own
+  `TestUtil.require(tmpdir, 'defaultDriver.rb')` call into the new files
+  caused an immediate `LoadError` for both. Fixed by globbing for
+  whatever `*Driver.rb` file actually landed instead of assuming the name.
+- The tamper-detection test's `File.write(path, content)` doesn't exist on
+  Ruby 1.8.7 (added in 1.9.3) -- confirmed this was already a latent bug
+  in the pre-existing bernardo-mg file itself (silently never caught
+  because CI's own 1.8.7 job apparently never happened to exercise this
+  exact test before), not something newly introduced; fixed in all four
+  files with the portable `File.open(path, 'w') { |f| f.write(content) }`.
+
+All 26 tests across all four files pass cleanly on Ruby 1.8.7, 3.4.10, and
+4.0.5 with every server running.
+
 ### WS-Security: two real Ruby 1.8.7 bugs found and fixed
 
 The WS-Security work above was verified end-to-end against a minimum
