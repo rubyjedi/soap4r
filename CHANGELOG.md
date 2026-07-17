@@ -6,6 +6,43 @@ those stay skimmable; this is the place to look for the "why" in full.
 
 ## Unreleased
 
+### CI: skip byebug/pry-byebug entirely under CI
+
+A live CI run (Ruby 2.7.8, curb HTTP backend job) failed `bundle install`
+outright with `byebug-13.0.0 requires ruby version >= 3.2.0, which is
+incompatible with the current version, ruby 2.7.8p225`. Neither `byebug`
+nor `pry-byebug` is version-pinned in the Gemfile (only gated to
+`RUBY_VERSION >= 2.0 && !jruby`), and this project deliberately doesn't
+commit a `Gemfile.lock`, so every `bundle install` re-resolves against
+whatever's currently newest on rubygems.org.
+
+Confirmed this is genuinely non-deterministic, not a simple "always
+resolves 13.0.0" bug: two back-to-back `bundle install` runs against the
+identical Gemfile (Ruby 2.7.8, with the same `http_curb` group active)
+produced *different* results -- one resolved `pry-byebug 3.10.1` (fine),
+the other pulled in versions requiring Ruby >= 3.2 and failed outright.
+Bundler's resolver order/backtracking without a lockfile just isn't
+stable run to run.
+
+Rather than build a per-Ruby-version pin matrix for byebug the way this
+Gemfile already does for ox/nokogiri/libxml-ruby (byebug's own minimum
+Ruby requirement has climbed across five different version bands:
+9.0.x needs >= 2.0, 10.0.x >= 2.2, 11.0.x >= 2.3, 11.1.x >= 2.4, 12.0.0
+>= 3.1, 13.0.0 >= 3.2 -- and pry-byebug's own bands don't line up with
+byebug's), skip both entirely when `ENV['CI']` is set (GitHub Actions,
+and effectively every other CI system, sets `CI=true` by convention).
+Two independent reasons this is the right fix, not just the easy one:
+neither gem does anything for a non-interactive test run in the first
+place (they're interactive debugger integrations), and it permanently
+removes this whole class of "upstream bumped its Ruby floor" breakage
+from CI regardless of which Ruby version or gem group is involved --
+pinning would only have fixed *this* specific version jump.
+
+Confirmed empirically: `CI=true bundle install` on Ruby 2.7.8 (the
+exact failing job's config) now excludes both gems and `rake test:deep`
+still passes cleanly (374 tests, 0 failures/errors); local development
+(no `CI` env var) still installs `byebug`/`pry-byebug` normally.
+
 ### WS-Security: refreshed the formal e2e suite (test_ws_security_e2e/) for all 4 engines
 
 `test_ws_security_e2e/` (the formal, `rake test:ws_security_e2e`-integrated

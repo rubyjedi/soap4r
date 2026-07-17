@@ -154,8 +154,17 @@ group :test do
   # gem 'unroller', :git=>'https://github.com/jayjlawrence/unroller.git', :branch=>'master'
 
   # byebug's C ext needs MRI's ruby.h, which doesn't exist on JRuby -- these
-  # are just debugging conveniences, not required for tests to run.
-  if RUBY_VERSION.to_f >= 2.0 && RUBY_PLATFORM !~ /java/
+  # are just debugging conveniences, not required for tests to run, so also
+  # skip them under CI (GitHub Actions, and effectively every other CI
+  # system, sets CI=true by convention). Two independent reasons: (1) a
+  # debugger has no use in a non-interactive run anyway, and (2) neither
+  # gem is version-pinned here, so without a committed Gemfile.lock,
+  # bundler re-resolves whatever's newest on every run -- byebug 13.0.0
+  # (requiring Ruby >= 3.2) breaking `bundle install` outright on older
+  # Rubies once it became the latest release is exactly the failure mode
+  # this sidesteps, rather than chasing a per-Ruby-version pin matrix for
+  # a gem CI has no need for at all.
+  if RUBY_VERSION.to_f >= 2.0 && RUBY_PLATFORM !~ /java/ && !ENV['CI']
     gem 'pry-byebug'
     gem 'byebug'
   end
