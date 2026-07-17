@@ -683,6 +683,18 @@ class SOAPElement
     value
   end
 
+  # Same as #add, but prepends -- lets a caller order its own child ahead
+  # of ones already added by different code sharing this element (see
+  # SOAP::WSSE::SignatureFilter). See CHANGELOG.md ("WS-Security: combined
+  # sign+encrypt fix") for why.
+  def unshift(value)
+    name = value.elename.name
+    @array.unshift(name)
+    @data.unshift(value)
+    value.parent = self if value.respond_to?(:parent=)
+    value
+  end
+
   def [](idx)
     if @array.include?(idx)
       @data[@array.index(idx)]

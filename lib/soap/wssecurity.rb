@@ -107,6 +107,101 @@ def self.strict_base64decode(data)
   data.unpack('m').first
 end
 
+# Returns the envelope's existing wsse:Security header element if one is
+# already there, or creates and attaches a fresh one otherwise -- shared by
+# SignatureFilter and EncryptionFilter#on_outbound so that chaining both in
+# one filterchain produces a single combined Security header (BST+Signature
+# from one, BST+EncryptedKey+ReferenceList from the other, appended to the
+# same element in whatever order the filterchain runs them) rather than two
+# separate sibling Security headers. The latter isn't just untidy: per the
+# WS-Security spec a message carries at most one untargeted Security header,
+# and confirmed empirically that a real WSS4J server (CXF's own
+# WSS4JInInterceptor, configured for a combined "Signature Encrypt" action)
+# rejects a message with two -- its own action-order check only looks at the
+# first Security header it finds, sees just one action there, and rejects
+# the mismatch against its configured two-action list.
+# Shared by SignatureFilter and EncryptionFilter#on_outbound so that
+# chaining both produces one consistent view of the envelope's serialized
+# form, rather than each independently calling SOAP::Processor.marshal.
+# This matters because Processor.marshal's namespace-prefix assignment is
+# positional -- it depends on how much *other* content precedes a given
+# element in the walk -- so two separate preview passes over the same
+# envelope (one before a later filter's own header additions exist, one
+# after) can render the exact same Body content with two *different*
+# prefixes for the same namespace. Confirmed empirically: chaining
+# SignatureFilter then EncryptionFilter, each doing its own independent
+# preview marshal, signed content rendered as e.g. `n5:getServerTime` but
+# encrypted (moments later, after SignatureFilter had already added its
+# own header content ahead of the Body in the walk) the exact same
+# element as `n1:getServerTime` instead -- semantically identical,
+# byte-different, so the signature could never validate against what was
+# actually transmitted, no matter what a server does with it.
+# SignatureFilter always mutates the envelope (adds its own wsu:Id and
+# Security header) immediately before marshaling, so it must always
+# marshal fresh -- but it stashes the result here (see its own
+# #on_outbound) for a later EncryptionFilter in the same chain to reuse
+# verbatim instead of re-deriving a possibly differently-prefixed one.
+def self.preview_doc_for(envelope, opt)
+  opt[:wsse_preview_doc] || Nokogiri::XML(SOAP::Processor.marshal(envelope, opt))
+end
+
+# Finds the EncryptedKey governing an EncryptedData: via its own
+# back-pointing KeyInfo/STR/Reference (WSS4J/XWSS), or by scanning
+# EncryptedKeys' own ReferenceLists (Metro/WSIT, which omits the
+# back-reference). Shared by EncryptionFilter and SignatureFilter's
+# on_inbound.
+def self.resolve_encrypted_key(doc, encrypted_data_node)
+  str_ref = encrypted_data_node.at_xpath(".//*[local-name()='KeyInfo']//*[local-name()='Reference']")
+  if str_ref
+    enc_key_id = str_ref['URI'].to_s.sub(/\A#/, '')
+    return doc.at_xpath("//*[local-name()='EncryptedKey' and @Id='#{enc_key_id}']")
+  end
+
+  target_id = encrypted_data_node['Id']
+  doc.xpath("//*[local-name()='EncryptedKey']").find do |ek|
+    ek.xpath(".//*[local-name()='DataReference']").any? do |data_ref|
+      data_ref['URI'].to_s.sub(/\A#/, '') == target_id
+    end
+  end
+end
+
+# Decrypts one EncryptedData's CipherValue via the EncryptedKey that
+# governs it; returns plaintext bytes without touching the DOM (callers
+# decide whether/how to splice the result back in). Shared by
+# EncryptionFilter's real decrypt and SignatureFilter's tentative one.
+def self.decrypt_xml_enc_content(encrypted_data_node, encrypted_key_node, private_key)
+  encrypted_key_bytes = strict_base64decode(
+    encrypted_key_node.at_xpath(".//*[local-name()='CipherValue']").content.strip)
+  aes_key = private_key.private_decrypt(encrypted_key_bytes, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)
+
+  encrypted_content = strict_base64decode(
+    encrypted_data_node.at_xpath(".//*[local-name()='CipherValue']").content.strip)
+  iv, ciphertext = encrypted_content[0, 16], encrypted_content[16..-1]
+  cipher = OpenSSL::Cipher.new('aes-128-cbc')
+  cipher.decrypt
+  # XML-Enc padding isn't PKCS7 (only the last byte is meaningful) --
+  # OpenSSL's auto-unpad assumes PKCS7 and raises, so strip manually.
+  cipher.padding = 0
+  cipher.key = aes_key
+  cipher.iv = iv
+  padded = cipher.update(ciphertext) + cipher.final
+  padded[0...-padded.bytes.last]
+end
+
+def self.security_header_for(envelope)
+  envelope.header ||= SOAP::SOAPHeader.new
+  # SOAPHeader#add wraps whatever it's given in a SOAPHeaderItem (it
+  # needs somewhere to track actor/mustUnderstand/encodingStyle), so a
+  # previously-stored Security element comes back wrapped -- unwrap it so
+  # callers get the same raw SOAPElement they can keep adding children to
+  # either way.
+  existing = envelope.header['Security']
+  return existing.element if existing
+  security = SOAP::SOAPElement.new(XSD::QName.new(WSSE_NS, 'Security'))
+  envelope.header.add('Security', security)
+  security
+end
+
 # Raised by SignatureFilter#on_inbound/EncryptionFilter#on_inbound when a
 # response fails verification or can't be decrypted -- callers should treat
 # this the same as any other transport-level integrity failure, not retry
@@ -140,18 +235,12 @@ class UsernameTokenFilter < SOAP::Filter::Handler
   end
 
   def on_outbound(envelope, opt)
-    envelope.header ||= SOAP::SOAPHeader.new
-    envelope.header.add('Security', build_security_element)
+    security = WSSE.security_header_for(envelope)
+    security.add(build_username_token)
     envelope
   end
 
   private
-
-  def build_security_element
-    security = SOAP::SOAPElement.new(XSD::QName.new(WSSE_NS, 'Security'))
-    security.add(build_username_token)
-    security
-  end
 
   def build_username_token
     token = SOAP::SOAPElement.new(XSD::QName.new(WSSE_NS, 'UsernameToken'))
@@ -187,6 +276,78 @@ class UsernameTokenFilter < SOAP::Filter::Handler
     end
 
     token
+  end
+end
+
+
+# Adds a WS-Security Timestamp (wsu:Created/wsu:Expires) to the shared
+# Security header -- the "Timestamp" action WSS4J validates for replay
+# protection: a message whose Created/Expires falls outside the server's
+# configured tolerance is rejected outright, independent of any signature
+# or encryption also present. Building the element itself needs no
+# canonicalization or crypto (unlike SignatureFilter/EncryptionFilter),
+# but `on_inbound` still needs real XML element removal (see its own
+# comment) -- hand-rolling that with string/regex surgery on a raw XML
+# response is the kind of thing that looks fine until it silently isn't,
+# so this uses Nokogiri too, same as those two, rather than avoiding the
+# dependency the way UsernameTokenFilter above does.
+class TimestampFilter < SOAP::Filter::Handler
+  # ttl in seconds -- how far past "now" this Timestamp's own Expires
+  # claims to be valid. 300 (5 minutes) matches WSS4J's own default
+  # maximum TTL (org.apache.wss4j.dom.validate.TimestampValidator's
+  # timeToLive default), so this works unmodified against a
+  # default-configured server rather than needing to match some other
+  # non-default TTL a particular server might enforce instead.
+  def initialize(ttl = 300)
+    require 'nokogiri' # see the class comment above
+    @ttl = ttl
+  end
+
+  def on_outbound(envelope, opt)
+    security = WSSE.security_header_for(envelope)
+    security.add(build_timestamp)
+    envelope
+  end
+
+  # Like SignatureFilter/EncryptionFilter#on_inbound, runs on the raw XML
+  # string before Processor.unmarshal, since that's soap4r's only hook to
+  # see a response before it's parsed into an envelope object. Doesn't
+  # itself validate the response's own Timestamp value (soap4r-ng has no
+  # notion of "acceptable clock skew" configured anywhere else to check
+  # it against) -- only removes it once seen, same
+  # SOAP::UnhandledMustUnderstandHeaderError reason as those two filters.
+  def on_inbound(xml, opt)
+    doc = Nokogiri::XML(xml)
+    timestamp_node = doc.at_xpath("//*[local-name()='Timestamp']")
+    return xml if timestamp_node.nil?
+    security_node = timestamp_node.parent
+    timestamp_node.remove
+    # Only remove the whole Security header if nothing else (a Signature
+    # or EncryptedData a chained SignatureFilter/EncryptionFilter still
+    # needs) is left in it -- same reasoning as EncryptionFilter#on_inbound.
+    if security_node && security_node.name =~ /Security\z/ &&
+        security_node.children.reject { |c| c.text? && c.text.strip.empty? }.empty?
+      security_node.remove
+    end
+    doc.to_xml
+  end
+
+  private
+
+  def build_timestamp
+    timestamp = SOAP::SOAPElement.new(XSD::QName.new(WSU_NS, 'Timestamp'))
+    timestamp.extraattr[XSD::QName.new(WSU_NS, 'Id')] = "TS-#{SecureRandom.hex(8)}"
+
+    created_time = Time.now.utc
+    created = SOAP::SOAPString.new(created_time.strftime('%Y-%m-%dT%H:%M:%SZ'))
+    created.elename = XSD::QName.new(WSU_NS, 'Created')
+    timestamp.add(created)
+
+    expires = SOAP::SOAPString.new((created_time + @ttl).strftime('%Y-%m-%dT%H:%M:%SZ'))
+    expires.elename = XSD::QName.new(WSU_NS, 'Expires')
+    timestamp.add(expires)
+
+    timestamp
   end
 end
 
@@ -240,6 +401,14 @@ end
 # signature actually verified, since that check happens independently of
 # this filter chain (SOAP::Header::HandlerSet, a separate mechanism this
 # filter doesn't otherwise touch).
+#
+# Combining with EncryptionFilter: chain EncryptionFilter first, this
+# filter second -- it just signs whatever's currently in the Body (the
+# ciphertext EncryptionFilter already produced). It also prepends its own
+# header elements ahead of EncryptionFilter's (see
+# add_signature_to_security's #unshift): wire order and crypto work order
+# are independent. See CHANGELOG.md ("WS-Security: combined sign+encrypt
+# fix") for the full investigation.
 class SignatureFilter < SOAP::Filter::Handler
   def initialize(key_path, cert_path, verify_cert_path = cert_path)
     require 'nokogiri' # see the file-level comment on canonicalization above
@@ -258,14 +427,19 @@ class SignatureFilter < SOAP::Filter::Handler
     signature_value_ele = SOAP::SOAPString.new('')
     signature_value_ele.elename = XSD::QName.new(DS_NS, 'SignatureValue')
 
-    security = build_security(body_id, cert_id, digest_value_ele, signature_value_ele)
-    envelope.header ||= SOAP::SOAPHeader.new
-    envelope.header.add('Security', security)
+    security = WSSE.security_header_for(envelope)
+    add_signature_to_security(security, body_id, cert_id, digest_value_ele, signature_value_ele)
 
     # Preview pass: same envelope, same opt, just to get real serialized
-    # bytes to canonicalize -- see class comment above.
+    # bytes to canonicalize -- see class comment above. Always marshaled
+    # fresh here (never reused from a prior filter's own preview) since
+    # the wsu:Id and Security header were just added above -- but stashed
+    # in `opt` afterward so a later EncryptionFilter in the same chain
+    # reuses this exact rendering instead of risking a differently-
+    # prefixed one of its own (see WSSE.preview_doc_for's comment).
     preview_xml = SOAP::Processor.marshal(envelope, opt)
     doc = Nokogiri::XML(preview_xml)
+    opt[:wsse_preview_doc] = doc
 
     body_node = doc.at_xpath("//*[@*[local-name()='Id']='#{body_id}']")
     digest = WSSE.strict_base64encode(
@@ -314,17 +488,66 @@ class SignatureFilter < SOAP::Filter::Handler
         Digest::SHA1.digest(target_node.canonicalize(
           Nokogiri::XML::XML_C14N_EXCLUSIVE_1_0, inclusive_prefixes_for(reference_node))))
       if actual_digest != expected_digest
+        # A server may have signed the pre-encryption plaintext rather
+        # than the current ciphertext -- see digest_after_temp_decrypt.
+        fallback_digest = digest_after_temp_decrypt(doc, target_id, reference_node)
+        actual_digest = fallback_digest if fallback_digest
+      end
+      if actual_digest != expected_digest
         raise VerificationError, "digest mismatch for signed reference \##{target_id}"
       end
     end
 
-    # Fully consumed -- see the class comment above on why this must not be
-    # left for Processor.unmarshal to trip over.
-    security_node.remove
+    # Remove just this filter's own contribution (the Signature itself),
+    # not the whole header -- combined with EncryptionFilter, which of the
+    # two runs first (and therefore which of them still finds the other's
+    # marker element present) depends on filterchain order, which in turn
+    # depends on what the *server* requires (WSS4J: Signature then
+    # Encrypt outbound, so reverse_each runs EncryptionFilter's on_inbound
+    # first; a WS-SecurityPolicy "EncryptBeforeSigning" server like
+    # Metro/WSIT: the opposite -- see EncryptionFilter's own class
+    # comment). Removing only what's actually this filter's own and then
+    # checking whether the *other* filter's marker (EncryptedKey) is still
+    # there is order-independent: whichever of the two runs second always
+    # finds the header down to just its own stuff and finishes the job.
+    signature_node.remove
+    if security_node.at_xpath(".//*[local-name()='EncryptedKey']").nil?
+      security_node.remove
+    end
     doc.to_xml
   end
 
   private
+
+  # A response's signed Reference may cover pre-encryption plaintext
+  # rather than the ciphertext currently in the doc -- a server can sign
+  # before it encrypts on the way out even if the client is expected to
+  # encrypt-then-sign its own requests (same endpoint, opposite per-
+  # direction order; wire order can't disambiguate this, see CHANGELOG.md
+  # "WS-Security: combined sign+encrypt fix"). Retried here, against a
+  # scratch copy (`doc.dup`) so EncryptionFilter's own on_inbound still
+  # sees the untouched, real document. Returns nil (never raises) if
+  # decryption isn't possible, leaving the caller's own mismatch check to
+  # report the real error.
+  def digest_after_temp_decrypt(doc, target_id, reference_node)
+    return nil unless @private_key
+    scratch = doc.dup
+    target_node = scratch.at_xpath("//*[@*[local-name()='Id']='#{target_id}']")
+    return nil unless target_node
+    encrypted_data_nodes = target_node.xpath(".//*[local-name()='EncryptedData']").to_a
+    return nil if encrypted_data_nodes.empty?
+    encrypted_data_nodes.each do |encrypted_data_node|
+      encrypted_key_node = WSSE.resolve_encrypted_key(scratch, encrypted_data_node)
+      return nil unless encrypted_key_node
+      plaintext = WSSE.decrypt_xml_enc_content(encrypted_data_node, encrypted_key_node, @private_key)
+      encrypted_data_node.replace(Nokogiri::XML.fragment(plaintext))
+    end
+    WSSE.strict_base64encode(
+      Digest::SHA1.digest(target_node.canonicalize(
+        Nokogiri::XML::XML_C14N_EXCLUSIVE_1_0, inclusive_prefixes_for(reference_node))))
+  rescue StandardError
+    nil
+  end
 
   # Exclusive C14N's InclusiveNamespaces PrefixList hint (nested under the
   # given node's own CanonicalizationMethod/Transform child) genuinely
@@ -343,21 +566,23 @@ class SignatureFilter < SOAP::Filter::Handler
     list.empty? ? nil : list
   end
 
-  def build_security(body_id, cert_id, digest_value_ele, signature_value_ele)
-    security = SOAP::SOAPElement.new(XSD::QName.new(WSSE_NS, 'Security'))
-
+  def add_signature_to_security(security, body_id, cert_id, digest_value_ele, signature_value_ele)
     bst = SOAP::SOAPString.new(WSSE.strict_base64encode(@cert.to_der))
     bst.elename = XSD::QName.new(WSSE_NS, 'BinarySecurityToken')
     bst.extraattr[VALUE_TYPE_ATTR] = X509_V3_VALUE_TYPE
     bst.extraattr[ENCODING_TYPE_ATTR] = ENCODING_TYPE_BASE64
     bst.extraattr[XSD::QName.new(WSU_NS, 'Id')] = cert_id
-    security.add(bst)
 
     signature = SOAP::SOAPElement.new(XSD::QName.new(DS_NS, 'Signature'))
     signature.add(build_signed_info(body_id, digest_value_ele))
     signature.add(signature_value_ele)
     signature.add(build_key_info(cert_id))
-    security.add(signature)
+
+    # Prepended, not appended: wire order must put Signature ahead of
+    # EncryptedKey regardless of which filter runs first computationally
+    # -- see CHANGELOG.md ("WS-Security: combined sign+encrypt fix").
+    security.unshift(signature)
+    security.unshift(bst)
 
     security
   end
@@ -418,9 +643,20 @@ end
 # operates on plain serialized bytes, not canonical XML, so this only
 # needs a *single* Processor.marshal preview pass to capture the
 # plaintext content's real serialized bytes, then replaces the envelope's
-# Body outright (a fresh, empty SOAPBody containing just the
-# EncryptedData) rather than mutating placeholders in place the way
-# SignatureFilter's two-pass dance does.
+# Body with a fresh SOAPBody containing just the EncryptedData (rather
+# than mutating placeholders in place the way SignatureFilter's two-pass
+# dance does) -- but carries over the original Body's own extraattr
+# (notably a wsu:Id a preceding SignatureFilter may have set) onto the
+# replacement, so combining both filters in one chain still produces a
+# signature whose Reference resolves once a server decrypts the Body back.
+#
+# Combining with SignatureFilter: chain this filter first, SignatureFilter
+# second (matches WS-SecurityPolicy "EncryptBeforeSigning": sign whatever's
+# already been encrypted). SignatureFilter also prepends its own header
+# elements ahead of this filter's, and its on_inbound tolerates either
+# sign/encrypt order a server's response may use -- wire order and crypto
+# work order aren't the same thing. See CHANGELOG.md ("WS-Security:
+# combined sign+encrypt fix") for the investigation behind both of those.
 #
 # `on_inbound` decrypts an encrypted *response* -- needs `key_path`, the
 # private key matching whatever cert the server encrypted for (typically
@@ -448,18 +684,9 @@ class EncryptionFilter < SOAP::Filter::Handler
   end
 
   def on_outbound(envelope, opt)
-    preview_xml = SOAP::Processor.marshal(envelope, opt)
-    doc = Nokogiri::XML(preview_xml)
-    body_node = doc.at_xpath("//*[local-name()='Body']")
-    plaintext = body_node.children.to_xml
+    doc = WSSE.preview_doc_for(envelope, opt)
 
     aes_key = OpenSSL::Cipher.new('aes-128-cbc').random_key
-    cipher = OpenSSL::Cipher.new('aes-128-cbc')
-    cipher.encrypt
-    cipher.key = aes_key
-    iv = cipher.random_iv
-    encrypted_content = iv + cipher.update(plaintext) + cipher.final
-
     # WSS4J's default key-transport algorithm is RSA-OAEP (with MGF1/SHA1),
     # not RSA-v1.5 -- confirmed against the project's own known-working
     # test fixture (request-encryption-wss4j.xml). OpenSSL's PKCS1_PADDING
@@ -469,9 +696,9 @@ class EncryptionFilter < SOAP::Filter::Handler
 
     cert_id = "X509-#{SecureRandom.hex(8)}"
     enc_key_id = "EK-#{SecureRandom.hex(8)}"
-    enc_data_id = "EncData-#{SecureRandom.hex(8)}"
 
-    security = SOAP::SOAPElement.new(XSD::QName.new(WSSE_NS, 'Security'))
+    security = WSSE.security_header_for(envelope)
+    security.extraattr[AttrMustUnderstandName] = '1'
 
     bst = SOAP::SOAPString.new(WSSE.strict_base64encode(@cert.to_der))
     bst.elename = XSD::QName.new(WSSE_NS, 'BinarySecurityToken')
@@ -479,14 +706,31 @@ class EncryptionFilter < SOAP::Filter::Handler
     bst.extraattr[ENCODING_TYPE_ATTR] = ENCODING_TYPE_BASE64
     bst.extraattr[XSD::QName.new(WSU_NS, 'Id')] = cert_id
     security.add(bst)
-
     security.add(build_encrypted_key(cert_id, enc_key_id, encrypted_key))
-    security.add(build_reference_list(enc_data_id))
-    security.extraattr[AttrMustUnderstandName] = '1'
-    envelope.header ||= SOAP::SOAPHeader.new
-    envelope.header.add('Security', security)
+
+    body_node = doc.at_xpath("//*[local-name()='Body']")
+    # Strip insignificant whitespace-only text nodes (soap4r's own
+    # Generator pretty-prints its output, so these are otherwise part of
+    # what gets encrypted) before serializing -- keeps the encrypted
+    # payload independent of exactly how indentation whitespace happens
+    # to round-trip through a decrypting side's own XML tooling.
+    body_node.children.to_a.each { |c| c.remove if c.text? && c.content.strip.empty? }
+    plaintext = body_node.children.to_xml
+    encrypted_content = aes_encrypt(aes_key, plaintext)
+    enc_data_id = "EncData-#{SecureRandom.hex(8)}"
+
+    security.add(build_reference_list([enc_data_id]))
 
     new_body = SOAP::SOAPBody.new
+    # Preserve the original Body's own extraattr -- notably a wsu:Id a
+    # preceding SignatureFilter in the chain may have set (see
+    # SOAPBody#encode's own comment: it's specifically designed to carry
+    # exactly this). Without it, chaining SignatureFilter then
+    # EncryptionFilter silently drops the Id the signature's Reference
+    # points to, so a conformant server decrypts the Body back fine but
+    # then finds no element matching the signed Reference URI and rejects
+    # the message -- confirmed against a live CXF/WSS4J server.
+    new_body.extraattr.update(envelope.body.extraattr)
     new_body.add('EncryptedData',
       build_encrypted_data(enc_data_id, enc_key_id, WSSE.strict_base64encode(encrypted_content)))
     envelope.body = new_body
@@ -496,50 +740,56 @@ class EncryptionFilter < SOAP::Filter::Handler
 
   def on_inbound(xml, opt)
     doc = Nokogiri::XML(xml)
-    encrypted_data_node = doc.at_xpath("//*[local-name()='EncryptedData']")
-    return xml if encrypted_data_node.nil?
+    # Materialized to an Array before any mutation -- a live NodeSet
+    # walked while replacing nodes out from under it (each iteration
+    # below replaces one EncryptedData with its decrypted content) is
+    # asking for trouble.
+    encrypted_data_nodes = doc.xpath("//*[local-name()='EncryptedData']").to_a
+    return xml if encrypted_data_nodes.empty?
     unless @private_key
       raise VerificationError, 'response is encrypted but no key_path was given to EncryptionFilter.new'
     end
 
-    str_ref = encrypted_data_node.at_xpath(".//*[local-name()='KeyInfo']//*[local-name()='Reference']")
-    enc_key_id = str_ref['URI'].to_s.sub(/\A#/, '')
-    encrypted_key_node = doc.at_xpath("//*[local-name()='EncryptedKey' and @Id='#{enc_key_id}']")
-    if encrypted_key_node.nil?
-      raise VerificationError, "EncryptedKey \##{enc_key_id} referenced by EncryptedData not found"
+    # One or more EncryptedData targets (Body content, and -- see
+    # on_outbound's class comment -- possibly a Signature element too)
+    # can share the same EncryptedKey; each still carries its own IV.
+    used_encrypted_keys = []
+    encrypted_data_nodes.each do |encrypted_data_node|
+      encrypted_key_node = WSSE.resolve_encrypted_key(doc, encrypted_data_node)
+      if encrypted_key_node.nil?
+        target_id = encrypted_data_node['Id']
+        raise VerificationError, "no EncryptedKey resolves to EncryptedData \##{target_id}"
+      end
+      used_encrypted_keys << encrypted_key_node
+      plaintext = WSSE.decrypt_xml_enc_content(encrypted_data_node, encrypted_key_node, @private_key)
+
+      # Type=Content means the plaintext is some element's *children*
+      # (the Body, per this filter's own on_outbound convention) --
+      # replacing the EncryptedData (that element's sole child, by the
+      # same convention) with them directly reconstructs it. Type=Element
+      # means the plaintext is a *whole element's* own serialization (a
+      # Signature encrypted in place -- see on_outbound) -- replacing the
+      # EncryptedData (which took that element's exact spot) with it
+      # reconstructs that instead. Both cases are the same operation here:
+      # replace this node with whatever the decrypted fragment parses to.
+      encrypted_data_node.replace(Nokogiri::XML.fragment(plaintext))
     end
-    encrypted_key_bytes = WSSE.strict_base64decode(
-      encrypted_key_node.at_xpath(".//*[local-name()='CipherValue']").content.strip)
-    aes_key = @private_key.private_decrypt(encrypted_key_bytes, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)
 
-    encrypted_content = WSSE.strict_base64decode(
-      encrypted_data_node.at_xpath(".//*[local-name()='CipherValue']").content.strip)
-    iv, ciphertext = encrypted_content[0, 16], encrypted_content[16..-1]
-    cipher = OpenSSL::Cipher.new('aes-128-cbc')
-    cipher.decrypt
-    # XML-Enc's own block-cipher padding (RFC: the last byte is the pad
-    # length; every *other* padding byte is arbitrary, unlike PKCS7's
-    # requirement that they all equal the pad length) -- confirmed
-    # empirically against both WSS4J and XWSS responses: OpenSSL's default
-    # auto-unpadding (PKCS7 semantics) raises "bad decrypt" on otherwise
-    # correctly-decrypted plaintext, because the non-final padding bytes
-    # aren't uniformly the pad-length value the way our own on_outbound's
-    # ciphertext (produced by OpenSSL's own PKCS7 padding) happens to be.
-    # Disable auto-unpadding and strip it manually instead.
-    cipher.padding = 0
-    cipher.key = aes_key
-    cipher.iv = iv
-    padded = cipher.update(ciphertext) + cipher.final
-    plaintext = padded[0...-padded.bytes.last]
-
-    # Type=Content (the only scope this filter's own on_outbound produces,
-    # and the only one confirmed against this test server) means the
-    # plaintext is the Body's *children* -- replace EncryptedData (the
-    # Body's sole child per that same convention) with them directly.
-    encrypted_data_node.replace(Nokogiri::XML.fragment(plaintext))
-
+    # Remove just this filter's own contribution (the EncryptedKey(s) it
+    # actually used -- any sibling ReferenceList/BinarySecurityToken
+    # clutter left behind is harmless and not worth chasing), not the
+    # whole header. Whether this runs before or after SignatureFilter's
+    # own on_inbound depends on filterchain order, which itself depends on
+    # what the server requires (see SignatureFilter#on_inbound's own
+    # comment on the two possible orders) -- removing only what's actually
+    # this filter's own and then checking whether a Signature is still
+    # there is order-independent: whichever of the two runs second always
+    # finds the header down to just its own stuff and finishes the job.
+    used_encrypted_keys.uniq.each(&:remove)
     security_node = doc.at_xpath("//*[local-name()='Security']")
-    security_node.remove if security_node
+    if security_node && security_node.at_xpath(".//*[local-name()='Signature']").nil?
+      security_node.remove
+    end
     doc.to_xml
   end
 
@@ -577,12 +827,30 @@ class EncryptionFilter < SOAP::Filter::Handler
   # placements are legal XML-Enc, but XWSS's decryption resolver appears
   # to specifically need the sibling form -- nesting it produced a
   # "XMLCipher unexpectedly not in UNWRAP_MODE or DECRYPT_MODE" error).
-  def build_reference_list(enc_data_id)
+  # Takes an array of ids -- one DataReference per encrypted target (the
+  # Body, plus a Signature if one was also encrypted alongside it above)
+  # -- since one EncryptedKey/AES key can cover multiple EncryptedData
+  # blocks, each with its own IV.
+  def build_reference_list(enc_data_ids)
     ref_list = SOAP::SOAPElement.new(XSD::QName.new(XENC_NS, 'ReferenceList'))
-    data_ref = SOAP::SOAPElement.new(XSD::QName.new(XENC_NS, 'DataReference'))
-    data_ref.extraattr[URI_ATTR] = "##{enc_data_id}"
-    ref_list.add(data_ref)
+    enc_data_ids.each do |enc_data_id|
+      data_ref = SOAP::SOAPElement.new(XSD::QName.new(XENC_NS, 'DataReference'))
+      data_ref.extraattr[URI_ATTR] = "##{enc_data_id}"
+      ref_list.add(data_ref)
+    end
     ref_list
+  end
+
+  # aes_key encrypts one Content or Element target at a time (a distinct
+  # IV per call, even when the same key is reused across multiple targets
+  # -- reusing a key is fine, reusing an IV under it is not) -- CBC mode,
+  # random IV prepended to the ciphertext per the XML-Enc convention.
+  def aes_encrypt(aes_key, plaintext)
+    cipher = OpenSSL::Cipher.new('aes-128-cbc')
+    cipher.encrypt
+    cipher.key = aes_key
+    iv = cipher.random_iv
+    iv + cipher.update(plaintext) + cipher.final
   end
 
   def build_encrypted_data(enc_data_id, enc_key_id, cipher_value_b64)

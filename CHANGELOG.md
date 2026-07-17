@@ -6,6 +6,104 @@ those stay skimmable; this is the place to look for the "why" in full.
 
 ## Unreleased
 
+### WS-Security: combined sign+encrypt fix (`/encsign`, `/enctssign`)
+
+`SignatureFilter` + `EncryptionFilter` chained together (WS-Security
+"Encrypt then Sign") previously failed against real WSS4J servers
+(CXF, Axis2/Rampart) with a generic `"The signature or decryption was
+invalid"` / `SignatureProcessor.verifyXMLSignature` error. An earlier
+investigation had concluded this was a longstanding WSS4J library bug
+spanning versions 1.6.4-2.1.x -- **wrong**, and worth recording why, since
+it's an easy trap to fall back into.
+
+The user correctly pushed back on that conclusion: the RUB-NDS test
+engines expose `/encsign`/`/enctssign` as real, expected-to-work
+pentest-target endpoints (confirmed by RUB-NDS's own SoapUI project file,
+which has a working "Enc+Sign" profile targeting exactly this endpoint) --
+they wouldn't have been left broken and unnoticed. That challenge is what
+led to actually building a real CXF/WSS4J Java client (scratch, not
+committed) against the live `rub-nds-cxf` server and diffing its genuine
+raw wire bytes against soap4r's own, which surfaced two real soap4r bugs
+instead:
+
+1. **Wire element order is the reverse of crypto work order.** A WSS4J
+   sender inserts each action's header contribution at the *front* of
+   `wsse:Security` as that action completes -- so for "Encrypt then Sign"
+   the wire order is Signature's own BST+Signature *first*, then
+   EncryptedKey's BST+ReferenceList *second*, even though the encrypt
+   work happened first. soap4r was just appending both filters' output in
+   filterchain-execution order (EncryptedKey first), so a receiving WSS4J
+   server would decrypt -- mutating the Body from ciphertext back to
+   plaintext *in place* -- before it ever verified the Signature's
+   digest, causing a mismatch even though soap4r's own digest was
+   computed correctly all along. Fixed with a new `SOAP::SOAPElement
+   #unshift` (`lib/soap/baseData.rb`, mirrors `#add`) that
+   `SignatureFilter#add_signature_to_security` uses to prepend its BST +
+   Signature ahead of whatever `EncryptionFilter` already added --
+   correct regardless of which filter actually runs first.
+
+   A first attempt to diagnose this by eye was misled by
+   `LoggingOutInterceptor#setPrettyLogging(true)` on the Java reference
+   client: it reformats the *logged* text through a pretty-printer, which
+   is not the actual wire bytes (C14N digests are whitespace-sensitive).
+   That misread the real order as "Signature first" being an artifact
+   rather than the truth. Caught by replaying the pretty-printed capture
+   via raw `curl` -- it failed even though the original call had
+   succeeded, proving the log wasn't the real bytes. Removing
+   `setPrettyLogging(true)` gave the true raw order.
+
+2. **A single endpoint can use opposite sign/encrypt order for requests
+   vs. responses.** Confirmed directly in rub-nds-cxf's own
+   `cxf-servlet.xml`: the same `/encsign` endpoint's inbound
+   (request-validating) interceptor is configured `action="Encrypt
+   Signature"`, while its outbound (response-building) interceptor is
+   configured `action="Signature Encrypt"` -- the opposite order. So the
+   server signs its own responses *before* encrypting them, meaning the
+   signed digest covers plaintext that no longer exists by the time the
+   client sees ciphertext. Wire order alone can't disambiguate this
+   either, since (per finding 1) it's always the reverse of work order
+   regardless of what that order was.
+
+   Fixed by having `SignatureFilter#on_inbound` retry against a
+   temporary, non-mutating decrypt (`digest_after_temp_decrypt`, using a
+   `doc.dup` scratch copy) whenever the direct digest check fails,
+   instead of assuming one fixed order. The scratch copy matters:
+   `EncryptionFilter`'s own `on_inbound`, still to run later in the same
+   filterchain, needs to see the untouched, still-encrypted document to
+   do its own real, permanent decrypt and header cleanup. The AES/RSA
+   decrypt logic itself was factored out of `EncryptionFilter#on_inbound`
+   into shared `WSSE.resolve_encrypted_key`/`WSSE.decrypt_xml_enc_content`
+   module functions so the tentative and real decrypts don't duplicate
+   crypto code.
+
+An earlier, now-reverted attempt at fixing finding 1 had instead made
+`SignatureFilter` reconstruct and sign the *original pre-encryption*
+plaintext -- based on the same pretty-printing misdiagnosis above. That
+was removed once the corrected raw capture showed a real WSS4J client
+signs the post-encryption ciphertext directly, no reconstruction needed.
+
+**Verified against all three RUB-NDS WSS4J-family test engines**
+(`soap4r-ws-security-testbed/rub-nds-{cxf,metro,axis2}`):
+- **rub-nds-cxf** (WSS4J 3.1.7): `/encsign` and `/enctssign` both now pass
+  end-to-end (request accepted, response verified).
+- **rub-nds-axis2** (Rampart/WSS4J 1.6.4 -- a materially different, older
+  version from CXF's): `/encsign` now passes too. This is the strongest
+  evidence the original "WSS4J bug" theory was wrong -- the same fix
+  resolves it across two independent WSS4J versions, which a real library
+  bug specific to one version wouldn't do.
+- **rub-nds-metro**: at the time of this fix, still failed with a
+  *separate*, unrelated issue (`"Validation of self signed certificate
+  failed"` -- Metro's own PKIX trust validation of the test server's
+  self-signed cert, not a wire-format problem). Not addressed here --
+  fixed later, testbed-side only (no soap4r code changes needed), see
+  `soap4r-ws-security-testbed/CHANGELOG.md` ("rub-nds-metro: self-signed
+  cert validation"). `/encsign` passes against all three RUB-NDS engines
+  as of that fix.
+
+Full `rake test:deep` run clean afterward (374 tests, 2712 assertions, 1
+pre-existing unrelated failure -- a `NoMethodError#message` encoding flake
+in an exception-marshaling test, untouched by this work).
+
 ### Faraday gated to Ruby >= 2.6
 
 `gem 'faraday'` was previously unconstrained, which resolved *some* old

@@ -192,6 +192,13 @@ bug). `UsernameTokenFilter` has no such dependency. All three were verified
 against a real, self-hosted WSS4J/XWSS test server (see
 `test_ws_security_e2e/README.md`), not just synthetic fixtures.
 
+Chaining `SignatureFilter` and `EncryptionFilter` together (combined
+Sign+Encrypt) now also works end-to-end against real WSS4J servers (CXF,
+Axis2/Rampart) -- fixing a Security-header wire-ordering bug and a
+sign/encrypt-order mismatch between requests and responses. See
+CHANGELOG.md ("WS-Security: combined sign+encrypt fix") for the full
+investigation.
+
 #### Known Test Suite Exceptions
 Running `rake test:deep` across the full version matrix surfaces a small,
 understood set of failures that aren't soap4r-ng bugs -- either something
